@@ -1,0 +1,51 @@
+-- =========================
+-- ATTENDANCE SESSIONS
+-- =========================
+create table public.attendance_sessions (
+  id uuid primary key default gen_random_uuid(),
+
+  created_by uuid not null
+    references auth.users(id) on delete cascade,
+
+  course_code text not null,
+  pin_code text not null,
+
+  latitude double precision,
+  longitude double precision,
+  radius_meters integer default 100,
+
+  starts_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+
+  created_at timestamptz default now()
+);
+
+-- Helpful index for fast lookup by code + pin
+create index on public.attendance_sessions (course_code, pin_code);
+
+
+
+-- =========================
+-- ATTENDANCE RECORDS
+-- =========================
+create table public.attendance_records (
+  id uuid primary key default gen_random_uuid(),
+
+  session_id uuid not null
+    references public.attendance_sessions(id) on delete cascade,
+
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
+  device_id text,
+  latitude double precision,
+  longitude double precision,
+
+  checked_in_at timestamptz default now(),
+
+  -- Prevent same user checking in twice for same session
+  unique (session_id, user_id)
+);
+
+-- Helpful index for reports
+create index on public.attendance_records (session_id);
