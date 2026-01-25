@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Colspot – Nearby Attendance</title>
+
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --bg1: #e0edff;
+      --bg2: #f8fbff;
+      --text-main: #0f172a;
+      --text-muted: #6b7280;
+      --border-soft: #e5e7eb;
+      --error: #dc2626;
+      --success: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Inter, sans-serif;
+    }
+
+    /* FULL SCREEN – no centering */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #dbeafe 0, #eef2ff 30%, #f9fafb 80%);
+      display: flex;
+      justify-content: center;
+      /* no padding, no white edges */
+    }
+
+    /* Shell now fills the device, no rounded phone frame */
+    .phone-shell {
+      width: 100%;
+      max-width: 100%;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f1f5ff 0%, #ffffff 26%, #ffffff 100%);
+      border-radius: 0;                  /* removed big rounded corners */
+      box-shadow: none;                  /* no floating phone shadow */
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* main content area – scrolls, nav sits below */
+    .screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 16px 16px;           /* normal padding */
+      overflow-y: auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Top brand bar (for all screens) */
+    .brand-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* logo */
+    .logo-wrapper {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+    }
+
+    .circle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .circle-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #6b7280;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Title block */
+    .title-block {
+      margin-bottom: 12px;
+    }
+
+    .title-main {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .title-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Top small message card */
+    .top-message-card {
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 30px rgba(148, 163, 184, 0.3);
+      margin-bottom: 10px;
+    }
+
+    .top-message-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .top-message-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4338ca;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .top-message-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Nearby list status + refresh */
+    .status-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 4px 2px 4px;
+    }
+
+    .refresh-row {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 2px 8px;
+    }
+
+    .refresh-btn {
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-main);
+      box-shadow: 0 10px 24px rgba(148, 163, 184, 0.3);
+    }
+
+    .refresh-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4b5563;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Session cards */
+    .session-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .session-card {
+      border-radius: 20px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: 0 16px 38px rgba(15, 23, 42, 0.18);
+    }
+
+    .session-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .session-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .session-pin-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #ffffff 0, #dbeafe 55%, #bfdbfe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.45);
+    }
+
+    .session-pin-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: #2563eb;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .session-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .session-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .session-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .join-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.5);
+      white-space: nowrap;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .join-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45);
+    }
+
+    .empty-state {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 10px 2px;
+    }
+
+    /* Join form (screen 2) */
+    .back-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .back-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .back-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #4b5563;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .screen-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .screen-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .join-label {
+      font-size: 12px;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .join-input {
+      width: 100%;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    .join-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+    }
+
+    .join-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .join-submit {
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      padding: 11px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.35);
+      margin-top: 12px;
+    }
+
+    .join-submit:disabled {
+      background: #93c5fd;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .join-msg {
+      font-size: 12px;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .join-msg.error {
+      color: var(--error);
+    }
+
+    .join-msg.success {
+      color: var(--success);
+    }
+
+    /* Confirm screen (screen 3) */
+    .confirm-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 32px;
+    }
+
+    .confirm-card {
+      width: 86%;
+      max-width: 360px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 16px 18px 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .confirm-line {
+      font-size: 13px;
+      color: var(--text-main);
+      margin: 2px 0;
+    }
+
+    .confirm-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .confirm-btn {
+      min-width: 76px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .confirm-btn.secondary {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+      color: #374151;
+    }
+
+    .confirm-btn.primary {
+      background: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+      border-color: var(--blue-dark);
+    }
+
+    /* Bottom nav – now part of flex layout, full width, at real bottom */
+    .bottom-nav {
+      flex-shrink: 0;                 /* don’t let it shrink */
+      width: 100%;
+      border-top: 1px solid #e5e7eb;
+      padding: 6px 8px 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #ffffff;
+      border-radius: 18px 18px 0 0;   /* small top rounding, flat bottom */
+      box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.12);
+    }
+
+    .nav-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 4px 4px 0;
+      text-align: center;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .nav-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.7;
+      stroke: #9ca3af;
+      fill: none;
+    }
+
+    .nav-btn-label {
+      display: block;
+      margin-top: 1px;
+    }
+
+    .nav-btn.active {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .nav-btn.active svg {
+      stroke: var(--blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <!-- Screen 1: Nearby Attendance -->
+    <div id="screenNearby" class="screen">
+      <div class="brand-bar">
+        <div class="brand-left">
+          <div class="logo-wrapper">
+            <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="logo-img" />
+          </div>
+          <div class="brand-text">Colspot</div>
+        </div>
+        <button class="circle-btn" type="button">
+          <!-- search icon -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="title-block">
+        <div class="title-main">Nearby Attendance</div>
+        <div class="title-sub">Find and join sessions around you.</div>
+      </div>
+
+      <!-- small white message card -->
+      <div class="top-message-card">
+        <div class="top-message-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+        </div>
+        <div class="top-message-text">
+          Mission
+        </div>
+      </div>
+
+      <p id="statusText" class="status-text">Loading your location...</p>
+
+      <div class="refresh-row">
+        <button class="refresh-btn" onclick="loadNearbySessions()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4v6h6"></path>
+            <path d="M20 20v-6h-6"></path>
+            <path d="M5 19a8 8 0 0 0 13.66-3"></path>
+            <path d="M19 5A8 8 0 0 0 5.34 8"></path>
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div id="sessionList" class="session-list"></div>
+      <p id="emptyState" class="empty-state hidden">
+        No active attendance sessions nearby. Ask your lecturer to start one.
+      </p>
+    </div>
+
+    <!-- Screen 2: Join form -->
+    <div id="screenJoin" class="screen hidden">
+      <!-- brand bar on page 2 -->
+      <div class="brand-bar">
+        <div class="brand-left">
+          <div class="logo-wrapper">
+            <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="logo-img" />
+          </div>
+          <div class="brand-text">Colspot</div>
+        </div>
+        <button class="circle-btn" type="button" onclick="showScreen('nearby')">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12"></path>
+            <path d="M18 6l-12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="back-row">
+        <button class="back-btn" onclick="showScreen('nearby')">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+        <div>
+          <div id="joinScreenTitle" class="screen-title">Join session</div>
+          <div id="joinScreenSub" class="screen-sub">
+            Enter the PIN your lecturer gave you.
+          </div>
+        </div>
+      </div>
+
+      <div class="join-label">PIN code</div>
+      <input id="joinPin" class="join-input" type="text" maxlength="6" placeholder="PIN code" />
+
+      <div class="join-label">Full name *</div>
+      <input id="joinName" class="join-input" type="text" placeholder="e.g. Saheed Samad" />
+
+      <div class="join-label">Matric number</div>
+      <input id="joinMatric" class="join-input" type="text" placeholder="e.g. CST/20/1234" />
+
+      <div class="join-label">Department</div>
+      <input id="joinDepartment" class="join-input" type="text" placeholder="e.g. Computer Science" />
+
+      <p class="join-note">
+        You can only submit once. Make sure your name, matric number and department are correct before joining.
+      </p>
+
+      <button id="joinSubmit" class="join-submit" onclick="prepareConfirm()">
+        Join attendance
+      </button>
+
+      <div id="joinError" class="join-msg error hidden"></div>
+      <div id="joinSuccess" class="join-msg success hidden"></div>
+    </div>
+
+    <!-- Screen 3: Confirm -->
+    <div
+      id="screenConfirm"
+      class="screen hidden"
+      style="background: radial-gradient(circle at top, rgba(148,163,255,0.25), transparent);"
+    >
+      <div class="brand-bar">
+        <div class="brand-left">
+          <div class="logo-wrapper">
+            <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="logo-img" />
+          </div>
+          <div class="brand-text">Colspot</div>
+        </div>
+      </div>
+
+      <div class="confirm-wrapper">
+        <div class="confirm-card">
+          <div id="confirmTitle" class="confirm-title">Join session</div>
+          <p id="confirmSessionLine" class="confirm-line"></p>
+          <p id="confirmNameLine" class="confirm-line"></p>
+          <p id="confirmMatricLine" class="confirm-line"></p>
+          <p id="confirmDeptLine" class="confirm-line"></p>
+          <p class="confirm-note">
+            You can only submit once for this session. Is all the information correct?
+          </p>
+          <div class="confirm-actions">
+            <button class="confirm-btn secondary" type="button" onclick="showScreen('join')">
+              Cancel
+            </button>
+            <button class="confirm-btn primary" type="button" onclick="confirmJoin()">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom nav (Attendance active) -->
+    <nav class="bottom-nav">
+      <button class="nav-btn" onclick="goHome()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 11l8-7 8 7"></path>
+          <path d="M5 10v10h14V10"></path>
+        </svg>
+        <span class="nav-btn-label">Home</span>
+      </button>
+
+      <button class="nav-btn active" onclick="goAttendance()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+          <path d="M9 7h6"></path>
+          <path d="M9 11h4"></path>
+          <path d="M9 15h4"></path>
+        </svg>
+        <span class="nav-btn-label">Attendance</span>
+      </button>
+
+      <button class="nav-btn" onclick="goToHistory()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8"></circle>
+          <path d="M12 8v4l2.5 2.5"></path>
+        </svg>
+        <span class="nav-btn-label">History</span>
+      </button>
+
+      <button class="nav-btn" onclick="goReport()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="10" width="3" height="8"></rect>
+          <rect x="10" y="6" width="3" height="12"></rect>
+          <rect x="16" y="3" width="3" height="15"></rect>
+        </svg>
+        <span class="nav-btn-label">Report</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Supabase client -->
+  <script type="module" src="./client_supabase.js"></script>
+
+  <script>
+    const NEARBY_RADIUS_METERS = 2000; // 2 km
+    const LOCATION_CACHE_KEY = "colspot_last_location"; // same key as Attendance
+    const LOCATION_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+    let currentUser = null;
+    let selectedSession = null;
+    let supabaseReady = false;
+    let currentLoadSeq = 0;
+    let pendingJoinData = null;
+
+    function showScreen(which) {
+      document.getElementById("screenNearby").classList.toggle("hidden", which !== "nearby");
+      document.getElementById("screenJoin").classList.toggle("hidden", which !== "join");
+      document.getElementById("screenConfirm").classList.toggle("hidden", which !== "confirm");
+    }
+
+    function setStatus(text) {
+      const el = document.getElementById("statusText");
+      if (el) el.textContent = text;
+    }
+
+    function showEmpty(show) {
+      const el = document.getElementById("emptyState");
+      if (!el) return;
+      el.classList.toggle("hidden", !show);
+    }
+
+    function clearSessions() {
+      const list = document.getElementById("sessionList");
+      if (list) list.innerHTML = "";
+    }
+
+    function distanceInMeters(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // ===== Location cache helpers (10 minutes) =====
+    function getCachedLocation() {
+      try {
+        const raw = localStorage.getItem(LOCATION_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (
+          !parsed ||
+          typeof parsed.lat !== "number" ||
+          typeof parsed.lng !== "number" ||
+          typeof parsed.timestamp !== "number"
+        ) {
+          return null;
+        }
+        const age = Date.now() - parsed.timestamp;
+        if (age > LOCATION_TTL_MS) {
+          return null;
+        }
+        return { lat: parsed.lat, lng: parsed.lng };
+      } catch {
+        return null;
+      }
+    }
+
+    function saveLocation(lat, lng) {
+      try {
+        localStorage.setItem(
+          LOCATION_CACHE_KEY,
+          JSON.stringify({
+            lat,
+            lng,
+            timestamp: Date.now(),
+          })
+        );
+      } catch {
+        // ignore
+      }
+    }
+
+    function getCurrentPositionOnce() {
+      return new Promise((resolve) => {
+        if (!("geolocation" in navigator)) {
+          console.warn("Geolocation not available");
+          return resolve(null);
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve(pos),
+          (err) => {
+            console.warn("Nearby location error:", err);
+            resolve(null);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 600000, // let OS reuse up to 10 min old
+            timeout: 15000,
+          }
+        );
+      });
+    }
+
+    async function getLocationForNearby() {
+      // 1. cached (<= 10 min)
+      const cached = getCachedLocation();
+      if (cached) {
+        return cached;
+      }
+
+      // 2. fresh
+      const pos = await getCurrentPositionOnce();
+      if (pos && pos.coords) {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        saveLocation(lat, lng);
+        return { lat, lng };
+      }
+
+      // 3. no location
+      return null;
+    }
+
+    function startJoin(session) {
+      selectedSession = session;
+      const title = document.getElementById("joinScreenTitle");
+      const sub = document.getElementById("joinScreenSub");
+
+      if (title) {
+        title.textContent = session.course_code
+          ? `Join ${session.course_code}`
+          : "Join attendance";
+      }
+
+      if (sub) {
+        const end = new Date(session.expires_at);
+        const timeStr = end.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        sub.textContent = `Session ends at ${timeStr}. Enter the PIN your lecturer gave you.`;
+      }
+
+      ["joinPin", "joinName", "joinMatric", "joinDepartment"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      const err = document.getElementById("joinError");
+      const ok = document.getElementById("joinSuccess");
+      if (err) { err.textContent = ""; err.classList.add("hidden"); }
+      if (ok) { ok.textContent = ""; ok.classList.add("hidden"); }
+
+      showScreen("join");
+    }
+
+    function showJoinError(msg) {
+      const el = document.getElementById("joinError");
+      const ok = document.getElementById("joinSuccess");
+      if (ok) { ok.textContent = ""; ok.classList.add("hidden"); }
+      if (el) {
+        el.textContent = msg;
+        el.classList.remove("hidden");
+      }
+    }
+
+    function showJoinSuccess(msg) {
+      const el = document.getElementById("joinSuccess");
+      const err = document.getElementById("joinError");
+      if (err) { err.textContent = ""; err.classList.add("hidden"); }
+      if (el) {
+        el.textContent = msg;
+        el.classList.remove("hidden");
+      }
+    }
+
+    function prepareConfirm() {
+      if (!selectedSession) {
+        showJoinError("Please pick a session first.");
+        return;
+      }
+
+      const pin = document.getElementById("joinPin").value.trim();
+      const studentName = document.getElementById("joinName").value.trim();
+      const studentMatric = document.getElementById("joinMatric").value.trim();
+      const studentDepartment = document
+        .getElementById("joinDepartment")
+        .value.trim();
+
+      if (!pin) return showJoinError("Please enter the PIN code.");
+      if (!studentName) return showJoinError("Please enter your full name.");
+      if (!studentMatric) return showJoinError("Please enter your matric number.");
+      if (!studentDepartment) return showJoinError("Please enter your department.");
+
+      if (pin !== String(selectedSession.pin_code)) {
+        showJoinError("Incorrect PIN. Please check and try again.");
+        return;
+      }
+
+      if (!supabaseReady || !currentUser) {
+        showJoinError("Session error. Please sign in again.");
+        return;
+      }
+
+      pendingJoinData = { studentName, studentMatric, studentDepartment };
+
+      const sessionLabel = selectedSession.course_code || "Attendance session";
+      document.getElementById("confirmTitle").textContent = `Join ${sessionLabel}`;
+      document.getElementById("confirmSessionLine").textContent = `Session: ${sessionLabel}`;
+      document.getElementById("confirmNameLine").textContent = `Name: ${studentName}`;
+      document.getElementById("confirmMatricLine").textContent = `Matric: ${studentMatric}`;
+      document.getElementById("confirmDeptLine").textContent = `Department: ${studentDepartment}`;
+
+      showScreen("confirm");
+    }
+
+    async function confirmJoin() {
+      if (!pendingJoinData || !selectedSession || !supabaseReady || !currentUser) {
+        showScreen("join");
+        showJoinError("Something went wrong. Please try again.");
+        return;
+      }
+
+      const btn = document.getElementById("joinSubmit");
+      btn.disabled = true;
+      btn.textContent = "Joining...";
+
+      const { studentName, studentMatric, studentDepartment } = pendingJoinData;
+
+      try {
+        const { error } = await supabase.from("attendance_records").insert([
+          {
+            session_id: selectedSession.id,
+            user_id: currentUser.id,
+            student_name: studentName || null,
+            student_matric: studentMatric || null,
+            student_department: studentDepartment || null,
+            checked_in_at: new Date().toISOString(),
+          },
+        ]);
+
+        if (error) {
+          console.error(error);
+          showJoinError("Could not join attendance. Please try again.");
+          showScreen("join");
+        } else {
+          showJoinSuccess("You have joined this attendance session.");
+          showScreen("nearby");
+          loadNearbySessions();
+        }
+      } catch (e) {
+        console.error(e);
+        showJoinError("Something went wrong. Please try again.");
+        showScreen("join");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Join attendance";
+      }
+    }
+
+    async function loadNearbySessions() {
+      if (!supabaseReady) return;
+
+      const loadId = ++currentLoadSeq;
+      clearSessions();
+      showEmpty(false);
+      setStatus("Getting your location...");
+
+      const loc = await getLocationForNearby();
+
+      if (!loc) {
+        setStatus(
+          "We couldn't get your location. Turn on location services to see nearby sessions. You can still join with a PIN from your lecturer."
+        );
+        return;
+      }
+
+      const { lat, lng } = loc;
+      const listEl = document.getElementById("sessionList");
+      console.log("Nearby location used:", lat, lng);
+
+      try {
+        const nowIso = new Date().toISOString();
+        const { data, error } = await supabase
+          .from("attendance_sessions")
+          .select(
+            "id, course_code, expires_at, latitude, longitude, pin_code"
+          )
+          .gte("expires_at", nowIso);
+
+        if (loadId !== currentLoadSeq) return;
+
+        if (error) {
+          console.error(error);
+          setStatus(
+            "Couldn't load nearby sessions. You can still join with a PIN from your lecturer."
+          );
+          return;
+        }
+
+        const sessions = (data || []).filter(
+          (s) =>
+            s.latitude !== null &&
+            s.longitude !== null &&
+            s.expires_at !== null
+        );
+
+        if (!sessions.length) {
+          setStatus("No active attendance sessions right now.");
+          showEmpty(true);
+          return;
+        }
+
+        let sessionsWithDistance = sessions.map((s) => ({
+          ...s,
+          distance: distanceInMeters(lat, lng, s.latitude, s.longitude),
+        }));
+
+        console.log(
+          "Sessions with distance:",
+          sessionsWithDistance.map((s) => ({
+            code: s.course_code,
+            distance_m: Math.round(s.distance),
+          }))
+        );
+
+        let nearby = sessionsWithDistance.filter(
+          (s) => s.distance <= NEARBY_RADIUS_METERS
+        );
+
+        if (!nearby.length) {
+          sessionsWithDistance.sort((a, b) => a.distance - b.distance);
+          nearby = sessionsWithDistance.slice(0, 3);
+          setStatus(
+            "No sessions exactly near you. Showing the closest sessions."
+          );
+        } else {
+          setStatus(
+            `Found ${nearby.length} active session${
+              nearby.length > 1 ? "s" : ""
+            } near you.`
+          );
+        }
+
+        showEmpty(false);
+
+        nearby.forEach((s) => {
+          const card = document.createElement("div");
+          card.className = "session-card";
+
+          const main = document.createElement("div");
+          main.className = "session-main";
+
+          const titleRow = document.createElement("div");
+          titleRow.className = "session-title-row";
+
+          const icon = document.createElement("div");
+          icon.className = "session-pin-icon";
+          icon.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s-6-5.1-6-10a6 6 0 1 1 12 0c0 4.9-6 10-6 10z"></path>
+              <circle cx="12" cy="11" r="2.5"></circle>
+            </svg>
+          `;
+
+          const title = document.createElement("div");
+          title.className = "session-title";
+          title.textContent = s.course_code || "Attendance session";
+
+          titleRow.appendChild(icon);
+          titleRow.appendChild(title);
+
+          const sub = document.createElement("div");
+          sub.className = "session-sub";
+          sub.textContent = "Intro to life";
+
+          const meta = document.createElement("div");
+          meta.className = "session-meta";
+
+          const end = new Date(s.expires_at);
+          const timeStr = end.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          meta.textContent = `Sets to end at ${timeStr}`;
+
+          main.appendChild(titleRow);
+          main.appendChild(sub);
+          main.appendChild(meta);
+
+          const btn = document.createElement("button");
+          btn.className = "join-btn";
+          btn.textContent = "Join";
+          btn.addEventListener("click", () => startJoin(s));
+
+          card.appendChild(main);
+          card.appendChild(btn);
+          listEl.appendChild(card);
+        });
+      } catch (e) {
+        console.error(e);
+        setStatus(
+          "Error loading nearby attendance. You can still join with a PIN from your lecturer."
+        );
+      }
+    }
+
+    function goHome() {
+      window.location.href = "main.html";
+    }
+
+    function goAttendance() {
+      window.location.href = "near-attendance.html";
+    }
+
+    function goToHistory() {
+      window.location.href = "history.html";
+    }
+
+    function goReport() {
+      window.location.href = "report.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await new Promise((r) => setTimeout(r, 50));
+
+      if (typeof supabase === "undefined") {
+        console.error("Supabase client missing on near-attendance.html");
+        return;
+      }
+
+      supabaseReady = true;
+
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      currentUser = data.user;
+
+      showScreen("nearby");
+      loadNearbySessions();
+
+      setInterval(() => {
+        if (!document.getElementById("screenNearby").classList.contains("hidden")) {
+          loadNearbySessions();
+        }
+      }, 5000);
+    });
+  </script>
+</body>
+</html>
