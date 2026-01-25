@@ -1,0 +1,574 @@
+// auth.js
+// Assumes window.supabase is created in superbas.js (supabase client)
+
+let currentMode = "signin";
+let pendingSignup = null; // { email, password, fullName, role, dept }
+
+/* ----------------------------
+ * Small UI helpers
+ * ---------------------------- */
+function setButtonLoading(btnId, textId, loaderId, isLoading) {
+  const btn = document.getElementById(btnId);
+  const text = document.getElementById(textId);
+  const loader = document.getElementById(loaderId);
+
+  if (!btn) return;
+
+  btn.disabled = isLoading;
+  if (text && loader) {
+    if (isLoading) {
+      text.classList.add("hidden");
+      loader.classList.remove("hidden");
+    } else {
+      text.classList.remove("hidden");
+      loader.classList.add("hidden");
+    }
+  }
+}
+
+function clearMessages() {
+  const a = document.getElementById("signin-message");
+  const b = document.getElementById("signup-message");
+  const c = document.getElementById("verify-message");
+  if (a) a.textContent = "";
+  if (b) b.textContent = "";
+  if (c) c.textContent = "";
+}
+
+/* ----------------------------
+ * Password strength helper
+ * ---------------------------- */
+function isStrongPassword(pw) {
+  if (!pw) return false;
+  const hasLetter = /[A-Za-z]/.test(pw);
+  const hasNumber = /[0-9]/.test(pw);
+  return pw.length >= 6 && hasLetter && hasNumber;
+}
+
+/* ----------------------------
+ * Mode switching (Sign in / Sign up)
+ * ---------------------------- */
+function switchMode(mode) {
+  currentMode = mode;
+
+  // Always hide code panel when changing tabs
+  hideVerifyPanel();
+
+  const signinForm = document.getElementById("signin-form");
+  const signupForm = document.getElementById("signup-form");
+
+  const tabSignin = document.getElementById("tab-signin");
+  const tabSignup = document.getElementById("tab-signup");
+
+  const title = document.getElementById("card-title");
+  const subtitle = document.getElementById("card-subtitle");
+  const switchText = document.getElementById("switch-text");
+  const switchLabel = document.getElementById("switch-link-label");
+
+  clearMessages();
+
+  if (mode === "signin") {
+    signinForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+
+    tabSignin.classList.add("active");
+    tabSignup.classList.remove("active");
+
+    title.textContent = "Welcome back";
+    subtitle.textContent = "Sign in to your Colspot account";
+
+    switchText.textContent = "Don’t have an account?";
+    switchLabel.textContent = "Create one";
+  } else {
+    signinForm.classList.add("hidden");
+    signupForm.classList.remove("hidden");
+
+    tabSignin.classList.remove("active");
+    tabSignup.classList.add("active");
+
+    title.textContent = "Create your account";
+    subtitle.textContent = "Sign up as a student or lecturer";
+
+    switchText.textContent = "Already have an account?";
+    switchLabel.textContent = "Sign in";
+  }
+}
+
+function toggleAuthMode() {
+  switchMode(currentMode === "signin" ? "signup" : "signin");
+}
+
+/* ----------------------------
+ * Verify panel (code for sign up)
+ * ---------------------------- */
+function showVerifyPanel(email) {
+  const verifyPanel = document.getElementById("verify-panel");
+  const modeToggle = document.getElementById("mode-toggle");
+  const switchRow = document.getElementById("switch-row");
+
+  const signinForm = document.getElementById("signin-form");
+  const signupForm = document.getElementById("signup-form");
+
+  const emailEl = document.getElementById("verify-email");
+  if (emailEl) emailEl.textContent = email || "";
+
+  if (email) {
+    localStorage.setItem("colspot_pending_email", email);
+  }
+
+  verifyPanel.classList.remove("hidden");
+  signinForm.classList.add("hidden");
+  signupForm.classList.add("hidden");
+  modeToggle.classList.add("hidden");
+  switchRow.classList.add("hidden");
+
+  document.getElementById("card-title").textContent = "Verify your email";
+  document.getElementById("card-subtitle").textContent =
+    "Enter the 6-digit code to continue";
+}
+
+function hideVerifyPanel() {
+  const verifyPanel = document.getElementById("verify-panel");
+  if (verifyPanel) verifyPanel.classList.add("hidden");
+
+  const modeToggle = document.getElementById("mode-toggle");
+  const switchRow = document.getElementById("switch-row");
+  if (modeToggle) modeToggle.classList.remove("hidden");
+  if (switchRow) switchRow.classList.remove("hidden");
+
+  const signinForm = document.getElementById("signin-form");
+  const signupForm = document.getElementById("signup-form");
+
+  if (currentMode === "signin") {
+    signinForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+  } else {
+    signinForm.classList.add("hidden");
+    signupForm.classList.remove("hidden");
+  }
+
+  const codeInput = document.getElementById("verify-code-input");
+  if (codeInput) codeInput.value = "";
+}
+
+/* ----------------------------
+ * Redirect if already signed in
+ * ---------------------------- */
+async function redirectIfSignedIn() {
+  if (!window.supabase) return;
+
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("getSession error:", error.message);
+      return;
+    }
+
+    if (data && data.session) {
+      // Session exists on this device → skip auth screen
+      window.location.href = "main.html";
+    }
+  } catch (e) {
+    console.error("redirectIfSignedIn failed:", e);
+  }
+}
+
+/* ----------------------------
+ * SIGN IN (email + password) → main.html
+ * ---------------------------- */
+document
+  .getElementById("signin-form")
+  .addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("signin-email").value.trim();
+    const password = document.getElementById("signin-password").value;
+    const msgEl = document.getElementById("signin-message");
+    msgEl.textContent = "";
+
+    if (!email || !password) {
+      msgEl.textContent = "Enter your email and password.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (!window.supabase) {
+      msgEl.textContent = "Auth system not ready. Please refresh.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    try {
+      setButtonLoading("signin-btn", "signin-text", "signin-loader", true);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        const lower = (error.message || "").toLowerCase();
+        if (lower.includes("invalid login credentials")) {
+          msgEl.textContent = "Incorrect email or password.";
+        } else {
+          msgEl.textContent = error.message || "Could not sign in.";
+        }
+        msgEl.className = "message error";
+        return;
+      }
+
+      // Optional: remember last user for UX/debug
+      if (data && data.session && data.session.user) {
+        localStorage.setItem(
+          "colspot_last_user",
+          JSON.stringify({
+            id: data.session.user.id,
+            email: data.session.user.email,
+          })
+        );
+      }
+
+      // ➜ Session is persisted by Supabase (localStorage) and auto-refreshes.
+      window.location.href = "main.html";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Something went wrong. Please try again.";
+      msgEl.className = "message error";
+    } finally {
+      setButtonLoading("signin-btn", "signin-text", "signin-loader", false);
+    }
+  });
+
+/* ----------------------------
+ * SIGN UP (email + password)
+ * 1. Send OTP via signInWithOtp (shouldCreateUser: true)
+ * 2. Show code screen
+ * ---------------------------- */
+document
+  .getElementById("signup-form")
+  .addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const fullName = document.getElementById("signup-fullname").value.trim();
+    const role = document.getElementById("signup-role").value;
+    const dept = document.getElementById("signup-dept").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value;
+    const password2 = document.getElementById("signup-password2").value;
+
+    const msgEl = document.getElementById("signup-message");
+    msgEl.textContent = "";
+
+    if (!fullName || !role || !dept || !email || !password || !password2) {
+      msgEl.textContent = "Fill in all fields.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    // NEW: stronger password rule – at least 6 chars, letters + numbers
+    if (!isStrongPassword(password)) {
+      msgEl.textContent =
+        "Password must be at least 6 characters and include letters and numbers.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (password !== password2) {
+      msgEl.textContent = "Passwords do not match.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (!window.supabase) {
+      msgEl.textContent = "Auth system not ready. Please refresh.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    try {
+      setButtonLoading("signup-btn", "signup-text", "signup-loader", true);
+
+      // Store pending signup info (so we can set password after OTP verify)
+      pendingSignup = { email, password, fullName, role, dept };
+      localStorage.setItem("colspot_pending_email", email);
+
+      // Supabase OTP sign-up (code to email)
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          data: {
+            full_name: fullName,
+            role,
+            department: dept,
+          },
+        },
+      });
+
+      if (error) {
+        console.error(error);
+        msgEl.textContent =
+          error.message || "Could not send code. Please try again.";
+        msgEl.className = "message error";
+        pendingSignup = null;
+        return;
+      }
+
+      // Show code panel
+      showVerifyPanel(email);
+
+      const vMsg = document.getElementById("verify-message");
+      vMsg.textContent =
+        "Enter the 6-digit code from your email to finish creating your account.";
+      vMsg.className = "message success";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Something went wrong. Please try again.";
+      msgEl.className = "message error";
+      pendingSignup = null;
+    } finally {
+      setButtonLoading("signup-btn", "signup-text", "signup-loader", false);
+    }
+  });
+
+/* ----------------------------
+ * VERIFY CODE (finish sign-up, set password)
+ * ---------------------------- */
+document
+  .getElementById("verify-code-btn")
+  ?.addEventListener("click", async () => {
+    const codeInput = document.getElementById("verify-code-input");
+    const msgEl = document.getElementById("verify-message");
+    msgEl.textContent = "";
+    msgEl.className = "message";
+
+    const code = (codeInput.value || "").trim();
+    const email =
+      (pendingSignup && pendingSignup.email) ||
+      localStorage.getItem("colspot_pending_email") ||
+      "";
+
+    if (!email) {
+      msgEl.textContent = "No email found. Please sign up again.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (!code || code.length < 4) {
+      msgEl.textContent = "Enter the code we sent to your email.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (!window.supabase) {
+      msgEl.textContent = "Auth system not ready. Please refresh.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    try {
+      setButtonLoading(
+        "verify-code-btn",
+        "verify-code-text",
+        "verify-code-loader",
+        true
+      );
+
+      // Verify OTP (same as your old auth)
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: "email",
+      });
+
+      if (error) {
+        console.error(error);
+        msgEl.textContent = error.message || "Invalid or expired code.";
+        msgEl.className = "message error";
+        return;
+      }
+
+      // Session now exists. Persisted by Supabase client.
+      if (pendingSignup && pendingSignup.password) {
+        const { password, fullName, role, dept } = pendingSignup;
+
+        const { error: updateError } = await supabase.auth.updateUser({
+          password,
+          data: {
+            full_name: fullName,
+            role,
+            department: dept,
+          },
+        });
+
+        if (updateError) {
+          console.error(updateError);
+          msgEl.textContent =
+            updateError.message ||
+            "Your account is verified, but setting password failed.";
+          msgEl.className = "message error";
+          return;
+        }
+      }
+
+      // Optional remember
+      if (data && data.session && data.session.user) {
+        localStorage.setItem(
+          "colspot_last_user",
+          JSON.stringify({
+            id: data.session.user.id,
+            email: data.session.user.email,
+          })
+        );
+      }
+
+      msgEl.textContent = "Account verified. Redirecting to main page...";
+      msgEl.className = "message success";
+
+      setTimeout(() => {
+        window.location.href = "main.html";
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Something went wrong. Please try again.";
+      msgEl.className = "message error";
+    } finally {
+      setButtonLoading(
+        "verify-code-btn",
+        "verify-code-text",
+        "verify-code-loader",
+        false
+      );
+    }
+  });
+
+/* ----------------------------
+ * RESEND CODE
+ * ---------------------------- */
+document
+  .getElementById("resend-btn")
+  ?.addEventListener("click", async () => {
+    const msgEl = document.getElementById("verify-message");
+    msgEl.textContent = "";
+
+    const email =
+      (pendingSignup && pendingSignup.email) ||
+      localStorage.getItem("colspot_pending_email") ||
+      "";
+
+    if (!email) {
+      msgEl.textContent = "No email to resend code to. Please sign up again.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    if (!window.supabase) {
+      msgEl.textContent = "Auth system not ready. Please refresh.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        console.error(error);
+        msgEl.textContent = error.message || "Could not resend code.";
+        msgEl.className = "message error";
+        return;
+      }
+
+      msgEl.textContent = "Code resent. Check your inbox (and spam).";
+      msgEl.className = "message success";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Could not resend code. Try again.";
+      msgEl.className = "message error";
+    }
+  });
+
+/* ----------------------------
+ * BACK TO SIGN IN (from verify panel)
+ * ---------------------------- */
+document
+  .getElementById("back-to-signin-btn")
+  ?.addEventListener("click", () => {
+    pendingSignup = null;
+    hideVerifyPanel();
+    switchMode("signin");
+  });
+
+/* ----------------------------
+ * FORGOT PASSWORD
+ * ---------------------------- */
+async function handleForgotPassword() {
+  const email = document.getElementById("signin-email").value.trim();
+  const msgEl = document.getElementById("signin-message");
+  msgEl.textContent = "";
+
+  if (!email) {
+    msgEl.textContent =
+      "Enter your email first, then tap “Forgot password?”.";
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!window.supabase) {
+    msgEl.textContent = "Auth system not ready. Please refresh.";
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    setButtonLoading("signin-btn", "signin-text", "signin-loader", true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      msgEl.textContent = error.message || "Could not send reset email.";
+      msgEl.className = "message error";
+      return;
+    }
+
+    msgEl.textContent = "Password reset link sent. Check your email.";
+    msgEl.className = "message success";
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = "Could not send reset email. Try again.";
+    msgEl.className = "message error";
+  } finally {
+    setButtonLoading("signin-btn", "signin-text", "signin-loader", false);
+  }
+}
+
+/* ----------------------------
+ * Init (runs after DOM is ready AND Supabase is loaded)
+ * ---------------------------- */
+function initAuth() {
+  if (!window.supabase) {
+    console.error(
+      "Supabase client not found. Make sure superbas.js is loaded BEFORE auth.js"
+    );
+    return;
+  }
+
+  switchMode("signin");
+  redirectIfSignedIn();
+
+  // If something else signs them in later, still redirect.
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN" && session) {
+      window.location.href = "main.html";
+    }
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAuth);
+} else {
+  initAuth();
+}
