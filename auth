@@ -16,12 +16,10 @@ const APP_PLATFORM =
     : "web";
 
 const APP_VERSION = "1.0.0";
-
-// Version rule cache key
 const VERSION_RULE_KEY = "colspot_version_rule_v1";
 
 // ----------------------------
-// Message strings (user-friendly)
+// Message strings
 // ----------------------------
 const MSG = {
   OFFLINE_BANNER: "No internet connection. We’ll keep trying in the background.",
@@ -55,7 +53,6 @@ const MSG = {
   DEVICE_REGISTER_FAIL: "We couldn’t link this device to your account. Please try again.",
 
   FORGOT_NO_EMAIL: "Enter the email you use for Colspot.",
-  FORGOT_THROTTLE_FAIL: "Too many reset attempts. Please wait a few minutes and try again.",
   FORGOT_THROTTLED: "You’ve requested too many reset codes. Please wait a few minutes and try again.",
   FORGOT_SEND_FAIL: "We couldn’t send a reset code. Please try again.",
   FORGOT_SEND_OK: "We’ve sent a reset code to your email.",
@@ -64,14 +61,10 @@ const MSG = {
   RESET_MISSING_CODE: "Enter the reset code from your email.",
   RESET_WEAK_PASSWORD: "New password must be at least 6 characters and include letters and numbers.",
   RESET_PASSWORD_MISMATCH: "New passwords do not match.",
-  RESET_PASSWORD_REUSED: "You’ve used this password before. Please choose a new password you haven’t used on Colspot.",
   RESET_FAIL_VERIFY: "The reset code is incorrect or expired.",
   RESET_FAIL_UPDATE: "We couldn’t update your password. Please try again.",
   RESET_OK_REDIRECT: "Password updated. Signing you in…",
 
-  INIT_SUPABASE_MISSING: "Sign-in system is not ready yet. Please refresh and try again.",
-
-  VERSION_CHECK_FAIL: "We couldn’t check for updates. Please try again.",
   VERSION_HARD_BLOCK: "Your Colspot app is out of date. Please update from the store to continue."
 };
 
@@ -105,6 +98,7 @@ function clearMessages() {
     "reset-message",
     "forgot-message",
   ];
+
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -115,7 +109,7 @@ function clearMessages() {
 }
 
 /* ----------------------------
- * Offline detection helpers
+ * Offline helpers
  * ---------------------------- */
 function isBrowserOffline() {
   try {
@@ -147,9 +141,7 @@ function updateOfflineUI() {
   if (banner) {
     if (offline) {
       banner.classList.remove("hidden");
-      if (bannerText) {
-        bannerText.textContent = MSG.OFFLINE_BANNER;
-      }
+      if (bannerText) bannerText.textContent = MSG.OFFLINE_BANNER;
     } else {
       banner.classList.add("hidden");
     }
@@ -159,14 +151,12 @@ function updateOfflineUI() {
     if (offline) {
       msgEl.textContent = MSG.OFFLINE_SIGNIN_HINT;
       msgEl.className = "message error";
-    } else {
-      if (
-        msgEl.textContent &&
-        msgEl.textContent.toLowerCase().includes("offline")
-      ) {
-        msgEl.textContent = "";
-        msgEl.className = "message";
-      }
+    } else if (
+      msgEl.textContent &&
+      msgEl.textContent.toLowerCase().includes("offline")
+    ) {
+      msgEl.textContent = "";
+      msgEl.className = "message";
     }
   }
 }
@@ -177,7 +167,7 @@ if (typeof window !== "undefined") {
 }
 
 /* ----------------------------
- * Semver helper for version rules
+ * Version helpers
  * ---------------------------- */
 function parseSemver(v) {
   if (!v) return [0, 0, 0];
@@ -188,22 +178,20 @@ function parseSemver(v) {
 function compareSemver(a, b) {
   const [a1, a2, a3] = parseSemver(a);
   const [b1, b2, b3] = parseSemver(b);
+
   if (a1 !== b1) return a1 < b1 ? -1 : 1;
   if (a2 !== b2) return a2 < b2 ? -1 : 1;
   if (a3 !== b3) return a3 < b3 ? -1 : 1;
   return 0;
 }
 
-/* ----------------------------
- * Version rule helpers
- * ---------------------------- */
 function saveVersionRuleCache(rule) {
   try {
     localStorage.setItem(
       VERSION_RULE_KEY,
       JSON.stringify({
         ...rule,
-        checked_at: new Date().toISOString()
+        checked_at: new Date().toISOString(),
       })
     );
   } catch (e) {
@@ -223,13 +211,8 @@ function getVersionRuleCache() {
 }
 
 async function checkAndCacheVersionRules() {
-  if (!window.supabase) {
-    return getVersionRuleCache();
-  }
-
-  if (isBrowserOffline()) {
-    return getVersionRuleCache();
-  }
+  if (!window.supabase) return getVersionRuleCache();
+  if (isBrowserOffline()) return getVersionRuleCache();
 
   try {
     const { data, error } = await supabase
@@ -255,7 +238,7 @@ async function checkAndCacheVersionRules() {
       deadline,
       message_title,
       message_body,
-      update_url
+      update_url,
     } = data;
 
     let mode = "ok";
@@ -280,7 +263,7 @@ async function checkAndCacheVersionRules() {
       mode,
       title: message_title || "",
       body: message_body || "",
-      update_url: update_url || ""
+      update_url: update_url || "",
     };
 
     saveVersionRuleCache(rule);
@@ -292,14 +275,14 @@ async function checkAndCacheVersionRules() {
 }
 
 /* ----------------------------
- * Local state (cached user)
+ * Local cached user
  * ---------------------------- */
-
 const LOCAL_USER_KEY = "colspot_local_user";
 const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function saveLocalUserFromSession(session) {
   if (!session || !session.user) return;
+
   try {
     const payload = {
       id: session.user.id,
@@ -316,6 +299,7 @@ function getLocalUser() {
   try {
     const raw = localStorage.getItem(LOCAL_USER_KEY);
     if (!raw) return null;
+
     const parsed = JSON.parse(raw);
     if (!parsed || !parsed.id) return null;
 
@@ -346,7 +330,7 @@ function clearLocalUser() {
 }
 
 /* ----------------------------
- * Password strength helper
+ * Password strength
  * ---------------------------- */
 function isStrongPassword(pw) {
   if (!pw) return false;
@@ -356,9 +340,8 @@ function isStrongPassword(pw) {
 }
 
 /* ----------------------------
- * Device ID + rules
+ * Device helpers
  * ---------------------------- */
-
 function generateRandomId() {
   try {
     if (
@@ -372,11 +355,7 @@ function generateRandomId() {
     console.error("randomUUID failed, using fallback:", e);
   }
 
-  return (
-    Math.random().toString(36).slice(2) +
-    "-" +
-    Date.now().toString(36)
-  );
+  return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
 }
 
 async function getOrCreateDeviceId() {
@@ -386,7 +365,6 @@ async function getOrCreateDeviceId() {
     if (typeof window !== "undefined" && window.localStorage) {
       const existing = window.localStorage.getItem(storageKey);
       if (existing && typeof existing === "string" && existing.trim() !== "") {
-        console.log("[Colspot] Using stored device id:", existing);
         return existing;
       }
     }
@@ -404,8 +382,6 @@ async function getOrCreateDeviceId() {
           typeof window.Capacitor.getPlatform === "function"
           ? window.Capacitor.getPlatform()
           : "web");
-
-  console.log("[Colspot] Generating new device id for platform:", platform);
 
   let nativePlugin = null;
   if (
@@ -431,14 +407,9 @@ async function getOrCreateDeviceId() {
     typeof nativePlugin.getDeviceId === "function"
   ) {
     try {
-      console.log("[Colspot] Trying Android native getDeviceId...");
       const result = await nativePlugin.getDeviceId();
-
       if (result && typeof result.value === "string" && result.value.trim() !== "") {
         newId = result.value.trim();
-        console.log("[Colspot] Got Android native device id:", newId);
-      } else {
-        console.warn("[Colspot] Android plugin returned empty value, will fall back.");
       }
     } catch (err) {
       console.error("[Colspot] Error from Android native plugin:", err);
@@ -452,7 +423,6 @@ async function getOrCreateDeviceId() {
       typeof nativePlugin.getDeviceId === "function"
     ) {
       try {
-        console.log("[Colspot] Trying iOS native getDeviceId...");
         const result = await nativePlugin.getDeviceId();
         const raw =
           (result &&
@@ -461,9 +431,6 @@ async function getOrCreateDeviceId() {
 
         if (raw && typeof raw === "string" && raw.trim() !== "") {
           newId = raw.trim();
-          console.log("[Colspot] Got iOS native device id:", newId);
-        } else {
-          console.warn("[Colspot] iOS native plugin returned empty value, will try Device.getId().");
         }
       } catch (err) {
         console.error("[Colspot] Error from iOS native plugin:", err);
@@ -479,16 +446,12 @@ async function getOrCreateDeviceId() {
       typeof window.Capacitor.Plugins.Device.getId === "function"
     ) {
       try {
-        console.log("[Colspot] Trying Capacitor Device.getId on iOS...");
         const result = await window.Capacitor.Plugins.Device.getId();
         const raw =
           (result && (result.identifier || result.uuid || result.id)) || "";
 
         if (raw && typeof raw === "string" && raw.trim() !== "") {
           newId = "I-" + raw.trim();
-          console.log("[Colspot] Got iOS Device.getId identifier:", newId);
-        } else {
-          console.warn("[Colspot] Device.getId() returned empty identifier, will fall back.");
         }
       } catch (err) {
         console.error("[Colspot] Error calling Device.getId() on iOS:", err);
@@ -498,13 +461,11 @@ async function getOrCreateDeviceId() {
 
   if (!newId) {
     newId = "B-" + generateRandomId();
-    console.warn("[Colspot] Falling back to browser/emulator id:", newId);
   }
 
   try {
     if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.setItem(storageKey, newId);
-      console.log("[Colspot] Stored device id:", newId);
     }
   } catch (e) {
     console.error("Could not save device id to localStorage:", e);
@@ -525,14 +486,10 @@ async function getDeviceName() {
       const info = await window.Capacitor.Plugins.Device.getInfo();
       const platform = (info.platform || APP_PLATFORM || "").toLowerCase();
 
-      if (platform === "ios") {
-        return "iPhone";
-      }
+      if (platform === "ios") return "iPhone";
 
       let name = (info.model || info.name || "").trim();
-      if (!name) {
-        name = "Android device";
-      }
+      if (!name) name = "Android device";
       return name;
     }
   } catch (err) {
@@ -567,12 +524,10 @@ async function linkDeviceForSession(session) {
 
   if (byDevice && byDevice.length > 0) {
     const row = byDevice[0];
-
     if (row.user_id !== userId) {
       throw new Error(MSG.DEVICE_CONFLICT);
-    } else {
-      return;
     }
+    return;
   }
 
   const { data: byUser, error: errB } = await supabase
@@ -599,24 +554,17 @@ async function linkDeviceForSession(session) {
     console.error("user_devices insert error:", insertErr);
     const msg = (insertErr.message || "").toLowerCase();
 
-    if (msg.includes("user_devices_device_id_key")) {
-      throw new Error(MSG.DEVICE_CONFLICT);
-    }
-    if (msg.includes("user_devices_user_id_key")) {
-      throw new Error(MSG.DEVICE_LIMIT);
-    }
-    if (msg.includes("already linked 2 phones")) {
-      throw new Error(MSG.DEVICE_LIMIT);
-    }
+    if (msg.includes("user_devices_device_id_key")) throw new Error(MSG.DEVICE_CONFLICT);
+    if (msg.includes("user_devices_user_id_key")) throw new Error(MSG.DEVICE_LIMIT);
+    if (msg.includes("already linked 2 phones")) throw new Error(MSG.DEVICE_LIMIT);
 
     throw new Error(MSG.DEVICE_REGISTER_FAIL);
   }
 }
 
 /* ----------------------------
- * LOGIN ANALYTICS helper
+ * Login analytics
  * ---------------------------- */
-
 async function recordLoginEvent(session) {
   if (!session || !session.user || !window.supabase) return;
 
@@ -631,9 +579,7 @@ async function recordLoginEvent(session) {
       device_id: deviceId,
       device_name: deviceName,
     });
-    if (error) {
-      console.error("recordLoginEvent insert error:", error);
-    }
+    if (error) console.error("recordLoginEvent insert error:", error);
   } catch (err) {
     console.error("recordLoginEvent failed:", err);
   }
@@ -738,10 +684,7 @@ function showVerifyPanel(email) {
   if (emailEl) emailEl.textContent = email || "";
   if (codeInput) codeInput.value = "";
 
-  if (email) {
-    localStorage.setItem("colspot_pending_email", email);
-  }
-
+  if (email) localStorage.setItem("colspot_pending_email", email);
   if (verifyPanel) verifyPanel.classList.remove("hidden");
 
   const title = document.getElementById("card-title");
@@ -768,6 +711,7 @@ function showForgotPanel() {
     const signinEmail = document.getElementById("signin-email");
     emailInput.value = signinEmail ? signinEmail.value.trim() : "";
   }
+
   if (msgEl) {
     msgEl.textContent = "";
     msgEl.className = "message";
@@ -824,12 +768,12 @@ function hideResetPanel() {
     if (title) title.textContent = "Create your account";
     if (subtitle) subtitle.textContent = "Sign up as a student or lecturer";
   }
+
   showMainForms();
 }
 
 /* ----------------------------
  * Redirect if already signed in
- * LOCAL ONLY (fast door)
  * ---------------------------- */
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
@@ -848,14 +792,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
     throw new Error("Missing signup data");
   }
 
-  const {
-    fullName,
-    role,
-    schoolName,
-    dept,
-    accountId
-  } = signupData;
-
+  const { fullName, role, schoolName, dept, accountId } = signupData;
   const emailToSave = (userEmail || signupData.email || "").trim().toLowerCase();
 
   if (role === "student") {
@@ -865,16 +802,14 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       school_name: schoolName,
       department: dept,
       matric_number: accountId,
-      email: emailToSave
+      email: emailToSave,
     };
 
     const { error } = await supabase
       .from("student_accounts")
       .upsert(payload, { onConflict: "user_id" });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     return;
   }
 
@@ -885,16 +820,14 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       school_name: schoolName,
       department: dept,
       staff_id: accountId,
-      email: emailToSave
+      email: emailToSave,
     };
 
     const { error } = await supabase
       .from("lecturer_accounts")
       .upsert(payload, { onConflict: "user_id" });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     return;
   }
 
@@ -902,7 +835,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
 }
 
 /* ----------------------------
- * SIGN IN (email + password) → main.html
+ * SIGN IN
  * ---------------------------- */
 const signinFormEl = document.getElementById("signin-form");
 if (signinFormEl) {
@@ -1005,7 +938,7 @@ if (signinFormEl) {
 }
 
 /* ----------------------------
- * SIGN UP (email + password)
+ * SIGN UP
  * ---------------------------- */
 const signupFormEl = document.getElementById("signup-form");
 if (signupFormEl) {
@@ -1066,7 +999,7 @@ if (signupFormEl) {
         role,
         schoolName,
         dept,
-        accountId
+        accountId,
       };
 
       localStorage.setItem("colspot_pending_email", email);
@@ -1118,12 +1051,7 @@ if (signupFormEl) {
       }
     } catch (err) {
       console.error(err);
-      if (isLikelyOfflineError(err)) {
-        updateOfflineUI();
-        msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
-      } else {
-        msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
-      }
+      msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
       msgEl.className = "message error";
       pendingSignup = null;
     } finally {
@@ -1133,222 +1061,199 @@ if (signupFormEl) {
 }
 
 /* ----------------------------
- * VERIFY CODE (finish sign-up, set password)
+ * VERIFY CODE
  * ---------------------------- */
-document
-  .getElementById("verify-code-btn")
-  ?.addEventListener("click", async () => {
-    const codeInput = document.getElementById("verify-code-input");
-    const msgEl = document.getElementById("verify-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+document.getElementById("verify-code-btn")?.addEventListener("click", async () => {
+  const codeInput = document.getElementById("verify-code-input");
+  const msgEl = document.getElementById("verify-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const code = (codeInput.value || "").trim();
-    const email =
-      (pendingSignup && pendingSignup.email) ||
-      localStorage.getItem("colspot_pending_email") ||
-      "";
+  const code = (codeInput.value || "").trim();
+  const email =
+    (pendingSignup && pendingSignup.email) ||
+    localStorage.getItem("colspot_pending_email") ||
+    "";
 
-    if (!email) {
-      msgEl.textContent = MSG.VERIFY_NO_EMAIL;
+  if (!email) {
+    msgEl.textContent = MSG.VERIFY_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!code || code.length < 4) {
+    msgEl.textContent = MSG.VERIFY_MISSING_CODE;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    setButtonLoading("verify-code-btn", "verify-code-text", "verify-code-loader", true);
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: "email",
+    });
+
+    if (error) {
+      console.error(error);
+      msgEl.textContent = MSG.VERIFY_FAIL;
       msgEl.className = "message error";
       return;
     }
 
-    if (!code || code.length < 4) {
-      msgEl.textContent = MSG.VERIFY_MISSING_CODE;
-      msgEl.className = "message error";
-      return;
-    }
+    if (pendingSignup && pendingSignup.password) {
+      const { password, fullName, role, schoolName, dept, accountId } = pendingSignup;
 
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
+      const metadata =
+        role === "student"
+          ? {
+              full_name: fullName,
+              role,
+              school_name: schoolName,
+              department: dept,
+              matric_number: accountId,
+            }
+          : {
+              full_name: fullName,
+              role,
+              school_name: schoolName,
+              department: dept,
+              staff_id: accountId,
+            };
 
-    try {
-      setButtonLoading(
-        "verify-code-btn",
-        "verify-code-text",
-        "verify-code-loader",
-        true
-      );
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: "email",
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+        data: metadata,
       });
 
-      if (error) {
-        console.error(error);
-        msgEl.textContent = MSG.VERIFY_FAIL;
+      if (updateError) {
+        console.error(updateError);
+        msgEl.textContent = MSG.VERIFY_SET_PASSWORD_FAIL;
+        msgEl.className = "message error";
+        return;
+      }
+    }
+
+    if (data && data.session) {
+      try {
+        await linkDeviceForSession(data.session);
+      } catch (deviceErr) {
+        await supabase.auth.signOut();
+        clearLocalUser();
+        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
         msgEl.className = "message error";
         return;
       }
 
-      if (pendingSignup && pendingSignup.password) {
-        const {
-          password,
-          fullName,
-          role,
-          schoolName,
-          dept,
-          accountId
-        } = pendingSignup;
-
-        const metadata =
-          role === "student"
-            ? {
-                full_name: fullName,
-                role,
-                school_name: schoolName,
-                department: dept,
-                matric_number: accountId,
-              }
-            : {
-                full_name: fullName,
-                role,
-                school_name: schoolName,
-                department: dept,
-                staff_id: accountId,
-              };
-
-        const { error: updateError } = await supabase.auth.updateUser({
-          password,
-          data: metadata,
-        });
-
-        if (updateError) {
-          console.error(updateError);
-          msgEl.textContent = MSG.VERIFY_SET_PASSWORD_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-      }
-
-      if (data && data.session) {
-        try {
-          await linkDeviceForSession(data.session);
-        } catch (deviceErr) {
-          await supabase.auth.signOut();
-          clearLocalUser();
-          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-
-        localStorage.setItem(
-          "colspot_last_user",
-          JSON.stringify({
-            id: data.session.user.id,
-            email: data.session.user.email,
-          })
-        );
-
-        await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
-
-        try {
-          await saveSignupAccountRow(
-            data.session.user.id,
-            pendingSignup,
-            data.session.user.email
-          );
-        } catch (profileErr) {
-          console.error("account table save error:", profileErr);
-          msgEl.textContent = MSG.SIGNUP_SAVE_PROFILE_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-      }
-
-      msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
-      msgEl.className = "message success";
-
-      setTimeout(() => {
-        window.location.href = "main.html";
-      }, 800);
-    } catch (err) {
-      console.error(err);
-      msgEl.textContent = MSG.VERIFY_FAIL;
-      msgEl.className = "message error";
-    } finally {
-      setButtonLoading(
-        "verify-code-btn",
-        "verify-code-text",
-        "verify-code-loader",
-        false
+      localStorage.setItem(
+        "colspot_last_user",
+        JSON.stringify({
+          id: data.session.user.id,
+          email: data.session.user.email,
+        })
       );
+
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
+
+      try {
+        await saveSignupAccountRow(
+          data.session.user.id,
+          pendingSignup,
+          data.session.user.email
+        );
+      } catch (profileErr) {
+        console.error("account table save error:", profileErr);
+        msgEl.textContent = MSG.SIGNUP_SAVE_PROFILE_FAIL;
+        msgEl.className = "message error";
+        return;
+      }
     }
-  });
+
+    msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
+    msgEl.className = "message success";
+
+    setTimeout(() => {
+      window.location.href = "main.html";
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.VERIFY_FAIL;
+    msgEl.className = "message error";
+  } finally {
+    setButtonLoading("verify-code-btn", "verify-code-text", "verify-code-loader", false);
+  }
+});
 
 /* ----------------------------
  * RESEND SIGN-UP CODE
  * ---------------------------- */
-document
-  .getElementById("resend-btn")
-  ?.addEventListener("click", async () => {
-    const msgEl = document.getElementById("verify-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+document.getElementById("resend-btn")?.addEventListener("click", async () => {
+  const msgEl = document.getElementById("verify-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const email =
-      (pendingSignup && pendingSignup.email) ||
-      localStorage.getItem("colspot_pending_email") ||
-      "";
+  const email =
+    (pendingSignup && pendingSignup.email) ||
+    localStorage.getItem("colspot_pending_email") ||
+    "";
 
-    if (!email) {
-      msgEl.textContent = MSG.RESEND_NO_EMAIL;
-      msgEl.className = "message error";
-      return;
-    }
+  if (!email) {
+    msgEl.textContent = MSG.RESEND_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
 
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
 
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-        },
-      });
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
 
-      if (error) {
-        console.error(error);
-        msgEl.textContent = MSG.RESEND_FAIL;
-        msgEl.className = "message error";
-        return;
-      }
-
-      msgEl.textContent = MSG.RESEND_OK;
-      msgEl.className = "message success";
-    } catch (err) {
-      console.error(err);
+    if (error) {
+      console.error(error);
       msgEl.textContent = MSG.RESEND_FAIL;
       msgEl.className = "message error";
+      return;
     }
-  });
+
+    msgEl.textContent = MSG.RESEND_OK;
+    msgEl.className = "message success";
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.RESEND_FAIL;
+    msgEl.className = "message error";
+  }
+});
 
 /* ----------------------------
- * BACK TO SIGN IN (from verify panel)
+ * Back from verify
  * ---------------------------- */
-document
-  .getElementById("back-to-signin-btn")
-  ?.addEventListener("click", () => {
-    pendingSignup = null;
-    hideVerifyPanel();
-    showMainForms();
-    switchMode("signin");
-  });
+document.getElementById("back-to-signin-btn")?.addEventListener("click", () => {
+  pendingSignup = null;
+  hideVerifyPanel();
+  showMainForms();
+  switchMode("signin");
+});
 
 /* ----------------------------
- * FORGOT PASSWORD (OTP + set new password)
+ * Forgot password
  * ---------------------------- */
 function openForgotPasswordPage() {
   resetEmail = null;
@@ -1390,12 +1295,7 @@ async function handleForgotPassword() {
   }
 
   try {
-    setButtonLoading(
-      "forgot-send-btn",
-      "forgot-send-text",
-      "forgot-send-loader",
-      true
-    );
+    setButtonLoading("forgot-send-btn", "forgot-send-text", "forgot-send-loader", true);
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -1423,13 +1323,9 @@ async function handleForgotPassword() {
           msgEl.textContent = MSG.FORGOT_THROTTLED;
           msgEl.className = "message error";
         }
-      } else if (
-        lower.includes("user") &&
-        lower.includes("not")
-      ) {
+      } else if (lower.includes("user") && lower.includes("not")) {
         if (msgEl) {
-          msgEl.textContent =
-            "We couldn’t find any Colspot account with that email.";
+          msgEl.textContent = "We couldn’t find any Colspot account with that email.";
           msgEl.className = "message error";
         }
       } else if (msgEl) {
@@ -1466,168 +1362,137 @@ async function handleForgotPassword() {
       msgEl.className = "message error";
     }
   } finally {
-    setButtonLoading(
-      "forgot-send-btn",
-      "forgot-send-text",
-      "forgot-send-loader",
-      false
-    );
+    setButtonLoading("forgot-send-btn", "forgot-send-text", "forgot-send-loader", false);
   }
 }
 
-document
-  .getElementById("forgot-send-btn")
-  ?.addEventListener("click", handleForgotPassword);
+document.getElementById("forgot-send-btn")?.addEventListener("click", handleForgotPassword);
 
-document
-  .getElementById("forgot-back-btn")
-  ?.addEventListener("click", () => {
-    resetEmail = null;
-    hideForgotPanel();
-    switchMode("signin");
-  });
+document.getElementById("forgot-back-btn")?.addEventListener("click", () => {
+  resetEmail = null;
+  hideForgotPanel();
+  switchMode("signin");
+});
 
-document
-  .getElementById("reset-submit-btn")
-  ?.addEventListener("click", async () => {
-    const code = document.getElementById("reset-code").value.trim();
-    const newPw = document.getElementById("reset-password").value;
-    const newPw2 = document.getElementById("reset-password2").value;
-    const msgEl = document.getElementById("reset-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+/* ----------------------------
+ * Reset password
+ * ---------------------------- */
+document.getElementById("reset-submit-btn")?.addEventListener("click", async () => {
+  const code = document.getElementById("reset-code").value.trim();
+  const newPw = document.getElementById("reset-password").value;
+  const newPw2 = document.getElementById("reset-password2").value;
+  const msgEl = document.getElementById("reset-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const email =
-      resetEmail || localStorage.getItem("colspot_reset_email") || "";
+  const email = resetEmail || localStorage.getItem("colspot_reset_email") || "";
 
-    if (!email) {
-      msgEl.textContent = MSG.RESET_NO_EMAIL;
+  if (!email) {
+    msgEl.textContent = MSG.RESET_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!code || code.length < 4) {
+    msgEl.textContent = MSG.RESET_MISSING_CODE;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!isStrongPassword(newPw)) {
+    msgEl.textContent = MSG.RESET_WEAK_PASSWORD;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (newPw !== newPw2) {
+    msgEl.textContent = MSG.RESET_PASSWORD_MISMATCH;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    setButtonLoading("reset-submit-btn", "reset-submit-text", "reset-submit-loader", true);
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: "email",
+    });
+
+    if (error) {
+      console.error(error);
+      msgEl.textContent = MSG.RESET_FAIL_VERIFY;
       msgEl.className = "message error";
       return;
     }
 
-    if (!code || code.length < 4) {
-      msgEl.textContent = MSG.RESET_MISSING_CODE;
-      msgEl.className = "message error";
-      return;
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPw,
+    });
+
+    if (updateError) {
+      console.error("Password update error (ignored for reset flow):", updateError);
     }
 
-    if (!isStrongPassword(newPw)) {
-      msgEl.textContent = MSG.RESET_WEAK_PASSWORD;
-      msgEl.className = "message error";
-      return;
-    }
-
-    if (newPw !== newPw2) {
-      msgEl.textContent = MSG.RESET_PASSWORD_MISMATCH;
-      msgEl.className = "message error";
-      return;
-    }
-
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
-
-    try {
-      setButtonLoading(
-        "reset-submit-btn",
-        "reset-submit-text",
-        "reset-submit-loader",
-        true
-      );
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: "email",
-      });
-
-      if (error) {
-        console.error(error);
-        if (isLikelyOfflineError(error)) {
-          updateOfflineUI();
-          msgEl.textContent = MSG.RESET_FAIL_VERIFY;
-        } else {
-          msgEl.textContent = MSG.RESET_FAIL_VERIFY;
-        }
+    if (data && data.session) {
+      try {
+        await linkDeviceForSession(data.session);
+      } catch (deviceErr) {
+        await supabase.auth.signOut();
+        clearLocalUser();
+        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
         msgEl.className = "message error";
         return;
       }
 
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPw,
-      });
-
-      if (updateError) {
-        console.error("Password update error (ignored for reset flow):", updateError);
-      }
-
-      if (data && data.session) {
-        try {
-          await linkDeviceForSession(data.session);
-        } catch (deviceErr) {
-          await supabase.auth.signOut();
-          clearLocalUser();
-          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-
-        await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
-      }
-
-      msgEl.textContent = MSG.RESET_OK_REDIRECT;
-      msgEl.className = "message success";
-
-      setTimeout(() => {
-        window.location.href = "main.html";
-      }, 800);
-    } catch (err) {
-      console.error(err);
-      if (isLikelyOfflineError(err)) {
-        updateOfflineUI();
-        msgEl.textContent = MSG.RESET_FAIL_UPDATE;
-      } else {
-        msgEl.textContent = MSG.RESET_FAIL_UPDATE;
-      }
-      msgEl.className = "message error";
-    } finally {
-      setButtonLoading(
-        "reset-submit-btn",
-        "reset-submit-text",
-        "reset-submit-loader",
-        false
-      );
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
     }
-  });
 
-document
-  .getElementById("reset-back-btn")
-  ?.addEventListener("click", () => {
-    resetEmail = null;
-    try {
-      localStorage.removeItem("colspot_reset_email");
-    } catch (e) {
-      console.error("Could not clear reset email cache:", e);
-    }
-    hideResetPanel();
-    switchMode("signin");
-  });
+    msgEl.textContent = MSG.RESET_OK_REDIRECT;
+    msgEl.className = "message success";
+
+    setTimeout(() => {
+      window.location.href = "main.html";
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.RESET_FAIL_UPDATE;
+    msgEl.className = "message error";
+  } finally {
+    setButtonLoading("reset-submit-btn", "reset-submit-text", "reset-submit-loader", false);
+  }
+});
+
+document.getElementById("reset-back-btn")?.addEventListener("click", () => {
+  resetEmail = null;
+  try {
+    localStorage.removeItem("colspot_reset_email");
+  } catch (e) {
+    console.error("Could not clear reset email cache:", e);
+  }
+  hideResetPanel();
+  switchMode("signin");
+});
 
 /* ----------------------------
- * Init – LOCAL ONLY fast-door
+ * Init
  * ---------------------------- */
 async function initAuth() {
   const splash = document.getElementById("splash-screen");
   const authShell = document.getElementById("auth-shell");
 
+  await checkAndCacheVersionRules();
+
   const redirected = await redirectIfSignedIn();
-  if (redirected) {
-    return;
-  }
+  if (redirected) return;
 
   if (splash) splash.classList.add("hidden");
   if (authShell) authShell.classList.remove("hidden");
@@ -1645,4 +1510,4 @@ if (document.readyState === "loading") {
 window.openForgotPasswordPage = openForgotPasswordPage;
 window.handleForgotPassword = handleForgotPassword;
 window.switchMode = switchMode;
-window.toggleAuthMode = toggleAuthMode;auth
+window.toggleAuthMode = toggleAuthMode;
