@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • HOS Dashboard</title>
+
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --bg1: #e5f0ff;
+      --bg2: #f8fbff;
+      --text-main: #0f172a;
+      --text-muted: #6b7280;
+      --border-soft: #e5e7eb;
+      --shadow-strong: 0 20px 55px rgba(15, 23, 42, 0.18);
+      --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
+      --green: #16a34a;
+      --amber: #d97706;
+      --red: #dc2626;
+      --card: #ffffff;
+      --soft-blue: #eff6ff;
+      --soft: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Inter, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 0;
+      overscroll-behavior: none;
+      color: var(--text-main);
+    }
+
+    .phone-shell {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      padding: calc(env(safe-area-inset-top) + 8px) 14px 0;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-logo {
+      height: 32px;
+      width: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #eff6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+    }
+
+    .avatar-chip {
+      height: 36px;
+      min-width: 36px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #1d4ed8, #22c55e);
+      color: #f9fafb;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 2px 94px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    main::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+
+    .hero {
+      margin: 4px 2px 12px;
+    }
+
+    .hero-line-1 {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .hero-title {
+      font-size: 22px;
+      line-height: 1.25;
+      margin: 0 0 8px;
+      color: var(--text-main);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title span {
+      color: var(--blue);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .primary-cta,
+    .secondary-cta {
+      width: 100%;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
+    }
+
+    .primary-cta {
+      border: none;
+      color: #ffffff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .secondary-cta {
+      margin-top: 10px;
+      border: 1px solid #dbeafe;
+      color: var(--blue);
+      background: #f8fbff;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+    }
+
+    .primary-cta svg,
+    .secondary-cta svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .primary-cta:active,
+    .secondary-cta:active,
+    .quick-tile:active,
+    .mini-btn:active,
+    .pill-btn:active {
+      transform: scale(0.97);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 2px 14px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 14px 12px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 5px;
+      color: var(--text-main);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 4px 8px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .section-action {
+      font-size: 12px;
+      color: var(--blue);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .card {
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      margin: 0 2px 14px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .quick-tile {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .quick-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 8px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .quick-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .quick-label {
+      font-size: 11px;
+      line-height: 1.25;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      padding: 12px 13px;
+      font-size: 15px;
+      outline: none;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+
+    .textarea {
+      resize: vertical;
+      min-height: 98px;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .readonly-box {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px dashed #bfdbfe;
+      background: #f8fbff;
+      padding: 12px 13px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--blue-dark);
+    }
+
+    .generated-box {
+      margin-top: 12px;
+      border-radius: 16px;
+      border: 1px dashed #bfdbfe;
+      background: #f8fbff;
+      padding: 12px;
+      display: none;
+    }
+
+    .generated-row + .generated-row {
+      margin-top: 10px;
+    }
+
+    .generated-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+
+    .generated-value {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini-btn {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .mini-btn.primary {
+      color: #ffffff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+    }
+
+    .mini-btn.secondary {
+      color: var(--text-main);
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+    }
+
+    .message {
+      display: none;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .message.success {
+      display: block;
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .message.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .toolbar .input {
+      flex: 1;
+    }
+
+    .pill-btn {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .hod-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hod-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .hod-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+
+    .hod-name {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .hod-dept {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      flex-shrink: 0;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-pill.active {
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-pill.disabled {
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+    }
+
+    .hod-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .mini-info {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 9px 10px;
+    }
+
+    .mini-info-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 4px;
+    }
+
+    .mini-info-value {
+      font-size: 12px;
+      color: var(--text-main);
+      word-break: break-word;
+      font-weight: 700;
+    }
+
+    .hod-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip-action {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip-action.blue {
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .chip-action.amber {
+      background: #fff7ed;
+      color: var(--amber);
+    }
+
+    .chip-action.red {
+      background: #fef2f2;
+      color: var(--red);
+    }
+
+    .announcement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .announcement-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .announcement-item-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .announcement-item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .announcement-item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .announcement-item-text {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 10px;
+      font-weight: 800;
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .search-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .search-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .search-sub {
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(12px, env(safe-area-inset-bottom));
+      width: calc(100% - 28px);
+      max-width: 392px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(229, 231, 235, 0.9);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+      border-radius: 26px;
+      padding: 8px 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 20;
+    }
+
+    .nav-btn {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding-top: 2px;
+      background: transparent;
+      border: none;
+    }
+
+    .nav-btn-inner {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .nav-btn.active {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    @media (max-width: 360px) {
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hod-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <header>
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo" />
+        </div>
+        <div class="brand-name">Colspot</div>
+      </div>
+      <button class="avatar-chip" id="avatarInitial">H</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-line-1" id="hosSchoolLine">Hello, Ekiti State University</div>
+        <h1 class="hero-title">
+          What do you want to<br />
+          <span>do today?</span>
+        </h1>
+        <div class="hero-sub">
+          Manage your school, create HOD accounts, and send announcements to all departments.
+        </div>
+
+        <button class="primary-cta" id="openCreateHodBtn">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 4v12M4 10h12" stroke="white" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span>Create new HOD account</span>
+        </button>
+
+        <button class="secondary-cta" id="openAnnouncementBtn">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 3.5v13M3.5 10h13" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span>Send announcement</span>
+        </button>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-value" id="statHods">12</div>
+          <div class="stat-label">HODs</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-value" id="statDepartments">18</div>
+          <div class="stat-label">Departments</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-value" id="statLecturers">165</div>
+          <div class="stat-label">Lecturers</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-value" id="statStudents">8420</div>
+          <div class="stat-label">Students</div>
+        </article>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">Quick actions</div>
+      </div>
+      <section class="card">
+        <div class="quick-grid">
+          <button class="quick-tile" id="qaCreateHod">
+            <div class="quick-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="quick-label">Create HOD</div>
+          </button>
+
+          <button class="quick-tile" id="qaSendAnnouncement">
+            <div class="quick-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M4 9.5L16 4v12L4 10.5v-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                <path d="M7 11.5l1.5 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="quick-label">Send announcement</div>
+          </button>
+
+          <button class="quick-tile" id="qaSearchSchool">
+            <div class="quick-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <circle cx="9" cy="9" r="4.8" stroke="currentColor" stroke-width="1.6" />
+                <path d="M12.8 12.8L16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="quick-label">Search school</div>
+          </button>
+
+          <button class="quick-tile" id="qaViewHods">
+            <div class="quick-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6" />
+                <path d="M7 8h6M7 11h6M7 14h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="quick-label">View HODs</div>
+          </button>
+        </div>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">Create HOD account</div>
+      </div>
+      <section class="card" id="createHodSection">
+        <div class="field">
+          <label class="label" for="hodFullName">Full name</label>
+          <input id="hodFullName" class="input" placeholder="Enter HOD full name" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="hodDepartment">Department</label>
+          <select id="hodDepartment" class="select">
+            <option value="">Select department</option>
+            <option>Computer Science</option>
+            <option>Accounting</option>
+            <option>Business Administration</option>
+            <option>Economics</option>
+            <option>Entrepreneurship</option>
+            <option>Mass Communication</option>
+            <option>Biochemistry</option>
+            <option>Physics</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label" for="hodEmail">Email</label>
+          <input id="hodEmail" class="input" type="email" placeholder="Enter email address" />
+        </div>
+
+        <div class="field">
+          <label class="label">School</label>
+          <div class="readonly-box" id="lockedSchoolName">Ekiti State University</div>
+        </div>
+
+        <div class="generated-box" id="generatedBox">
+          <div class="generated-row">
+            <div class="generated-label">Generated login ID</div>
+            <div class="generated-value" id="generatedLoginId">-</div>
+          </div>
+          <div class="generated-row">
+            <div class="generated-label">Temporary password</div>
+            <div class="generated-value" id="generatedPassword">-</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="createHodBtn">Create HOD</button>
+          <button class="mini-btn secondary" id="clearHodBtn">Clear</button>
+        </div>
+
+        <div class="message" id="createHodMessage"></div>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">School announcements</div>
+        <div class="section-action" id="jumpToAnnouncements">View all</div>
+      </div>
+      <section class="card" id="announcementSection">
+        <div class="field">
+          <label class="label" for="announcementTitle">Title</label>
+          <input id="announcementTitle" class="input" placeholder="Announcement title" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="announcementAudience">Audience</label>
+          <select id="announcementAudience" class="select">
+            <option value="All Departments">All Departments</option>
+            <option value="All HODs">All HODs</option>
+            <option value="All Lecturers">All Lecturers</option>
+            <option value="All Students">All Students</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label" for="announcementMessage">Message</label>
+          <textarea
+            id="announcementMessage"
+            class="textarea"
+            placeholder="Write your school-wide announcement here..."
+          ></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="sendAnnouncementBtn">Send now</button>
+          <button class="mini-btn secondary" id="clearAnnouncementBtn">Clear</button>
+        </div>
+
+        <div class="message" id="announcementMessageBox"></div>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">HOD list</div>
+        <div class="section-action">Manage</div>
+      </div>
+      <section class="card" id="hodListSection">
+        <div class="toolbar">
+          <input
+            id="hodSearch"
+            class="input"
+            placeholder="Search HOD by name, email or department"
+          />
+          <button class="pill-btn" id="refreshHodBtn">Refresh</button>
+        </div>
+
+        <div class="hod-list" id="hodList"></div>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">Recent announcements</div>
+        <div class="section-action">View all</div>
+      </div>
+      <section class="card">
+        <div class="announcement-list" id="announcementList"></div>
+      </section>
+
+      <div class="section-header">
+        <div class="section-title">School search</div>
+      </div>
+      <section class="card" id="searchSection">
+        <div class="toolbar">
+          <input
+            id="schoolSearchInput"
+            class="input"
+            placeholder="Search student, lecturer, matric no or staff ID"
+          />
+          <button class="pill-btn" id="runSchoolSearchBtn">Search</button>
+        </div>
+        <div class="search-results" id="schoolSearchResults"></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-btn active">
+        <span class="nav-btn-inner">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M3 9.2L10 3l7 6.2V17a1 1 0 01-1 1h-4.2v-5H8.2v5H4a1 1 0 01-1-1V9.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <span>Home</span>
+        </span>
+      </button>
+
+      <button class="nav-btn">
+        <span class="nav-btn-inner">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 10a3 3 0 100-6 3 3 0 000 6zM4.5 16.5a5.5 5.5 0 0111 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>HODs</span>
+        </span>
+      </button>
+
+      <button class="nav-btn">
+        <span class="nav-btn-inner">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M4 9.5L16 4v12L4 10.5v-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <span>Announcements</span>
+        </span>
+      </button>
+
+      <button class="nav-btn">
+        <span class="nav-btn-inner">
+          <svg viewBox="0 0 20 20" fill="none">
+            <circle cx="9" cy="9" r="4.8" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12.8 12.8L16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>Search</span>
+        </span>
+      </button>
+
+      <button class="nav-btn">
+        <span class="nav-btn-inner">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M4 5h12M4 10h12M4 15h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span>More</span>
+        </span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    const schoolName = "Ekiti State University";
+
+    let hodAccounts = [
+      {
+        full_name: "Dr. Emily Johnson",
+        department: "Computer Science",
+        email: "emily.j@eksu.edu.ng",
+        login_id: "HOD12834",
+        status: "active"
+      },
+      {
+        full_name: "Prof. Mark Adewale",
+        department: "Business Administration",
+        email: "mark.a@eksu.edu.ng",
+        login_id: "HOD12857",
+        status: "disabled"
+      },
+      {
+        full_name: "Dr. Ruth Akinola",
+        department: "Accounting",
+        email: "ruth.a@eksu.edu.ng",
+        login_id: "HOD12901",
+        status: "active"
+      }
+    ];
+
+    let announcements = [
+      {
+        title: "Update Attendance Records",
+        audience: "All Departments",
+        message: "All departments should update attendance records before Friday by 4 PM.",
+        time: "1 hour ago"
+      },
+      {
+        title: "Staff Meeting at 2 PM",
+        audience: "All HODs",
+        message: "There will be a school management meeting today by 2 PM in the Senate building.",
+        time: "Yesterday"
+      }
+    ];
+
+    const sampleSearchResults = [
+      {
+        name: "Adebayo Joshua",
+        sub: "Student • Computer Science • 230903174"
+      },
+      {
+        name: "Archibong Mary Mfon",
+        sub: "Student • Chemistry • 230902061"
+      },
+      {
+        name: "Dr. Gabriel Timilehin",
+        sub: "Lecturer • Computer Science • STF-1042"
+      }
+    ];
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showBox(id, text, type) {
+      const box = $(id);
+      if (!box) return;
+      box.textContent = text || "";
+      box.className = "message";
+      if (text) box.classList.add(type === "error" ? "error" : "success");
+    }
+
+    function clearBox(id) {
+      const box = $(id);
+      if (!box) return;
+      box.textContent = "";
+      box.className = "message";
+    }
+
+    function randomDigits(len = 5) {
+      let out = "";
+      for (let i = 0; i < len; i++) {
+        out += Math.floor(Math.random() * 10);
+      }
+      return out;
+    }
+
+    function randomPassword(len = 8) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "";
+      for (let i = 0; i < len; i++) {
+        out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    }
+
+    function updateStats() {
+      $("statHods").textContent = hodAccounts.length;
+      $("statDepartments").textContent = 18;
+      $("statLecturers").textContent = 165;
+      $("statStudents").textContent = 8420;
+    }
+
+    function renderHodList() {
+      const q = ($("hodSearch").value || "").trim().toLowerCase();
+      const wrap = $("hodList");
+      wrap.innerHTML = "";
+
+      const filtered = hodAccounts.filter((item) => {
+        return (
+          item.full_name.toLowerCase().includes(q) ||
+          item.email.toLowerCase().includes(q) ||
+          item.department.toLowerCase().includes(q) ||
+          item.login_id.toLowerCase().includes(q)
+        );
+      });
+
+      if (!filtered.length) {
+        wrap.innerHTML = `
+          <div class="hod-card">
+            <div class="hod-name">No HOD found</div>
+            <div class="hod-dept">Try another search term.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = filtered
+        .map((item, index) => {
+          return `
+            <div class="hod-card">
+              <div class="hod-top">
+                <div>
+                  <div class="hod-name">${item.full_name}</div>
+                  <div class="hod-dept">${item.department} • ${schoolName}</div>
+                </div>
+                <div class="status-pill ${item.status === "active" ? "active" : "disabled"}">
+                  ${item.status}
+                </div>
+              </div>
+
+              <div class="hod-grid">
+                <div class="mini-info">
+                  <div class="mini-info-label">Email</div>
+                  <div class="mini-info-value">${item.email}</div>
+                </div>
+                <div class="mini-info">
+                  <div class="mini-info-label">Login ID</div>
+                  <div class="mini-info-value">${item.login_id}</div>
+                </div>
+              </div>
+
+              <div class="hod-actions">
+                <button class="chip-action blue" onclick="copyLogin('${item.login_id}')">Copy login</button>
+                <button class="chip-action amber" onclick="resetLogin(${index})">Reset</button>
+                <button class="chip-action red" onclick="toggleStatus(${index})">
+                  ${item.status === "active" ? "Disable" : "Enable"}
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderAnnouncements() {
+      const wrap = $("announcementList");
+      wrap.innerHTML = "";
+
+      if (!announcements.length) {
+        wrap.innerHTML = `
+          <div class="announcement-item">
+            <div class="announcement-item-title">No announcements yet</div>
+            <div class="announcement-item-meta">Create one above.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = announcements
+        .map((item) => {
+          return `
+            <div class="announcement-item">
+              <div class="announcement-item-top">
+                <div>
+                  <div class="announcement-item-title">${item.title}</div>
+                  <div class="announcement-item-meta">${item.time}</div>
+                </div>
+                <div class="tag">${item.audience}</div>
+              </div>
+              <div class="announcement-item-text">${item.message}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderSearchResults(results = []) {
+      const wrap = $("schoolSearchResults");
+      wrap.innerHTML = "";
+
+      if (!results.length) {
+        wrap.innerHTML = `
+          <div class="search-card">
+            <div class="search-name">No result</div>
+            <div class="search-sub">Try another name, matric number, or staff ID.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = results
+        .map(
+          (item) => `
+            <div class="search-card">
+              <div class="search-name">${item.name}</div>
+              <div class="search-sub">${item.sub}</div>
+            </div>
+          `
+        )
+        .join("");
+    }
+
+    function copyLogin(loginId) {
+      navigator.clipboard?.writeText(loginId);
+      alert("Login ID copied");
+    }
+
+    function resetLogin(index) {
+      const item = hodAccounts[index];
+      if (!item) return;
+      const newPassword = randomPassword(8);
+      alert(`${item.full_name} login has been reset.\n\nTemporary password: ${newPassword}`);
+    }
+
+    function toggleStatus(index) {
+      const item = hodAccounts[index];
+      if (!item) return;
+      item.status = item.status === "active" ? "disabled" : "active";
+      renderHodList();
+    }
+
+    function createHodAccount() {
+      const fullName = ($("hodFullName").value || "").trim();
+      const department = ($("hodDepartment").value || "").trim();
+      const email = ($("hodEmail").value || "").trim().toLowerCase();
+
+      clearBox("createHodMessage");
+
+      if (!fullName) {
+        showBox("createHodMessage", "Please enter the full name.", "error");
+        return;
+      }
+
+      if (!department) {
+        showBox("createHodMessage", "Please choose the department.", "error");
+        return;
+      }
+
+      if (!email) {
+        showBox("createHodMessage", "Please enter the email address.", "error");
+        return;
+      }
+
+      const loginId = "HOD" + randomDigits(5);
+      const tempPassword = randomPassword(8);
+
+      hodAccounts.unshift({
+        full_name: fullName,
+        department,
+        email,
+        login_id: loginId,
+        status: "active"
+      });
+
+      $("generatedLoginId").textContent = loginId;
+      $("generatedPassword").textContent = tempPassword;
+      $("generatedBox").style.display = "block";
+
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("hodEmail").value = "";
+
+      showBox("createHodMessage", "HOD account created successfully.", "success");
+      updateStats();
+      renderHodList();
+    }
+
+    function clearHodForm() {
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("hodEmail").value = "";
+      $("generatedBox").style.display = "none";
+      $("generatedLoginId").textContent = "-";
+      $("generatedPassword").textContent = "-";
+      clearBox("createHodMessage");
+    }
+
+    function sendAnnouncement() {
+      const title = ($("announcementTitle").value || "").trim();
+      const audience = ($("announcementAudience").value || "").trim();
+      const message = ($("announcementMessage").value || "").trim();
+
+      clearBox("announcementMessageBox");
+
+      if (!title) {
+        showBox("announcementMessageBox", "Please enter the announcement title.", "error");
+        return;
+      }
+
+      if (!message) {
+        showBox("announcementMessageBox", "Please enter the announcement message.", "error");
+        return;
+      }
+
+      announcements.unshift({
+        title,
+        audience,
+        message,
+        time: "Just now"
+      });
+
+      $("announcementTitle").value = "";
+      $("announcementAudience").value = "All Departments";
+      $("announcementMessage").value = "";
+
+      showBox("announcementMessageBox", "Announcement sent successfully.", "success");
+      renderAnnouncements();
+    }
+
+    function clearAnnouncementForm() {
+      $("announcementTitle").value = "";
+      $("announcementAudience").value = "All Departments";
+      $("announcementMessage").value = "";
+      clearBox("announcementMessageBox");
+    }
+
+    function runSearch() {
+      const q = ($("schoolSearchInput").value || "").trim().toLowerCase();
+      if (!q) {
+        renderSearchResults(sampleSearchResults);
+        return;
+      }
+
+      const filtered = sampleSearchResults.filter((item) => {
+        return (
+          item.name.toLowerCase().includes(q) ||
+          item.sub.toLowerCase().includes(q)
+        );
+      });
+
+      renderSearchResults(filtered);
+    }
+
+    function scrollToSection(id) {
+      const el = $(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      $("lockedSchoolName").textContent = schoolName;
+      $("hosSchoolLine").textContent = `Hello, ${schoolName}`;
+      updateStats();
+      renderHodList();
+      renderAnnouncements();
+      renderSearchResults(sampleSearchResults);
+
+      $("createHodBtn").addEventListener("click", createHodAccount);
+      $("clearHodBtn").addEventListener("click", clearHodForm);
+      $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+      $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
+      $("hodSearch").addEventListener("input", renderHodList);
+      $("refreshHodBtn").addEventListener("click", renderHodList);
+      $("runSchoolSearchBtn").addEventListener("click", runSearch);
+
+      $("openCreateHodBtn").addEventListener("click", () => scrollToSection("createHodSection"));
+      $("qaCreateHod").addEventListener("click", () => scrollToSection("createHodSection"));
+      $("qaSendAnnouncement").addEventListener("click", () => scrollToSection("announcementSection"));
+      $("openAnnouncementBtn").addEventListener("click", () => scrollToSection("announcementSection"));
+      $("jumpToAnnouncements").addEventListener("click", () => scrollToSection("announcementSection"));
+      $("qaSearchSchool").addEventListener("click", () => scrollToSection("searchSection"));
+      $("qaViewHods").addEventListener("click", () => scrollToSection("hodListSection"));
+    });
+  </script>
+</body>
+</html>
