@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Updated viewport: same as main, no zooming when typing/double-tap -->
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
@@ -55,6 +56,7 @@
       position: relative;
     }
 
+    /* ------------ Splash / loading screen ------------ */
     .splash {
       position: fixed;
       inset: 0;
@@ -100,6 +102,8 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* ------------ Auth card ------------ */
 
     .container {
       width: 100%;
@@ -159,6 +163,7 @@
       border-radius: 999px;
       padding: 4px;
       margin-bottom: 20px;
+      gap: 4px;
     }
 
     .mode-btn {
@@ -172,6 +177,7 @@
       color: var(--muted);
       font-weight: 500;
       transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
     }
 
     .mode-btn.active {
@@ -191,14 +197,13 @@
     select {
       width: 100%;
       padding: 12px 13px;
-      font-size: 17px;
+      font-size: 17px; /* >=16px so iOS does NOT zoom on focus */
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 14px;
       outline: none;
       transition: border 0.2s, box-shadow 0.2s;
       background: #f9fafb;
-      color: var(--text);
     }
 
     input:focus,
@@ -223,18 +228,9 @@
       margin-top: 4px;
     }
 
-    button.primary:hover {
-      background: var(--blue-dark);
-    }
-
-    button.primary:active {
-      transform: scale(0.98);
-    }
-
-    button.primary:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
-    }
+    button.primary:hover { background: var(--blue-dark); }
+    button.primary:active { transform: scale(0.98); }
+    button.primary:disabled { background: #93c5fd; cursor: not-allowed; }
 
     .spinner {
       width: 20px;
@@ -283,9 +279,7 @@
       white-space: nowrap;
     }
 
-    .text-link:hover {
-      text-decoration: underline;
-    }
+    .text-link:hover { text-decoration: underline; }
 
     .link-inline {
       border: none;
@@ -333,10 +327,7 @@
       gap: 8px;
     }
 
-    .password-row input {
-      margin-bottom: 0;
-      flex: 1;
-    }
+    .password-row input { margin-bottom: 0; flex: 1; }
 
     .password-toggle {
       border-radius: 999px;
@@ -347,12 +338,9 @@
       cursor: pointer;
       white-space: nowrap;
       color: var(--muted);
-      min-width: 74px;
     }
 
-    .password-toggle:hover {
-      background: #e5e7eb;
-    }
+    .password-toggle:hover { background: #e5e7eb; }
 
     .stepper {
       display: flex;
@@ -363,12 +351,7 @@
       color: var(--muted);
     }
 
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-    }
+    .step { display: flex; flex-direction: column; align-items: center; flex: 1; }
 
     .step-circle {
       width: 22px;
@@ -390,16 +373,8 @@
       color: #ffffff;
     }
 
-    .step-line {
-      height: 2px;
-      background: #cbd5f5;
-      margin: 0 4px;
-      flex: 1;
-    }
-
-    .step-line.active {
-      background: var(--blue);
-    }
+    .step-line { height: 2px; background: #cbd5f5; margin: 0 4px; flex: 1; }
+    .step-line.active { background: var(--blue); }
 
     .location-note {
       margin-top: 14px;
@@ -408,10 +383,21 @@
       text-align: center;
       line-height: 1.4;
     }
+
+    /* Small admin note */
+    .admin-note {
+      margin-top: -6px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.35;
+    }
   </style>
 </head>
 
 <body>
+  <!-- Splash / loading screen shown first -->
   <div id="splash-screen" class="splash">
     <div class="splash-card">
       <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="splash-logo" />
@@ -421,6 +407,7 @@
   </div>
 
   <div class="phone-shell">
+    <!-- Auth card is hidden at first; JS will show it only if user is NOT signed in -->
     <div id="auth-shell" class="container hidden">
       <div class="card">
         <div class="logo">
@@ -430,6 +417,7 @@
         <h1 id="card-title">Welcome back</h1>
         <p class="subtitle" id="card-subtitle">Sign in to your Colspot account</p>
 
+        <!-- Tabs: Sign in | Sign up | Admin -->
         <div id="mode-toggle" class="mode-toggle">
           <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
             Sign in
@@ -442,7 +430,7 @@
           </button>
         </div>
 
-        <!-- SIGN-UP EMAIL VERIFICATION -->
+        <!-- SIGN-UP EMAIL VERIFICATION (OTP) -->
         <div id="verify-panel" class="hidden">
           <div class="verify-title">Verify your email</div>
 
@@ -468,7 +456,7 @@
           <div id="verify-message" class="message"></div>
         </div>
 
-        <!-- FORGOT PASSWORD -->
+        <!-- FORGOT PASSWORD – STEP 1: ENTER EMAIL -->
         <div id="forgot-panel" class="hidden">
           <div class="verify-title">Forgot password</div>
           <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
@@ -507,7 +495,7 @@
           <div id="forgot-message" class="message"></div>
         </div>
 
-        <!-- RESET PASSWORD -->
+        <!-- FORGOT PASSWORD – STEP 2 & 3: CODE + NEW PASSWORD -->
         <div id="reset-panel" class="hidden">
           <div class="verify-title">Reset your password</div>
 
@@ -564,7 +552,7 @@
           <div id="reset-message" class="message"></div>
         </div>
 
-        <!-- SIGN IN -->
+        <!-- SIGN IN FORM -->
         <form id="signin-form">
           <label for="signin-email">Email</label>
           <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
@@ -590,7 +578,7 @@
           <div id="signin-message" class="message"></div>
         </form>
 
-        <!-- SIGN UP -->
+        <!-- SIGN UP FORM -->
         <form id="signup-form" class="hidden">
           <label for="signup-fullname">Full name</label>
           <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
@@ -609,9 +597,6 @@
               Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
             </div>
           </div>
-
-          <label for="signup-school">School name</label>
-          <input id="signup-school" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
 
           <label for="signup-dept">Department</label>
           <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
@@ -651,16 +636,26 @@
             </span>
           </div>
 
+          <div class="bottom-row small">
+            <span style="color:var(--muted); font-size:13px;">Already have an account?</span>
+            <button type="button" class="text-link" onclick="switchMode('signin')">Sign in</button>
+          </div>
+
           <div id="signup-message" class="message"></div>
         </form>
 
-        <!-- ADMIN -->
+        <!-- ADMIN LOGIN FORM (NEW) -->
         <form id="admin-form" class="hidden">
+          <div class="admin-note">
+            Admin accounts are created from above (Super Admin → HOS → HOD).<br />
+            Use the login details given to you.
+          </div>
+
           <label for="admin-email">Email</label>
           <input id="admin-email" type="email" placeholder="admin@school.edu" autocomplete="email" required />
 
-          <label for="admin-id">ID</label>
-          <input id="admin-id" type="text" placeholder="Enter admin ID" autocomplete="username" required />
+          <label for="admin-loginid">Login ID</label>
+          <input id="admin-loginid" type="text" placeholder="e.g. HOD-CSC-001" autocomplete="off" required />
 
           <label for="admin-password">Password</label>
           <div class="password-row">
@@ -669,18 +664,19 @@
           </div>
 
           <button id="admin-btn" type="submit" class="primary">
-            <span id="admin-text">Sign in as Admin</span>
+            <span id="admin-text">Login</span>
             <span id="admin-loader" class="spinner hidden"></span>
           </button>
 
           <div class="bottom-row">
             <a href="contact.html" class="text-link">Contact us</a>
-            <button type="button" class="text-link">Forgot password?</button>
+            <button type="button" class="text-link" onclick="switchMode('signin')">Back to user sign in</button>
           </div>
 
           <div id="admin-message" class="message"></div>
         </form>
 
+        <!-- Switch row (hide it on Admin mode) -->
         <div id="switch-row" class="bottom-row" style="margin-top:16px;">
           <span id="switch-text" style="font-size:13px; color:var(--muted);">
             Don’t have an account?
@@ -712,95 +708,7 @@
       window.location.href = "privacy.html";
     }
 
-    function switchMode(mode) {
-      const tabSignin = document.getElementById('tab-signin');
-      const tabSignup = document.getElementById('tab-signup');
-      const tabAdmin = document.getElementById('tab-admin');
-
-      const signinForm = document.getElementById('signin-form');
-      const signupForm = document.getElementById('signup-form');
-      const adminForm = document.getElementById('admin-form');
-
-      const switchRow = document.getElementById('switch-row');
-      const switchText = document.getElementById('switch-text');
-      const switchLinkLabel = document.getElementById('switch-link-label');
-
-      const cardTitle = document.getElementById('card-title');
-      const cardSubtitle = document.getElementById('card-subtitle');
-
-      tabSignin.classList.remove('active');
-      tabSignup.classList.remove('active');
-      tabAdmin.classList.remove('active');
-
-      signinForm.classList.add('hidden');
-      signupForm.classList.add('hidden');
-      adminForm.classList.add('hidden');
-
-      if (mode === 'signin') {
-        tabSignin.classList.add('active');
-        signinForm.classList.remove('hidden');
-        switchRow.classList.remove('hidden');
-        switchText.textContent = "Don’t have an account?";
-        switchLinkLabel.textContent = "Create one";
-        cardTitle.textContent = "Welcome back";
-        cardSubtitle.textContent = "Sign in to your Colspot account";
-      } else if (mode === 'signup') {
-        tabSignup.classList.add('active');
-        signupForm.classList.remove('hidden');
-        switchRow.classList.remove('hidden');
-        switchText.textContent = "Already have an account?";
-        switchLinkLabel.textContent = "Sign in";
-        cardTitle.textContent = "Create account";
-        cardSubtitle.textContent = "Sign up for your Colspot account";
-      } else {
-        tabAdmin.classList.add('active');
-        adminForm.classList.remove('hidden');
-        switchRow.classList.add('hidden');
-        cardTitle.textContent = "Admin Access";
-        cardSubtitle.textContent = "Sign in to your Colspot admin account";
-      }
-    }
-
-    function toggleAuthMode() {
-      const isSignin = document.getElementById('tab-signin').classList.contains('active');
-      switchMode(isSignin ? 'signup' : 'signin');
-    }
-
-    function openForgotPasswordPage() {
-      const signinForm = document.getElementById("signin-form");
-      const signupForm = document.getElementById("signup-form");
-      const adminForm = document.getElementById("admin-form");
-      const verifyPanel = document.getElementById("verify-panel");
-      const forgotPanel = document.getElementById("forgot-panel");
-      const resetPanel = document.getElementById("reset-panel");
-      const modeToggle = document.getElementById("mode-toggle");
-      const switchRow = document.getElementById("switch-row");
-      const cardTitle = document.getElementById("card-title");
-      const cardSubtitle = document.getElementById("card-subtitle");
-
-      signinForm.classList.add("hidden");
-      signupForm.classList.add("hidden");
-      adminForm.classList.add("hidden");
-      verifyPanel.classList.add("hidden");
-      resetPanel.classList.add("hidden");
-
-      forgotPanel.classList.remove("hidden");
-      modeToggle.classList.add("hidden");
-      switchRow.classList.add("hidden");
-
-      cardTitle.textContent = "Password recovery";
-      cardSubtitle.textContent = "Reset your Colspot password";
-    }
-
-    function backToMainAuth(mode = 'signin') {
-      document.getElementById("forgot-panel").classList.add("hidden");
-      document.getElementById("reset-panel").classList.add("hidden");
-      document.getElementById("verify-panel").classList.add("hidden");
-      document.getElementById("mode-toggle").classList.remove("hidden");
-      document.getElementById("switch-row").classList.remove("hidden");
-      switchMode(mode);
-    }
-
+    // --- New role-based UI logic for Student / Lecturer ---
     (function setupRoleUI() {
       const roleSelect = document.getElementById('signup-role');
       const studentExtra = document.getElementById('student-extra');
@@ -829,6 +737,7 @@
       });
     })();
 
+    // --- Hard block lecturers from using personal emails on sign up ---
     (function guardLecturerEmail() {
       const form = document.getElementById('signup-form');
       const emailInput = document.getElementById('signup-email');
@@ -879,12 +788,144 @@
       });
     })();
 
-    document.getElementById("forgot-back-btn")?.addEventListener("click", () => backToMainAuth('signin'));
-    document.getElementById("reset-back-btn")?.addEventListener("click", () => backToMainAuth('signin'));
-    document.getElementById("back-to-signin-btn")?.addEventListener("click", () => backToMainAuth('signin'));
+    // ---------------------------
+    // ADMIN MODE (NEW)
+    // - Keeps your existing auth.js working
+    // - Adds a safe wrapper so 'admin' mode is handled here
+    // ---------------------------
+    (function adminModeWrapper() {
+      const titleEl = document.getElementById('card-title');
+      const subEl = document.getElementById('card-subtitle');
+
+      const tabSignin = document.getElementById('tab-signin');
+      const tabSignup = document.getElementById('tab-signup');
+      const tabAdmin  = document.getElementById('tab-admin');
+
+      const signInForm = document.getElementById('signin-form');
+      const signUpForm = document.getElementById('signup-form');
+      const adminForm  = document.getElementById('admin-form');
+
+      const verifyPanel = document.getElementById('verify-panel');
+      const forgotPanel = document.getElementById('forgot-panel');
+      const resetPanel  = document.getElementById('reset-panel');
+
+      const switchRow = document.getElementById('switch-row');
+
+      function setActive(tab) {
+        [tabSignin, tabSignup, tabAdmin].forEach(b => b && b.classList.remove('active'));
+        if (tab) tab.classList.add('active');
+      }
+
+      function hideAllPanels() {
+        if (verifyPanel) verifyPanel.classList.add('hidden');
+        if (forgotPanel) forgotPanel.classList.add('hidden');
+        if (resetPanel)  resetPanel.classList.add('hidden');
+      }
+
+      function showAdmin() {
+        hideAllPanels();
+
+        if (titleEl) titleEl.textContent = 'Admin login';
+        if (subEl) subEl.textContent = 'Sign in to your Colspot admin account';
+
+        if (signInForm) signInForm.classList.add('hidden');
+        if (signUpForm) signUpForm.classList.add('hidden');
+        if (adminForm)  adminForm.classList.remove('hidden');
+
+        if (switchRow) switchRow.classList.add('hidden');
+
+        setActive(tabAdmin);
+      }
+
+      function exitAdminTo(mode) {
+        if (adminForm) adminForm.classList.add('hidden');
+        if (switchRow) switchRow.classList.remove('hidden');
+
+        // Restore default titles (auth.js can also change these, we keep it simple)
+        if (mode === 'signup') {
+          if (titleEl) titleEl.textContent = 'Create account';
+          if (subEl) subEl.textContent = 'Sign up for Colspot';
+          setActive(tabSignup);
+          if (signInForm) signInForm.classList.add('hidden');
+          if (signUpForm) signUpForm.classList.remove('hidden');
+        } else {
+          if (titleEl) titleEl.textContent = 'Welcome back';
+          if (subEl) subEl.textContent = 'Sign in to your Colspot account';
+          setActive(tabSignin);
+          if (signUpForm) signUpForm.classList.add('hidden');
+          if (signInForm) signInForm.classList.remove('hidden');
+        }
+      }
+
+      // Wrap existing switchMode if it exists (from auth.js),
+      // but ensure 'admin' works even if auth.js doesn't know it.
+      const originalSwitchMode = window.switchMode;
+
+      window.switchMode = function(mode) {
+        if (mode === 'admin') {
+          showAdmin();
+          return;
+        }
+
+        // leaving admin
+        if (adminForm && !adminForm.classList.contains('hidden')) {
+          exitAdminTo(mode);
+        }
+
+        // if your auth.js has a switchMode, let it run for signin/signup
+        if (typeof originalSwitchMode === 'function') {
+          try { originalSwitchMode(mode); } catch (e) {}
+        } else {
+          // fallback if auth.js doesn't define it
+          hideAllPanels();
+          exitAdminTo(mode);
+        }
+      };
+
+      // If user presses the bottom "Create one" while in admin, force to signup
+      const originalToggleAuthMode = window.toggleAuthMode;
+      window.toggleAuthMode = function() {
+        if (adminForm && !adminForm.classList.contains('hidden')) {
+          window.switchMode('signup');
+          return;
+        }
+        if (typeof originalToggleAuthMode === 'function') originalToggleAuthMode();
+      };
+
+      // Admin submit (frontend placeholder)
+      // You will connect this to your admin auth (table/edge function) next.
+      const adminMsg = document.getElementById('admin-message');
+      const adminBtn = document.getElementById('admin-btn');
+      const adminText = document.getElementById('admin-text');
+      const adminLoader = document.getElementById('admin-loader');
+
+      if (adminForm) {
+        adminForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          if (adminBtn) adminBtn.disabled = true;
+          if (adminText) adminText.classList.add('hidden');
+          if (adminLoader) adminLoader.classList.remove('hidden');
+
+          // TODO: connect to your real admin login (edge function)
+          setTimeout(() => {
+            if (adminMsg) {
+              adminMsg.textContent = 'Admin login wiring will be connected next (Super Admin / HOS / HOD).';
+              adminMsg.classList.remove('success');
+              adminMsg.classList.add('error');
+            }
+            if (adminBtn) adminBtn.disabled = false;
+            if (adminText) adminText.classList.remove('hidden');
+            if (adminLoader) adminLoader.classList.add('hidden');
+          }, 700);
+        });
+      }
+    })();
   </script>
 
+  <!-- Supabase client -->
   <script type="module" src="./client_supabase.js"></script>
+  <!-- Auth logic -->
   <script src="./auth.js"></script>
 </body>
 </html>
