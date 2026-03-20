@@ -9,895 +9,1276 @@
   <title>Colspot • HOS Dashboard</title>
 
   <style>
-    :root{
-      --blue:#2563eb;
-      --blue2:#3b82f6;
-      --blue-soft:#eaf2ff;
-      --bg:#f6f9ff;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --shadow:0 12px 30px rgba(37,99,235,.10);
-      --radius:24px;
-      --green:#16a34a;
-      --green-soft:#dcfce7;
-      --orange:#d97706;
-      --orange-soft:#ffedd5;
-      --purple:#7c3aed;
-      --purple-soft:#ede9fe;
-      --teal:#0f766e;
-      --teal-soft:#ccfbf1;
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --bg1: #eef4ff;
+      --bg2: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #6b7280;
+      --border-soft: #e5e7eb;
+      --card: #ffffff;
+      --soft-blue: #eff6ff;
+      --soft: #f8fafc;
+      --green: #16a34a;
+      --red: #dc2626;
+      --amber: #d97706;
+      --shadow-soft: 0 14px 35px rgba(15, 23, 42, 0.08);
+      --shadow-strong: 0 18px 45px rgba(15, 23, 42, 0.12);
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    * {
+      box-sizing: border-box;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    html,body{
-      margin:0;
-      padding:0;
-      background:linear-gradient(180deg,#e9f2ff 0%, #f8fbff 26%, #f7f9fc 100%);
-      color:var(--text);
-      min-height:100%;
-      -webkit-text-size-adjust:100%;
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      color: var(--text-main);
+      min-height: 100%;
     }
 
-    body{
-      display:flex;
-      justify-content:center;
+    body {
+      display: flex;
+      justify-content: center;
     }
 
-    .phone-shell{
-      width:100%;
-      max-width:420px;
-      min-height:100vh;
-      position:relative;
-      padding:
-        calc(env(safe-area-inset-top) + 10px)
-        14px
-        calc(env(safe-area-inset-bottom) + 98px);
-      overflow-x:hidden;
+    .app-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: #fff;
+      position: relative;
+      padding: calc(env(safe-area-inset-top) + 8px) 14px 100px;
     }
 
-    .top-glow{
-      position:absolute;
-      top:-110px;
-      left:-20px;
-      width:320px;
-      height:220px;
-      background:radial-gradient(circle, rgba(59,130,246,.22) 0%, rgba(59,130,246,.08) 45%, rgba(59,130,246,0) 72%);
-      pointer-events:none;
-      filter:blur(8px);
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px 12px;
     }
 
-    .appbar{
-      position:relative;
-      z-index:2;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:18px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: var(--shadow-soft);
     }
 
-    .brand-logo{
-      width:54px;
-      height:54px;
-      border-radius:18px;
-      background:linear-gradient(135deg,#60a5fa,#34d399);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 10px 22px rgba(37,99,235,.18);
-      color:#fff;
-      flex-shrink:0;
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
     }
 
-    .brand-text h1{
-      margin:0;
-      font-size:17px;
-      font-weight:800;
-      line-height:1.05;
-      letter-spacing:.1px;
+    .brand-text strong {
+      font-size: 17px;
+      font-weight: 800;
     }
 
-    .brand-text p{
-      margin:3px 0 0;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-      letter-spacing:.12em;
+    .brand-text span {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
     }
 
-    .profile-wrap{
-      position:relative;
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1d4ed8, #22c55e);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: var(--shadow-soft);
     }
 
-    .profile-btn{
-      width:54px;
-      height:54px;
-      border:none;
-      border-radius:18px;
-      background:linear-gradient(135deg,#60a5fa,#34d399);
-      color:#fff;
-      font-size:22px;
-      font-weight:800;
-      box-shadow:0 14px 28px rgba(37,99,235,.16);
-      cursor:pointer;
+    .hero {
+      margin: 4px 2px 14px;
     }
 
-    .profile-menu{
-      position:absolute;
-      top:62px;
-      right:0;
-      width:205px;
-      background:rgba(255,255,255,.98);
-      border:1px solid rgba(226,232,240,.95);
-      border-radius:20px;
-      box-shadow:0 20px 40px rgba(15,23,42,.12);
-      overflow:hidden;
-      display:none;
-      z-index:30;
-      backdrop-filter:blur(14px);
+    .hero-small {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-weight: 600;
     }
 
-    .profile-menu.show{
-      display:block;
+    .hero-title {
+      font-size: 24px;
+      line-height: 1.18;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
     }
 
-    .profile-row{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:14px 16px;
-      border-bottom:1px solid #eef2f7;
-      font-size:15px;
-      font-weight:700;
-      color:#334155;
-      background:#fff;
+    .hero-title span {
+      color: var(--blue);
     }
 
-    .profile-row:last-child{
-      border-bottom:none;
+    .hero-sub {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-muted);
+      margin-bottom: 14px;
     }
 
-    .profile-school{
-      display:block;
-      padding:14px 16px;
-      font-size:14px;
-      color:#475569;
-      background:#fff;
+    .main-action,
+    .secondary-action {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease;
     }
 
-    .hero-card,
-    .section-card,
-    .stat-card,
-    .mini-card,
-    .announcement-item,
-    .activity-item,
-    .hod-item{
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(12px);
-      border:1px solid rgba(226,232,240,.85);
-      box-shadow:var(--shadow);
+    .main-action:active,
+    .secondary-action:active,
+    .quick-card:active,
+    .chip-btn:active,
+    .mini-btn:active {
+      transform: scale(0.98);
     }
 
-    .hero-card{
-      border-radius:30px;
-      padding:22px 18px 20px;
-      margin-bottom:16px;
+    .main-action {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      box-shadow: var(--shadow-soft);
     }
 
-    .hero-card .eyebrow{
-      margin:0 0 8px;
-      color:#64748b;
-      font-size:14px;
-      font-weight:600;
+    .secondary-action {
+      margin-top: 10px;
+      color: var(--blue);
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
     }
 
-    .hero-card h2{
-      margin:0;
-      font-size:24px;
-      line-height:1.14;
-      font-weight:900;
-      letter-spacing:-.03em;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 16px 2px 4px;
     }
 
-    .hero-card h2 .accent{
-      color:var(--blue);
-      display:block;
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 14px 13px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
     }
 
-    .hero-card .desc{
-      margin:12px 0 0;
-      color:#475569;
-      font-size:15px;
-      line-height:1.55;
-      font-weight:500;
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
     }
 
-    .actions{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-      margin-bottom:16px;
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.06em;
     }
 
-    .primary-action,
-    .secondary-action{
-      border:none;
-      width:100%;
-      border-radius:999px;
-      padding:17px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      cursor:pointer;
-      font-size:17px;
-      font-weight:800;
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 4px 10px;
     }
 
-    .primary-action{
-      color:#fff;
-      background:linear-gradient(90deg,var(--blue2),#1d4ed8);
-      box-shadow:0 16px 30px rgba(37,99,235,.24);
+    .section-head h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
-    .secondary-action{
-      color:var(--blue);
-      background:#edf4ff;
+    .section-head button,
+    .section-head span {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
     }
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:16px;
+    .card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      margin: 0 2px 14px;
     }
 
-    .stat-card{
-      border-radius:24px;
-      padding:16px 14px;
-      min-height:118px;
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .stat-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
+    .quick-card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
     }
 
-    .icon-badge{
-      width:52px;
-      height:52px;
-      border-radius:18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
+    .quick-icon {
+      width: 38px;
+      height: 38px;
+      margin: 0 auto 8px;
+      border-radius: 12px;
+      background: var(--soft-blue);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
     }
 
-    .icon-blue{ background:#e7f0ff; color:#3b82f6; }
-    .icon-purple{ background:var(--purple-soft); color:var(--purple); }
-    .icon-green{ background:var(--teal-soft); color:var(--teal); }
-    .icon-orange{ background:var(--orange-soft); color:var(--orange); }
-
-    .stat-number{
-      font-size:22px;
-      font-weight:900;
-      line-height:1;
-      margin-top:2px;
-      color:#1e3a8a;
+    .quick-card p {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
     }
 
-    .stat-label{
-      margin-top:12px;
-      font-size:13px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:#64748b;
-      font-weight:800;
+    .field {
+      margin-bottom: 12px;
     }
 
-    .section-card{
-      border-radius:28px;
-      padding:18px 16px 16px;
-      margin-bottom:16px;
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
     }
 
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 12px 13px;
+      background: #fff;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
     }
 
-    .section-head h3{
-      margin:0;
-      font-size:18px;
-      line-height:1.2;
-      font-weight:900;
-      color:#1e3a8a;
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    .section-link{
-      text-decoration:none;
-      color:var(--blue);
-      font-size:14px;
-      font-weight:800;
-      display:flex;
-      align-items:center;
-      gap:5px;
+    .textarea {
+      min-height: 96px;
+      resize: vertical;
     }
 
-    .hod-list,
-    .announcement-list,
-    .activity-list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+    .locked-box {
+      width: 100%;
+      border-radius: 14px;
+      padding: 12px 13px;
+      border: 1px dashed #bfdbfe;
+      background: #f8fbff;
+      color: var(--blue-dark);
+      font-size: 14px;
+      font-weight: 700;
     }
 
-    .hod-item,
-    .announcement-item,
-    .activity-item{
-      border-radius:20px;
-      padding:14px 14px;
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
+    .generated-box {
+      display: none;
+      margin-top: 12px;
+      border-radius: 16px;
+      border: 1px dashed #bfdbfe;
+      background: #f8fbff;
+      padding: 12px;
     }
 
-    .item-icon{
-      width:44px;
-      height:44px;
-      border-radius:16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
+    .generated-item + .generated-item {
+      margin-top: 10px;
     }
 
-    .item-main{
-      flex:1;
-      min-width:0;
+    .generated-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
     }
 
-    .item-main h4{
-      margin:0;
-      font-size:15px;
-      line-height:1.25;
-      font-weight:900;
-      color:#1e293b;
+    .generated-value {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      word-break: break-word;
     }
 
-    .item-main p{
-      margin:4px 0 0;
-      font-size:14px;
-      color:#64748b;
-      line-height:1.45;
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
     }
 
-    .item-side{
-      text-align:right;
-      flex-shrink:0;
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
+    .mini-btn {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
     }
 
-    .item-time{
-      font-size:13px;
-      color:#64748b;
-      font-weight:700;
-      white-space:nowrap;
+    .mini-btn.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      box-shadow: var(--shadow-soft);
     }
 
-    .pill{
-      padding:6px 12px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:900;
-      line-height:1;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      white-space:nowrap;
+    .mini-btn.secondary {
+      color: var(--text-main);
+      background: #fff;
+      border: 1px solid var(--border-soft);
     }
 
-    .pill.active{
-      background:var(--green-soft);
-      color:var(--green);
+    .message {
+      display: none;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.45;
     }
 
-    .pill.sent{
-      background:#dcfce7;
-      color:#15803d;
+    .message.success {
+      display: block;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      color: #166534;
     }
 
-    .pill.more{
-      background:#eef4ff;
-      color:#4263eb;
+    .message.error {
+      display: block;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
     }
 
-    .quick-search{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:16px;
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
-    .mini-card{
-      border-radius:22px;
-      padding:16px 14px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-height:84px;
+    .toolbar .input {
+      flex: 1;
     }
 
-    .mini-card h4{
-      margin:0 0 3px;
-      font-size:15px;
-      font-weight:800;
-      color:#1e293b;
+    .chip-btn {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
-    .mini-card p{
-      margin:0;
-      font-size:13px;
-      color:#64748b;
-      line-height:1.35;
+    .list-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:10px;
-      width:min(392px, calc(100vw - 18px));
-      background:rgba(255,255,255,.88);
-      backdrop-filter:blur(18px);
-      border:1px solid rgba(226,232,240,.92);
-      box-shadow:0 18px 44px rgba(15,23,42,.12);
-      border-radius:28px;
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:4px;
-      z-index:50;
+    .hod-card,
+    .announcement-card,
+    .search-card {
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 12px;
+      background: #fff;
     }
 
-    .nav-btn{
-      border:none;
-      background:transparent;
-      border-radius:18px;
-      padding:8px 4px 6px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      color:#64748b;
-      cursor:pointer;
-      min-height:64px;
+    .hod-top,
+    .announcement-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 8px;
     }
 
-    .nav-btn svg{
-      width:22px;
-      height:22px;
+    .hod-name,
+    .announcement-title,
+    .search-name {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.2;
     }
 
-    .nav-btn span{
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.01em;
+    .hod-sub,
+    .announcement-meta,
+    .search-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.35;
     }
 
-    .nav-btn.active{
-      color:var(--blue);
+    .status-pill,
+    .tag {
+      flex-shrink: 0;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .nav-btn.active .nav-icon-wrap{
-      background:#e8f1ff;
+    .status-pill.active {
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
     }
 
-    .nav-icon-wrap{
-      width:38px;
-      height:38px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition:.2s ease;
+    .status-pill.disabled {
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
     }
 
-    .sr-only{
-      position:absolute;
-      width:1px;
-      height:1px;
-      padding:0;
-      margin:-1px;
-      overflow:hidden;
-      clip:rect(0,0,0,0);
-      white-space:nowrap;
-      border:0;
+    .tag {
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .mini-info {
+      background: var(--soft);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 9px 10px;
+    }
+
+    .mini-info-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 4px;
+    }
+
+    .mini-info-value {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-chip {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .action-chip.blue {
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .action-chip.amber {
+      background: #fff7ed;
+      color: var(--amber);
+    }
+
+    .action-chip.red {
+      background: #fef2f2;
+      color: var(--red);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(12px, env(safe-area-inset-bottom));
+      width: calc(100% - 28px);
+      max-width: 402px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(229,231,235,0.9);
+      box-shadow: var(--shadow-strong);
+      border-radius: 26px;
+      padding: 8px 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      text-align: center;
+      font-size: 11px;
+      cursor: pointer;
+      padding-top: 2px;
+    }
+
+    .nav-btn.active {
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .nav-inner {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 360px) {
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stats-grid,
+      .mini-grid,
+      .btn-row {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="phone-shell">
-    <div class="top-glow"></div>
-
-    <header class="appbar">
+  <div class="app-shell">
+    <div class="topbar">
       <div class="brand">
-        <div class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
-            <path d="M6.5 9.5C6.5 6.462 8.962 4 12 4c1.932 0 3.632.996 4.607 2.503" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M17.5 14.5A5.5 5.5 0 0 1 12 20a5.5 5.5 0 0 1-5.146-3.545" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M15 9h-4a3 3 0 0 0 0 6h3" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <div class="brand-badge">C</div>
         <div class="brand-text">
-          <h1>Colspot</h1>
-          <p>HOS</p>
+          <strong>Colspot</strong>
+          <span>HOS dashboard</span>
         </div>
       </div>
+      <div class="avatar" id="hosAvatar">H</div>
+    </div>
 
-      <div class="profile-wrap">
-        <button class="profile-btn" id="profileBtn" type="button">H</button>
-
-        <div class="profile-menu" id="profileMenu">
-          <div class="profile-row">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-            </svg>
-            <span>Profile</span>
-          </div>
-          <div class="profile-row">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <path d="M16 17l5-5-5-5"></path>
-              <path d="M21 12H9"></path>
-            </svg>
-            <span>Logout</span>
-          </div>
-          <span class="profile-school">Ekiti State University</span>
-        </div>
+    <section class="hero">
+      <div class="hero-small" id="heroSchoolName">Hello, Ekiti State University</div>
+      <h1 class="hero-title">
+        What do you want to<br />
+        <span>do today?</span>
+      </h1>
+      <div class="hero-sub">
+        Manage your school, create HOD accounts, and send announcements to all departments.
       </div>
-    </header>
 
-    <section class="hero-card">
-      <p class="eyebrow">Hello, Ekiti State University</p>
-      <h2>
-        What do you want to
-        <span class="accent">do today?</span>
-      </h2>
-      <p class="desc">
-        Manage your school, create HOD accounts, monitor departments, and send announcements to all departments.
-      </p>
-    </section>
-
-    <section class="actions">
-      <button class="primary-action" type="button">
-        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
-        </svg>
+      <button class="main-action" id="topCreateHodBtn">
+        <span>＋</span>
         <span>Create new HOD account</span>
       </button>
 
-      <button class="secondary-action" type="button">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true">
-          <path d="M4 11v2a2 2 0 0 0 2 2h1l4 4v-4h7a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2Z" stroke-linejoin="round"/>
-        </svg>
+      <button class="secondary-action" id="topAnnouncementBtn">
+        <span>📢</span>
         <span>Send announcement</span>
       </button>
     </section>
 
     <section class="stats-grid">
-      <article class="stat-card">
-        <div class="stat-top">
-          <div class="icon-badge icon-blue">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9.5" cy="7" r="3"></circle>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div class="stat-number">3</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statHods">12</div>
         <div class="stat-label">HODs</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-top">
-          <div class="icon-badge icon-purple">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 21h18"></path>
-              <path d="M5 21V7l7-4 7 4v14"></path>
-              <path d="M9 10h.01M15 10h.01M9 14h.01M15 14h.01"></path>
-            </svg>
-          </div>
-          <div class="stat-number">18</div>
-        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statDepartments">18</div>
         <div class="stat-label">Departments</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-top">
-          <div class="icon-badge icon-green">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21a8 8 0 1 0-16 0"></path>
-              <circle cx="12" cy="9" r="4"></circle>
-            </svg>
-          </div>
-          <div class="stat-number">165</div>
-        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statLecturers">165</div>
         <div class="stat-label">Lecturers</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="stat-top">
-          <div class="icon-badge icon-orange">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
-              <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
-              <path d="M12 11h4M12 15h4"></path>
-            </svg>
-          </div>
-          <div class="stat-number">8420</div>
-        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statStudents">8420</div>
         <div class="stat-label">Students</div>
-      </article>
-    </section>
-
-    <section class="section-card">
-      <div class="section-head">
-        <h3>Manage HODs</h3>
-        <a href="#" class="section-link">
-          <span>View All</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3">
-            <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-        </a>
-      </div>
-
-      <div class="hod-list">
-        <article class="hod-item">
-          <div class="item-icon icon-blue">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-            </svg>
-          </div>
-
-          <div class="item-main">
-            <h4>Dr. Sola Olatunji</h4>
-            <p>Computer Science</p>
-          </div>
-
-          <div class="item-side">
-            <span class="pill active">Active</span>
-          </div>
-        </article>
-
-        <article class="hod-item">
-          <div class="item-icon icon-green">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-            </svg>
-          </div>
-
-          <div class="item-main">
-            <h4>Dr. Fatima Bello</h4>
-            <p>Microbiology</p>
-          </div>
-
-          <div class="item-side">
-            <span class="item-time">View</span>
-            <span class="pill more">More</span>
-          </div>
-        </article>
       </div>
     </section>
 
-    <section class="section-card">
-      <div class="section-head">
-        <h3>Recent Announcements</h3>
-        <a href="#" class="section-link">
-          <span>View All</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3">
-            <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-        </a>
-      </div>
+    <div class="section-head">
+      <h3>Quick actions</h3>
+    </div>
 
-      <div class="announcement-list">
-        <article class="announcement-item">
-          <div class="item-icon icon-blue">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-            </svg>
-          </div>
+    <section class="card">
+      <div class="quick-grid">
+        <button class="quick-card" id="qaCreateHod">
+          <div class="quick-icon">＋</div>
+          <p>Create HOD</p>
+        </button>
 
-          <div class="item-main">
-            <h4>Semester Exams Schedule</h4>
-            <p>The exam timetable is now posted for the upcoming semester exams.</p>
-          </div>
+        <button class="quick-card" id="qaSendAnnouncement">
+          <div class="quick-icon">📢</div>
+          <p>Send announcement</p>
+        </button>
 
-          <div class="item-side">
-            <span class="item-time">Apr 25, 2024</span>
-            <span class="pill sent">Sent</span>
-          </div>
-        </article>
+        <button class="quick-card" id="qaSearchSchool">
+          <div class="quick-icon">⌕</div>
+          <p>Search school</p>
+        </button>
 
-        <article class="announcement-item">
-          <div class="item-icon icon-orange">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M7 10V7a5 5 0 1 1 10 0v3"></path>
-              <rect x="5" y="10" width="14" height="10" rx="2"></rect>
-            </svg>
-          </div>
-
-          <div class="item-main">
-            <h4>HOD login details reset</h4>
-            <p>Dr. Fatima Bello (Microbiology)</p>
-          </div>
-
-          <div class="item-side">
-            <span class="item-time">Yesterday</span>
-          </div>
-        </article>
+        <button class="quick-card" id="qaViewHods">
+          <div class="quick-icon">☰</div>
+          <p>View HODs</p>
+        </button>
       </div>
     </section>
 
-    <section class="section-card">
-      <div class="section-head">
-        <h3>Recent Activity</h3>
+    <div class="section-head">
+      <h3>Create HOD account</h3>
+    </div>
+
+    <section class="card" id="createHodSection">
+      <div class="field">
+        <label for="hodFullName">Full name</label>
+        <input id="hodFullName" class="input" placeholder="Enter HOD full name" />
       </div>
 
-      <div class="activity-list">
-        <article class="activity-item">
-          <div class="item-icon icon-purple">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round"></path>
-            </svg>
-          </div>
-
-          <div class="item-main">
-            <h4>New HOD account created</h4>
-            <p>Dr. Umoru Yusuf (Mathematics)</p>
-          </div>
-
-          <div class="item-side">
-            <span class="item-time">Today, 11:05 AM</span>
-          </div>
-        </article>
-
-        <article class="activity-item">
-          <div class="item-icon icon-blue">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8 6h13"></path>
-              <path d="M8 12h13"></path>
-              <path d="M8 18h13"></path>
-              <path d="M3 6h.01"></path>
-              <path d="M3 12h.01"></path>
-              <path d="M3 18h.01"></path>
-            </svg>
-          </div>
-
-          <div class="item-main">
-            <h4>School records viewed</h4>
-            <p>Department overview opened successfully</p>
-          </div>
-
-          <div class="item-side">
-            <span class="item-time">Today, 9:18 AM</span>
-          </div>
-        </article>
+      <div class="field">
+        <label for="hodDepartment">Department</label>
+        <select id="hodDepartment" class="select">
+          <option value="">Select department</option>
+          <option>Computer Science</option>
+          <option>Accounting</option>
+          <option>Business Administration</option>
+          <option>Economics</option>
+          <option>Entrepreneurship</option>
+          <option>Mass Communication</option>
+          <option>Biochemistry</option>
+          <option>Physics</option>
+        </select>
       </div>
+
+      <div class="field">
+        <label for="hodEmail">Email</label>
+        <input id="hodEmail" class="input" type="email" placeholder="Enter email address" />
+      </div>
+
+      <div class="field">
+        <label>School</label>
+        <div class="locked-box" id="lockedSchoolName">Ekiti State University</div>
+      </div>
+
+      <div class="generated-box" id="generatedBox">
+        <div class="generated-item">
+          <div class="generated-label">Generated login ID</div>
+          <div class="generated-value" id="generatedLoginId">-</div>
+        </div>
+        <div class="generated-item">
+          <div class="generated-label">Temporary password</div>
+          <div class="generated-value" id="generatedPassword">-</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="mini-btn primary" id="createHodBtn">Create HOD</button>
+        <button class="mini-btn secondary" id="clearHodBtn">Clear</button>
+      </div>
+
+      <div class="message" id="createHodMessage"></div>
     </section>
 
-    <section class="quick-search">
-      <article class="mini-card">
-        <div class="item-icon icon-blue">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-        </div>
-        <div>
-          <h4>Search School</h4>
-          <p>Search students, lecturers, or departments</p>
-        </div>
-      </article>
+    <div class="section-head">
+      <h3>School announcements</h3>
+      <span id="jumpToAnnouncements">View all</span>
+    </div>
 
-      <article class="mini-card">
-        <div class="item-icon icon-green">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"></path>
-          </svg>
-        </div>
-        <div>
-          <h4>Draft Notice</h4>
-          <p>Start a new announcement quickly</p>
-        </div>
-      </article>
+    <section class="card" id="announcementSection">
+      <div class="field">
+        <label for="announcementTitle">Title</label>
+        <input id="announcementTitle" class="input" placeholder="Announcement title" />
+      </div>
+
+      <div class="field">
+        <label for="announcementAudience">Audience</label>
+        <select id="announcementAudience" class="select">
+          <option value="All Departments">All Departments</option>
+          <option value="All HODs">All HODs</option>
+          <option value="All Lecturers">All Lecturers</option>
+          <option value="All Students">All Students</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="announcementBody">Message</label>
+        <textarea
+          id="announcementBody"
+          class="textarea"
+          placeholder="Write your school-wide announcement here..."
+        ></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="mini-btn primary" id="sendAnnouncementBtn">Send now</button>
+        <button class="mini-btn secondary" id="clearAnnouncementBtn">Clear</button>
+      </div>
+
+      <div class="message" id="announcementMessage"></div>
+    </section>
+
+    <div class="section-head">
+      <h3>HOD list</h3>
+      <span>Manage</span>
+    </div>
+
+    <section class="card" id="hodListSection">
+      <div class="toolbar">
+        <input
+          id="hodSearchInput"
+          class="input"
+          placeholder="Search HOD by name, email or department"
+        />
+        <button class="chip-btn" id="refreshHodBtn">Refresh</button>
+      </div>
+
+      <div class="list-wrap" id="hodList"></div>
+    </section>
+
+    <div class="section-head">
+      <h3>Recent announcements</h3>
+      <span>View all</span>
+    </div>
+
+    <section class="card">
+      <div class="list-wrap" id="announcementList"></div>
+    </section>
+
+    <div class="section-head">
+      <h3>School search</h3>
+    </div>
+
+    <section class="card" id="searchSection">
+      <div class="toolbar">
+        <input
+          id="schoolSearchInput"
+          class="input"
+          placeholder="Search student, lecturer, matric no or staff ID"
+        />
+        <button class="chip-btn" id="runSchoolSearchBtn">Search</button>
+      </div>
+
+      <div class="list-wrap" id="schoolSearchResults"></div>
     </section>
   </div>
 
-  <nav class="bottom-nav" aria-label="Bottom navigation">
-    <button class="nav-btn active" type="button">
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M3 10.5 12 3l9 7.5"></path>
-          <path d="M5 9.5V21h14V9.5"></path>
-        </svg>
-      </div>
-      <span>Home</span>
+  <nav class="bottom-nav">
+    <button class="nav-btn active">
+      <span class="nav-inner">
+        <span class="nav-icon">⌂</span>
+        <span>Home</span>
+      </span>
     </button>
 
-    <button class="nav-btn" type="button">
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9.5" cy="7" r="3"></circle>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-      </div>
-      <span>HODs</span>
+    <button class="nav-btn">
+      <span class="nav-inner">
+        <span class="nav-icon">👤</span>
+        <span>HODs</span>
+      </span>
     </button>
 
-    <button class="nav-btn" type="button">
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M4 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H6a2 2 0 0 0-2 2Z"></path>
-        </svg>
-      </div>
-      <span>Announcements</span>
+    <button class="nav-btn">
+      <span class="nav-inner">
+        <span class="nav-icon">📢</span>
+        <span>Announcements</span>
+      </span>
     </button>
 
-    <button class="nav-btn" type="button">
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <circle cx="12" cy="8" r="4"></circle>
-          <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-        </svg>
-      </div>
-      <span>Account</span>
+    <button class="nav-btn">
+      <span class="nav-inner">
+        <span class="nav-icon">⌕</span>
+        <span>Search</span>
+      </span>
+    </button>
+
+    <button class="nav-btn">
+      <span class="nav-inner">
+        <span class="nav-icon">☰</span>
+        <span>More</span>
+      </span>
     </button>
   </nav>
 
   <script>
-    const profileBtn = document.getElementById("profileBtn");
-    const profileMenu = document.getElementById("profileMenu");
-
-    profileBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      profileMenu.classList.toggle("show");
-    });
-
-    document.addEventListener("click", function (e) {
-      if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
-        profileMenu.classList.remove("show");
+    const hosSession = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
       }
+    })();
+
+    if (!hosSession || String(hosSession.role || "").toLowerCase() !== "hos") {
+      window.location.href = "index.html";
+    }
+
+    const schoolName = hosSession?.school_name || "Ekiti State University";
+    const fullName = hosSession?.full_name || "Head of School";
+
+    const state = {
+      hods: [
+        {
+          id: "hod_1",
+          full_name: "Dr. Emily Johnson",
+          department: "Computer Science",
+          email: "emily.j@eksu.edu.ng",
+          login_id: "HOD-COMP-12834",
+          is_active: true
+        },
+        {
+          id: "hod_2",
+          full_name: "Prof. Mark Adewale",
+          department: "Business Administration",
+          email: "mark.a@eksu.edu.ng",
+          login_id: "HOD-BUSI-12857",
+          is_active: false
+        },
+        {
+          id: "hod_3",
+          full_name: "Dr. Ruth Akinola",
+          department: "Accounting",
+          email: "ruth.a@eksu.edu.ng",
+          login_id: "HOD-ACCO-12901",
+          is_active: true
+        }
+      ],
+      announcements: [
+        {
+          title: "Update Attendance Records",
+          audience: "All Departments",
+          message: "All departments should update attendance records before Friday by 4 PM.",
+          time: "1 hour ago"
+        },
+        {
+          title: "Staff Meeting at 2 PM",
+          audience: "All HODs",
+          message: "There will be a school management meeting today by 2 PM in the Senate building.",
+          time: "Yesterday"
+        }
+      ],
+      searchResults: [
+        { name: "Adebayo Joshua", sub: "Student • Computer Science • 230903174" },
+        { name: "Archibong Mary Mfon", sub: "Student • Chemistry • 230902061" },
+        { name: "Dr. Gabriel Timilehin", sub: "Lecturer • Computer Science • STF-1042" }
+      ]
+    };
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function randomDigits(len = 5) {
+      let out = "";
+      for (let i = 0; i < len; i++) out += Math.floor(Math.random() * 10);
+      return out;
+    }
+
+    function randomPassword(len = 8) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "";
+      for (let i = 0; i < len; i++) {
+        out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    }
+
+    function makeLoginId(department) {
+      const clean = String(department || "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 4) || "HOD";
+      return `HOD-${clean}-${randomDigits(5)}`;
+    }
+
+    function showMessage(id, text, type) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = text || "";
+      el.className = "message";
+      if (text) el.classList.add(type === "error" ? "error" : "success");
+    }
+
+    function clearMessage(id) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = "";
+      el.className = "message";
+    }
+
+    function scrollToSection(id) {
+      const el = $(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function updateHeader() {
+      $("heroSchoolName").textContent = `Hello, ${schoolName}`;
+      $("lockedSchoolName").textContent = schoolName;
+
+      const initials = fullName
+        .split(" ")
+        .filter(Boolean)
+        .map(part => part[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase() || "H";
+
+      $("hosAvatar").textContent = initials;
+    }
+
+    function updateStats() {
+      $("statHods").textContent = state.hods.length;
+      $("statDepartments").textContent = new Set(state.hods.map(h => h.department)).size || 18;
+      $("statLecturers").textContent = 165;
+      $("statStudents").textContent = 8420;
+    }
+
+    function renderHods() {
+      const q = ($("hodSearchInput").value || "").trim().toLowerCase();
+      const wrap = $("hodList");
+      wrap.innerHTML = "";
+
+      const items = state.hods.filter(item => {
+        return (
+          item.full_name.toLowerCase().includes(q) ||
+          item.department.toLowerCase().includes(q) ||
+          item.email.toLowerCase().includes(q) ||
+          item.login_id.toLowerCase().includes(q)
+        );
+      });
+
+      if (!items.length) {
+        wrap.innerHTML = `
+          <div class="hod-card">
+            <div class="hod-name">No HOD found</div>
+            <div class="hod-sub">Try another search term.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = items.map(item => `
+        <div class="hod-card">
+          <div class="hod-top">
+            <div>
+              <div class="hod-name">${item.full_name}</div>
+              <div class="hod-sub">${item.department} • ${schoolName}</div>
+            </div>
+            <div class="status-pill ${item.is_active ? "active" : "disabled"}">
+              ${item.is_active ? "active" : "disabled"}
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-info">
+              <div class="mini-info-label">Email</div>
+              <div class="mini-info-value">${item.email}</div>
+            </div>
+            <div class="mini-info">
+              <div class="mini-info-label">Login ID</div>
+              <div class="mini-info-value">${item.login_id}</div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="action-chip blue" onclick="copyLoginId('${item.login_id}')">Copy login</button>
+            <button class="action-chip amber" onclick="resetHodPassword('${item.id}')">Reset</button>
+            <button class="action-chip red" onclick="toggleHodStatus('${item.id}')">
+              ${item.is_active ? "Disable" : "Enable"}
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderAnnouncements() {
+      const wrap = $("announcementList");
+      wrap.innerHTML = "";
+
+      if (!state.announcements.length) {
+        wrap.innerHTML = `
+          <div class="announcement-card">
+            <div class="announcement-title">No announcements yet</div>
+            <div class="announcement-meta">Create one above.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = state.announcements.map(item => `
+        <div class="announcement-card">
+          <div class="announcement-top">
+            <div>
+              <div class="announcement-title">${item.title}</div>
+              <div class="announcement-meta">${item.time}</div>
+            </div>
+            <div class="tag">${item.audience}</div>
+          </div>
+          <div class="search-sub" style="color:#0f172a;">${item.message}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderSearchResults(results = []) {
+      const wrap = $("schoolSearchResults");
+      wrap.innerHTML = "";
+
+      if (!results.length) {
+        wrap.innerHTML = `
+          <div class="search-card">
+            <div class="search-name">No result</div>
+            <div class="search-sub">Try another name, matric number, or staff ID.</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = results.map(item => `
+        <div class="search-card">
+          <div class="search-name">${item.name}</div>
+          <div class="search-sub">${item.sub}</div>
+        </div>
+      `).join("");
+    }
+
+    function createHodAccount() {
+      clearMessage("createHodMessage");
+
+      const full_name = ($("hodFullName").value || "").trim();
+      const department = ($("hodDepartment").value || "").trim();
+      const email = ($("hodEmail").value || "").trim().toLowerCase();
+
+      if (!full_name) {
+        showMessage("createHodMessage", "Please enter the full name.", "error");
+        return;
+      }
+
+      if (!department) {
+        showMessage("createHodMessage", "Please choose the department.", "error");
+        return;
+      }
+
+      if (!email) {
+        showMessage("createHodMessage", "Please enter the email address.", "error");
+        return;
+      }
+
+      const login_id = makeLoginId(department);
+      const temporary_password = randomPassword(8);
+
+      state.hods.unshift({
+        id: "hod_" + Date.now(),
+        full_name,
+        department,
+        email,
+        login_id,
+        is_active: true
+      });
+
+      $("generatedLoginId").textContent = login_id;
+      $("generatedPassword").textContent = temporary_password;
+      $("generatedBox").style.display = "block";
+
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("hodEmail").value = "";
+
+      showMessage("createHodMessage", "HOD account created successfully.", "success");
+      updateStats();
+      renderHods();
+    }
+
+    function clearHodForm() {
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("hodEmail").value = "";
+      $("generatedBox").style.display = "none";
+      $("generatedLoginId").textContent = "-";
+      $("generatedPassword").textContent = "-";
+      clearMessage("createHodMessage");
+    }
+
+    function sendAnnouncement() {
+      clearMessage("announcementMessage");
+
+      const title = ($("announcementTitle").value || "").trim();
+      const audience = ($("announcementAudience").value || "").trim();
+      const message = ($("announcementBody").value || "").trim();
+
+      if (!title) {
+        showMessage("announcementMessage", "Please enter the announcement title.", "error");
+        return;
+      }
+
+      if (!message) {
+        showMessage("announcementMessage", "Please enter the announcement message.", "error");
+        return;
+      }
+
+      state.announcements.unshift({
+        title,
+        audience,
+        message,
+        time: "Just now"
+      });
+
+      $("announcementTitle").value = "";
+      $("announcementAudience").value = "All Departments";
+      $("announcementBody").value = "";
+
+      showMessage("announcementMessage", "Announcement sent successfully.", "success");
+      renderAnnouncements();
+    }
+
+    function clearAnnouncementForm() {
+      $("announcementTitle").value = "";
+      $("announcementAudience").value = "All Departments";
+      $("announcementBody").value = "";
+      clearMessage("announcementMessage");
+    }
+
+    function runSchoolSearch() {
+      const q = ($("schoolSearchInput").value || "").trim().toLowerCase();
+
+      if (!q) {
+        renderSearchResults(state.searchResults);
+        return;
+      }
+
+      const filtered = state.searchResults.filter(item => {
+        return item.name.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q);
+      });
+
+      renderSearchResults(filtered);
+    }
+
+    window.copyLoginId = function(loginId) {
+      navigator.clipboard?.writeText(loginId);
+      alert("Login ID copied");
+    };
+
+    window.resetHodPassword = function(hodId) {
+      const hod = state.hods.find(item => item.id === hodId);
+      if (!hod) return;
+
+      const newPassword = randomPassword(8);
+      alert(`${hod.full_name} login has been reset.\n\nTemporary password: ${newPassword}`);
+    };
+
+    window.toggleHodStatus = function(hodId) {
+      const hod = state.hods.find(item => item.id === hodId);
+      if (!hod) return;
+
+      hod.is_active = !hod.is_active;
+      renderHods();
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateHeader();
+      updateStats();
+      renderHods();
+      renderAnnouncements();
+      renderSearchResults(state.searchResults);
+
+      $("createHodBtn").addEventListener("click", createHodAccount);
+      $("clearHodBtn").addEventListener("click", clearHodForm);
+
+      $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+      $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
+
+      $("runSchoolSearchBtn").addEventListener("click", runSchoolSearch);
+      $("hodSearchInput").addEventListener("input", renderHods);
+      $("refreshHodBtn").addEventListener("click", renderHods);
+
+      $("topCreateHodBtn").addEventListener("click", () => scrollToSection("createHodSection"));
+      $("topAnnouncementBtn").addEventListener("click", () => scrollToSection("announcementSection"));
+
+      $("qaCreateHod").addEventListener("click", () => scrollToSection("createHodSection"));
+      $("qaSendAnnouncement").addEventListener("click", () => scrollToSection("announcementSection"));
+      $("qaSearchSchool").addEventListener("click", () => scrollToSection("searchSection"));
+      $("qaViewHods").addEventListener("click", () => scrollToSection("hodListSection"));
+      $("jumpToAnnouncements").addEventListener("click", () => scrollToSection("announcementSection"));
     });
   </script>
 </body>
