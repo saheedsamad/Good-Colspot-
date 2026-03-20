@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Updated viewport: same as main, no zooming when typing/double-tap -->
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
@@ -30,7 +29,7 @@
     html,
     body {
       height: 100%;
-      -webkit-text-size-adjust: 100%; /* prevent iOS auto text resizing */
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -45,7 +44,6 @@
       touch-action: manipulation;
     }
 
-    /* Outer phone shell – same idea as main/session-live */
     .phone-shell {
       width: 100%;
       max-width: 420px;
@@ -57,7 +55,6 @@
       position: relative;
     }
 
-    /* ------------ Splash / loading screen ------------ */
     .splash {
       position: fixed;
       inset: 0;
@@ -103,8 +100,6 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
-    /* ------------ Auth card ------------ */
 
     .container {
       width: 100%;
@@ -164,6 +159,7 @@
       border-radius: 999px;
       padding: 4px;
       margin-bottom: 20px;
+      gap: 4px;
     }
 
     .mode-btn {
@@ -177,6 +173,7 @@
       color: var(--muted);
       font-weight: 500;
       transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
     }
 
     .mode-btn.active {
@@ -196,7 +193,7 @@
     select {
       width: 100%;
       padding: 12px 13px;
-      font-size: 17px; /* >=16px so iOS does NOT zoom on focus */
+      font-size: 17px;
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 14px;
@@ -308,7 +305,7 @@
       margin-bottom: 10px;
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
     .verify-title {
       text-align: center;
@@ -404,7 +401,6 @@
       background: var(--blue);
     }
 
-    /* New location note */
     .location-note {
       margin-top: 14px;
       font-size: 12px;
@@ -412,11 +408,25 @@
       text-align: center;
       line-height: 1.4;
     }
+
+    .admin-note {
+      margin-top: -6px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .admin-back-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Splash / loading screen shown first -->
   <div id="splash-screen" class="splash">
     <div class="splash-card">
       <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="splash-logo" />
@@ -426,7 +436,6 @@
   </div>
 
   <div class="phone-shell">
-    <!-- Auth card is hidden at first; JS will show it only if user is NOT signed in -->
     <div id="auth-shell" class="container hidden">
       <div class="card">
         <div class="logo">
@@ -443,9 +452,11 @@
           <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
             Sign up
           </button>
+          <button id="tab-admin" class="mode-btn" type="button" onclick="switchMode('admin')">
+            Admin
+          </button>
         </div>
 
-        <!-- SIGN-UP EMAIL VERIFICATION (OTP) -->
         <div id="verify-panel" class="hidden">
           <div class="verify-title">Verify your email</div>
 
@@ -471,7 +482,6 @@
           <div id="verify-message" class="message"></div>
         </div>
 
-        <!-- FORGOT PASSWORD – STEP 1: ENTER EMAIL -->
         <div id="forgot-panel" class="hidden">
           <div class="verify-title">Forgot password</div>
           <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
@@ -510,7 +520,6 @@
           <div id="forgot-message" class="message"></div>
         </div>
 
-        <!-- FORGOT PASSWORD – STEP 2 & 3: CODE + NEW PASSWORD -->
         <div id="reset-panel" class="hidden">
           <div class="verify-title">Reset your password</div>
 
@@ -567,7 +576,6 @@
           <div id="reset-message" class="message"></div>
         </div>
 
-        <!-- SIGN IN FORM -->
         <form id="signin-form">
           <label for="signin-email">Email</label>
           <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
@@ -583,7 +591,6 @@
             <span id="signin-loader" class="spinner hidden"></span>
           </button>
 
-          <!-- Contact us (left) + Forgot password? (right) -->
           <div class="bottom-row">
             <a href="contactsettings.html" class="text-link">Contact us</a>
             <button type="button" class="text-link" onclick="openForgotPasswordPage()">
@@ -594,7 +601,6 @@
           <div id="signin-message" class="message"></div>
         </form>
 
-        <!-- SIGN UP FORM -->
         <form id="signup-form" class="hidden">
           <label for="signup-fullname">Full name</label>
           <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
@@ -606,11 +612,13 @@
             <option value="lecturer">Lecturer</option>
           </select>
 
-          <!-- Extra fields for STUDENT -->
-          <div id="student-extra" class="hidden">
-            <label for="signup-matric">Matric number</label>
+          <label for="signup-schoolname">School name</label>
+          <input id="signup-schoolname" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
+
+          <div id="id-field-wrap" class="hidden">
+            <label id="signup-id-label" for="signup-matric">Matric number</label>
             <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
-            <div class="hint">
+            <div id="signup-id-hint" class="hint">
               Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
             </div>
           </div>
@@ -621,7 +629,6 @@
           <label for="signup-email">Email</label>
           <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
 
-          <!-- Hint for LECTURER email -->
           <div id="lecturer-email-hint" class="hint hidden">
             Lecturers: please use your official <strong>school email</strong>
             (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
@@ -662,6 +669,76 @@
           <div id="signup-message" class="message"></div>
         </form>
 
+        <form id="admin-form" class="hidden">
+          <div class="admin-note">
+            Admin accounts are created from above. Enter your admin ID and password.
+          </div>
+
+          <label for="admin-id">ID</label>
+          <input id="admin-id" type="text" placeholder="Enter admin ID" autocomplete="off" />
+
+          <label for="admin-password">Password</label>
+          <div class="password-row">
+            <input id="admin-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="password-toggle" onclick="togglePassword('admin-password', this)">Show</button>
+          </div>
+
+          <button id="admin-btn" type="submit" class="primary">
+            <span id="admin-text">Admin login</span>
+            <span id="admin-loader" class="spinner hidden"></span>
+          </button>
+
+          <div id="admin-message" class="message"></div>
+        </form>
+
+        <div id="admin-link-panel" class="hidden">
+          <div class="verify-title">Link your email</div>
+
+          <div class="verify-box">
+            This is your first admin login.<br>
+            Add your email to link this admin account and continue.
+          </div>
+
+          <label for="admin-link-email">Email</label>
+          <input id="admin-link-email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+          <button id="admin-link-btn" type="button" class="primary">
+            <span id="admin-link-text">Send verification code</span>
+            <span id="admin-link-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="admin-back-row">
+            <button id="admin-link-back-btn" type="button" class="text-link">Back</button>
+          </div>
+
+          <div id="admin-link-message" class="message"></div>
+        </div>
+
+        <div id="admin-verify-panel" class="hidden">
+          <div class="verify-title">Verify admin email</div>
+
+          <div class="verify-box">
+            We sent a 6-digit code to:<br>
+            <b id="admin-verify-email-label">your@email.com</b><br><br>
+            Enter the code below to finish linking this admin account.
+          </div>
+
+          <label for="admin-verify-code">Verification code</label>
+          <input id="admin-verify-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+          <button id="admin-verify-btn" type="button" class="primary">
+            <span id="admin-verify-text">Verify email</span>
+            <span id="admin-verify-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row">
+            <button id="admin-resend-btn" type="button" class="text-link">Resend code</button>
+            <button id="admin-verify-back-btn" type="button" class="text-link">Back</button>
+          </div>
+
+          <div id="admin-verify-message" class="message"></div>
+        </div>
+
         <div id="switch-row" class="bottom-row" style="margin-top:16px;">
           <span id="switch-text" style="font-size:13px; color:var(--muted);">
             Don’t have an account?
@@ -671,7 +748,6 @@
           </button>
         </div>
 
-        <!-- Short location note -->
         <p class="location-note">
           <strong>Colspot uses your location to work properly.</strong><br>
           Please allow location when asked, and make sure Location is turned ON<br>
@@ -694,65 +770,80 @@
       window.location.href = "privacy.html";
     }
 
-    // --- New role-based UI logic for Student / Lecturer ---
     (function setupRoleUI() {
-      const roleSelect = document.getElementById('signup-role');
-      const studentExtra = document.getElementById('student-extra');
-      const lecturerHint = document.getElementById('lecturer-email-hint');
-      const matricInput = document.getElementById('signup-matric');
+      const roleSelect = document.getElementById("signup-role");
+      const idFieldWrap = document.getElementById("id-field-wrap");
+      const idLabel = document.getElementById("signup-id-label");
+      const idInput = document.getElementById("signup-matric");
+      const idHint = document.getElementById("signup-id-hint");
+      const lecturerHint = document.getElementById("lecturer-email-hint");
 
       if (!roleSelect) return;
 
-      roleSelect.addEventListener('change', function () {
+      roleSelect.addEventListener("change", function () {
         const role = roleSelect.value;
 
-        if (role === 'student') {
-          if (studentExtra) studentExtra.classList.remove('hidden');
-          if (lecturerHint) lecturerHint.classList.add('hidden');
-        } else if (role === 'lecturer') {
-          if (studentExtra) {
-            studentExtra.classList.add('hidden');
-            if (matricInput) matricInput.value = '';
+        if (!role) {
+          if (idFieldWrap) idFieldWrap.classList.add("hidden");
+          if (lecturerHint) lecturerHint.classList.add("hidden");
+          if (idInput) {
+            idInput.value = "";
+            idInput.required = false;
+            idInput.placeholder = "";
           }
-          if (lecturerHint) lecturerHint.classList.remove('hidden');
-        } else {
-          if (studentExtra) studentExtra.classList.add('hidden');
-          if (lecturerHint) lecturerHint.classList.add('hidden');
-          if (matricInput) matricInput.value = '';
+          return;
+        }
+
+        if (idFieldWrap) idFieldWrap.classList.remove("hidden");
+        if (idInput) idInput.required = true;
+
+        if (role === "student") {
+          if (idLabel) idLabel.textContent = "Matric number";
+          if (idInput) idInput.placeholder = "e.g. CSC/21/1234";
+          if (idHint) {
+            idHint.innerHTML = "Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>";
+          }
+          if (lecturerHint) lecturerHint.classList.add("hidden");
+        } else if (role === "lecturer") {
+          if (idLabel) idLabel.textContent = "Staff ID";
+          if (idInput) idInput.placeholder = "Enter your staff ID";
+          if (idHint) {
+            idHint.innerHTML = "Make sure this staff ID is correct before continuing.";
+          }
+          if (lecturerHint) lecturerHint.classList.remove("hidden");
         }
       });
     })();
 
-    // --- Hard block lecturers from using personal emails on sign up ---
     (function guardLecturerEmail() {
-      const form = document.getElementById('signup-form');
-      const emailInput = document.getElementById('signup-email');
-      const roleSelect = document.getElementById('signup-role');
-      const messageEl = document.getElementById('signup-message');
+      const form = document.getElementById("signup-form");
+      const emailInput = document.getElementById("signup-email");
+      const roleSelect = document.getElementById("signup-role");
+      const messageEl = document.getElementById("signup-message");
 
       if (!form || !emailInput || !roleSelect) return;
 
       const blockedDomains = [
-        'gmail.com', 'gmail.com.ng',
-        'yahoo.com', 'yahoo.com.ng',
-        'hotmail.com',
-        'outlook.com', 'outlook.com.ng',
-        'live.com', 'live.com.ng',
-        'icloud.com', 'me.com',
-        'aol.com',
-        'gmx.com',
-        'protonmail.com', 'proton.me',
-        'yandex.com',
-        'zoho.com'
+        "gmail.com", "gmail.com.ng",
+        "yahoo.com", "yahoo.com.ng",
+        "hotmail.com",
+        "outlook.com", "outlook.com.ng",
+        "live.com", "live.com.ng",
+        "icloud.com", "me.com",
+        "aol.com",
+        "gmx.com",
+        "protonmail.com", "proton.me",
+        "yandex.com",
+        "zoho.com"
       ];
 
-      form.addEventListener('submit', function (event) {
+      form.addEventListener("submit", function (event) {
         const role = roleSelect.value;
-        if (role !== 'lecturer') return; // only block lecturers
+        if (role !== "lecturer") return;
 
-        const rawEmail = (emailInput.value || '').trim().toLowerCase();
-        const atIndex = rawEmail.lastIndexOf('@');
-        const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : '';
+        const rawEmail = (emailInput.value || "").trim().toLowerCase();
+        const atIndex = rawEmail.lastIndexOf("@");
+        const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : "";
 
         const isBlockedDomain = blockedDomains.includes(domain);
         const looksGenericPersonal = /gmail\.|yahoo\.|hotmail\.|outlook\.|icloud\.|live\.|gmx\.|proton|yandex\.|aol\.|zoho\./.test(domain);
@@ -760,13 +851,13 @@
 
         if (!domain || isBlockedDomain || (looksGenericPersonal && !isProbablySchool)) {
           event.preventDefault();
-          event.stopImmediatePropagation(); // stop auth.js from running
+          event.stopImmediatePropagation();
 
           if (messageEl) {
             messageEl.textContent =
-              'Lecturers must sign up with an official school email (e.g. name@university.edu), not a personal email like Gmail/Yahoo/Outlook.';
-            messageEl.classList.remove('success');
-            messageEl.classList.add('error');
+              "Lecturers must sign up with an official school email (e.g. name@university.edu), not a personal email like Gmail/Yahoo/Outlook.";
+            messageEl.classList.remove("success");
+            messageEl.classList.add("error");
           }
 
           emailInput.focus();
@@ -775,9 +866,407 @@
     })();
   </script>
 
-  <!-- Supabase client -->
   <script type="module" src="./client_supabase.js"></script>
-  <!-- Auth logic -->
   <script src="./auth.js"></script>
+
+  <script>
+    (function adminFrontendBridge() {
+      const titleEl = document.getElementById("card-title");
+      const subEl = document.getElementById("card-subtitle");
+
+      const tabSignin = document.getElementById("tab-signin");
+      const tabSignup = document.getElementById("tab-signup");
+      const tabAdmin = document.getElementById("tab-admin");
+
+      const modeToggle = document.getElementById("mode-toggle");
+      const switchRow = document.getElementById("switch-row");
+
+      const signinForm = document.getElementById("signin-form");
+      const signupForm = document.getElementById("signup-form");
+
+      const verifyPanel = document.getElementById("verify-panel");
+      const forgotPanel = document.getElementById("forgot-panel");
+      const resetPanel = document.getElementById("reset-panel");
+
+      const adminForm = document.getElementById("admin-form");
+      const adminLinkPanel = document.getElementById("admin-link-panel");
+      const adminVerifyPanel = document.getElementById("admin-verify-panel");
+
+      const adminMessage = document.getElementById("admin-message");
+      const adminLinkMessage = document.getElementById("admin-link-message");
+      const adminVerifyMessage = document.getElementById("admin-verify-message");
+
+      const adminVerifyEmailLabel = document.getElementById("admin-verify-email-label");
+
+      const adminIdInput = document.getElementById("admin-id");
+      const adminPasswordInput = document.getElementById("admin-password");
+      const adminLinkEmailInput = document.getElementById("admin-link-email");
+      const adminVerifyCodeInput = document.getElementById("admin-verify-code");
+
+      function setButtonLoading(btnId, textId, loaderId, isLoading) {
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+        const loader = document.getElementById(loaderId);
+
+        if (!btn) return;
+        btn.disabled = isLoading;
+
+        if (text && loader) {
+          if (isLoading) {
+            text.classList.add("hidden");
+            loader.classList.remove("hidden");
+          } else {
+            text.classList.remove("hidden");
+            loader.classList.add("hidden");
+          }
+        }
+      }
+
+      function clearAdminMessages() {
+        [adminMessage, adminLinkMessage, adminVerifyMessage].forEach((el) => {
+          if (!el) return;
+          el.textContent = "";
+          el.className = "message";
+        });
+      }
+
+      function setActive(tab) {
+        [tabSignin, tabSignup, tabAdmin].forEach((btn) => btn && btn.classList.remove("active"));
+        if (tab) tab.classList.add("active");
+      }
+
+      function hideAllPanels() {
+        [signinForm, signupForm, verifyPanel, forgotPanel, resetPanel, adminForm, adminLinkPanel, adminVerifyPanel]
+          .forEach((el) => el && el.classList.add("hidden"));
+      }
+
+      function showAdminLogin() {
+        hideAllPanels();
+        if (titleEl) titleEl.textContent = "Admin login";
+        if (subEl) subEl.textContent = "Sign in to your Colspot admin account";
+        if (modeToggle) modeToggle.classList.remove("hidden");
+        if (switchRow) switchRow.classList.add("hidden");
+        if (adminForm) adminForm.classList.remove("hidden");
+        clearAdminMessages();
+        setActive(tabAdmin);
+      }
+
+      function showAdminLinkEmail(prefill = "") {
+        hideAllPanels();
+        if (titleEl) titleEl.textContent = "Link your email";
+        if (subEl) subEl.textContent = "Add your email to continue";
+        if (modeToggle) modeToggle.classList.add("hidden");
+        if (switchRow) switchRow.classList.add("hidden");
+        if (adminLinkPanel) adminLinkPanel.classList.remove("hidden");
+        if (adminLinkEmailInput) adminLinkEmailInput.value = prefill || "";
+        clearAdminMessages();
+      }
+
+      function showAdminVerify(email = "") {
+        hideAllPanels();
+        if (titleEl) titleEl.textContent = "Verify admin email";
+        if (subEl) subEl.textContent = "Enter the code sent to your email";
+        if (modeToggle) modeToggle.classList.add("hidden");
+        if (switchRow) switchRow.classList.add("hidden");
+        if (adminVerifyPanel) adminVerifyPanel.classList.remove("hidden");
+        if (adminVerifyEmailLabel) adminVerifyEmailLabel.textContent = email || "";
+        if (adminVerifyCodeInput) adminVerifyCodeInput.value = "";
+        clearAdminMessages();
+      }
+
+      function restoreNormalMode(mode) {
+        clearAdminMessages();
+        if (mode === "signup") {
+          if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
+            window.switchMode.__original__("signup");
+          } else if (typeof window.switchMode === "function") {
+            window.switchMode("signup");
+          }
+        } else {
+          if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
+            window.switchMode.__original__("signin");
+          } else if (typeof window.switchMode === "function") {
+            window.switchMode("signin");
+          }
+        }
+      }
+
+      function getPendingAdmin() {
+        try {
+          return JSON.parse(localStorage.getItem("colspot_pending_admin") || "null");
+        } catch {
+          return null;
+        }
+      }
+
+      function savePendingAdmin(data) {
+        localStorage.setItem("colspot_pending_admin", JSON.stringify(data || null));
+      }
+
+      function clearPendingAdmin() {
+        localStorage.removeItem("colspot_pending_admin");
+      }
+
+      function saveAdminSession(admin) {
+        localStorage.setItem("colspot_admin_session", JSON.stringify(admin));
+      }
+
+      function goToDashboard(role) {
+        if (role === "super_admin") {
+          window.location.href = "super_admin.html";
+        } else if (role === "hos") {
+          window.location.href = "hos.html";
+        } else if (role === "hod") {
+          window.location.href = "hod.html";
+        } else {
+          if (adminMessage) {
+            adminMessage.textContent = "Unknown admin role.";
+            adminMessage.className = "message error";
+          }
+        }
+      }
+
+      async function invokeEdge(functionName, body) {
+        if (!window.supabase) {
+          throw new Error("Supabase is not ready yet.");
+        }
+
+        const { data, error } = await window.supabase.functions.invoke(functionName, { body });
+
+        if (error) {
+          throw new Error(error.message || "Edge Function request failed.");
+        }
+
+        return data;
+      }
+
+      const originalSwitchMode = window.switchMode;
+      const originalToggleAuthMode = window.toggleAuthMode;
+
+      window.switchMode = function(mode) {
+        if (mode === "admin") {
+          showAdminLogin();
+          return;
+        }
+
+        clearPendingAdmin();
+
+        if (typeof originalSwitchMode === "function") {
+          return originalSwitchMode(mode);
+        }
+      };
+      window.switchMode.__wrapped_admin__ = true;
+      window.switchMode.__original__ = originalSwitchMode;
+
+      window.toggleAuthMode = function() {
+        if (
+          !adminForm.classList.contains("hidden") ||
+          !adminLinkPanel.classList.contains("hidden") ||
+          !adminVerifyPanel.classList.contains("hidden")
+        ) {
+          return restoreNormalMode("signin");
+        }
+
+        if (typeof originalToggleAuthMode === "function") {
+          return originalToggleAuthMode();
+        }
+      };
+
+      adminForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearAdminMessages();
+
+        const loginId = (adminIdInput?.value || "").trim();
+        const password = adminPasswordInput?.value || "";
+
+        if (!loginId || !password) {
+          adminMessage.textContent = "Please enter ID and password.";
+          adminMessage.className = "message error";
+          return;
+        }
+
+        try {
+          setButtonLoading("admin-btn", "admin-text", "admin-loader", true);
+
+          const result = await invokeEdge("admin-login", {
+            login_id: loginId,
+            password
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Admin login failed.");
+          }
+
+          const admin = result.admin || {};
+          saveAdminSession(admin);
+
+          if (admin.needs_email_link) {
+            savePendingAdmin({
+              id: admin.id,
+              role: admin.role,
+              login_id: admin.login_id,
+              linked_email: admin.linked_email || ""
+            });
+            showAdminLinkEmail(admin.linked_email || "");
+            return;
+          }
+
+          goToDashboard(admin.role);
+        } catch (err) {
+          console.error(err);
+          adminMessage.textContent = err.message || "Could not connect to admin login.";
+          adminMessage.className = "message error";
+        } finally {
+          setButtonLoading("admin-btn", "admin-text", "admin-loader", false);
+        }
+      });
+
+      document.getElementById("admin-link-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        const email = (adminLinkEmailInput?.value || "").trim().toLowerCase();
+
+        if (!pending?.id) {
+          adminLinkMessage.textContent = "Admin session not found. Please login again.";
+          adminLinkMessage.className = "message error";
+          return;
+        }
+
+        if (!email) {
+          adminLinkMessage.textContent = "Please enter your email.";
+          adminLinkMessage.className = "message error";
+          return;
+        }
+
+        try {
+          setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", true);
+
+          const result = await invokeEdge("admin-send-link-email", {
+            admin_id: pending.id,
+            email
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Could not send verification code.");
+          }
+
+          savePendingAdmin({
+            ...pending,
+            email
+          });
+
+          showAdminVerify(email);
+
+          if (adminVerifyMessage) {
+            if (result.dev_otp) {
+              adminVerifyMessage.textContent = "Verification code sent. Dev OTP: " + result.dev_otp;
+            } else {
+              adminVerifyMessage.textContent = result.message || "Verification code sent successfully.";
+            }
+            adminVerifyMessage.className = "message success";
+          }
+        } catch (err) {
+          console.error(err);
+          adminLinkMessage.textContent = err.message || "Could not send verification code.";
+          adminLinkMessage.className = "message error";
+        } finally {
+          setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", false);
+        }
+      });
+
+      document.getElementById("admin-verify-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        const code = (adminVerifyCodeInput?.value || "").trim();
+
+        if (!pending?.id || !pending?.email) {
+          adminVerifyMessage.textContent = "Admin session not found. Please login again.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        if (!code) {
+          adminVerifyMessage.textContent = "Please enter the verification code.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        try {
+          setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", true);
+
+          const result = await invokeEdge("admin-verify-link-email", {
+            admin_id: pending.id,
+            email: pending.email,
+            code
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Verification failed.");
+          }
+
+          const admin = result.admin || {};
+          saveAdminSession(admin);
+          clearPendingAdmin();
+
+          adminVerifyMessage.textContent = "Email verified successfully. Redirecting...";
+          adminVerifyMessage.className = "message success";
+
+          setTimeout(() => {
+            goToDashboard(admin.role);
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          adminVerifyMessage.textContent = err.message || "Verification failed.";
+          adminVerifyMessage.className = "message error";
+        } finally {
+          setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", false);
+        }
+      });
+
+      document.getElementById("admin-resend-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        if (!pending?.id || !pending?.email) {
+          adminVerifyMessage.textContent = "Admin session not found. Please login again.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        try {
+          const result = await invokeEdge("admin-send-link-email", {
+            admin_id: pending.id,
+            email: pending.email
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Could not resend code.");
+          }
+
+          if (result.dev_otp) {
+            adminVerifyMessage.textContent = "New code sent. Dev OTP: " + result.dev_otp;
+          } else {
+            adminVerifyMessage.textContent = result.message || "A new verification code has been sent.";
+          }
+          adminVerifyMessage.className = "message success";
+        } catch (err) {
+          console.error(err);
+          adminVerifyMessage.textContent = err.message || "Could not resend code.";
+          adminVerifyMessage.className = "message error";
+        }
+      });
+
+      document.getElementById("admin-link-back-btn")?.addEventListener("click", () => {
+        showAdminLogin();
+      });
+
+      document.getElementById("admin-verify-back-btn")?.addEventListener("click", () => {
+        const pending = getPendingAdmin();
+        showAdminLinkEmail(pending?.email || "");
+      });
+    })();
+  </script>
 </body>
 </html>
