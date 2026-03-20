@@ -9,777 +9,882 @@
   <title>Colspot – Authentication</title>
 
   <style>
-    :root{
-      --blue:#2f64e3;
-      --blue-dark:#1f4fc8;
-      --blue-soft:#dfe9ff;
-      --bg:#f3f6fb;
-      --card:#ffffff;
-      --text:#101828;
-      --muted:#667085;
-      --line:#d9e2f1;
-      --field:#f8fafc;
-      --shadow:0 18px 42px rgba(15,23,42,.08);
-      --radius:26px;
-      --success:#16a34a;
-      --error:#dc2626;
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1e40af;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --error: #dc2626;
+      --success: #16a34a;
     }
 
-    *{
-      box-sizing:border-box;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
     }
 
-    html,body{
-      margin:0;
-      min-height:100%;
-      background:radial-gradient(circle at top,#eaf1ff 0%,#f6f8fd 48%,#ffffff 100%);
-      -webkit-text-size-adjust:100%;
+    html,
+    body {
+      height: 100%;
+      -webkit-text-size-adjust: 100%;
     }
 
-    body{
-      display:flex;
-      justify-content:center;
-      align-items:stretch;
-      touch-action:manipulation;
-      overscroll-behavior:none;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #e5f0ff, #f8fbff);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 0;
+      overscroll-behavior: none;
+      touch-action: manipulation;
     }
 
-    .phone-shell{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 18px);
+    .phone-shell {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      padding: calc(env(safe-area-inset-top) + 8px) 14px calc(env(safe-area-inset-bottom) + 16px);
+      position: relative;
     }
 
-    .hidden{display:none !important;}
-
-    .screen-card{
-      width:100%;
-      background:var(--card);
-      border-radius:28px;
-      box-shadow:var(--shadow);
-      padding:22px 18px 20px;
-      animation:fadeIn .22s ease;
+    .splash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #e5f0ff, #f8fbff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
     }
 
-    @keyframes fadeIn{
-      from{opacity:0;transform:translateY(8px)}
-      to{opacity:1;transform:translateY(0)}
+    .splash-card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 32px 32px 28px;
+      box-shadow: 0 18px 45px rgba(15,23,42,0.20);
+      text-align: center;
     }
 
-    .logo{
-      text-align:center;
-      margin-bottom:10px;
+    .splash-logo {
+      height: 72px;
+      width: auto;
+      border-radius: 16px;
+      object-fit: cover;
+      margin-bottom: 16px;
     }
 
-    .logo img{
-      width:auto;
-      height:62px;
-      object-fit:contain;
-      border-radius:14px;
+    .splash-text {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 12px;
     }
 
-    .title{
-      margin:4px 0 6px;
-      text-align:center;
-      color:#0f172a;
-      font-size:30px;
-      font-weight:800;
-      line-height:1.08;
+    .splash-spinner {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 3px solid rgba(37,99,235,0.25);
+      border-top-color: var(--blue);
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
     }
 
-    .subtitle{
-      margin:0 0 18px;
-      text-align:center;
-      color:#5871a8;
-      font-size:15px;
-      line-height:1.4;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    .role-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
+    .container {
+      width: 100%;
+      max-width: 420px;
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 12px 6px 0;
+      margin: 0 auto;
     }
 
-    .role-card{
-      background:#fff;
-      border:1px solid #edf2fa;
-      border-radius:24px;
-      box-shadow:0 16px 34px rgba(15,23,42,.06);
-      padding:14px 12px 16px;
-      text-align:center;
-      cursor:pointer;
-      transition:transform .15s ease;
+    .card {
+      width: 100%;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+      animation: fadeIn 0.35s ease;
     }
 
-    .role-card:active{transform:scale(.985);}
-
-    .role-illustration{
-      height:124px;
-      border-radius:20px;
-      background:linear-gradient(180deg,#f6f9ff 0%,#eef3ff 100%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin-bottom:14px;
-      overflow:hidden;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .role-svg{
-      width:108px;
-      height:108px;
+    .logo {
+      text-align: center;
+      margin-bottom: 12px;
     }
 
-    .role-btn{
-      width:100%;
-      border-radius:18px;
-      padding:13px 8px;
-      border:2px solid var(--blue);
-      background:#fff;
-      color:var(--blue);
-      font-size:16px;
-      font-weight:700;
-      cursor:pointer;
+    .logo img {
+      height: 52px;
+      width: auto;
+      display: inline-block;
+      border-radius: 12px;
+      object-fit: cover;
     }
 
-    .role-card.admin .role-btn{
-      background:var(--blue);
-      color:#fff;
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin: 4px 0 4px;
+      color: var(--text);
     }
 
-    .back-btn{
-      border:none;
-      background:transparent;
-      color:var(--blue);
-      font-size:14px;
-      font-weight:600;
-      padding:0;
-      margin:2px 0 14px;
-      cursor:pointer;
-      text-align:left;
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 18px;
     }
 
-    .auth-heading{
-      text-align:center;
-      margin-bottom:14px;
+    .mode-toggle {
+      display: flex;
+      background: #e5edff;
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 20px;
     }
 
-    .auth-heading h1{
-      margin:0 0 6px;
-      font-size:24px;
-      color:var(--text);
+    .mode-btn {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      padding: 8px 0;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s;
     }
 
-    .auth-heading p{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
+    .mode-btn.active {
+      background: #ffffff;
+      color: var(--blue);
+      box-shadow: 0 4px 10px rgba(37,99,235,0.25);
     }
 
-    .segmented{
-      display:flex;
-      background:#dfe8fb;
-      border-radius:999px;
-      padding:4px;
-      margin-bottom:18px;
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
     }
 
-    .segmented button{
-      flex:1;
-      border:none;
-      background:transparent;
-      border-radius:999px;
-      padding:10px 0;
-      font-size:14px;
-      font-weight:600;
-      color:#64748b;
-      cursor:pointer;
+    input,
+    select {
+      width: 100%;
+      padding: 12px 13px;
+      font-size: 17px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      background: #f9fafb;
+      color: var(--text);
     }
 
-    .segmented button.active{
-      background:#fff;
-      color:var(--blue);
-      box-shadow:0 5px 12px rgba(37,99,235,.16);
+    input:focus,
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+      background: #ffffff;
     }
 
-    label{
-      display:block;
-      font-size:13px;
-      color:#667085;
-      margin-bottom:6px;
+    button.primary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: var(--blue);
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s, transform 0.05s;
+      margin-top: 4px;
     }
 
-    input,select{
-      width:100%;
-      border:1px solid var(--line);
-      background:var(--field);
-      border-radius:16px;
-      padding:14px 14px;
-      font-size:16px;
-      color:var(--text);
-      outline:none;
-      margin-bottom:14px;
+    button.primary:hover {
+      background: var(--blue-dark);
     }
 
-    input:focus,select:focus{
-      border-color:var(--blue);
-      box-shadow:0 0 0 3px rgba(47,100,227,.12);
-      background:#fff;
+    button.primary:active {
+      transform: scale(0.98);
     }
 
-    .password-row{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:14px;
+    button.primary:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
     }
 
-    .password-row input{
-      flex:1;
-      margin-bottom:0;
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: auto;
     }
 
-    .password-toggle{
-      min-width:86px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:#7b8294;
-      border-radius:999px;
-      padding:11px 10px;
-      font-size:13px;
-      cursor:pointer;
+    .message {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+      min-height: 18px;
     }
 
-    .primary-btn{
-      width:100%;
-      border:none;
-      border-radius:16px;
-      padding:15px 14px;
-      font-size:17px;
-      font-weight:700;
-      color:#fff;
-      background:linear-gradient(180deg,var(--blue) 0%, var(--blue-dark) 100%);
-      box-shadow:0 14px 28px rgba(47,100,227,.22);
-      cursor:pointer;
+    .error { color: var(--error); }
+    .success { color: var(--success); }
+
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 13px;
+      gap: 10px;
     }
 
-    .form-links{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-top:14px;
+    .bottom-row.small {
+      margin-top: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
-    .text-link{
-      border:none;
-      background:transparent;
-      padding:0;
-      color:var(--blue);
-      font-size:13px;
-      font-weight:500;
-      cursor:pointer;
-      text-decoration:none;
+    .text-link {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
     }
 
-    .form-message{
-      text-align:center;
-      min-height:18px;
-      margin-top:10px;
-      font-size:13px;
+    .text-link:hover {
+      text-decoration: underline;
     }
 
-    .success{color:var(--success);}
-    .error{color:var(--error);}
-
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:-6px;
-      margin-bottom:10px;
-      line-height:1.4;
+    .link-inline {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-size: 13px;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
     }
 
-    .small-note{
-      margin-top:14px;
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.45;
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -6px;
+      margin-bottom: 10px;
     }
 
-    /* ADMIN EXACT LOOK */
-    .admin-shell{
-      background:#fff;
-      border-radius:28px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      animation:fadeIn .22s ease;
+    .hidden { display: none; }
+
+    .verify-title {
+      text-align: center;
+      font-size: 18px;
+      margin: 6px 0 6px;
+      color: var(--text);
+      font-weight: 700;
     }
 
-    .admin-top{
-      padding:16px 16px 0;
+    .verify-box {
+      background: #f1f5ff;
+      border: 1px solid #dbeafe;
+      padding: 12px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 14px;
+      text-align: center;
     }
 
-    .admin-header-title{
-      margin:6px 0 0;
-      text-align:center;
-      font-size:31px;
-      font-weight:800;
-      color:#0f172a;
-      line-height:1.1;
+    .password-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 8px;
     }
 
-    .admin-tabs-wrap{
-      padding:0 16px 0;
+    .password-row input {
+      margin-bottom: 0;
+      flex: 1;
     }
 
-    .admin-tabs{
-      display:flex;
-      align-items:center;
-      gap:0;
-      background:#fff;
-      border-radius:26px 26px 0 0;
-      overflow:hidden;
-      margin-top:6px;
+    .password-toggle {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--muted);
+      min-width: 74px;
     }
 
-    .admin-tab{
-      flex:1;
-      text-align:center;
-      padding:16px 6px;
-      color:#3f4a5d;
-      font-size:17px;
-      position:relative;
-      background:#fff;
+    .password-toggle:hover {
+      background: #e5e7eb;
     }
 
-    .admin-tab + .admin-tab{
-      border-left:1px solid #edf2fa;
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0 16px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-    .admin-tab.active{
-      margin:8px 0 8px 8px;
-      border-radius:20px;
-      background:var(--blue);
-      color:#fff;
-      font-weight:700;
-      border-left:none;
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
     }
 
-    .admin-tab.placeholder{
-      pointer-events:none;
+    .step-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid #cbd5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin-bottom: 4px;
+      background: #e5edff;
+      color: #64748b;
     }
 
-    .admin-body{
-      padding:20px 16px 18px;
-      background:#fff;
+    .step.active .step-circle {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
     }
 
-    .admin-title{
-      margin:0 0 6px;
-      font-size:25px;
-      font-weight:800;
-      color:#101828;
+    .step-line {
+      height: 2px;
+      background: #cbd5f5;
+      margin: 0 4px;
+      flex: 1;
     }
 
-    .admin-sub{
-      margin:0 0 18px;
-      color:#6b7280;
-      font-size:14px;
-      line-height:1.4;
+    .step-line.active {
+      background: var(--blue);
     }
 
-    .admin-input-label{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:#344054;
-      font-size:15px;
-      font-weight:500;
-      margin-bottom:8px;
-    }
-
-    .icon{
-      width:22px;
-      height:22px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      color:#667085;
-      flex-shrink:0;
-    }
-
-    .icon svg{
-      width:22px;
-      height:22px;
-      stroke:currentColor;
-    }
-
-    .admin-links{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:16px;
-    }
-
-    .admin-links .text-link{
-      font-size:14px;
-    }
-
-    @media (max-width:390px){
-      .role-grid{gap:10px;}
-      .role-illustration{height:104px;}
-      .role-svg{width:90px;height:90px;}
-      .role-btn{font-size:15px;padding:12px 8px;}
-      .title{font-size:26px;}
-      .admin-header-title{font-size:28px;}
+    .location-note {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
     }
   </style>
 </head>
+
 <body>
+  <div id="splash-screen" class="splash">
+    <div class="splash-card">
+      <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="splash-logo" />
+      <div class="splash-text">Getting things ready…</div>
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
+
   <div class="phone-shell">
-    <!-- ROLE CHOICE -->
-    <section id="role-choice-screen" class="screen-card">
-      <div class="logo">
-        <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
-      </div>
-
-      <div class="title">Welcome!</div>
-      <div class="subtitle">How would you like to proceed?</div>
-
-      <div class="role-grid">
-        <div class="role-card" onclick="openRoleScreen('student')">
-          <div class="role-illustration">
-            <svg class="role-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="46" fill="#DDE5F7"/>
-              <path d="M41 80V60C41 49.5 49.5 41 60 41C70.5 41 79 49.5 79 60V80" fill="#1D6FE8"/>
-              <circle cx="60" cy="42" r="13" fill="#F3B285"/>
-              <path d="M48 39C48 29 55 24 63 24C73 24 79 31 79 39V43H48V39Z" fill="#1D2D6A"/>
-              <path d="M55 57L89 64L82 88L48 81L55 57Z" fill="#2380F0"/>
-              <path d="M58 60L84 65" stroke="#BFE0FF" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M57 66L83 71" stroke="#BFE0FF" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M56 72L77 76" stroke="#BFE0FF" stroke-width="2.6" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <button class="role-btn" type="button">Student</button>
-        </div>
-
-        <div class="role-card" onclick="openRoleScreen('lecturer')">
-          <div class="role-illustration">
-            <svg class="role-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="46" fill="#DDE5F7"/>
-              <circle cx="58" cy="41" r="13" fill="#F3B285"/>
-              <path d="M47 39C47 29 54 24 62 24C72 24 78 31 78 39V43H47V39Z" fill="#1D2D6A"/>
-              <path d="M36 85V64C36 52 45 45 57 45H59C71 45 80 52 80 64V85" fill="#A9C7F5"/>
-              <path d="M59 50L66 57L59 64L52 57L59 50Z" fill="#245FE2"/>
-              <path d="M57 64H61L64 85H54L57 64Z" fill="#1D4FC8"/>
-              <path d="M68 58L90 64V92L68 87V58Z" fill="#2380F0"/>
-              <path d="M89 64L94 66V94L89 92V64Z" fill="#1B66D1"/>
-              <path d="M84 56C92 57 96 63 96 70" stroke="#7A8FBF" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <button class="role-btn" type="button">Lecturer</button>
-        </div>
-
-        <div class="role-card admin" onclick="openRoleScreen('admin')">
-          <div class="role-illustration">
-            <svg class="role-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="46" fill="#DDE5F7"/>
-              <circle cx="60" cy="41" r="13" fill="#F3B285"/>
-              <path d="M49 39C49 29 56 24 64 24C74 24 80 31 80 39V43H49V39Z" fill="#1D2D6A"/>
-              <path d="M39 85V64C39 52 48 45 60 45C72 45 81 52 81 64V85" fill="#F7FAFF"/>
-              <path d="M58 50L66 58L60 64L53 58L58 50Z" fill="#1E56D8"/>
-              <path d="M58 64H63L66 85H54L58 64Z" fill="#1D4FC8"/>
-              <path d="M32 63L57 60V92L32 95V63Z" fill="#2D6BE9"/>
-              <path d="M36 67L53 65" stroke="#BFE0FF" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M36 73L52 71" stroke="#BFE0FF" stroke-width="2.6" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <button class="role-btn" type="button">Admin</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- STUDENT / LECTURER -->
-    <section id="account-screen" class="screen-card hidden">
-      <button class="back-btn" type="button" onclick="goBackToRoleChoice()">← Back</button>
-
-      <div class="logo">
-        <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
-      </div>
-
-      <div class="auth-heading">
-        <h1 id="accountTitle">Welcome back</h1>
-        <p id="accountSubtitle">Sign in to your Colspot account</p>
-      </div>
-
-      <div class="segmented">
-        <button id="account-signin-tab" class="active" type="button" onclick="switchAccountMode('signin')">Sign in</button>
-        <button id="account-signup-tab" type="button" onclick="switchAccountMode('signup')">Sign up</button>
-      </div>
-
-      <form id="account-signin-form">
-        <label for="signin-school">School name</label>
-        <input id="signin-school" type="text" list="school-list" placeholder="Search and select school" required />
-
-        <label for="signin-email">Email</label>
-        <input id="signin-email" type="email" placeholder="you@example.com" required />
-
-        <label for="signin-password">Password</label>
-        <div class="password-row">
-          <input id="signin-password" type="password" placeholder="••••••••" required />
-          <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
-        </div>
-
-        <button class="primary-btn" type="submit" id="signin-btn-text">Sign in</button>
-
-        <div class="form-links">
-          <a href="contact.html" class="text-link">Contact us</a>
-          <button type="button" class="text-link">Forgot password?</button>
-        </div>
-
-        <div id="signin-message" class="form-message"></div>
-      </form>
-
-      <form id="account-signup-form" class="hidden">
-        <label for="signup-fullname">Full name</label>
-        <input id="signup-fullname" type="text" placeholder="Saheed Samad" required />
-
-        <label for="signup-school">School name</label>
-        <input id="signup-school" type="text" list="school-list" placeholder="Search and select school" required />
-
-        <label for="signup-department">Department</label>
-        <input id="signup-department" type="text" placeholder="Computer Science" required />
-
-        <div id="student-fields">
-          <label for="signup-matric">Matric number</label>
-          <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" />
-        </div>
-
-        <label for="signup-email">Email</label>
-        <input id="signup-email" type="email" placeholder="you@example.com" required />
-
-        <div id="lecturer-email-note" class="small-note hidden" style="margin-top:-4px; margin-bottom:12px;">
-          Lecturers should use their official school email.
-        </div>
-
-        <label for="signup-password">Password</label>
-        <div class="password-row">
-          <input id="signup-password" type="password" placeholder="At least 6 characters" required />
-          <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
-        </div>
-
-        <label for="signup-password2">Confirm password</label>
-        <div class="password-row">
-          <input id="signup-password2" type="password" placeholder="Repeat password" required />
-          <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
-        </div>
-
-        <button class="primary-btn" type="submit" id="signup-btn-text">Create account</button>
-
-        <div id="signup-message" class="form-message"></div>
-      </form>
-
-      <div class="small-note">
-        Colspot uses your location to work properly. Please allow location when asked.
-      </div>
-    </section>
-
-    <!-- ADMIN -->
-    <section id="admin-screen" class="admin-shell hidden">
-      <div class="admin-top">
-        <button class="back-btn" type="button" onclick="goBackToRoleChoice()">← Back</button>
-
-        <div class="logo" style="margin-top:2px;">
+    <div id="auth-shell" class="container hidden">
+      <div class="card">
+        <div class="logo">
           <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
         </div>
 
-        <div class="admin-header-title">Sign in to your Colspot account</div>
-      </div>
+        <h1 id="card-title">Welcome back</h1>
+        <p class="subtitle" id="card-subtitle">Sign in to your Colspot account</p>
 
-      <div class="admin-tabs-wrap">
-        <div class="admin-tabs">
-          <div class="admin-tab placeholder">Student</div>
-          <div class="admin-tab placeholder">Lecturer</div>
-          <div class="admin-tab active">Admin</div>
+        <div id="mode-toggle" class="mode-toggle">
+          <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
+            Sign in
+          </button>
+          <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
+            Sign up
+          </button>
+          <button id="tab-admin" class="mode-btn" type="button" onclick="switchMode('admin')">
+            Admin
+          </button>
         </div>
-      </div>
 
-      <div class="admin-body">
-        <h2 class="admin-title">Admin Access</h2>
-        <p class="admin-sub">For administrative and super admin roles</p>
+        <!-- SIGN-UP EMAIL VERIFICATION -->
+        <div id="verify-panel" class="hidden">
+          <div class="verify-title">Verify your email</div>
 
-        <form id="admin-form">
-          <div class="admin-input-label">
-            <span class="icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M4 6.5L11.1 11.23C11.64 11.59 12.36 11.59 12.9 11.23L20 6.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <rect x="3" y="5" width="18" height="14" rx="3" stroke-width="2"/>
-              </svg>
-            </span>
-            <span>Email</span>
+          <div class="verify-box">
+            We sent a 6-digit code to:<br>
+            <b id="verify-email">your@email.com</b><br><br>
+            Enter the code below to finish creating your account.
           </div>
-          <input id="admin-email" type="email" placeholder="admin@school.edu" required />
 
-          <div class="admin-input-label">
-            <span class="icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke-width="2"/>
-                <path d="M4 21C4 17.6863 7.58172 15 12 15C16.4183 15 20 17.6863 20 21" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span>Login ID</span>
-          </div>
-          <input id="admin-login-id" type="text" placeholder="" required />
+          <label for="verify-code-input">Verification code</label>
+          <input id="verify-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
 
-          <div class="admin-input-label">
-            <span class="icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="5" y="11" width="14" height="10" rx="2" stroke-width="2"/>
-                <path d="M8 11V8C8 5.79086 9.79086 4 12 4C14.2091 4 16 5.79086 16 8V11" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"/>
-              </svg>
-            </span>
-            <span>Password</span>
+          <button id="verify-code-btn" type="button" class="primary">
+            <span id="verify-code-text">Verify &amp; continue</span>
+            <span id="verify-code-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row">
+            <button id="resend-btn" type="button" class="text-link">Resend code</button>
+            <button id="back-to-signin-btn" type="button" class="text-link">Back</button>
           </div>
+
+          <div id="verify-message" class="message"></div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div id="forgot-panel" class="hidden">
+          <div class="verify-title">Forgot password</div>
+          <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
+            Enter your email and we’ll send you a code to reset your password.
+          </p>
+
+          <div class="stepper">
+            <div class="step active">
+              <div class="step-circle">1</div>
+              <span>Enter Email</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <span>Verify Code</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <span>Reset Password</span>
+            </div>
+          </div>
+
+          <label for="forgot-email">Email</label>
+          <input id="forgot-email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+          <button id="forgot-send-btn" type="button" class="primary">
+            <span id="forgot-send-text">Send verification code</span>
+            <span id="forgot-send-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row">
+            <button id="forgot-back-btn" type="button" class="text-link">Back to sign in</button>
+          </div>
+
+          <div id="forgot-message" class="message"></div>
+        </div>
+
+        <!-- RESET PASSWORD -->
+        <div id="reset-panel" class="hidden">
+          <div class="verify-title">Reset your password</div>
+
+          <div class="stepper">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <span>Enter Email</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step active">
+              <div class="step-circle">2</div>
+              <span>Verify Code</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step active">
+              <div class="step-circle">3</div>
+              <span>Reset Password</span>
+            </div>
+          </div>
+
+          <div class="verify-box">
+            We sent a 6-digit reset code to:<br>
+            <b id="reset-email-label">your@email.com</b><br><br>
+            Enter the code and choose a new password.
+          </div>
+
+          <label for="reset-code">Reset code</label>
+          <input id="reset-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+          <label for="reset-password">New password</label>
           <div class="password-row">
-            <input id="admin-password" type="password" placeholder="••••••••" required />
+            <input id="reset-password" type="password" placeholder="At least 6 characters" />
+            <button type="button" class="password-toggle" onclick="togglePassword('reset-password', this)">Show</button>
+          </div>
+          <div class="hint">
+            Use at least 6 characters, with <strong>letters and numbers</strong>.
+          </div>
+
+          <label for="reset-password2">Confirm new password</label>
+          <div class="password-row">
+            <input id="reset-password2" type="password" placeholder="Repeat password" />
+            <button type="button" class="password-toggle" onclick="togglePassword('reset-password2', this)">Show</button>
+          </div>
+
+          <button id="reset-submit-btn" type="button" class="primary">
+            <span id="reset-submit-text">Change password</span>
+            <span id="reset-submit-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row">
+            <button id="reset-back-btn" type="button" class="text-link">Back to sign in</button>
+          </div>
+
+          <div id="reset-message" class="message"></div>
+        </div>
+
+        <!-- SIGN IN -->
+        <form id="signin-form">
+          <label for="signin-email">Email</label>
+          <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+
+          <label for="signin-password">Password</label>
+          <div class="password-row">
+            <input id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
+          </div>
+
+          <button id="signin-btn" type="submit" class="primary">
+            <span id="signin-text">Sign in</span>
+            <span id="signin-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row">
+            <a href="contact.html" class="text-link">Contact us</a>
+            <button type="button" class="text-link" onclick="openForgotPasswordPage()">
+              Forgot password?
+            </button>
+          </div>
+
+          <div id="signin-message" class="message"></div>
+        </form>
+
+        <!-- SIGN UP -->
+        <form id="signup-form" class="hidden">
+          <label for="signup-fullname">Full name</label>
+          <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
+
+          <label for="signup-role">Role</label>
+          <select id="signup-role" required>
+            <option value="">Select role</option>
+            <option value="student">Student</option>
+            <option value="lecturer">Lecturer</option>
+          </select>
+
+          <div id="student-extra" class="hidden">
+            <label for="signup-matric">Matric number</label>
+            <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
+            <div class="hint">
+              Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
+            </div>
+          </div>
+
+          <label for="signup-school">School name</label>
+          <input id="signup-school" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
+
+          <label for="signup-dept">Department</label>
+          <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
+
+          <label for="signup-email">Email</label>
+          <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+
+          <div id="lecturer-email-hint" class="hint hidden">
+            Lecturers: please use your official <strong>school email</strong>
+            (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
+          </div>
+
+          <label for="signup-password">Password</label>
+          <div class="password-row">
+            <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+            <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+          </div>
+          <div class="hint">
+            Use at least 6 characters, with <strong>letters and numbers</strong>.
+          </div>
+
+          <label for="signup-password2">Confirm password</label>
+          <div class="password-row">
+            <input id="signup-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
+            <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
+          </div>
+
+          <button id="signup-btn" type="submit" class="primary">
+            <span id="signup-text">Create account</span>
+            <span id="signup-loader" class="spinner hidden"></span>
+          </button>
+
+          <div class="bottom-row small">
+            <span style="color:var(--muted); font-size:13px; text-align:center;">
+              By signing up you agree to Colspot’s
+              <button type="button" class="link-inline" onclick="openPrivacy()">Privacy &amp; Policy</button>.
+            </span>
+          </div>
+
+          <div id="signup-message" class="message"></div>
+        </form>
+
+        <!-- ADMIN -->
+        <form id="admin-form" class="hidden">
+          <label for="admin-email">Email</label>
+          <input id="admin-email" type="email" placeholder="admin@school.edu" autocomplete="email" required />
+
+          <label for="admin-id">ID</label>
+          <input id="admin-id" type="text" placeholder="Enter admin ID" autocomplete="username" required />
+
+          <label for="admin-password">Password</label>
+          <div class="password-row">
+            <input id="admin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
             <button type="button" class="password-toggle" onclick="togglePassword('admin-password', this)">Show</button>
           </div>
 
-          <button class="primary-btn" type="submit">Sign in as Admin</button>
+          <button id="admin-btn" type="submit" class="primary">
+            <span id="admin-text">Sign in as Admin</span>
+            <span id="admin-loader" class="spinner hidden"></span>
+          </button>
 
-          <div class="admin-links">
+          <div class="bottom-row">
+            <a href="contact.html" class="text-link">Contact us</a>
             <button type="button" class="text-link">Forgot password?</button>
-            <a href="contact.html" class="text-link">Contact support</a>
           </div>
 
-          <div id="admin-message" class="form-message"></div>
+          <div id="admin-message" class="message"></div>
         </form>
-      </div>
-    </section>
 
-    <datalist id="school-list">
-      <option value="Ekiti State University"></option>
-      <option value="University of Lagos"></option>
-      <option value="University of Ibadan"></option>
-      <option value="Obafemi Awolowo University"></option>
-      <option value="Ahmadu Bello University"></option>
-      <option value="Federal University Oye-Ekiti"></option>
-      <option value="University of Benin"></option>
-      <option value="University of Ilorin"></option>
-      <option value="Lagos State University"></option>
-      <option value="University of Nigeria Nsukka"></option>
-      <option value="Nnamdi Azikiwe University"></option>
-      <option value="Rivers State University"></option>
-      <option value="Bayero University Kano"></option>
-      <option value="Federal University of Technology Akure"></option>
-      <option value="University of Port Harcourt"></option>
-    </datalist>
+        <div id="switch-row" class="bottom-row" style="margin-top:16px;">
+          <span id="switch-text" style="font-size:13px; color:var(--muted);">
+            Don’t have an account?
+          </span>
+          <button type="button" class="text-link" onclick="toggleAuthMode()">
+            <span id="switch-link-label">Create one</span>
+          </button>
+        </div>
+
+        <p class="location-note">
+          <strong>Colspot uses your location to work properly.</strong><br>
+          Please allow location when asked, and make sure Location is turned ON<br>
+          (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+        </p>
+      </div>
+    </div>
   </div>
 
   <script>
-    let selectedRole = "";
-
     function togglePassword(inputId, btn) {
       const input = document.getElementById(inputId);
       if (!input) return;
-      const isPassword = input.type === "password";
-      input.type = isPassword ? "text" : "password";
-      btn.textContent = isPassword ? "Hide" : "Show";
+      const hidden = input.type === "password";
+      input.type = hidden ? "text" : "password";
+      if (btn) btn.textContent = hidden ? "Hide" : "Show";
     }
 
-    function openRoleScreen(role) {
-      selectedRole = role;
+    function openPrivacy() {
+      window.location.href = "privacy.html";
+    }
 
-      document.getElementById("role-choice-screen").classList.add("hidden");
-      document.getElementById("account-screen").classList.add("hidden");
-      document.getElementById("admin-screen").classList.add("hidden");
+    function switchMode(mode) {
+      const tabSignin = document.getElementById('tab-signin');
+      const tabSignup = document.getElementById('tab-signup');
+      const tabAdmin = document.getElementById('tab-admin');
 
-      if (role === "admin") {
-        document.getElementById("admin-screen").classList.remove("hidden");
-        return;
-      }
+      const signinForm = document.getElementById('signin-form');
+      const signupForm = document.getElementById('signup-form');
+      const adminForm = document.getElementById('admin-form');
 
-      document.getElementById("account-screen").classList.remove("hidden");
+      const switchRow = document.getElementById('switch-row');
+      const switchText = document.getElementById('switch-text');
+      const switchLinkLabel = document.getElementById('switch-link-label');
 
-      const title = document.getElementById("accountTitle");
-      const subtitle = document.getElementById("accountSubtitle");
-      const signinBtn = document.getElementById("signin-btn-text");
-      const signupBtn = document.getElementById("signup-btn-text");
-      const studentFields = document.getElementById("student-fields");
-      const lecturerNote = document.getElementById("lecturer-email-note");
+      const cardTitle = document.getElementById('card-title');
+      const cardSubtitle = document.getElementById('card-subtitle');
 
-      if (role === "student") {
-        title.textContent = "Student access";
-        subtitle.textContent = "Sign in or create your student account";
-        signinBtn.textContent = "Sign in as Student";
-        signupBtn.textContent = "Create Student Account";
-        studentFields.classList.remove("hidden");
-        lecturerNote.classList.add("hidden");
+      tabSignin.classList.remove('active');
+      tabSignup.classList.remove('active');
+      tabAdmin.classList.remove('active');
+
+      signinForm.classList.add('hidden');
+      signupForm.classList.add('hidden');
+      adminForm.classList.add('hidden');
+
+      if (mode === 'signin') {
+        tabSignin.classList.add('active');
+        signinForm.classList.remove('hidden');
+        switchRow.classList.remove('hidden');
+        switchText.textContent = "Don’t have an account?";
+        switchLinkLabel.textContent = "Create one";
+        cardTitle.textContent = "Welcome back";
+        cardSubtitle.textContent = "Sign in to your Colspot account";
+      } else if (mode === 'signup') {
+        tabSignup.classList.add('active');
+        signupForm.classList.remove('hidden');
+        switchRow.classList.remove('hidden');
+        switchText.textContent = "Already have an account?";
+        switchLinkLabel.textContent = "Sign in";
+        cardTitle.textContent = "Create account";
+        cardSubtitle.textContent = "Sign up for your Colspot account";
       } else {
-        title.textContent = "Lecturer access";
-        subtitle.textContent = "Sign in or create your lecturer account";
-        signinBtn.textContent = "Sign in as Lecturer";
-        signupBtn.textContent = "Create Lecturer Account";
-        studentFields.classList.add("hidden");
-        lecturerNote.classList.remove("hidden");
-      }
-
-      switchAccountMode("signin");
-    }
-
-    function goBackToRoleChoice() {
-      selectedRole = "";
-      document.getElementById("role-choice-screen").classList.remove("hidden");
-      document.getElementById("account-screen").classList.add("hidden");
-      document.getElementById("admin-screen").classList.add("hidden");
-    }
-
-    function switchAccountMode(mode) {
-      const signinTab = document.getElementById("account-signin-tab");
-      const signupTab = document.getElementById("account-signup-tab");
-      const signinForm = document.getElementById("account-signin-form");
-      const signupForm = document.getElementById("account-signup-form");
-
-      if (mode === "signin") {
-        signinTab.classList.add("active");
-        signupTab.classList.remove("active");
-        signinForm.classList.remove("hidden");
-        signupForm.classList.add("hidden");
-      } else {
-        signupTab.classList.add("active");
-        signinTab.classList.remove("active");
-        signupForm.classList.remove("hidden");
-        signinForm.classList.add("hidden");
+        tabAdmin.classList.add('active');
+        adminForm.classList.remove('hidden');
+        switchRow.classList.add('hidden');
+        cardTitle.textContent = "Admin Access";
+        cardSubtitle.textContent = "Sign in to your Colspot admin account";
       }
     }
 
-    document.getElementById("account-signin-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const msg = document.getElementById("signin-message");
-      msg.className = "form-message success";
-      msg.textContent = `${selectedRole === "student" ? "Student" : "Lecturer"} sign in layout ready.`;
-    });
+    function toggleAuthMode() {
+      const isSignin = document.getElementById('tab-signin').classList.contains('active');
+      switchMode(isSignin ? 'signup' : 'signin');
+    }
 
-    document.getElementById("account-signup-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const msg = document.getElementById("signup-message");
-      msg.className = "form-message success";
-      msg.textContent = `${selectedRole === "student" ? "Student" : "Lecturer"} sign up layout ready.`;
-    });
+    function openForgotPasswordPage() {
+      const signinForm = document.getElementById("signin-form");
+      const signupForm = document.getElementById("signup-form");
+      const adminForm = document.getElementById("admin-form");
+      const verifyPanel = document.getElementById("verify-panel");
+      const forgotPanel = document.getElementById("forgot-panel");
+      const resetPanel = document.getElementById("reset-panel");
+      const modeToggle = document.getElementById("mode-toggle");
+      const switchRow = document.getElementById("switch-row");
+      const cardTitle = document.getElementById("card-title");
+      const cardSubtitle = document.getElementById("card-subtitle");
 
-    document.getElementById("admin-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const msg = document.getElementById("admin-message");
-      msg.className = "form-message success";
-      msg.textContent = "Admin sign in layout ready.";
-    });
+      signinForm.classList.add("hidden");
+      signupForm.classList.add("hidden");
+      adminForm.classList.add("hidden");
+      verifyPanel.classList.add("hidden");
+      resetPanel.classList.add("hidden");
+
+      forgotPanel.classList.remove("hidden");
+      modeToggle.classList.add("hidden");
+      switchRow.classList.add("hidden");
+
+      cardTitle.textContent = "Password recovery";
+      cardSubtitle.textContent = "Reset your Colspot password";
+    }
+
+    function backToMainAuth(mode = 'signin') {
+      document.getElementById("forgot-panel").classList.add("hidden");
+      document.getElementById("reset-panel").classList.add("hidden");
+      document.getElementById("verify-panel").classList.add("hidden");
+      document.getElementById("mode-toggle").classList.remove("hidden");
+      document.getElementById("switch-row").classList.remove("hidden");
+      switchMode(mode);
+    }
+
+    (function setupRoleUI() {
+      const roleSelect = document.getElementById('signup-role');
+      const studentExtra = document.getElementById('student-extra');
+      const lecturerHint = document.getElementById('lecturer-email-hint');
+      const matricInput = document.getElementById('signup-matric');
+
+      if (!roleSelect) return;
+
+      roleSelect.addEventListener('change', function () {
+        const role = roleSelect.value;
+
+        if (role === 'student') {
+          if (studentExtra) studentExtra.classList.remove('hidden');
+          if (lecturerHint) lecturerHint.classList.add('hidden');
+        } else if (role === 'lecturer') {
+          if (studentExtra) {
+            studentExtra.classList.add('hidden');
+            if (matricInput) matricInput.value = '';
+          }
+          if (lecturerHint) lecturerHint.classList.remove('hidden');
+        } else {
+          if (studentExtra) studentExtra.classList.add('hidden');
+          if (lecturerHint) lecturerHint.classList.add('hidden');
+          if (matricInput) matricInput.value = '';
+        }
+      });
+    })();
+
+    (function guardLecturerEmail() {
+      const form = document.getElementById('signup-form');
+      const emailInput = document.getElementById('signup-email');
+      const roleSelect = document.getElementById('signup-role');
+      const messageEl = document.getElementById('signup-message');
+
+      if (!form || !emailInput || !roleSelect) return;
+
+      const blockedDomains = [
+        'gmail.com', 'gmail.com.ng',
+        'yahoo.com', 'yahoo.com.ng',
+        'hotmail.com',
+        'outlook.com', 'outlook.com.ng',
+        'live.com', 'live.com.ng',
+        'icloud.com', 'me.com',
+        'aol.com',
+        'gmx.com',
+        'protonmail.com', 'proton.me',
+        'yandex.com',
+        'zoho.com'
+      ];
+
+      form.addEventListener('submit', function (event) {
+        const role = roleSelect.value;
+        if (role !== 'lecturer') return;
+
+        const rawEmail = (emailInput.value || '').trim().toLowerCase();
+        const atIndex = rawEmail.lastIndexOf('@');
+        const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : '';
+
+        const isBlockedDomain = blockedDomains.includes(domain);
+        const looksGenericPersonal = /gmail\.|yahoo\.|hotmail\.|outlook\.|icloud\.|live\.|gmx\.|proton|yandex\.|aol\.|zoho\./.test(domain);
+        const isProbablySchool = /\.edu\b/.test(domain) || /\.ac\./.test(domain) || /\.edu\./.test(domain);
+
+        if (!domain || isBlockedDomain || (looksGenericPersonal && !isProbablySchool)) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          if (messageEl) {
+            messageEl.textContent =
+              'Lecturers must sign up with an official school email (e.g. name@university.edu), not a personal email like Gmail/Yahoo/Outlook.';
+            messageEl.classList.remove('success');
+            messageEl.classList.add('error');
+          }
+
+          emailInput.focus();
+        }
+      });
+    })();
+
+    document.getElementById("forgot-back-btn")?.addEventListener("click", () => backToMainAuth('signin'));
+    document.getElementById("reset-back-btn")?.addEventListener("click", () => backToMainAuth('signin'));
+    document.getElementById("back-to-signin-btn")?.addEventListener("click", () => backToMainAuth('signin'));
   </script>
+
+  <script type="module" src="./client_supabase.js"></script>
+  <script src="./auth.js"></script>
 </body>
 </html>
