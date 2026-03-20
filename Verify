@@ -180,7 +180,6 @@
       display:grid;
       place-items:center;
     }
-    .thumb img{width:100%;height:100%;object-fit:cover}
     .thumb .pdf{
       font-weight: 900;
       color: var(--blue);
@@ -354,13 +353,13 @@
         </div>
         <div style="min-width:0">
           <div class="brand-title">Verification</div>
-          <div class="brand-sub">Upload clearance form to verify your profile</div>
+          <div class="brand-sub">Upload course form PDF to verify your profile</div>
         </div>
       </div>
     </div>
 
     <section class="hero">
-      <h1>Upload your clearance form</h1>
+      <h1>Upload your course form PDF</h1>
       <p>
         We will read the document, extract your details, save them to your account, and verify your record successfully.
       </p>
@@ -368,8 +367,8 @@
 
     <section class="card">
       <div class="card-head">
-        <p class="title">Step 1 • Clearance form</p>
-        <p class="sub">Upload a clear photo or scan. Make sure the text is readable.</p>
+        <p class="title">Step 1 • Course form PDF</p>
+        <p class="sub">Upload a clear PDF only. Make sure the text is readable.</p>
       </div>
 
       <div class="card-body">
@@ -383,11 +382,11 @@
               </svg>
               Choose file
             </label>
-            <input id="fileInput" type="file" accept="image/*,application/pdf" />
+            <input id="fileInput" type="file" accept="application/pdf" />
           </div>
 
           <div class="hint">
-            Accepted: JPG/PNG/PDF. If you upload a random photo, it will be rejected.
+            Accepted: PDF only. If you upload a random file, it will be rejected.
           </div>
 
           <div id="preview" class="preview">
@@ -400,7 +399,7 @@
 
           <div id="loading" class="loading">
             <span class="spinner"></span>
-            Processing your clearance… please wait.
+            Processing your course form… please wait.
           </div>
 
           <div id="msgErr" class="msg err"></div>
@@ -432,7 +431,7 @@
             </button>
 
             <div class="footer-note">
-              If any detail is wrong, go back and upload a clearer file.
+              If any detail is wrong, upload a clearer PDF.
             </div>
           </div>
 
@@ -517,8 +516,19 @@
 
       const { data, error } = await sb.auth.getUser();
       if (error) throw error;
-      if (!data || !data.user) throw new Error("Not signed in.");
-      return data.user;
+      if (data && data.user) return data.user;
+
+      try {
+        const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
+        if (cached && (cached.user_id || cached.id)) {
+          return {
+            id: cached.user_id || cached.id,
+            email: cached.email || null
+          };
+        }
+      } catch {}
+
+      throw new Error("Not signed in.");
     }
 
     function renderPreview(file){
@@ -529,20 +539,10 @@
       const thumb = el("thumb");
       thumb.innerHTML = "";
 
-      if ((file.type || "").includes("pdf")) {
-        const div = document.createElement("div");
-        div.className = "pdf";
-        div.textContent = "PDF";
-        thumb.appendChild(div);
-      } else {
-        const img = document.createElement("img");
-        img.alt = "Preview";
-        thumb.appendChild(img);
-
-        const url = URL.createObjectURL(file);
-        img.src = url;
-        img.onload = () => URL.revokeObjectURL(url);
-      }
+      const div = document.createElement("div");
+      div.className = "pdf";
+      div.textContent = "PDF";
+      thumb.appendChild(div);
     }
 
     function resetAll(){
@@ -560,13 +560,26 @@
       setLoading(false);
     }
 
+    async function ensureCurrentUser(){
+      if (!currentUser || !currentUser.id) {
+        currentUser = await getUser();
+      }
+
+      if (!currentUser || !currentUser.id) {
+        throw new Error("Could not find your account. Please sign in again.");
+      }
+
+      return currentUser;
+    }
+
     async function uploadToStorage(file){
       const sb = window.supabase;
       if (!sb) throw new Error("Supabase not ready.");
 
-      const ext = (file.name || "file").split(".").pop() || "bin";
-      const safeExt = ext.toLowerCase().slice(0, 8);
-      const name = "clearance_" + Date.now() + "_" + Math.random().toString(16).slice(2) + "." + safeExt;
+      await ensureCurrentUser();
+
+      const ext = "pdf";
+      const name = "course_form_" + Date.now() + "_" + Math.random().toString(16).slice(2) + "." + ext;
       const path = `${currentUser.id}/${name}`;
 
       setDebug({
@@ -583,7 +596,7 @@
         .upload(path, file, {
           cacheControl: "3600",
           upsert: false,
-          contentType: file.type || "application/octet-stream",
+          contentType: "application/pdf",
         });
 
       if (error) {
@@ -614,7 +627,7 @@
       const payload = {
         bucket: BUCKET,
         path: storagePath,
-        mime_type: file.type || null,
+        mime_type: "application/pdf",
         file_size: file.size || null
       };
 
@@ -673,6 +686,8 @@
     async function saveToVerificationTable(){
       const sb = window.supabase;
       if (!sb) throw new Error("Supabase not ready.");
+
+      await ensureCurrentUser();
 
       const payload = {
         user_id: currentUser.id,
@@ -741,6 +756,8 @@
       const sb = window.supabase;
       if (!sb) throw new Error("Supabase not ready.");
 
+      await ensureCurrentUser();
+
       const payload = {
         user_id: currentUser.id,
         full_name: extracted?.full_name || null,
@@ -772,6 +789,11 @@
       try {
         resetAll();
         currentUser = await getUser();
+
+        if (!currentUser || !currentUser.id) {
+          throw new Error("Not signed in.");
+        }
+
         setDebug({
           step: "user_loaded",
           user_id: currentUser.id,
@@ -780,6 +802,7 @@
         });
       } catch (e) {
         showErr("You need to be signed in to continue.");
+        el("btnExtract").disabled = true;
         setDebug({
           step: "user_error",
           error: e?.message || String(e)
@@ -794,11 +817,10 @@
       const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
       if (!file) return;
 
-      const isPdf = (file.type || "").includes("pdf");
-      const isImg = (file.type || "").startsWith("image/");
-      if (!isPdf && !isImg) {
+      const isPdf = (file.type || "") === "application/pdf";
+      if (!isPdf) {
         resetAll();
-        showErr("Please upload an image (JPG/PNG) or PDF only.");
+        showErr("Please upload PDF only.");
         return;
       }
 
@@ -840,6 +862,8 @@
       try {
         setLoading(true);
 
+        await ensureCurrentUser();
+
         uploadedPath = await uploadToStorage(pickedFile);
         const data = await callExtractFunction(uploadedPath, pickedFile);
 
@@ -856,7 +880,7 @@
         if (result.is_clearance_form === false) {
           extracted = null;
           el("details").style.display = "none";
-          showErr(result.reason || "This does not look like a clearance form. Please upload the correct document.");
+          showErr(result.reason || "This does not look like a course form. Please upload the correct PDF.");
           return;
         }
 
@@ -887,6 +911,7 @@
       try {
         setLoading(true);
 
+        await ensureCurrentUser();
         await saveToVerificationTable();
         await saveToStudentAccount();
 
