@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -761,14 +760,8 @@
 
       const EDGE = {
         createHod: "hos-create-hod-account",
-        sendAnnouncement: "hos-send-announcement"
-      };
-
-      const TABLES = {
-        hod: "hod_accounts",
-        students: "student_accounts",
-        lecturers: "lecturer_accounts",
-        announcements: "school_announcements"
+        sendAnnouncement: "hos-send-announcement",
+        summary: "hos-dashboard-summary"
       };
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -853,33 +846,6 @@
         return data || {};
       }
 
-      async function countFromTable(table, schoolName){
-        let query = sb.from(table).select("id", { count:"exact", head:true });
-
-        if (schoolName){
-          query = query.ilike("school_name", schoolName.trim());
-        }
-
-        const { count, error } = await query;
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function fetchRows(table, schoolName, limit = 2){
-        let query = sb.from(table).select("*");
-
-        if (schoolName){
-          query = query.ilike("school_name", schoolName.trim());
-        }
-
-        const { data, error } = await query
-          .order("created_at", { ascending:false })
-          .limit(limit);
-
-        if (error) throw error;
-        return Array.isArray(data) ? data : [];
-      }
-
       function renderHodHistory(rows){
         const wrap = $("hodHistoryList");
         if (!wrap) return;
@@ -928,37 +894,32 @@
       }
 
       async function loadDashboardData(){
-        const school = currentSchoolName || "";
-
         $("totalHodCount").textContent = "--";
         $("totalStudentCount").textContent = "--";
         $("totalLecturerCount").textContent = "--";
         $("totalAnnouncementCount").textContent = "--";
 
         try{
-          const [
-            totalHod,
-            totalStudents,
-            totalLecturers,
-            totalAnnouncements,
-            hodHistory,
-            announcementHistory
-          ] = await Promise.all([
-            countFromTable(TABLES.hod, school),
-            countFromTable(TABLES.students, school),
-            countFromTable(TABLES.lecturers, school),
-            countFromTable(TABLES.announcements, school),
-            fetchRows(TABLES.hod, school, 2),
-            fetchRows(TABLES.announcements, school, 2)
-          ]);
+          const result = await invokeEdge(EDGE.summary, {
+            hos_admin_id: adminSession.id,
+            school_name: currentSchoolName
+          });
 
-          $("totalHodCount").textContent = String(totalHod);
-          $("totalStudentCount").textContent = String(totalStudents);
-          $("totalLecturerCount").textContent = String(totalLecturers);
-          $("totalAnnouncementCount").textContent = String(totalAnnouncements);
+          if (!result.ok){
+            throw new Error(result.error || "Could not load dashboard summary.");
+          }
 
-          renderHodHistory(hodHistory);
-          renderAnnouncementHistory(announcementHistory);
+          const totals = result.totals || {};
+          const recentHods = Array.isArray(result.recent_hods) ? result.recent_hods : [];
+          const recentAnnouncements = Array.isArray(result.recent_announcements) ? result.recent_announcements : [];
+
+          $("totalHodCount").textContent = String(totals.hods || 0);
+          $("totalStudentCount").textContent = String(totals.students || 0);
+          $("totalLecturerCount").textContent = String(totals.lecturers || 0);
+          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+
+          renderHodHistory(recentHods);
+          renderAnnouncementHistory(recentAnnouncements);
         }catch(err){
           console.error(err);
           $("totalHodCount").textContent = "0";
