@@ -8,240 +8,410 @@
   />
   <title>Colspot • HOS Dashboard</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --blue:#2563eb;
       --blue-dark:#1d4ed8;
       --bg:#eef4ff;
       --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --soft:#f8fbff;
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --soft:#f8fafc;
+      --soft-blue:#eff6ff;
       --green:#16a34a;
       --red:#dc2626;
       --amber:#d97706;
-      --shadow:0 14px 36px rgba(15,23,42,.10);
-      --radius:22px;
+      --shadow:0 12px 28px rgba(15,23,42,.08);
+      --radius:24px;
     }
 
-    *{
-      box-sizing:border-box;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
-    }
+    *{ box-sizing:border-box; }
 
     html,body{
       margin:0;
       padding:0;
       min-height:100%;
-      background:radial-gradient(circle at top,#dcecff 0%,#f6faff 45%,#ffffff 100%);
+      background:radial-gradient(circle at top, #e7f0ff, #ffffff 60%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
     }
 
     body{
       display:flex;
       justify-content:center;
-      align-items:stretch;
     }
 
-    .shell{
+    .phone-shell{
       width:100%;
-      max-width:430px;
+      max-width:420px;
       min-height:100vh;
-      padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 98px);
+      background:#fff;
+      padding:calc(env(safe-area-inset-top) + 10px) 14px 96px;
       position:relative;
     }
 
-    .topbar{
+    header{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
+      margin-bottom:10px;
     }
 
     .brand{
       display:flex;
       align-items:center;
       gap:10px;
-      min-width:0;
     }
 
-    .brand-badge{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      background:linear-gradient(135deg,var(--blue),#60a5fa);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 12px 24px rgba(37,99,235,.28);
-      flex-shrink:0;
-    }
-
-    .brand-badge svg{
-      width:20px;
-      height:20px;
-    }
-
-    .brand-title{
-      font-size:18px;
-      font-weight:800;
-      line-height:1.1;
-      letter-spacing:-.02em;
-    }
-
-    .brand-sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:3px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:220px;
-    }
-
-    .ghost-btn{
-      border:none;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:12px;
-      font-weight:800;
-      color:var(--text);
-      cursor:pointer;
-      box-shadow:0 6px 16px rgba(15,23,42,.05);
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-    }
-
-    .ghost-btn svg{
-      width:14px;
-      height:14px;
-    }
-
-    .hero{
-      background:linear-gradient(180deg,#fefefe 0%,#f4f9ff 100%);
-      border:1px solid #dbeafe;
-      border-radius:26px;
-      padding:18px 16px;
-      box-shadow:var(--shadow);
-      margin-bottom:14px;
-    }
-
-    .hero-kicker{
-      font-size:11px;
-      font-weight:800;
-      color:var(--blue);
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:6px;
-    }
-
-    .hero h1{
-      margin:0 0 8px;
-      font-size:23px;
-      line-height:1.16;
-      letter-spacing:-.03em;
-    }
-
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .section{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:14px;
-      box-shadow:var(--shadow);
-      margin-bottom:14px;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
-    }
-
-    .section-title{
-      font-size:15px;
-      font-weight:800;
-      letter-spacing:-.01em;
-    }
-
-    .section-note{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.45;
-      margin:-4px 0 12px;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
-    .stat{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      box-shadow:0 8px 22px rgba(15,23,42,.05);
-      min-height:96px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .stat-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .stat-icon{
-      width:34px;
-      height:34px;
+    .brand-logo{
+      width:36px;
+      height:36px;
       border-radius:12px;
-      background:#eff6ff;
-      color:var(--blue);
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
       display:flex;
       align-items:center;
       justify-content:center;
-      flex-shrink:0;
+      color:#fff;
+      box-shadow:var(--shadow);
     }
 
-    .stat-icon svg{
+    .brand-logo svg{
       width:18px;
       height:18px;
     }
 
-    .stat-value{
+    .brand-name{
+      font-size:17px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .avatar-chip{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,#1d4ed8,#22c55e);
+      color:#fff;
+      font-weight:800;
+      box-shadow:var(--shadow);
+    }
+
+    main{
+      -ms-overflow-style:none;
+      scrollbar-width:none;
+    }
+
+    main::-webkit-scrollbar{
+      width:0;height:0;display:none;
+    }
+
+    .hero{
+      margin:4px 2px 16px;
+    }
+
+    .hero-line{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+      font-weight:600;
+    }
+
+    .hero-title{
       font-size:24px;
+      line-height:1.18;
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:0 0 8px;
+    }
+
+    .hero-title span{
+      color:var(--blue);
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.45;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .cta{
+      width:100%;
+      border:none;
+      border-radius:999px;
+      padding:13px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .05s ease;
+    }
+
+    .cta:active,.quick-card:active,.mini-btn:active,.nav-btn:active{
+      transform:scale(.98);
+    }
+
+    .cta.primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .cta.secondary{
+      margin-top:10px;
+      background:#f8fbff;
+      border:1px solid #dbeafe;
+      color:var(--blue);
+    }
+
+    .cta svg,.quick-card svg,.nav-btn svg,.icon-btn svg{
+      width:18px;
+      height:18px;
+      flex-shrink:0;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin:16px 2px 4px;
+    }
+
+    .stat-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 13px;
+      box-shadow:0 8px 24px rgba(15,23,42,.05);
+    }
+
+    .stat-value{
+      font-size:22px;
       font-weight:800;
       line-height:1;
-      letter-spacing:-.03em;
-      margin-top:10px;
+      margin-bottom:6px;
     }
 
     .stat-label{
       font-size:11px;
       color:var(--muted);
+      text-transform:uppercase;
+      font-weight:800;
+      letter-spacing:.06em;
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:20px 4px 10px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      margin:0 2px 14px;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .quick-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 10px;
+      text-align:left;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .quick-icon{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:var(--soft-blue);
+      color:var(--blue);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .quick-text{
+      min-width:0;
+    }
+
+    .quick-text strong{
+      display:block;
+      font-size:13px;
+      line-height:1.2;
+    }
+
+    .quick-text span{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.3;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:#334155;
+      margin-bottom:6px;
+    }
+
+    .input,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 13px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+    }
+
+    .textarea{
+      min-height:96px;
+      resize:vertical;
+    }
+
+    .input:focus,.textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.1);
+    }
+
+    .locked-box{
+      width:100%;
+      border-radius:14px;
+      padding:12px 13px;
+      border:1px dashed #bfdbfe;
+      background:#f8fbff;
+      color:var(--blue-dark);
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .generated-box{
+      display:none;
+      margin-top:12px;
+      border-radius:16px;
+      border:1px dashed #bfdbfe;
+      background:#f8fbff;
+      padding:12px;
+    }
+
+    .generated-item + .generated-item{
+      margin-top:10px;
+    }
+
+    .generated-label{
+      font-size:10px;
+      color:var(--muted);
       font-weight:800;
       text-transform:uppercase;
-      letter-spacing:.06em;
-      margin-top:4px;
+      letter-spacing:.08em;
+      margin-bottom:5px;
+    }
+
+    .generated-value{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:700;
+      word-break:break-word;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mini-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:var(--shadow);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .message{
+      display:none;
+      margin-top:12px;
+      padding:11px 12px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .message.success{
+      display:block;
+      background:#ecfdf5;
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .message.error{
+      display:block;
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
     }
 
     .history-list{
@@ -259,8 +429,8 @@
 
     .history-top{
       display:flex;
-      align-items:flex-start;
       justify-content:space-between;
+      align-items:flex-start;
       gap:10px;
       margin-bottom:8px;
     }
@@ -269,240 +439,80 @@
       font-size:14px;
       font-weight:800;
       line-height:1.2;
-      letter-spacing:-.01em;
     }
 
     .history-sub{
       font-size:12px;
       color:var(--muted);
-      margin-top:3px;
       line-height:1.35;
+      margin-top:3px;
     }
 
     .pill{
       flex-shrink:0;
       border-radius:999px;
       padding:5px 10px;
-      font-size:11px;
-      font-weight:800;
-      line-height:1;
-      border:1px solid var(--line);
-      background:#f8fafc;
-      color:#334155;
-    }
-
-    .empty{
-      text-align:center;
-      padding:18px 10px;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .field{
-      margin-bottom:12px;
-    }
-
-    .label{
-      display:block;
-      font-size:12px;
-      font-weight:800;
-      color:#334155;
-      margin-bottom:6px;
-    }
-
-    .input,.textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:#fff;
-      padding:13px 14px;
-      font-size:15px;
-      outline:none;
-      color:var(--text);
-    }
-
-    .textarea{
-      min-height:118px;
-      resize:vertical;
-    }
-
-    .input:focus,.textarea:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(37,99,235,.10);
-    }
-
-    .action-row{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .btn{
-      flex:1;
-      border:none;
-      border-radius:999px;
-      padding:13px 14px;
-      cursor:pointer;
-      font-size:14px;
-      font-weight:800;
-      letter-spacing:-.01em;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-    }
-
-    .btn svg{
-      width:16px;
-      height:16px;
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      color:#fff;
-      box-shadow:0 16px 28px rgba(37,99,235,.28);
-    }
-
-    .btn.secondary{
-      background:#fff;
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-
-    .btn:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    .message{
-      display:none;
-      margin-top:12px;
-      padding:11px 12px;
-      border-radius:16px;
-      font-size:13px;
-      line-height:1.4;
-    }
-
-    .message.success{
-      display:block;
-      background:#ecfdf5;
-      color:#166534;
-      border:1px solid #bbf7d0;
-    }
-
-    .message.error{
-      display:block;
-      background:#fef2f2;
-      color:#991b1b;
-      border:1px solid #fecaca;
-    }
-
-    .created-box{
-      background:#f8fbff;
-      border:1px dashed #bfd6ff;
-      border-radius:18px;
-      padding:12px;
-      margin-top:12px;
-      display:none;
-    }
-
-    .created-row{
-      margin-bottom:10px;
-    }
-
-    .created-row:last-child{
-      margin-bottom:0;
-    }
-
-    .created-label{
-      font-size:11px;
-      font-weight:800;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.07em;
-      margin-bottom:5px;
-    }
-
-    .created-value{
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
-      font-size:14px;
-      font-weight:800;
-      color:var(--text);
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      word-break:break-all;
-    }
-
-    .account-card{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .account-row{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      background:#fff;
-    }
-
-    .account-row .k{
-      font-size:11px;
-      color:var(--muted);
+      font-size:10px;
       font-weight:800;
       text-transform:uppercase;
       letter-spacing:.06em;
-      margin-bottom:4px;
+      background:#eff6ff;
+      color:var(--blue);
     }
 
-    .account-row .v{
-      font-size:14px;
-      font-weight:800;
+    .empty{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      padding:16px 8px;
+    }
+
+    .top-tools{
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:8px;
+    }
+
+    .icon-btn{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
       color:var(--text);
-      word-break:break-word;
     }
 
     .bottom-nav{
       position:fixed;
       left:50%;
-      bottom:calc(env(safe-area-inset-bottom) + 8px);
       transform:translateX(-50%);
-      width:calc(100% - 20px);
-      max-width:420px;
-      border-top:1px solid #e5e7eb;
-      padding:7px 8px 10px;
-      display:flex;
-      justify-content:space-around;
-      align-items:center;
-      background:#ffffff;
+      bottom:max(12px, env(safe-area-inset-bottom));
+      width:calc(100% - 28px);
+      max-width:392px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(16px);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 20px 40px rgba(15,23,42,.12);
       border-radius:26px;
-      box-shadow:0 10px 30px rgba(15,23,42,.18);
-      z-index:50;
+      padding:8px 8px 10px;
+      display:flex;
+      justify-content:space-between;
+      z-index:30;
     }
 
     .nav-btn{
       flex:1;
+      border:none;
+      background:transparent;
+      color:#94a3b8;
       text-align:center;
       font-size:11px;
-      color:#94a3b8;
       cursor:pointer;
       padding-top:2px;
-    }
-
-    .nav-btn-inner{
-      display:inline-flex;
-      flex-direction:column;
-      align-items:center;
-      gap:3px;
-    }
-
-    .nav-btn svg{
-      width:20px;
-      height:20px;
-      display:block;
     }
 
     .nav-btn.active{
@@ -510,353 +520,254 @@
       font-weight:800;
     }
 
-    .screen{
-      display:none;
-    }
-
-    .screen.active{
-      display:block;
-    }
-
-    .copy-row{
-      display:flex;
-      gap:8px;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
-
-    .mini-btn{
-      border:none;
-      background:#eff6ff;
-      color:#1d4ed8;
-      border-radius:999px;
-      padding:9px 12px;
-      font-size:12px;
-      font-weight:800;
-      cursor:pointer;
+    .nav-inner{
       display:inline-flex;
+      flex-direction:column;
       align-items:center;
-      gap:7px;
+      gap:3px;
     }
 
-    .mini-btn svg{
-      width:14px;
-      height:14px;
-    }
-
-    @media (max-width:380px){
-      .stats{
-        grid-template-columns:1fr;
+    @media (max-width:360px){
+      .btn-row{
+        flex-direction:column;
       }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="topbar">
+  <div class="phone-shell">
+    <header>
       <div class="brand">
-        <div class="brand-badge">
+        <div class="brand-logo">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 4l7 4v8l-7 4-7-4V8l7-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-            <path d="M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M6 5h12v14H6z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
-        <div>
-          <div class="brand-title">HOS Dashboard</div>
-          <div class="brand-sub" id="schoolNameText">Loading school…</div>
-        </div>
+        <div class="brand-name">Colspot</div>
       </div>
 
-      <button class="ghost-btn" id="refreshBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M20 12a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          <path d="M20 7v5h-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>Refresh</span>
-      </button>
-    </div>
+      <button class="avatar-chip" id="avatarChip">H</button>
+    </header>
 
-    <div id="screen-home" class="screen active">
+    <main>
       <section class="hero">
-        <div class="hero-kicker">School Control</div>
-        <h1 id="heroTitle">Manage your school</h1>
-        <p>
-          View live totals from your school, then use the shortcuts below to create HOD accounts or send announcements.
-        </p>
-      </section>
-
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">Live totals</div>
+        <div class="hero-line" id="schoolNameText">School</div>
+        <h1 class="hero-title">
+          Manage your<br><span>school dashboard</span>
+        </h1>
+        <div class="hero-sub">
+          Create HOD accounts, send announcements, and monitor your school activity.
         </div>
 
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-top">
-              <div class="stat-label">Total HOD</div>
-              <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                  <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </div>
+        <button class="cta primary" id="openHodShortcut">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          <span>Create new HOD account</span>
+        </button>
+
+        <button class="cta secondary" id="openAnnouncementShortcut">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M22 2L11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <span>Send announcement</span>
+        </button>
+      </section>
+
+      <div class="top-tools">
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh dashboard">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M20 11a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalHodCount">--</div>
+          <div class="stat-label">HODs</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalStudentCount">--</div>
+          <div class="stat-label">Students</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalLecturerCount">--</div>
+          <div class="stat-label">Lecturers</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalAnnouncementCount">--</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <div class="section-title">Shortcuts</div>
+      </div>
+
+      <section class="card">
+        <div class="quick-grid">
+          <button class="quick-card" id="openHodShortcutCard" type="button">
+            <div class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+              </svg>
             </div>
-            <div class="stat-value" id="totalHodCount">0</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-top">
-              <div class="stat-label">Students</div>
-              <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M3 8l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M7 10v4c0 1.8 2.2 3 5 3s5-1.2 5-3v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </div>
+            <div class="quick-text">
+              <strong>Create HOD</strong>
+              <span>Open the HOD form</span>
             </div>
-            <div class="stat-value" id="totalStudentCount">0</div>
-          </div>
+          </button>
 
-          <div class="stat">
-            <div class="stat-top">
-              <div class="stat-label">Lecturers</div>
-              <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 14c2.76 0 5-2.24 5-5S14.76 4 12 4 7 6.24 7 9s2.24 5 5 5z" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </div>
+          <button class="quick-card" id="openAnnouncementShortcutCard" type="button">
+            <div class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M22 2L11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
             </div>
-            <div class="stat-value" id="totalLecturerCount">0</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-top">
-              <div class="stat-label">Announcements</div>
-              <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 12h2l8 5V7l-8 5H4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </div>
+            <div class="quick-text">
+              <strong>Announcement</strong>
+              <span>Open announcement form</span>
             </div>
-            <div class="stat-value" id="totalAnnouncementCount">0</div>
-          </div>
+          </button>
         </div>
       </section>
 
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">Latest HOD history</div>
-        </div>
-        <div class="history-list" id="hodHistoryList"></div>
-      </section>
+      <div class="section-head hidden" id="hodSectionHead">
+        <div class="section-title">Create HOD account</div>
+      </div>
 
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">Latest announcement history</div>
-        </div>
-        <div class="history-list" id="announcementHistoryList"></div>
-      </section>
-    </div>
-
-    <div id="screen-hod" class="screen">
-      <section class="hero">
-        <div class="hero-kicker">Create HOD</div>
-        <h1>Create new HOD account</h1>
-        <p>Only real backend data is used here. New HOD login details are generated after successful creation.</p>
-      </section>
-
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">New HOD account</div>
-        </div>
-        <div class="section-note">
-          Enter the HOD full name and department. School will be pulled from this HOS account automatically.
+      <section class="card hidden" id="hodSection">
+        <div class="field">
+          <label for="hodFullName">Full name</label>
+          <input id="hodFullName" class="input" placeholder="Enter HOD full name">
         </div>
 
         <div class="field">
-          <label class="label" for="hodFullName">Full name</label>
-          <input id="hodFullName" class="input" type="text" placeholder="e.g. Saheed Samad" />
+          <label for="hodDepartment">Department</label>
+          <input id="hodDepartment" class="input" placeholder="Enter department">
         </div>
 
         <div class="field">
-          <label class="label" for="hodDepartment">Department</label>
-          <input id="hodDepartment" class="input" type="text" placeholder="e.g. Computer Science" />
+          <label>School</label>
+          <div class="locked-box" id="lockedSchoolName">-</div>
         </div>
 
-        <div class="action-row">
-          <button class="btn primary" id="createHodBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-            <span>Create HOD</span>
-          </button>
-          <button class="btn secondary" id="clearHodFormBtn" type="button">
-            <span>Clear</span>
-          </button>
+        <div class="generated-box" id="createdHodBox">
+          <div class="generated-item">
+            <div class="generated-label">Generated login ID</div>
+            <div class="generated-value" id="createdHodLoginId">-</div>
+          </div>
+          <div class="generated-item">
+            <div class="generated-label">Temporary password</div>
+            <div class="generated-value" id="createdHodPassword">-</div>
+          </div>
         </div>
 
-        <div class="created-box" id="createdHodBox">
-          <div class="created-row">
-            <div class="created-label">Generated Login ID</div>
-            <div class="created-value" id="createdHodLoginId">-</div>
-          </div>
-          <div class="created-row">
-            <div class="created-label">Temporary Password</div>
-            <div class="created-value" id="createdHodPassword">-</div>
-          </div>
-
-          <div class="copy-row">
-            <button class="mini-btn" id="copyHodLoginBtn" type="button">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
-                <path d="M7 15H6a2 2 0 01-2-2V6a2 2 0 012-2h7a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.7"/>
-              </svg>
-              <span>Copy Login ID</span>
-            </button>
-
-            <button class="mini-btn" id="copyHodPasswordBtn" type="button">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
-                <path d="M7 15H6a2 2 0 01-2-2V6a2 2 0 012-2h7a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.7"/>
-              </svg>
-              <span>Copy Password</span>
-            </button>
-          </div>
+        <div class="btn-row">
+          <button class="mini-btn primary" id="createHodBtn" type="button">Create HOD</button>
+          <button class="mini-btn secondary" id="clearHodFormBtn" type="button">Clear</button>
         </div>
 
         <div class="message" id="hodMessage"></div>
       </section>
-    </div>
 
-    <div id="screen-announcement" class="screen">
-      <section class="hero">
-        <div class="hero-kicker">School Announcement</div>
-        <h1>Send announcement</h1>
-        <p>Send a real school-wide announcement for your school only.</p>
-      </section>
+      <div class="section-head hidden" id="announcementSectionHead">
+        <div class="section-title">Send announcement</div>
+      </div>
 
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">New announcement</div>
+      <section class="card hidden" id="announcementSection">
+        <div class="field">
+          <label for="announcementTitle">Title</label>
+          <input id="announcementTitle" class="input" placeholder="Announcement title">
         </div>
 
         <div class="field">
-          <label class="label" for="announcementTitle">Title</label>
-          <input id="announcementTitle" class="input" type="text" placeholder="e.g. Examination Notice" />
+          <label for="announcementBody">Message</label>
+          <textarea id="announcementBody" class="textarea" placeholder="Write your school-wide announcement here..."></textarea>
         </div>
 
-        <div class="field">
-          <label class="label" for="announcementBody">Message</label>
-          <textarea id="announcementBody" class="textarea" placeholder="Type your announcement here"></textarea>
-        </div>
-
-        <div class="action-row">
-          <button class="btn primary" id="sendAnnouncementBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-            </svg>
-            <span>Send</span>
-          </button>
-          <button class="btn secondary" id="clearAnnouncementBtn" type="button">
-            <span>Clear</span>
-          </button>
+        <div class="btn-row">
+          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send</button>
+          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
         </div>
 
         <div class="message" id="announcementMessageBox"></div>
       </section>
-    </div>
 
-    <div id="screen-account" class="screen">
-      <section class="hero">
-        <div class="hero-kicker">Account</div>
-        <h1>Your HOS account</h1>
-        <p>This shows the signed-in HOS account stored from admin login.</p>
-      </section>
+      <div class="section-head">
+        <div class="section-title">Last 2 HOD history</div>
+      </div>
 
-      <section class="section">
-        <div class="section-head">
-          <div class="section-title">Account details</div>
-        </div>
-
-        <div class="account-card">
-          <div class="account-row">
-            <div class="k">Role</div>
-            <div class="v" id="accountRole">-</div>
-          </div>
-
-          <div class="account-row">
-            <div class="k">School name</div>
-            <div class="v" id="accountSchool">-</div>
-          </div>
-
-          <div class="account-row">
-            <div class="k">Login ID</div>
-            <div class="v" id="accountLoginId">-</div>
-          </div>
-
-          <div class="account-row">
-            <div class="k">Linked email</div>
-            <div class="v" id="accountEmail">-</div>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button class="btn secondary" id="logoutBtn" type="button">Logout</button>
+      <section class="card">
+        <div class="history-list" id="hodHistoryList">
+          <div class="empty">Loading...</div>
         </div>
       </section>
-    </div>
+
+      <div class="section-head">
+        <div class="section-title">Last 2 announcement history</div>
+      </div>
+
+      <section class="card">
+        <div class="history-list" id="announcementHistoryList">
+          <div class="empty">Loading...</div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <nav class="bottom-nav">
-    <div class="nav-btn active" data-screen="home" onclick="showScreen('home')">
-      <div class="nav-btn-inner">
+    <button class="nav-btn active" type="button">
+      <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
         </svg>
         <span>Home</span>
-      </div>
-    </div>
+      </span>
+    </button>
 
-    <div class="nav-btn" data-screen="hod" onclick="showScreen('hod')">
-      <div class="nav-btn-inner">
+    <button class="nav-btn" type="button" id="navOpenHod">
+      <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
-          <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
         </svg>
         <span>HOD</span>
-      </div>
-    </div>
+      </span>
+    </button>
 
-    <div class="nav-btn" data-screen="announcement" onclick="showScreen('announcement')">
-      <div class="nav-btn-inner">
+    <button class="nav-btn" type="button" id="navOpenAnnouncement">
+      <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4 12h2l8 5V7l-8 5H4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-          <path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M22 2L11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
         </svg>
-        <span>Announcement</span>
-      </div>
-    </div>
+        <span>Alert</span>
+      </span>
+    </button>
 
-    <div class="nav-btn" data-screen="account" onclick="showScreen('account')">
-      <div class="nav-btn-inner">
+    <button class="nav-btn" type="button" id="logoutBtn">
+      <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/>
-          <path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M15 17l5-5-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M13 4H6a2 2 0 00-2 2v12a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
-        <span>Account</span>
-      </div>
-    </div>
+        <span>Logout</span>
+      </span>
+    </button>
   </nav>
 
-  <script type="module" src="./client_supabase.js"></script>
-
   <script>
-    const EDGE_BASE = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co";
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
     const EDGE = {
       createHod: "hos-create-hod-account",
@@ -864,11 +775,13 @@
     };
 
     const TABLES = {
-      hod: ["hod_accounts", "department_admin_accounts"],
-      students: ["student_accounts", "student_profiles"],
-      lecturers: ["lecturer_accounts", "lecturer_profiles"],
-      announcements: ["school_announcements", "app_announcements"]
+      hod: ["hod_accounts"],
+      students: ["student_profiles", "students"],
+      lecturers: ["lecturer_profiles", "lecturers"],
+      announcements: ["school_announcements"]
     };
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let adminSession = null;
     let currentSchoolName = "";
@@ -880,7 +793,7 @@
     }
 
     function escapeHtml(value){
-      return String(value ?? "")
+      return String(value || "")
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
@@ -888,38 +801,11 @@
         .replaceAll("'","&#39;");
     }
 
-    function formatDate(iso){
-      if (!iso) return "-";
-      try{
-        return new Date(iso).toLocaleString();
-      }catch{
-        return iso;
-      }
-    }
-
-    function showScreen(name){
-      ["home","hod","announcement","account"].forEach((screen) => {
-        const el = $("screen-" + screen);
-        if (el) el.classList.toggle("active", screen === name);
-      });
-
-      document.querySelectorAll(".nav-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.screen === name);
-      });
-    }
-
-    function showMessage(elId, text, type){
-      const box = $(elId);
-      if (!box) return;
-      box.className = "message";
-      if (!text){
-        box.style.display = "none";
-        box.textContent = "";
-        return;
-      }
-      box.classList.add(type === "error" ? "error" : "success");
-      box.textContent = text;
-      box.style.display = "block";
+    function formatDate(value){
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
     }
 
     function copyText(text, successText){
@@ -942,7 +828,7 @@
     function requireHosSession(){
       adminSession = getAdminSession();
 
-      if (!adminSession || adminSession.role !== "hos"){
+      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
         window.location.href = "index.html";
         return false;
       }
@@ -954,33 +840,31 @@
         "";
 
       $("schoolNameText").textContent = currentSchoolName || "School not found";
-      $("heroTitle").textContent = currentSchoolName
-        ? `Manage ${currentSchoolName}`
-        : "Manage your school";
+      $("lockedSchoolName").textContent = currentSchoolName || "-";
 
-      $("accountRole").textContent = (adminSession.role || "-").toUpperCase();
-      $("accountSchool").textContent = currentSchoolName || "-";
-      $("accountLoginId").textContent = adminSession.login_id || "-";
-      $("accountEmail").textContent = adminSession.linked_email || "Not linked";
+      const initial = (adminSession.full_name || "H")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "H";
 
+      $("avatarChip").textContent = initial;
       return true;
     }
 
     async function invokeEdge(functionName, body){
-      const res = await fetch(`${EDGE_BASE}/${functionName}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body || {})
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: body || {}
       });
 
-      return await res.json().catch(() => ({}));
+      if (error){
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      return data || {};
     }
 
     async function countFromTable(table, schoolName){
-      const sb = window.supabase;
-      if (!sb) return 0;
-
-      let query = sb.from(table).select("*", { count: "exact", head: true });
+      let query = supabase.from(table).select("*", { count:"exact", head:true });
 
       if (schoolName){
         query = query.eq("school_name", schoolName);
@@ -1003,10 +887,7 @@
     }
 
     async function fetchRows(table, schoolName, limit = 2){
-      const sb = window.supabase;
-      if (!sb) return [];
-
-      let query = sb.from(table).select("*");
+      let query = supabase.from(table).select("*");
 
       if (schoolName){
         query = query.eq("school_name", schoolName);
@@ -1020,8 +901,7 @@
     async function firstWorkingRows(tables, schoolName, limit = 2){
       for (const table of tables){
         try{
-          const rows = await fetchRows(table, schoolName, limit);
-          return rows;
+          return await fetchRows(table, schoolName, limit);
         }catch(err){
           console.warn("Rows failed for", table, err);
         }
@@ -1034,7 +914,7 @@
       if (!wrap) return;
 
       if (!rows.length){
-        wrap.innerHTML = `<div class="empty">No HOD history yet.</div>`;
+        wrap.innerHTML = '<div class="empty">No HOD history yet.</div>';
         return;
       }
 
@@ -1043,7 +923,7 @@
           <div class="history-top">
             <div>
               <div class="history-title">${escapeHtml(item.full_name || item.name || "-")}</div>
-              <div class="history-sub">${escapeHtml(item.department || "No department")}</div>
+              <div class="history-sub">${escapeHtml(item.department || item.department_name || "No department")}</div>
             </div>
             <div class="pill">HOD</div>
           </div>
@@ -1058,7 +938,7 @@
       if (!wrap) return;
 
       if (!rows.length){
-        wrap.innerHTML = `<div class="empty">No announcement history yet.</div>`;
+        wrap.innerHTML = '<div class="empty">No announcement history yet.</div>';
         return;
       }
 
@@ -1077,17 +957,12 @@
     }
 
     async function loadDashboardData(){
-      if (!window.supabase){
-        alert("Supabase is not ready.");
-        return;
-      }
-
       const school = currentSchoolName || "";
 
-      $("totalHodCount").textContent = "0";
-      $("totalStudentCount").textContent = "0";
-      $("totalLecturerCount").textContent = "0";
-      $("totalAnnouncementCount").textContent = "0";
+      $("totalHodCount").textContent = "--";
+      $("totalStudentCount").textContent = "--";
+      $("totalLecturerCount").textContent = "--";
+      $("totalAnnouncementCount").textContent = "--";
 
       try{
         const [
@@ -1106,18 +981,50 @@
           firstWorkingRows(TABLES.announcements, school, 2)
         ]);
 
-        $("totalHodCount").textContent = totalHod;
-        $("totalStudentCount").textContent = totalStudents;
-        $("totalLecturerCount").textContent = totalLecturers;
-        $("totalAnnouncementCount").textContent = totalAnnouncements;
+        $("totalHodCount").textContent = String(totalHod);
+        $("totalStudentCount").textContent = String(totalStudents);
+        $("totalLecturerCount").textContent = String(totalLecturers);
+        $("totalAnnouncementCount").textContent = String(totalAnnouncements);
 
         renderHodHistory(hodHistory);
         renderAnnouncementHistory(announcementHistory);
       }catch(err){
         console.error(err);
+        $("totalHodCount").textContent = "0";
+        $("totalStudentCount").textContent = "0";
+        $("totalLecturerCount").textContent = "0";
+        $("totalAnnouncementCount").textContent = "0";
         renderHodHistory([]);
         renderAnnouncementHistory([]);
       }
+    }
+
+    function showMessage(id, text, type){
+      const box = $(id);
+      if (!box) return;
+
+      box.textContent = text || "";
+      box.className = "message";
+
+      if (text){
+        box.classList.add(type === "error" ? "error" : "success");
+      }
+    }
+
+    function showHodForm(){
+      $("hodSectionHead").classList.remove("hidden");
+      $("hodSection").classList.remove("hidden");
+      $("announcementSectionHead").classList.add("hidden");
+      $("announcementSection").classList.add("hidden");
+      $("hodSection").scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function showAnnouncementForm(){
+      $("announcementSectionHead").classList.remove("hidden");
+      $("announcementSection").classList.remove("hidden");
+      $("hodSectionHead").classList.add("hidden");
+      $("hodSection").classList.add("hidden");
+      $("announcementSection").scrollIntoView({ behavior:"smooth", block:"start" });
     }
 
     async function createHodAccount(){
@@ -1250,12 +1157,17 @@
       $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
       $("logoutBtn").addEventListener("click", logoutAdmin);
 
-      $("copyHodLoginBtn").addEventListener("click", () => {
-        copyText(lastCreatedHodLoginId, "Login ID copied");
-      });
+      $("openHodShortcut").addEventListener("click", showHodForm);
+      $("openAnnouncementShortcut").addEventListener("click", showAnnouncementForm);
+      $("openHodShortcutCard").addEventListener("click", showHodForm);
+      $("openAnnouncementShortcutCard").addEventListener("click", showAnnouncementForm);
+      $("navOpenHod").addEventListener("click", showHodForm);
+      $("navOpenAnnouncement").addEventListener("click", showAnnouncementForm);
 
-      $("copyHodPasswordBtn").addEventListener("click", () => {
-        copyText(lastCreatedHodPassword, "Password copied");
+      $("avatarChip").addEventListener("click", () => {
+        if (lastCreatedHodLoginId) {
+          copyText(lastCreatedHodLoginId, "Last login ID copied");
+        }
       });
 
       await loadDashboardData();
