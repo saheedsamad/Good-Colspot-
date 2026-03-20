@@ -775,13 +775,13 @@
     };
 
     const TABLES = {
-      hod: ["hod_accounts"],
-      students: ["student_profiles", "students"],
-      lecturers: ["lecturer_profiles", "lecturers"],
-      announcements: ["school_announcements"]
+      hod: "hod_accounts",
+      students: "student_accounts",
+      lecturers: "lecturer_accounts",
+      announcements: "school_announcements"
     };
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let adminSession = null;
     let currentSchoolName = "";
@@ -852,7 +852,7 @@
     }
 
     async function invokeEdge(functionName, body){
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await sb.functions.invoke(functionName, {
         body: body || {}
       });
 
@@ -864,7 +864,7 @@
     }
 
     async function countFromTable(table, schoolName){
-      let query = supabase.from(table).select("*", { count:"exact", head:true });
+      let query = sb.from(table).select("*", { count:"exact", head:true });
 
       if (schoolName){
         query = query.eq("school_name", schoolName);
@@ -875,38 +875,19 @@
       return count || 0;
     }
 
-    async function firstWorkingCount(tables, schoolName){
-      for (const table of tables){
-        try{
-          return await countFromTable(table, schoolName);
-        }catch(err){
-          console.warn("Count failed for", table, err);
-        }
-      }
-      return 0;
-    }
-
     async function fetchRows(table, schoolName, limit = 2){
-      let query = supabase.from(table).select("*");
+      let query = sb.from(table).select("*");
 
       if (schoolName){
         query = query.eq("school_name", schoolName);
       }
 
-      const { data, error } = await query.order("created_at", { ascending:false }).limit(limit);
+      const { data, error } = await query
+        .order("created_at", { ascending:false })
+        .limit(limit);
+
       if (error) throw error;
       return Array.isArray(data) ? data : [];
-    }
-
-    async function firstWorkingRows(tables, schoolName, limit = 2){
-      for (const table of tables){
-        try{
-          return await fetchRows(table, schoolName, limit);
-        }catch(err){
-          console.warn("Rows failed for", table, err);
-        }
-      }
-      return [];
     }
 
     function renderHodHistory(rows){
@@ -922,7 +903,7 @@
         <div class="history-card">
           <div class="history-top">
             <div>
-              <div class="history-title">${escapeHtml(item.full_name || item.name || "-")}</div>
+              <div class="history-title">${escapeHtml(item.full_name || "-")}</div>
               <div class="history-sub">${escapeHtml(item.department || item.department_name || "No department")}</div>
             </div>
             <div class="pill">HOD</div>
@@ -973,12 +954,12 @@
           hodHistory,
           announcementHistory
         ] = await Promise.all([
-          firstWorkingCount(TABLES.hod, school),
-          firstWorkingCount(TABLES.students, school),
-          firstWorkingCount(TABLES.lecturers, school),
-          firstWorkingCount(TABLES.announcements, school),
-          firstWorkingRows(TABLES.hod, school, 2),
-          firstWorkingRows(TABLES.announcements, school, 2)
+          countFromTable(TABLES.hod, school),
+          countFromTable(TABLES.students, school),
+          countFromTable(TABLES.lecturers, school),
+          countFromTable(TABLES.announcements, school),
+          fetchRows(TABLES.hod, school, 2),
+          fetchRows(TABLES.announcements, school, 2)
         ]);
 
         $("totalHodCount").textContent = String(totalHod);
