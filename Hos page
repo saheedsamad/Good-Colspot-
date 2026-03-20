@@ -9,1276 +9,1256 @@
   <title>Colspot • HOS Dashboard</title>
 
   <style>
-    :root {
-      --blue: #2563eb;
-      --blue-dark: #1d4ed8;
-      --bg1: #eef4ff;
-      --bg2: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #6b7280;
-      --border-soft: #e5e7eb;
-      --card: #ffffff;
-      --soft-blue: #eff6ff;
-      --soft: #f8fafc;
-      --green: #16a34a;
-      --red: #dc2626;
-      --amber: #d97706;
-      --shadow-soft: 0 14px 35px rgba(15, 23, 42, 0.08);
-      --shadow-strong: 0 18px 45px rgba(15, 23, 42, 0.12);
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
-      color: var(--text-main);
-      min-height: 100%;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --bg:#eef4ff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --soft:#f8fbff;
+      --green:#16a34a;
+      --red:#dc2626;
+      --amber:#d97706;
+      --shadow:0 14px 36px rgba(15,23,42,.10);
+      --radius:22px;
+    }
+
+    *{
+      box-sizing:border-box;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:radial-gradient(circle at top,#dcecff 0%,#f6faff 45%,#ffffff 100%);
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+    }
+
+    .shell{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 98px);
+      position:relative;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--blue),#60a5fa);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 12px 24px rgba(37,99,235,.28);
+      flex-shrink:0;
+    }
+
+    .brand-badge svg{
+      width:20px;
+      height:20px;
+    }
+
+    .brand-title{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.1;
+      letter-spacing:-.02em;
+    }
+
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:220px;
+    }
+
+    .ghost-btn{
+      border:none;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--text);
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.05);
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+    }
+
+    .ghost-btn svg{
+      width:14px;
+      height:14px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg,#fefefe 0%,#f4f9ff 100%);
+      border:1px solid #dbeafe;
+      border-radius:26px;
+      padding:18px 16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .hero-kicker{
+      font-size:11px;
+      font-weight:800;
+      color:var(--blue);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      font-size:23px;
+      line-height:1.16;
+      letter-spacing:-.03em;
+    }
+
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
     }
+
+    .section{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
 
-    .app-shell {
-      width: 100%;
-      max-width: 430px;
-      min-height: 100vh;
-      background: #fff;
-      position: relative;
-      padding: calc(env(safe-area-inset-top) + 8px) 14px 100px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 2px 12px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 800;
-      font-size: 15px;
-      box-shadow: var(--shadow-soft);
-    }
-
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.1;
-    }
-
-    .brand-text strong {
-      font-size: 17px;
-      font-weight: 800;
-    }
-
-    .brand-text span {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1d4ed8, #22c55e);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
-      box-shadow: var(--shadow-soft);
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-.01em;
     }
 
-    .hero {
-      margin: 4px 2px 14px;
+    .section-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+      margin:-4px 0 12px;
     }
 
-    .hero-small {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      font-weight: 600;
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .stat{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 8px 22px rgba(15,23,42,.05);
+      min-height:96px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
     }
 
-    .hero-title {
-      font-size: 24px;
-      line-height: 1.18;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin: 0 0 8px;
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
 
-    .hero-title span {
-      color: var(--blue);
+    .stat-icon{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      background:#eff6ff;
+      color:var(--blue);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
     }
 
-    .hero-sub {
-      font-size: 13px;
-      line-height: 1.45;
-      color: var(--text-muted);
-      margin-bottom: 14px;
+    .stat-icon svg{
+      width:18px;
+      height:18px;
     }
 
-    .main-action,
-    .secondary-action {
-      width: 100%;
-      border: none;
-      border-radius: 999px;
-      padding: 13px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform .06s ease;
+    .stat-value{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+      letter-spacing:-.03em;
+      margin-top:10px;
     }
 
-    .main-action:active,
-    .secondary-action:active,
-    .quick-card:active,
-    .chip-btn:active,
-    .mini-btn:active {
-      transform: scale(0.98);
+    .stat-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-top:4px;
     }
 
-    .main-action {
-      color: #fff;
-      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-      box-shadow: var(--shadow-soft);
-    }
-
-    .secondary-action {
-      margin-top: 10px;
-      color: var(--blue);
-      background: #f8fbff;
-      border: 1px solid #dbeafe;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin: 16px 2px 4px;
-    }
-
-    .stat-card {
-      background: #fff;
-      border: 1px solid var(--border-soft);
-      border-radius: 18px;
-      padding: 14px 13px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-    }
-
-    .stat-value {
-      font-size: 22px;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 20px 4px 10px;
-    }
-
-    .section-head h3 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .section-head button,
-    .section-head span {
-      border: none;
-      background: transparent;
-      color: var(--blue);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .card {
-      background: #fff;
-      border: 1px solid var(--border-soft);
-      border-radius: 20px;
-      padding: 14px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-      margin: 0 2px 14px;
+    .history-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+    .history-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      background:#fff;
     }
 
-    .quick-card {
-      background: #fff;
-      border: 1px solid var(--border-soft);
-      border-radius: 16px;
-      padding: 12px 8px;
-      text-align: center;
-      cursor: pointer;
+    .history-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
     }
 
-    .quick-icon {
-      width: 38px;
-      height: 38px;
-      margin: 0 auto 8px;
-      border-radius: 12px;
-      background: var(--soft-blue);
-      color: var(--blue);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 800;
+    .history-title{
+      font-size:14px;
+      font-weight:800;
+      line-height:1.2;
+      letter-spacing:-.01em;
     }
 
-    .quick-card p {
-      margin: 0;
-      font-size: 11px;
-      font-weight: 700;
-      line-height: 1.25;
+    .history-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+      line-height:1.35;
     }
 
-    .field {
-      margin-bottom: 12px;
+    .pill{
+      flex-shrink:0;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      color:#334155;
     }
 
-    .field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: #334155;
-      margin-bottom: 6px;
+    .empty{
+      text-align:center;
+      padding:18px 10px;
+      color:var(--muted);
+      font-size:13px;
     }
 
-    .input,
-    .select,
-    .textarea {
-      width: 100%;
-      border: 1px solid var(--border-soft);
-      border-radius: 14px;
-      padding: 12px 13px;
-      background: #fff;
-      font-size: 14px;
-      color: var(--text-main);
-      outline: none;
+    .field{
+      margin-bottom:12px;
     }
 
-    .input:focus,
-    .select:focus,
-    .textarea:focus {
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    .label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:#334155;
+      margin-bottom:6px;
     }
 
-    .textarea {
-      min-height: 96px;
-      resize: vertical;
+    .input,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:13px 14px;
+      font-size:15px;
+      outline:none;
+      color:var(--text);
     }
 
-    .locked-box {
-      width: 100%;
-      border-radius: 14px;
-      padding: 12px 13px;
-      border: 1px dashed #bfdbfe;
-      background: #f8fbff;
-      color: var(--blue-dark);
-      font-size: 14px;
-      font-weight: 700;
+    .textarea{
+      min-height:118px;
+      resize:vertical;
     }
 
-    .generated-box {
-      display: none;
-      margin-top: 12px;
-      border-radius: 16px;
-      border: 1px dashed #bfdbfe;
-      background: #f8fbff;
-      padding: 12px;
+    .input:focus,.textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
     }
 
-    .generated-item + .generated-item {
-      margin-top: 10px;
+    .action-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
     }
 
-    .generated-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 5px;
+    .btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:13px 14px;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:-.01em;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
 
-    .generated-value {
-      background: #fff;
-      border: 1px solid var(--border-soft);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      word-break: break-word;
+    .btn svg{
+      width:16px;
+      height:16px;
     }
 
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      box-shadow:0 16px 28px rgba(37,99,235,.28);
     }
 
-    .mini-btn {
-      flex: 1;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 14px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
+    .btn.secondary{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
     }
 
-    .mini-btn.primary {
-      color: #fff;
-      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-      box-shadow: var(--shadow-soft);
+    .btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+      box-shadow:none;
     }
 
-    .mini-btn.secondary {
-      color: var(--text-main);
-      background: #fff;
-      border: 1px solid var(--border-soft);
+    .message{
+      display:none;
+      margin-top:12px;
+      padding:11px 12px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.4;
     }
 
-    .message {
-      display: none;
-      margin-top: 12px;
-      padding: 11px 12px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.45;
+    .message.success{
+      display:block;
+      background:#ecfdf5;
+      color:#166534;
+      border:1px solid #bbf7d0;
     }
 
-    .message.success {
-      display: block;
-      background: #ecfdf5;
-      border: 1px solid #bbf7d0;
-      color: #166534;
+    .message.error{
+      display:block;
+      background:#fef2f2;
+      color:#991b1b;
+      border:1px solid #fecaca;
     }
 
-    .message.error {
-      display: block;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
+    .created-box{
+      background:#f8fbff;
+      border:1px dashed #bfd6ff;
+      border-radius:18px;
+      padding:12px;
+      margin-top:12px;
+      display:none;
     }
 
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
+    .created-row{
+      margin-bottom:10px;
     }
 
-    .toolbar .input {
-      flex: 1;
+    .created-row:last-child{
+      margin-bottom:0;
     }
 
-    .chip-btn {
-      border: 1px solid var(--border-soft);
-      background: #fff;
-      border-radius: 999px;
-      padding: 0 14px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
+    .created-label{
+      font-size:11px;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      margin-bottom:5px;
     }
 
-    .list-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .created-value{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      word-break:break-all;
     }
 
-    .hod-card,
-    .announcement-card,
-    .search-card {
-      border: 1px solid var(--border-soft);
-      border-radius: 18px;
-      padding: 12px;
-      background: #fff;
+    .account-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
-    .hod-top,
-    .announcement-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 8px;
+    .account-row{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      background:#fff;
     }
 
-    .hod-name,
-    .announcement-title,
-    .search-name {
-      font-size: 15px;
-      font-weight: 800;
-      line-height: 1.2;
+    .account-row .k{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:4px;
     }
 
-    .hod-sub,
-    .announcement-meta,
-    .search-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 3px;
-      line-height: 1.35;
+    .account-row .v{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      word-break:break-word;
     }
 
-    .status-pill,
-    .tag {
-      flex-shrink: 0;
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:calc(env(safe-area-inset-bottom) + 8px);
+      transform:translateX(-50%);
+      width:calc(100% - 20px);
+      max-width:420px;
+      border-top:1px solid #e5e7eb;
+      padding:7px 8px 10px;
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      background:#ffffff;
+      border-radius:26px;
+      box-shadow:0 10px 30px rgba(15,23,42,.18);
+      z-index:50;
     }
 
-    .status-pill.active {
-      background: #ecfdf5;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+    .nav-btn{
+      flex:1;
+      text-align:center;
+      font-size:11px;
+      color:#94a3b8;
+      cursor:pointer;
+      padding-top:2px;
     }
 
-    .status-pill.disabled {
-      background: #fff7ed;
-      color: #9a3412;
-      border: 1px solid #fed7aa;
+    .nav-btn-inner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
     }
 
-    .tag {
-      background: #eff6ff;
-      color: var(--blue);
+    .nav-btn svg{
+      width:20px;
+      height:20px;
+      display:block;
     }
 
-    .mini-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin: 10px 0;
+    .nav-btn.active{
+      color:var(--blue);
+      font-weight:800;
     }
 
-    .mini-info {
-      background: var(--soft);
-      border: 1px solid var(--border-soft);
-      border-radius: 14px;
-      padding: 9px 10px;
+    .screen{
+      display:none;
     }
 
-    .mini-info-label {
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-bottom: 4px;
+    .screen.active{
+      display:block;
     }
 
-    .mini-info-value {
-      font-size: 12px;
-      color: var(--text-main);
-      font-weight: 700;
-      word-break: break-word;
+    .copy-row{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+      flex-wrap:wrap;
     }
 
-    .action-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+    .mini-btn{
+      border:none;
+      background:#eff6ff;
+      color:#1d4ed8;
+      border-radius:999px;
+      padding:9px 12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
     }
 
-    .action-chip {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .mini-btn svg{
+      width:14px;
+      height:14px;
     }
-
-    .action-chip.blue {
-      background: #eff6ff;
-      color: var(--blue);
-    }
-
-    .action-chip.amber {
-      background: #fff7ed;
-      color: var(--amber);
-    }
-
-    .action-chip.red {
-      background: #fef2f2;
-      color: var(--red);
-    }
-
-    .bottom-nav {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: max(12px, env(safe-area-inset-bottom));
-      width: calc(100% - 28px);
-      max-width: 402px;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(229,231,235,0.9);
-      box-shadow: var(--shadow-strong);
-      border-radius: 26px;
-      padding: 8px 8px 10px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 30;
-    }
-
-    .nav-btn {
-      flex: 1;
-      border: none;
-      background: transparent;
-      color: #94a3b8;
-      text-align: center;
-      font-size: 11px;
-      cursor: pointer;
-      padding-top: 2px;
-    }
-
-    .nav-btn.active {
-      color: var(--blue);
-      font-weight: 800;
-    }
-
-    .nav-inner {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .nav-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-
-    @media (max-width: 360px) {
-      .quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
 
-      .stats-grid,
-      .mini-grid,
-      .btn-row {
-        grid-template-columns: 1fr;
-        flex-direction: column;
+    @media (max-width:380px){
+      .stats{
+        grid-template-columns:1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="shell">
     <div class="topbar">
       <div class="brand">
-        <div class="brand-badge">C</div>
-        <div class="brand-text">
-          <strong>Colspot</strong>
-          <span>HOS dashboard</span>
+        <div class="brand-badge">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4l7 4v8l-7 4-7-4V8l7-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">HOS Dashboard</div>
+          <div class="brand-sub" id="schoolNameText">Loading school…</div>
         </div>
       </div>
-      <div class="avatar" id="hosAvatar">H</div>
-    </div>
 
-    <section class="hero">
-      <div class="hero-small" id="heroSchoolName">Hello, Ekiti State University</div>
-      <h1 class="hero-title">
-        What do you want to<br />
-        <span>do today?</span>
-      </h1>
-      <div class="hero-sub">
-        Manage your school, create HOD accounts, and send announcements to all departments.
-      </div>
-
-      <button class="main-action" id="topCreateHodBtn">
-        <span>＋</span>
-        <span>Create new HOD account</span>
+      <button class="ghost-btn" id="refreshBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M20 12a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M20 7v5h-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Refresh</span>
       </button>
-
-      <button class="secondary-action" id="topAnnouncementBtn">
-        <span>📢</span>
-        <span>Send announcement</span>
-      </button>
-    </section>
-
-    <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="statHods">12</div>
-        <div class="stat-label">HODs</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statDepartments">18</div>
-        <div class="stat-label">Departments</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statLecturers">165</div>
-        <div class="stat-label">Lecturers</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statStudents">8420</div>
-        <div class="stat-label">Students</div>
-      </div>
-    </section>
-
-    <div class="section-head">
-      <h3>Quick actions</h3>
     </div>
 
-    <section class="card">
-      <div class="quick-grid">
-        <button class="quick-card" id="qaCreateHod">
-          <div class="quick-icon">＋</div>
-          <p>Create HOD</p>
-        </button>
+    <div id="screen-home" class="screen active">
+      <section class="hero">
+        <div class="hero-kicker">School Control</div>
+        <h1 id="heroTitle">Manage your school</h1>
+        <p>
+          View live totals from your school, then use the shortcuts below to create HOD accounts or send announcements.
+        </p>
+      </section>
 
-        <button class="quick-card" id="qaSendAnnouncement">
-          <div class="quick-icon">📢</div>
-          <p>Send announcement</p>
-        </button>
-
-        <button class="quick-card" id="qaSearchSchool">
-          <div class="quick-icon">⌕</div>
-          <p>Search school</p>
-        </button>
-
-        <button class="quick-card" id="qaViewHods">
-          <div class="quick-icon">☰</div>
-          <p>View HODs</p>
-        </button>
-      </div>
-    </section>
-
-    <div class="section-head">
-      <h3>Create HOD account</h3>
-    </div>
-
-    <section class="card" id="createHodSection">
-      <div class="field">
-        <label for="hodFullName">Full name</label>
-        <input id="hodFullName" class="input" placeholder="Enter HOD full name" />
-      </div>
-
-      <div class="field">
-        <label for="hodDepartment">Department</label>
-        <select id="hodDepartment" class="select">
-          <option value="">Select department</option>
-          <option>Computer Science</option>
-          <option>Accounting</option>
-          <option>Business Administration</option>
-          <option>Economics</option>
-          <option>Entrepreneurship</option>
-          <option>Mass Communication</option>
-          <option>Biochemistry</option>
-          <option>Physics</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="hodEmail">Email</label>
-        <input id="hodEmail" class="input" type="email" placeholder="Enter email address" />
-      </div>
-
-      <div class="field">
-        <label>School</label>
-        <div class="locked-box" id="lockedSchoolName">Ekiti State University</div>
-      </div>
-
-      <div class="generated-box" id="generatedBox">
-        <div class="generated-item">
-          <div class="generated-label">Generated login ID</div>
-          <div class="generated-value" id="generatedLoginId">-</div>
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">Live totals</div>
         </div>
-        <div class="generated-item">
-          <div class="generated-label">Temporary password</div>
-          <div class="generated-value" id="generatedPassword">-</div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Total HOD</div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
+                  <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="totalHodCount">0</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Students</div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 8l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                  <path d="M7 10v4c0 1.8 2.2 3 5 3s5-1.2 5-3v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="totalStudentCount">0</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Lecturers</div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 14c2.76 0 5-2.24 5-5S14.76 4 12 4 7 6.24 7 9s2.24 5 5 5z" stroke="currentColor" stroke-width="1.7"/>
+                  <path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="totalLecturerCount">0</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Announcements</div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M4 12h2l8 5V7l-8 5H4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                  <path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="totalAnnouncementCount">0</div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="btn-row">
-        <button class="mini-btn primary" id="createHodBtn">Create HOD</button>
-        <button class="mini-btn secondary" id="clearHodBtn">Clear</button>
-      </div>
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">Latest HOD history</div>
+        </div>
+        <div class="history-list" id="hodHistoryList"></div>
+      </section>
 
-      <div class="message" id="createHodMessage"></div>
-    </section>
-
-    <div class="section-head">
-      <h3>School announcements</h3>
-      <span id="jumpToAnnouncements">View all</span>
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">Latest announcement history</div>
+        </div>
+        <div class="history-list" id="announcementHistoryList"></div>
+      </section>
     </div>
 
-    <section class="card" id="announcementSection">
-      <div class="field">
-        <label for="announcementTitle">Title</label>
-        <input id="announcementTitle" class="input" placeholder="Announcement title" />
-      </div>
+    <div id="screen-hod" class="screen">
+      <section class="hero">
+        <div class="hero-kicker">Create HOD</div>
+        <h1>Create new HOD account</h1>
+        <p>Only real backend data is used here. New HOD login details are generated after successful creation.</p>
+      </section>
 
-      <div class="field">
-        <label for="announcementAudience">Audience</label>
-        <select id="announcementAudience" class="select">
-          <option value="All Departments">All Departments</option>
-          <option value="All HODs">All HODs</option>
-          <option value="All Lecturers">All Lecturers</option>
-          <option value="All Students">All Students</option>
-        </select>
-      </div>
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">New HOD account</div>
+        </div>
+        <div class="section-note">
+          Enter the HOD full name and department. School will be pulled from this HOS account automatically.
+        </div>
 
-      <div class="field">
-        <label for="announcementBody">Message</label>
-        <textarea
-          id="announcementBody"
-          class="textarea"
-          placeholder="Write your school-wide announcement here..."
-        ></textarea>
-      </div>
+        <div class="field">
+          <label class="label" for="hodFullName">Full name</label>
+          <input id="hodFullName" class="input" type="text" placeholder="e.g. Saheed Samad" />
+        </div>
 
-      <div class="btn-row">
-        <button class="mini-btn primary" id="sendAnnouncementBtn">Send now</button>
-        <button class="mini-btn secondary" id="clearAnnouncementBtn">Clear</button>
-      </div>
+        <div class="field">
+          <label class="label" for="hodDepartment">Department</label>
+          <input id="hodDepartment" class="input" type="text" placeholder="e.g. Computer Science" />
+        </div>
 
-      <div class="message" id="announcementMessage"></div>
-    </section>
+        <div class="action-row">
+          <button class="btn primary" id="createHodBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span>Create HOD</span>
+          </button>
+          <button class="btn secondary" id="clearHodFormBtn" type="button">
+            <span>Clear</span>
+          </button>
+        </div>
 
-    <div class="section-head">
-      <h3>HOD list</h3>
-      <span>Manage</span>
-    </div>
-
-    <section class="card" id="hodListSection">
-      <div class="toolbar">
-        <input
-          id="hodSearchInput"
-          class="input"
-          placeholder="Search HOD by name, email or department"
-        />
-        <button class="chip-btn" id="refreshHodBtn">Refresh</button>
-      </div>
-
-      <div class="list-wrap" id="hodList"></div>
-    </section>
-
-    <div class="section-head">
-      <h3>Recent announcements</h3>
-      <span>View all</span>
-    </div>
-
-    <section class="card">
-      <div class="list-wrap" id="announcementList"></div>
-    </section>
-
-    <div class="section-head">
-      <h3>School search</h3>
-    </div>
-
-    <section class="card" id="searchSection">
-      <div class="toolbar">
-        <input
-          id="schoolSearchInput"
-          class="input"
-          placeholder="Search student, lecturer, matric no or staff ID"
-        />
-        <button class="chip-btn" id="runSchoolSearchBtn">Search</button>
-      </div>
-
-      <div class="list-wrap" id="schoolSearchResults"></div>
-    </section>
-  </div>
-
-  <nav class="bottom-nav">
-    <button class="nav-btn active">
-      <span class="nav-inner">
-        <span class="nav-icon">⌂</span>
-        <span>Home</span>
-      </span>
-    </button>
-
-    <button class="nav-btn">
-      <span class="nav-inner">
-        <span class="nav-icon">👤</span>
-        <span>HODs</span>
-      </span>
-    </button>
-
-    <button class="nav-btn">
-      <span class="nav-inner">
-        <span class="nav-icon">📢</span>
-        <span>Announcements</span>
-      </span>
-    </button>
-
-    <button class="nav-btn">
-      <span class="nav-inner">
-        <span class="nav-icon">⌕</span>
-        <span>Search</span>
-      </span>
-    </button>
-
-    <button class="nav-btn">
-      <span class="nav-inner">
-        <span class="nav-icon">☰</span>
-        <span>More</span>
-      </span>
-    </button>
-  </nav>
-
-  <script>
-    const hosSession = (() => {
-      try {
-        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-      } catch {
-        return null;
-      }
-    })();
-
-    if (!hosSession || String(hosSession.role || "").toLowerCase() !== "hos") {
-      window.location.href = "index.html";
-    }
-
-    const schoolName = hosSession?.school_name || "Ekiti State University";
-    const fullName = hosSession?.full_name || "Head of School";
-
-    const state = {
-      hods: [
-        {
-          id: "hod_1",
-          full_name: "Dr. Emily Johnson",
-          department: "Computer Science",
-          email: "emily.j@eksu.edu.ng",
-          login_id: "HOD-COMP-12834",
-          is_active: true
-        },
-        {
-          id: "hod_2",
-          full_name: "Prof. Mark Adewale",
-          department: "Business Administration",
-          email: "mark.a@eksu.edu.ng",
-          login_id: "HOD-BUSI-12857",
-          is_active: false
-        },
-        {
-          id: "hod_3",
-          full_name: "Dr. Ruth Akinola",
-          department: "Accounting",
-          email: "ruth.a@eksu.edu.ng",
-          login_id: "HOD-ACCO-12901",
-          is_active: true
-        }
-      ],
-      announcements: [
-        {
-          title: "Update Attendance Records",
-          audience: "All Departments",
-          message: "All departments should update attendance records before Friday by 4 PM.",
-          time: "1 hour ago"
-        },
-        {
-          title: "Staff Meeting at 2 PM",
-          audience: "All HODs",
-          message: "There will be a school management meeting today by 2 PM in the Senate building.",
-          time: "Yesterday"
-        }
-      ],
-      searchResults: [
-        { name: "Adebayo Joshua", sub: "Student • Computer Science • 230903174" },
-        { name: "Archibong Mary Mfon", sub: "Student • Chemistry • 230902061" },
-        { name: "Dr. Gabriel Timilehin", sub: "Lecturer • Computer Science • STF-1042" }
-      ]
-    };
-
-    function $(id) {
-      return document.getElementById(id);
-    }
-
-    function randomDigits(len = 5) {
-      let out = "";
-      for (let i = 0; i < len; i++) out += Math.floor(Math.random() * 10);
-      return out;
-    }
-
-    function randomPassword(len = 8) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let out = "";
-      for (let i = 0; i < len; i++) {
-        out += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return out;
-    }
-
-    function makeLoginId(department) {
-      const clean = String(department || "")
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toUpperCase()
-        .slice(0, 4) || "HOD";
-      return `HOD-${clean}-${randomDigits(5)}`;
-    }
-
-    function showMessage(id, text, type) {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = text || "";
-      el.className = "message";
-      if (text) el.classList.add(type === "error" ? "error" : "success");
-    }
-
-    function clearMessage(id) {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = "";
-      el.className = "message";
-    }
-
-    function scrollToSection(id) {
-      const el = $(id);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function updateHeader() {
-      $("heroSchoolName").textContent = `Hello, ${schoolName}`;
-      $("lockedSchoolName").textContent = schoolName;
-
-      const initials = fullName
-        .split(" ")
-        .filter(Boolean)
-        .map(part => part[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase() || "H";
-
-      $("hosAvatar").textContent = initials;
-    }
-
-    function updateStats() {
-      $("statHods").textContent = state.hods.length;
-      $("statDepartments").textContent = new Set(state.hods.map(h => h.department)).size || 18;
-      $("statLecturers").textContent = 165;
-      $("statStudents").textContent = 8420;
-    }
-
-    function renderHods() {
-      const q = ($("hodSearchInput").value || "").trim().toLowerCase();
-      const wrap = $("hodList");
-      wrap.innerHTML = "";
-
-      const items = state.hods.filter(item => {
-        return (
-          item.full_name.toLowerCase().includes(q) ||
-          item.department.toLowerCase().includes(q) ||
-          item.email.toLowerCase().includes(q) ||
-          item.login_id.toLowerCase().includes(q)
-        );
-      });
-
-      if (!items.length) {
-        wrap.innerHTML = `
-          <div class="hod-card">
-            <div class="hod-name">No HOD found</div>
-            <div class="hod-sub">Try another search term.</div>
+        <div class="created-box" id="createdHodBox">
+          <div class="created-row">
+            <div class="created-label">Generated Login ID</div>
+            <div class="created-value" id="createdHodLoginId">-</div>
           </div>
-        `;
-        return;
-      }
-
-      wrap.innerHTML = items.map(item => `
-        <div class="hod-card">
-          <div class="hod-top">
-            <div>
-              <div class="hod-name">${item.full_name}</div>
-              <div class="hod-sub">${item.department} • ${schoolName}</div>
-            </div>
-            <div class="status-pill ${item.is_active ? "active" : "disabled"}">
-              ${item.is_active ? "active" : "disabled"}
-            </div>
+          <div class="created-row">
+            <div class="created-label">Temporary Password</div>
+            <div class="created-value" id="createdHodPassword">-</div>
           </div>
 
-          <div class="mini-grid">
-            <div class="mini-info">
-              <div class="mini-info-label">Email</div>
-              <div class="mini-info-value">${item.email}</div>
-            </div>
-            <div class="mini-info">
-              <div class="mini-info-label">Login ID</div>
-              <div class="mini-info-value">${item.login_id}</div>
-            </div>
-          </div>
+          <div class="copy-row">
+            <button class="mini-btn" id="copyHodLoginBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M7 15H6a2 2 0 01-2-2V6a2 2 0 012-2h7a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              <span>Copy Login ID</span>
+            </button>
 
-          <div class="action-row">
-            <button class="action-chip blue" onclick="copyLoginId('${item.login_id}')">Copy login</button>
-            <button class="action-chip amber" onclick="resetHodPassword('${item.id}')">Reset</button>
-            <button class="action-chip red" onclick="toggleHodStatus('${item.id}')">
-              ${item.is_active ? "Disable" : "Enable"}
+            <button class="mini-btn" id="copyHodPasswordBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M7 15H6a2 2 0 01-2-2V6a2 2 0 012-2h7a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              <span>Copy Password</span>
             </button>
           </div>
         </div>
-      `).join("");
-    }
 
-    function renderAnnouncements() {
-      const wrap = $("announcementList");
-      wrap.innerHTML = "";
+        <div class="message" id="hodMessage"></div>
+      </section>
+    </div>
 
-      if (!state.announcements.length) {
-        wrap.innerHTML = `
-          <div class="announcement-card">
-            <div class="announcement-title">No announcements yet</div>
-            <div class="announcement-meta">Create one above.</div>
-          </div>
-        `;
-        return;
-      }
+    <div id="screen-announcement" class="screen">
+      <section class="hero">
+        <div class="hero-kicker">School Announcement</div>
+        <h1>Send announcement</h1>
+        <p>Send a real school-wide announcement for your school only.</p>
+      </section>
 
-      wrap.innerHTML = state.announcements.map(item => `
-        <div class="announcement-card">
-          <div class="announcement-top">
-            <div>
-              <div class="announcement-title">${item.title}</div>
-              <div class="announcement-meta">${item.time}</div>
-            </div>
-            <div class="tag">${item.audience}</div>
-          </div>
-          <div class="search-sub" style="color:#0f172a;">${item.message}</div>
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">New announcement</div>
         </div>
-      `).join("");
-    }
 
-    function renderSearchResults(results = []) {
-      const wrap = $("schoolSearchResults");
-      wrap.innerHTML = "";
-
-      if (!results.length) {
-        wrap.innerHTML = `
-          <div class="search-card">
-            <div class="search-name">No result</div>
-            <div class="search-sub">Try another name, matric number, or staff ID.</div>
-          </div>
-        `;
-        return;
-      }
-
-      wrap.innerHTML = results.map(item => `
-        <div class="search-card">
-          <div class="search-name">${item.name}</div>
-          <div class="search-sub">${item.sub}</div>
+        <div class="field">
+          <label class="label" for="announcementTitle">Title</label>
+          <input id="announcementTitle" class="input" type="text" placeholder="e.g. Examination Notice" />
         </div>
-      `).join("");
+
+        <div class="field">
+          <label class="label" for="announcementBody">Message</label>
+          <textarea id="announcementBody" class="textarea" placeholder="Type your announcement here"></textarea>
+        </div>
+
+        <div class="action-row">
+          <button class="btn primary" id="sendAnnouncementBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+            <span>Send</span>
+          </button>
+          <button class="btn secondary" id="clearAnnouncementBtn" type="button">
+            <span>Clear</span>
+          </button>
+        </div>
+
+        <div class="message" id="announcementMessageBox"></div>
+      </section>
+    </div>
+
+    <div id="screen-account" class="screen">
+      <section class="hero">
+        <div class="hero-kicker">Account</div>
+        <h1>Your HOS account</h1>
+        <p>This shows the signed-in HOS account stored from admin login.</p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div class="section-title">Account details</div>
+        </div>
+
+        <div class="account-card">
+          <div class="account-row">
+            <div class="k">Role</div>
+            <div class="v" id="accountRole">-</div>
+          </div>
+
+          <div class="account-row">
+            <div class="k">School name</div>
+            <div class="v" id="accountSchool">-</div>
+          </div>
+
+          <div class="account-row">
+            <div class="k">Login ID</div>
+            <div class="v" id="accountLoginId">-</div>
+          </div>
+
+          <div class="account-row">
+            <div class="k">Linked email</div>
+            <div class="v" id="accountEmail">-</div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn secondary" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-btn active" data-screen="home" onclick="showScreen('home')">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Home</span>
+      </div>
+    </div>
+
+    <div class="nav-btn" data-screen="hod" onclick="showScreen('hod')">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>HOD</span>
+      </div>
+    </div>
+
+    <div class="nav-btn" data-screen="announcement" onclick="showScreen('announcement')">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 12h2l8 5V7l-8 5H4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Announcement</span>
+      </div>
+    </div>
+
+    <div class="nav-btn" data-screen="account" onclick="showScreen('account')">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Account</span>
+      </div>
+    </div>
+  </nav>
+
+  <script type="module" src="./client_supabase.js"></script>
+
+  <script>
+    const EDGE_BASE = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co";
+
+    const EDGE = {
+      createHod: "hos-create-hod-account",
+      sendAnnouncement: "hos-send-announcement"
+    };
+
+    const TABLES = {
+      hod: ["hod_accounts", "department_admin_accounts"],
+      students: ["student_accounts", "student_profiles"],
+      lecturers: ["lecturer_accounts", "lecturer_profiles"],
+      announcements: ["school_announcements", "app_announcements"]
+    };
+
+    let adminSession = null;
+    let currentSchoolName = "";
+    let lastCreatedHodLoginId = "";
+    let lastCreatedHodPassword = "";
+
+    function $(id){
+      return document.getElementById(id);
     }
 
-    function createHodAccount() {
-      clearMessage("createHodMessage");
+    function escapeHtml(value){
+      return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
 
-      const full_name = ($("hodFullName").value || "").trim();
-      const department = ($("hodDepartment").value || "").trim();
-      const email = ($("hodEmail").value || "").trim().toLowerCase();
-
-      if (!full_name) {
-        showMessage("createHodMessage", "Please enter the full name.", "error");
-        return;
+    function formatDate(iso){
+      if (!iso) return "-";
+      try{
+        return new Date(iso).toLocaleString();
+      }catch{
+        return iso;
       }
+    }
 
-      if (!department) {
-        showMessage("createHodMessage", "Please choose the department.", "error");
-        return;
-      }
-
-      if (!email) {
-        showMessage("createHodMessage", "Please enter the email address.", "error");
-        return;
-      }
-
-      const login_id = makeLoginId(department);
-      const temporary_password = randomPassword(8);
-
-      state.hods.unshift({
-        id: "hod_" + Date.now(),
-        full_name,
-        department,
-        email,
-        login_id,
-        is_active: true
+    function showScreen(name){
+      ["home","hod","announcement","account"].forEach((screen) => {
+        const el = $("screen-" + screen);
+        if (el) el.classList.toggle("active", screen === name);
       });
 
-      $("generatedLoginId").textContent = login_id;
-      $("generatedPassword").textContent = temporary_password;
-      $("generatedBox").style.display = "block";
-
-      $("hodFullName").value = "";
-      $("hodDepartment").value = "";
-      $("hodEmail").value = "";
-
-      showMessage("createHodMessage", "HOD account created successfully.", "success");
-      updateStats();
-      renderHods();
+      document.querySelectorAll(".nav-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.screen === name);
+      });
     }
 
-    function clearHodForm() {
-      $("hodFullName").value = "";
-      $("hodDepartment").value = "";
-      $("hodEmail").value = "";
-      $("generatedBox").style.display = "none";
-      $("generatedLoginId").textContent = "-";
-      $("generatedPassword").textContent = "-";
-      clearMessage("createHodMessage");
+    function showMessage(elId, text, type){
+      const box = $(elId);
+      if (!box) return;
+      box.className = "message";
+      if (!text){
+        box.style.display = "none";
+        box.textContent = "";
+        return;
+      }
+      box.classList.add(type === "error" ? "error" : "success");
+      box.textContent = text;
+      box.style.display = "block";
     }
 
-    function sendAnnouncement() {
-      clearMessage("announcementMessage");
+    function copyText(text, successText){
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(successText || "Copied");
+      }).catch(() => {
+        alert("Could not copy. Please copy manually.");
+      });
+    }
 
+    function getAdminSession(){
+      try{
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      }catch{
+        return null;
+      }
+    }
+
+    function requireHosSession(){
+      adminSession = getAdminSession();
+
+      if (!adminSession || adminSession.role !== "hos"){
+        window.location.href = "index.html";
+        return false;
+      }
+
+      currentSchoolName =
+        adminSession.school_name ||
+        adminSession.school ||
+        adminSession.schoolName ||
+        "";
+
+      $("schoolNameText").textContent = currentSchoolName || "School not found";
+      $("heroTitle").textContent = currentSchoolName
+        ? `Manage ${currentSchoolName}`
+        : "Manage your school";
+
+      $("accountRole").textContent = (adminSession.role || "-").toUpperCase();
+      $("accountSchool").textContent = currentSchoolName || "-";
+      $("accountLoginId").textContent = adminSession.login_id || "-";
+      $("accountEmail").textContent = adminSession.linked_email || "Not linked";
+
+      return true;
+    }
+
+    async function invokeEdge(functionName, body){
+      const res = await fetch(`${EDGE_BASE}/${functionName}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {})
+      });
+
+      return await res.json().catch(() => ({}));
+    }
+
+    async function countFromTable(table, schoolName){
+      const sb = window.supabase;
+      if (!sb) return 0;
+
+      let query = sb.from(table).select("*", { count: "exact", head: true });
+
+      if (schoolName){
+        query = query.eq("school_name", schoolName);
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    }
+
+    async function firstWorkingCount(tables, schoolName){
+      for (const table of tables){
+        try{
+          return await countFromTable(table, schoolName);
+        }catch(err){
+          console.warn("Count failed for", table, err);
+        }
+      }
+      return 0;
+    }
+
+    async function fetchRows(table, schoolName, limit = 2){
+      const sb = window.supabase;
+      if (!sb) return [];
+
+      let query = sb.from(table).select("*");
+
+      if (schoolName){
+        query = query.eq("school_name", schoolName);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending:false }).limit(limit);
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    }
+
+    async function firstWorkingRows(tables, schoolName, limit = 2){
+      for (const table of tables){
+        try{
+          const rows = await fetchRows(table, schoolName, limit);
+          return rows;
+        }catch(err){
+          console.warn("Rows failed for", table, err);
+        }
+      }
+      return [];
+    }
+
+    function renderHodHistory(rows){
+      const wrap = $("hodHistoryList");
+      if (!wrap) return;
+
+      if (!rows.length){
+        wrap.innerHTML = `<div class="empty">No HOD history yet.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = rows.map((item) => `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-title">${escapeHtml(item.full_name || item.name || "-")}</div>
+              <div class="history-sub">${escapeHtml(item.department || "No department")}</div>
+            </div>
+            <div class="pill">HOD</div>
+          </div>
+          <div class="history-sub">Login ID: ${escapeHtml(item.login_id || "-")}</div>
+          <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderAnnouncementHistory(rows){
+      const wrap = $("announcementHistoryList");
+      if (!wrap) return;
+
+      if (!rows.length){
+        wrap.innerHTML = `<div class="empty">No announcement history yet.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = rows.map((item) => `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
+              <div class="history-sub">${escapeHtml((item.message || item.body || "").slice(0, 140) || "-")}</div>
+            </div>
+            <div class="pill">School</div>
+          </div>
+          <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+        </div>
+      `).join("");
+    }
+
+    async function loadDashboardData(){
+      if (!window.supabase){
+        alert("Supabase is not ready.");
+        return;
+      }
+
+      const school = currentSchoolName || "";
+
+      $("totalHodCount").textContent = "0";
+      $("totalStudentCount").textContent = "0";
+      $("totalLecturerCount").textContent = "0";
+      $("totalAnnouncementCount").textContent = "0";
+
+      try{
+        const [
+          totalHod,
+          totalStudents,
+          totalLecturers,
+          totalAnnouncements,
+          hodHistory,
+          announcementHistory
+        ] = await Promise.all([
+          firstWorkingCount(TABLES.hod, school),
+          firstWorkingCount(TABLES.students, school),
+          firstWorkingCount(TABLES.lecturers, school),
+          firstWorkingCount(TABLES.announcements, school),
+          firstWorkingRows(TABLES.hod, school, 2),
+          firstWorkingRows(TABLES.announcements, school, 2)
+        ]);
+
+        $("totalHodCount").textContent = totalHod;
+        $("totalStudentCount").textContent = totalStudents;
+        $("totalLecturerCount").textContent = totalLecturers;
+        $("totalAnnouncementCount").textContent = totalAnnouncements;
+
+        renderHodHistory(hodHistory);
+        renderAnnouncementHistory(announcementHistory);
+      }catch(err){
+        console.error(err);
+        renderHodHistory([]);
+        renderAnnouncementHistory([]);
+      }
+    }
+
+    async function createHodAccount(){
+      const fullName = ($("hodFullName").value || "").trim();
+      const department = ($("hodDepartment").value || "").trim();
+
+      showMessage("hodMessage", "", "");
+
+      if (!fullName){
+        showMessage("hodMessage", "Please enter the full name.", "error");
+        return;
+      }
+
+      if (!department){
+        showMessage("hodMessage", "Please enter the department.", "error");
+        return;
+      }
+
+      const btn = $("createHodBtn");
+      btn.disabled = true;
+
+      try{
+        const result = await invokeEdge(EDGE.createHod, {
+          full_name: fullName,
+          department,
+          school_name: currentSchoolName,
+          hos_admin_id: adminSession.id || null
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not create HOD account.");
+        }
+
+        const hod = result.hod_account || result.hod || {};
+        lastCreatedHodLoginId = hod.login_id || result.login_id || "";
+        lastCreatedHodPassword = result.temporary_password || result.password || "";
+
+        $("createdHodLoginId").textContent = lastCreatedHodLoginId || "-";
+        $("createdHodPassword").textContent = lastCreatedHodPassword || "-";
+        $("createdHodBox").style.display = "block";
+
+        showMessage("hodMessage", "HOD account created successfully.", "success");
+
+        $("hodFullName").value = "";
+        $("hodDepartment").value = "";
+
+        await loadDashboardData();
+      }catch(err){
+        console.error(err);
+        showMessage("hodMessage", err.message || "Could not create HOD account.", "error");
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    function clearHodForm(){
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("createdHodBox").style.display = "none";
+      $("createdHodLoginId").textContent = "-";
+      $("createdHodPassword").textContent = "-";
+      lastCreatedHodLoginId = "";
+      lastCreatedHodPassword = "";
+      showMessage("hodMessage", "", "");
+    }
+
+    async function sendAnnouncement(){
       const title = ($("announcementTitle").value || "").trim();
-      const audience = ($("announcementAudience").value || "").trim();
       const message = ($("announcementBody").value || "").trim();
 
-      if (!title) {
-        showMessage("announcementMessage", "Please enter the announcement title.", "error");
+      showMessage("announcementMessageBox", "", "");
+
+      if (!title){
+        showMessage("announcementMessageBox", "Please enter the announcement title.", "error");
         return;
       }
 
-      if (!message) {
-        showMessage("announcementMessage", "Please enter the announcement message.", "error");
+      if (!message){
+        showMessage("announcementMessageBox", "Please enter the announcement message.", "error");
         return;
       }
 
-      state.announcements.unshift({
-        title,
-        audience,
-        message,
-        time: "Just now"
-      });
+      const btn = $("sendAnnouncementBtn");
+      btn.disabled = true;
 
+      try{
+        const result = await invokeEdge(EDGE.sendAnnouncement, {
+          title,
+          message,
+          school_name: currentSchoolName,
+          hos_admin_id: adminSession.id || null
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not send announcement.");
+        }
+
+        showMessage("announcementMessageBox", "Announcement sent successfully.", "success");
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
+
+        await loadDashboardData();
+      }catch(err){
+        console.error(err);
+        showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    function clearAnnouncementForm(){
       $("announcementTitle").value = "";
-      $("announcementAudience").value = "All Departments";
       $("announcementBody").value = "";
-
-      showMessage("announcementMessage", "Announcement sent successfully.", "success");
-      renderAnnouncements();
+      showMessage("announcementMessageBox", "", "");
     }
 
-    function clearAnnouncementForm() {
-      $("announcementTitle").value = "";
-      $("announcementAudience").value = "All Departments";
-      $("announcementBody").value = "";
-      clearMessage("announcementMessage");
+    function logoutAdmin(){
+      localStorage.removeItem("colspot_admin_session");
+      localStorage.removeItem("colspot_pending_admin");
+      window.location.href = "index.html";
     }
 
-    function runSchoolSearch() {
-      const q = ($("schoolSearchInput").value || "").trim().toLowerCase();
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!requireHosSession()) return;
 
-      if (!q) {
-        renderSearchResults(state.searchResults);
-        return;
-      }
-
-      const filtered = state.searchResults.filter(item => {
-        return item.name.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q);
-      });
-
-      renderSearchResults(filtered);
-    }
-
-    window.copyLoginId = function(loginId) {
-      navigator.clipboard?.writeText(loginId);
-      alert("Login ID copied");
-    };
-
-    window.resetHodPassword = function(hodId) {
-      const hod = state.hods.find(item => item.id === hodId);
-      if (!hod) return;
-
-      const newPassword = randomPassword(8);
-      alert(`${hod.full_name} login has been reset.\n\nTemporary password: ${newPassword}`);
-    };
-
-    window.toggleHodStatus = function(hodId) {
-      const hod = state.hods.find(item => item.id === hodId);
-      if (!hod) return;
-
-      hod.is_active = !hod.is_active;
-      renderHods();
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-      updateHeader();
-      updateStats();
-      renderHods();
-      renderAnnouncements();
-      renderSearchResults(state.searchResults);
-
+      $("refreshBtn").addEventListener("click", loadDashboardData);
       $("createHodBtn").addEventListener("click", createHodAccount);
-      $("clearHodBtn").addEventListener("click", clearHodForm);
-
+      $("clearHodFormBtn").addEventListener("click", clearHodForm);
       $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
       $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
+      $("logoutBtn").addEventListener("click", logoutAdmin);
 
-      $("runSchoolSearchBtn").addEventListener("click", runSchoolSearch);
-      $("hodSearchInput").addEventListener("input", renderHods);
-      $("refreshHodBtn").addEventListener("click", renderHods);
+      $("copyHodLoginBtn").addEventListener("click", () => {
+        copyText(lastCreatedHodLoginId, "Login ID copied");
+      });
 
-      $("topCreateHodBtn").addEventListener("click", () => scrollToSection("createHodSection"));
-      $("topAnnouncementBtn").addEventListener("click", () => scrollToSection("announcementSection"));
+      $("copyHodPasswordBtn").addEventListener("click", () => {
+        copyText(lastCreatedHodPassword, "Password copied");
+      });
 
-      $("qaCreateHod").addEventListener("click", () => scrollToSection("createHodSection"));
-      $("qaSendAnnouncement").addEventListener("click", () => scrollToSection("announcementSection"));
-      $("qaSearchSchool").addEventListener("click", () => scrollToSection("searchSection"));
-      $("qaViewHods").addEventListener("click", () => scrollToSection("hodListSection"));
-      $("jumpToAnnouncements").addEventListener("click", () => scrollToSection("announcementSection"));
+      await loadDashboardData();
     });
   </script>
 </body>
