@@ -742,7 +742,7 @@
 
   <script>
     (() => {
-      const SUPABASE_URL = "YOUR_SUPABASE_URL";
+      const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
       const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -822,25 +822,25 @@
             .from("student_accounts")
             .select("*", { count: "exact", head: true })
             .eq("school_name", schoolName)
-            .eq("department", departmentName);
+            .eq("faculty", departmentName);
 
           if (studentError) throw studentError;
 
-          const { count: announcementCount, error: announcementError } = await sb
+          const { data: announcementRows, error: announcementError } = await sb
             .from("school_announcements")
-            .select("*", { count: "exact", head: true })
-            .eq("school_name", schoolName)
-            .eq("department", departmentName);
+            .select("id")
+            .eq("school_name", schoolName);
 
           if (announcementError) throw announcementError;
 
           $("studentCount").textContent = String(studentCount || 0);
-          $("announcementCount").textContent = String(announcementCount || 0);
+          $("announcementCount").textContent = String((announcementRows || []).length);
+          showMessage("pageMessageBox", "", "error");
         } catch (err) {
           console.error(err);
           $("studentCount").textContent = "0";
           $("announcementCount").textContent = "0";
-          showMessage("pageMessageBox", "Could not load department overview.");
+          showMessage("pageMessageBox", err.message || "Could not load department overview.");
         }
       }
 
@@ -853,7 +853,6 @@
             .from("school_announcements")
             .select("title, message, created_at")
             .eq("school_name", schoolName)
-            .eq("department", departmentName)
             .order("created_at", { ascending: false })
             .limit(10);
 
@@ -913,10 +912,9 @@
             .from("school_announcements")
             .insert({
               school_name: schoolName,
-              department: departmentName,
               title,
               message,
-              created_by_hos: hodSession.id
+              user_id: hodSession.id
             });
 
           if (error) throw error;
@@ -942,9 +940,9 @@
         try {
           let query = sb
             .from("student_accounts")
-            .select("full_name, matric_number, department, level, school_name")
+            .select("full_name, matric_number, department, faculty, level, school_name")
             .eq("school_name", schoolName)
-            .eq("department", departmentName)
+            .eq("faculty", departmentName)
             .order("full_name", { ascending: true })
             .limit(20);
 
@@ -978,7 +976,8 @@
               <div class="item-content">
                 <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
                 <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
-                <p class="item-sub">${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
+                <p class="item-sub">Faculty: ${escapeHtml(item.faculty || "-")}</p>
+                <p class="item-sub">Department: ${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
               </div>
             </article>
           `).join("");
@@ -1056,5 +1055,3 @@
   </script>
 </body>
 </html>
-
-
