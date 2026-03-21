@@ -740,328 +740,335 @@
     </button>
   </nav>
 
-  <script>
-    (() => {
-      const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-      const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
-      const EDGE = {
-        hodStudents: "get-hod-students"
-      };
+<script>
+  (() => {
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const EDGE = {
+      hodStudents: "get-hod-students",
+      sendAnnouncement: "send-hod-announcement"
+    };
 
-      const $ = (id) => document.getElementById(id);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      let hodSession = null;
-      let schoolName = "";
-      let departmentName = "";
+    const $ = (id) => document.getElementById(id);
 
-      function escapeHtml(value) {
-        return String(value || "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#39;");
+    let hodSession = null;
+    let schoolName = "";
+    let departmentName = "";
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function showMessage(id, text, type = "error") {
+      const box = $(id);
+      if (!text) {
+        box.textContent = "";
+        box.className = "message";
+        return;
       }
+      box.textContent = text;
+      box.className = `message show ${type}`;
+    }
 
-      function showMessage(id, text, type = "error") {
-        const box = $(id);
-        if (!text) {
-          box.textContent = "";
-          box.className = "message";
-          return;
-        }
-        box.textContent = text;
-        box.className = `message show ${type}`;
+    function formatDate(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function getAdminSession() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
       }
+    }
 
-      function formatDate(value) {
-        if (!value) return "";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "";
-        return d.toLocaleString([], {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        });
-      }
+    function requireHodSession() {
+      hodSession = getAdminSession();
 
-      function getAdminSession() {
-        try {
-          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-        } catch {
-          return null;
-        }
-      }
-
-      function requireHodSession() {
-        hodSession = getAdminSession();
-
-        if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
-          window.location.href = "index.html";
-          return false;
-        }
-
-        schoolName = hodSession.school_name || "";
-        departmentName = hodSession.department_name || "";
-
-        $("departmentNameText").textContent = departmentName
-          ? `Hello, ${departmentName}`
-          : "Hello, Department";
-
-        $("profileSchoolText").textContent = schoolName || "School";
-
-        const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
-        $("avatarBtn").textContent = initial;
-
-        return true;
-      }
-
-      async function invokeEdge(name, payload = {}) {
-        const res = await fetch(`${EDGE_BASE}/${name}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await res.json().catch(() => ({}));
-
-        if (!res.ok || !result.ok) {
-          throw new Error(result.error || `Edge function failed: ${name}`);
-        }
-
-        return result;
-      }
-
-      async function fetchStudentsFromEdge(searchValue = "") {
-        return await invokeEdge(EDGE.hodStudents, {
-          hod_id: hodSession.id,
-          search: searchValue
-        });
-      }
-
-      async function loadCounts() {
-        try {
-          const studentResult = await fetchStudentsFromEdge("");
-
-          const { data: announcementRows, error: announcementError } = await sb
-            .from("school_announcements")
-            .select("id")
-            .eq("school_name", schoolName);
-
-          if (announcementError) throw announcementError;
-
-          $("studentCount").textContent = String(studentResult?.totals?.students || 0);
-          $("announcementCount").textContent = String((announcementRows || []).length);
-          showMessage("pageMessageBox", "", "error");
-        } catch (err) {
-          console.error("loadCounts error:", err);
-          $("studentCount").textContent = "0";
-          $("announcementCount").textContent = "0";
-          showMessage("pageMessageBox", err.message || "Could not load department overview.");
-        }
-      }
-
-      async function loadAnnouncements() {
-        const wrap = $("announcementList");
-        wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
-
-        try {
-          const { data, error } = await sb
-            .from("school_announcements")
-            .select("title, message, created_at")
-            .eq("school_name", schoolName)
-            .order("created_at", { ascending: false })
-            .limit(10);
-
-          if (error) throw error;
-
-          if (!data || !data.length) {
-            wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
-            $("announcementCount").textContent = "0";
-            return;
-          }
-
-          $("announcementCount").textContent = String(data.length);
-
-          wrap.innerHTML = data.map((item) => `
-            <article class="announcement-item">
-              <div class="item-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-                </svg>
-              </div>
-
-              <div class="item-content">
-                <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
-                <p class="item-sub">${escapeHtml(item.message || "")}</p>
-              </div>
-
-              <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
-            </article>
-          `).join("");
-        } catch (err) {
-          console.error("loadAnnouncements error:", err);
-          wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
-        }
-      }
-
-      async function sendAnnouncement() {
-        showMessage("announcementMessageBox", "", "error");
-
-        const title = ($("announcementTitle").value || "").trim();
-        const message = ($("announcementBody").value || "").trim();
-
-        if (!title) {
-          showMessage("announcementMessageBox", "Please enter the announcement title.");
-          return;
-        }
-
-        if (!message) {
-          showMessage("announcementMessageBox", "Please enter the announcement message.");
-          return;
-        }
-
-        const btn = $("sendAnnouncementBtn");
-        btn.disabled = true;
-
-        try {
-          const { error } = await sb
-            .from("school_announcements")
-            .insert({
-              school_name: schoolName,
-              title,
-              message
-            });
-
-          if (error) throw error;
-
-          $("announcementTitle").value = "";
-          $("announcementBody").value = "";
-
-          showMessage("announcementMessageBox", "Announcement sent successfully.", "success");
-          await loadAnnouncements();
-          await loadCounts();
-        } catch (err) {
-          console.error("sendAnnouncement error:", err);
-          showMessage("announcementMessageBox", err.message || "Could not send announcement.");
-        } finally {
-          btn.disabled = false;
-        }
-      }
-
-      async function loadStudents(searchValue = "") {
-        const wrap = $("studentList");
-        wrap.innerHTML = '<div class="empty">Loading students...</div>';
-
-        try {
-          const result = await fetchStudentsFromEdge(searchValue);
-          const data = result.students || [];
-
-          $("studentCount").textContent = String(result?.totals?.students || 0);
-          console.log("get-hod-students debug:", result.debug);
-
-          if (!data.length) {
-            wrap.innerHTML = '<div class="empty">No students found.</div>';
-            return;
-          }
-
-          wrap.innerHTML = data.map((item) => `
-            <article class="student-item">
-              <div class="item-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="8" r="4"></circle>
-                  <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-                </svg>
-              </div>
-
-              <div class="item-content">
-                <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
-                <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
-                <p class="item-sub">Faculty: ${escapeHtml(item.faculty || "-")}</p>
-                <p class="item-sub">Department: ${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
-              </div>
-            </article>
-          `).join("");
-        } catch (err) {
-          console.error("loadStudents error:", err);
-          wrap.innerHTML = '<div class="empty">Could not load students.</div>';
-          showMessage("studentMessageBox", err.message || "Could not load students.");
-        }
-      }
-
-      function setupProfileMenu() {
-        const avatarBtn = $("avatarBtn");
-        const profileMenu = $("profileMenu");
-
-        avatarBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          profileMenu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", (e) => {
-          if (!profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
-            profileMenu.classList.remove("show");
-          }
-        });
-      }
-
-      function logout() {
-        localStorage.removeItem("colspot_admin_session");
-        localStorage.removeItem("colspot_pending_admin");
+      if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
         window.location.href = "index.html";
+        return false;
       }
 
-      function jumpToSection(id) {
-        const el = $(id);
-        if (!el) return;
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      schoolName = hodSession.school_name || "";
+      departmentName = hodSession.department_name || "";
+
+      $("departmentNameText").textContent = departmentName
+        ? `Hello, ${departmentName}`
+        : "Hello, Department";
+
+      $("profileSchoolText").textContent = schoolName || "School";
+
+      const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
+      $("avatarBtn").textContent = initial;
+
+      return true;
+    }
+
+    async function invokeEdge(name, payload = {}) {
+      const res = await fetch(`${EDGE_BASE}/${name}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok || !result.ok) {
+        throw new Error(result.error || `Edge function failed: ${name}`);
       }
 
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (!requireHodSession()) return;
+      return result;
+    }
 
-        setupProfileMenu();
+    async function fetchStudentsFromEdge(searchValue = "") {
+      return await invokeEdge(EDGE.hodStudents, {
+        hod_id: hodSession.id,
+        search: searchValue
+      });
+    }
 
-        $("logoutBtn").addEventListener("click", logout);
-        $("navLogoutBtn").addEventListener("click", logout);
+    async function loadCounts() {
+      try {
+        const studentResult = await fetchStudentsFromEdge("");
 
-        $("jumpAnnouncementBtn").addEventListener("click", () => jumpToSection("announcementSection"));
-        $("jumpStudentBtn").addEventListener("click", () => jumpToSection("studentSection"));
-        $("navStudentsBtn").addEventListener("click", () => jumpToSection("studentSection"));
-        $("navAnnouncementsBtn").addEventListener("click", () => jumpToSection("announcementSection"));
+        const { data: announcementRows, error: announcementError } = await sb
+          .from("school_announcements")
+          .select("id")
+          .eq("school_name", schoolName);
 
-        $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
-        $("clearAnnouncementBtn").addEventListener("click", () => {
-          $("announcementTitle").value = "";
-          $("announcementBody").value = "";
-          showMessage("announcementMessageBox", "", "error");
+        if (announcementError) throw announcementError;
+
+        $("studentCount").textContent = String(studentResult?.totals?.students || 0);
+        $("announcementCount").textContent = String((announcementRows || []).length);
+        showMessage("pageMessageBox", "", "error");
+      } catch (err) {
+        console.error("loadCounts error:", err);
+        $("studentCount").textContent = "0";
+        $("announcementCount").textContent = "0";
+        showMessage("pageMessageBox", err.message || "Could not load department overview.");
+      }
+    }
+
+    async function loadAnnouncements() {
+      const wrap = $("announcementList");
+      wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
+
+      try {
+        const { data, error } = await sb
+          .from("school_announcements")
+          .select("title, message, created_at")
+          .eq("school_name", schoolName)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
+          $("announcementCount").textContent = "0";
+          return;
+        }
+
+        $("announcementCount").textContent = String(data.length);
+
+        wrap.innerHTML = data.map((item) => `
+          <article class="announcement-item">
+            <div class="item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+              </svg>
+            </div>
+
+            <div class="item-content">
+              <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
+              <p class="item-sub">${escapeHtml(item.message || "")}</p>
+            </div>
+
+            <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
+          </article>
+        `).join("");
+      } catch (err) {
+        console.error("loadAnnouncements error:", err);
+        wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
+      }
+    }
+
+    async function sendAnnouncement() {
+      showMessage("announcementMessageBox", "", "error");
+
+      const title = ($("announcementTitle").value || "").trim();
+      const message = ($("announcementBody").value || "").trim();
+
+      if (!title) {
+        showMessage("announcementMessageBox", "Please enter the announcement title.");
+        return;
+      }
+
+      if (!message) {
+        showMessage("announcementMessageBox", "Please enter the announcement message.");
+        return;
+      }
+
+      const btn = $("sendAnnouncementBtn");
+      btn.disabled = true;
+
+      try {
+        const result = await invokeEdge(EDGE.sendAnnouncement, {
+          hod_id: hodSession.id,
+          title,
+          message
         });
 
-        $("searchStudentBtn").addEventListener("click", async () => {
-          showMessage("studentMessageBox", "", "error");
-          const q = ($("studentSearchInput").value || "").trim();
-          await loadStudents(q);
-        });
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
 
-        $("clearStudentBtn").addEventListener("click", async () => {
-          $("studentSearchInput").value = "";
-          showMessage("studentMessageBox", "", "error");
-          await loadStudents("");
-        });
+        showMessage(
+          "announcementMessageBox",
+          result.message || "Announcement sent successfully.",
+          "success"
+        );
 
-        await loadCounts();
         await loadAnnouncements();
+        await loadCounts();
+      } catch (err) {
+        console.error("sendAnnouncement error:", err);
+        showMessage(
+          "announcementMessageBox",
+          err.message || "Could not send announcement."
+        );
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function loadStudents(searchValue = "") {
+      const wrap = $("studentList");
+      wrap.innerHTML = '<div class="empty">Loading students...</div>';
+
+      try {
+        const result = await fetchStudentsFromEdge(searchValue);
+        const data = result.students || [];
+
+        $("studentCount").textContent = String(result?.totals?.students || 0);
+        console.log("get-hod-students debug:", result.debug);
+
+        if (!data.length) {
+          wrap.innerHTML = '<div class="empty">No students found.</div>';
+          return;
+        }
+
+        wrap.innerHTML = data.map((item) => `
+          <article class="student-item">
+            <div class="item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
+              </svg>
+            </div>
+
+            <div class="item-content">
+              <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
+              <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
+              <p class="item-sub">Faculty: ${escapeHtml(item.faculty || "-")}</p>
+              <p class="item-sub">Department: ${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
+            </div>
+          </article>
+        `).join("");
+      } catch (err) {
+        console.error("loadStudents error:", err);
+        wrap.innerHTML = '<div class="empty">Could not load students.</div>';
+        showMessage("studentMessageBox", err.message || "Could not load students.");
+      }
+    }
+
+    function setupProfileMenu() {
+      const avatarBtn = $("avatarBtn");
+      const profileMenu = $("profileMenu");
+
+      avatarBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        profileMenu.classList.toggle("show");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
+          profileMenu.classList.remove("show");
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("colspot_admin_session");
+      localStorage.removeItem("colspot_pending_admin");
+      window.location.href = "index.html";
+    }
+
+    function jumpToSection(id) {
+      const el = $(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!requireHodSession()) return;
+
+      setupProfileMenu();
+
+      $("logoutBtn").addEventListener("click", logout);
+      $("navLogoutBtn").addEventListener("click", logout);
+
+      $("jumpAnnouncementBtn").addEventListener("click", () => jumpToSection("announcementSection"));
+      $("jumpStudentBtn").addEventListener("click", () => jumpToSection("studentSection"));
+      $("navStudentsBtn").addEventListener("click", () => jumpToSection("studentSection"));
+      $("navAnnouncementsBtn").addEventListener("click", () => jumpToSection("announcementSection"));
+
+      $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+
+      $("clearAnnouncementBtn").addEventListener("click", () => {
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
+        showMessage("announcementMessageBox", "", "error");
+      });
+
+      $("searchStudentBtn").addEventListener("click", async () => {
+        showMessage("studentMessageBox", "", "error");
+        const q = ($("studentSearchInput").value || "").trim();
+        await loadStudents(q);
+      });
+
+      $("clearStudentBtn").addEventListener("click", async () => {
+        $("studentSearchInput").value = "";
+        showMessage("studentMessageBox", "", "error");
         await loadStudents("");
       });
-    })();
-  </script>
+
+      await loadCounts();
+      await loadAnnouncements();
+      await loadStudents("");
+    });
+  })();
+</script>
 </body>
 </html>
