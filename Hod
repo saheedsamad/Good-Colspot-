@@ -744,6 +744,10 @@
     (() => {
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
       const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+      const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
+      const EDGE = {
+        hodStudents: "get-hod-students"
+      };
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -760,13 +764,6 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#39;");
-      }
-
-      function normalizeText(value) {
-        return String(value || "")
-          .trim()
-          .replace(/\s+/g, " ")
-          .toUpperCase();
       }
 
       function showMessage(id, text, type = "error") {
@@ -823,40 +820,37 @@
         return true;
       }
 
-      async function fetchStudents(searchValue = "") {
-        const normalizedSchool = normalizeText(schoolName);
-        const normalizedFaculty = normalizeText(departmentName);
-        const searchText = String(searchValue || "").trim().toLowerCase();
+      async function invokeEdge(name, payload = {}) {
+        const res = await fetch(`${EDGE_BASE}/${name}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify(payload)
+        });
 
-        const { data, error } = await sb
-          .from("student_accounts")
-          .select("id, full_name, matric_number, department, faculty, level, school_name")
-          .order("full_name", { ascending: true })
-          .limit(200);
+        const result = await res.json().catch(() => ({}));
 
-        if (error) throw error;
+        if (!res.ok || !result.ok) {
+          throw new Error(result.error || `Edge function failed: ${name}`);
+        }
 
-        return (data || []).filter((item) => {
-          const rowSchool = normalizeText(item.school_name);
-          const rowFaculty = normalizeText(item.faculty);
+        return result;
+      }
 
-          const schoolMatch = rowSchool === normalizedSchool;
-          const facultyMatch = rowFaculty === normalizedFaculty;
-
-          if (!schoolMatch || !facultyMatch) return false;
-
-          if (!searchText) return true;
-
-          const name = String(item.full_name || "").toLowerCase();
-          const matric = String(item.matric_number || "").toLowerCase();
-
-          return name.includes(searchText) || matric.includes(searchText);
+      async function fetchStudentsFromEdge(searchValue = "") {
+        return await invokeEdge(EDGE.hodStudents, {
+          hod_id: hodSession.id,
+          search: searchValue
         });
       }
 
       async function loadCounts() {
         try {
-          const students = await fetchStudents("");
+          const studentResult = await fetchStudentsFromEdge("");
+
           const { data: announcementRows, error: announcementError } = await sb
             .from("school_announcements")
             .select("id")
@@ -864,11 +858,11 @@
 
           if (announcementError) throw announcementError;
 
-          $("studentCount").textContent = String(students.length);
+          $("studentCount").textContent = String(studentResult?.totals?.students || 0);
           $("announcementCount").textContent = String((announcementRows || []).length);
           showMessage("pageMessageBox", "", "error");
         } catch (err) {
-          console.error(err);
+          console.error("loadCounts error:", err);
           $("studentCount").textContent = "0";
           $("announcementCount").textContent = "0";
           showMessage("pageMessageBox", err.message || "Could not load department overview.");
@@ -914,7 +908,7 @@
             </article>
           `).join("");
         } catch (err) {
-          console.error(err);
+          console.error("loadAnnouncements error:", err);
           wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
         }
       }
@@ -956,7 +950,7 @@
           await loadAnnouncements();
           await loadCounts();
         } catch (err) {
-          console.error(err);
+          console.error("sendAnnouncement error:", err);
           showMessage("announcementMessageBox", err.message || "Could not send announcement.");
         } finally {
           btn.disabled = false;
@@ -968,16 +962,15 @@
         wrap.innerHTML = '<div class="empty">Loading students...</div>';
 
         try {
-          const data = await fetchStudents(searchValue);
+          const result = await fetchStudentsFromEdge(searchValue);
+          const data = result.students || [];
 
-          if (!data || !data.length) {
+          $("studentCount").textContent = String(result?.totals?.students || 0);
+          console.log("get-hod-students debug:", result.debug);
+
+          if (!data.length) {
             wrap.innerHTML = '<div class="empty">No students found.</div>';
-            if (!searchValue) $("studentCount").textContent = "0";
             return;
-          }
-
-          if (!searchValue) {
-            $("studentCount").textContent = String(data.length);
           }
 
           wrap.innerHTML = data.map((item) => `
@@ -998,7 +991,7 @@
             </article>
           `).join("");
         } catch (err) {
-          console.error(err);
+          console.error("loadStudents error:", err);
           wrap.innerHTML = '<div class="empty">Could not load students.</div>';
           showMessage("studentMessageBox", err.message || "Could not load students.");
         }
