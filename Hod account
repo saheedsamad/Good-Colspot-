@@ -631,166 +631,106 @@
   </div>
 
 <script>
-(() => {
-  const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-  const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
+  (() => {
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
-  const EDGE = {
-    startEmailVerification: "start-hod-email-verification",
-    verifyEmailVerification: "verify-hod-email-verification",
-    getHodProfile: "get-hod-profile"
-  };
+    const EDGE = {
+      startEmailVerification: "start-hod-email-verification",
+      verifyEmailVerification: "verify-hod-email-verification",
+      getHodProfile: "get-hod-profile"
+    };
 
-  let hodSession = null;
-  let pendingEmail = "";
+    let hodSession = null;
+    let pendingEmail = "";
 
-  function $(id) {
-    return document.getElementById(id);
-  }
-
-  function getSession() {
-    try {
-      return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-    } catch {
-      return null;
-    }
-  }
-
-  function saveSession(session) {
-    localStorage.setItem("colspot_admin_session", JSON.stringify(session));
-  }
-
-  function showMessage(text = "", type = "error") {
-    const box = $("pageMessage");
-    if (!text) {
-      box.className = "message";
-      box.textContent = "";
-      return;
-    }
-    box.className = `message show ${type}`;
-    box.textContent = text;
-  }
-
-  async function invokeEdge(name, payload = {}) {
-    const res = await fetch(`${EDGE_BASE}/${name}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json().catch(() => ({}));
-
-    if (!res.ok || !result.ok) {
-      throw new Error(result.error || `Edge function failed: ${name}`);
+    function $(id) {
+      return document.getElementById(id);
     }
 
-    return result;
-  }
-
-  function setEmailStatus(linkedEmail, emailVerified) {
-    const hasEmail = !!String(linkedEmail || "").trim();
-    const badge = $("emailStatusBadge");
-    const text = $("emailStatusText");
-
-    if (hasEmail && emailVerified) {
-      badge.className = "verify-badge verified";
-      text.textContent = "Verified";
-    } else if (hasEmail) {
-      badge.className = "verify-badge unverified";
-      text.textContent = "Not verified";
-    } else {
-      badge.className = "verify-badge unverified";
-      text.textContent = "No email linked";
-    }
-  }
-
-  function paintProfile(session) {
-    const fullName = session.full_name || "HOD";
-    const schoolName = session.school_name || "-";
-    const departmentName = session.department_name || "-";
-    const loginId = session.login_id || "-";
-    const linkedEmail = session.linked_email || "";
-    const emailVerified = !!session.email_verified;
-    const initial = fullName.trim().charAt(0).toUpperCase() || "H";
-
-    $("hodAvatarInitial").textContent = initial;
-    $("hodName").textContent = fullName;
-    $("hodFullNameValue").textContent = fullName;
-    $("hodDepartmentTop").textContent = departmentName;
-    $("hodDepartmentValue").textContent = departmentName;
-    $("hodSchoolValue").textContent = schoolName;
-    $("hodLoginIdValue").textContent = loginId;
-    $("hodEmailValue").textContent = linkedEmail || "No linked email";
-
-    setEmailStatus(linkedEmail, emailVerified);
-  }
-
-  async function renderHodProfile() {
-    hodSession = getSession();
-
-    if (!hodSession) {
-      window.location.href = "index.html";
-      return;
+    function getSession() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
+      }
     }
 
-    if (String(hodSession.role || "").toLowerCase() !== "hod") {
-      window.location.href = "index.html";
-      return;
+    function saveSession(session) {
+      localStorage.setItem("colspot_admin_session", JSON.stringify(session));
     }
 
-    paintProfile(hodSession);
-
-    try {
-      const result = await invokeEdge("get-hod-profile", { hod_id: hodSession.id });
-      const profile = result.account || {};
-
-      hodSession = {
-        ...hodSession,
-        ...profile,
-        role: "hod"
-      };
-
-      saveSession(hodSession);
-      paintProfile(hodSession);
-    } catch (e) {
-      console.error("refresh profile failed:", e);
+    function showMessage(text = "", type = "error") {
+      const box = $("pageMessage");
+      if (!text) {
+        box.className = "message";
+        box.textContent = "";
+        return;
+      }
+      box.className = `message show ${type}`;
+      box.textContent = text;
     }
 
-    showMessage("", "error");
-  }
-
-  async function verifyEmailCode() {
-    if (!hodSession) return;
-
-    const code = ($("emailCodeInput").value || "").trim();
-    if (!code) {
-      showMessage("Please enter the verification code.");
-      return;
-    }
-
-    const btn = $("verifyCodeBtn");
-    const oldText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Verifying...";
-
-    try {
-      const result = await invokeEdge(EDGE.verifyEmailVerification, {
-        hod_id: hodSession.id,
-        code
+    async function invokeEdge(name, payload = {}) {
+      const res = await fetch(`${EDGE_BASE}/${name}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(payload)
       });
 
-      const updatedEmail = result.linked_email || pendingEmail || "";
-      hodSession.linked_email = updatedEmail;
-      hodSession.email_verified = true;
-      saveSession(hodSession);
+      const result = await res.json().catch(() => ({}));
 
-      paintProfile(hodSession);
+      if (!res.ok || !result.ok) {
+        throw new Error(result.error || `Edge function failed: ${name}`);
+      }
 
+      return result;
+    }
+
+    function setEmailStatus(linkedEmail, emailVerified) {
+      const hasEmail = !!String(linkedEmail || "").trim();
+      const badge = $("emailStatusBadge");
+      const text = $("emailStatusText");
+
+      if (hasEmail && emailVerified) {
+        badge.className = "verify-badge verified";
+        text.textContent = "Verified";
+      } else if (hasEmail) {
+        badge.className = "verify-badge unverified";
+        text.textContent = "Not verified";
+      } else {
+        badge.className = "verify-badge unverified";
+        text.textContent = "No email linked";
+      }
+    }
+
+    function paintProfile(session) {
+      const fullName = session.full_name || "HOD";
+      const schoolName = session.school_name || "-";
+      const departmentName = session.department_name || "-";
+      const loginId = session.login_id || "-";
+      const linkedEmail = session.linked_email || "";
+      const emailVerified = !!session.email_verified;
+      const initial = fullName.trim().charAt(0).toUpperCase() || "H";
+
+      $("hodAvatarInitial").textContent = initial;
+      $("hodName").textContent = fullName;
+      $("hodFullNameValue").textContent = fullName;
+      $("hodDepartmentTop").textContent = departmentName;
+      $("hodDepartmentValue").textContent = departmentName;
+      $("hodSchoolValue").textContent = schoolName;
+      $("hodLoginIdValue").textContent = loginId;
+      $("hodEmailValue").textContent = linkedEmail || "No linked email";
+
+      setEmailStatus(linkedEmail, emailVerified);
+    }
+
+    function closeEmailEditor() {
       $("emailEditor").classList.remove("show");
       $("newEmailInput").value = "";
       $("emailCodeInput").value = "";
@@ -798,39 +738,167 @@
       $("verifyRow").style.display = "none";
       $("emailEditorText").textContent = "Enter a new email address and send a verification code.";
       pendingEmail = "";
-
-      showMessage(result.message || "Email verified successfully.", "success");
-    } catch (e) {
-      console.error("verifyEmailCode error:", e);
-      showMessage(e.message || "Could not verify email.");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = oldText;
     }
-  }
 
-  function logout() {
-    localStorage.removeItem("colspot_admin_session");
-    localStorage.removeItem("colspot_pending_admin");
-    window.location.href = "index.html";
-  }
+    function openEmailEditor() {
+      $("emailEditor").classList.add("show");
+      $("newEmailInput").focus();
+    }
 
-  function goBack() {
-    window.location.href = "hod.html";
-  }
+    async function refreshHodProfileFromBackend() {
+      if (!hodSession?.id) return;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    renderHodProfile();
+      const result = await invokeEdge(EDGE.getHodProfile, {
+        hod_id: hodSession.id
+      });
 
-    $("backBtn").addEventListener("click", goBack);
-    $("resetPasswordBtn").addEventListener("click", () => {
-      window.location.href = "hod_reset_password.html";
+      const account = result.account || {};
+
+      hodSession = {
+        ...hodSession,
+        ...account,
+        role: "hod"
+      };
+
+      saveSession(hodSession);
+      paintProfile(hodSession);
+    }
+
+    async function renderHodProfile() {
+      hodSession = getSession();
+
+      if (!hodSession) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (String(hodSession.role || "").toLowerCase() !== "hod") {
+        window.location.href = "index.html";
+        return;
+      }
+
+      paintProfile(hodSession);
+
+      try {
+        await refreshHodProfileFromBackend();
+      } catch (e) {
+        console.error("refreshHodProfileFromBackend error:", e);
+      }
+
+      showMessage("", "error");
+    }
+
+    async function startEmailVerification(isResend = false) {
+      if (!hodSession) return;
+
+      const email = ($("newEmailInput").value || "").trim();
+      if (!email) {
+        showMessage("Please enter a new email address.");
+        return;
+      }
+
+      const btn = isResend ? $("resendCodeBtn") : $("sendCodeBtn");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = isResend ? "Sending..." : "Please wait...";
+
+      try {
+        const result = await invokeEdge(EDGE.startEmailVerification, {
+          hod_id: hodSession.id,
+          email
+        });
+
+        pendingEmail = email;
+        $("codeFieldWrap").style.display = "block";
+        $("verifyRow").style.display = "flex";
+        $("emailEditorText").textContent = `Verification code sent to ${email}. Enter the code below to verify this email.`;
+
+        showMessage(
+          result.message || "Verification code sent successfully.",
+          "success"
+        );
+      } catch (e) {
+        console.error("startEmailVerification error:", e);
+        showMessage(e.message || "Could not send verification code.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    async function verifyEmailCode() {
+      if (!hodSession) return;
+
+      const code = ($("emailCodeInput").value || "").trim();
+      if (!code) {
+        showMessage("Please enter the verification code.");
+        return;
+      }
+
+      const btn = $("verifyCodeBtn");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Verifying...";
+
+      try {
+        const result = await invokeEdge(EDGE.verifyEmailVerification, {
+          hod_id: hodSession.id,
+          code
+        });
+
+        const updatedEmail = result.linked_email || pendingEmail || "";
+        hodSession.linked_email = updatedEmail;
+        hodSession.email_verified = true;
+        saveSession(hodSession);
+
+        await refreshHodProfileFromBackend();
+        closeEmailEditor();
+
+        showMessage(
+          result.message || "Email verified successfully.",
+          "success"
+        );
+      } catch (e) {
+        console.error("verifyEmailCode error:", e);
+        showMessage(e.message || "Could not verify email.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("colspot_admin_session");
+      localStorage.removeItem("colspot_pending_admin");
+      window.location.href = "index.html";
+    }
+
+    function goBack() {
+      window.location.href = "hod.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await renderHodProfile();
+      } catch (e) {
+        console.error("renderHodProfile error:", e);
+        showMessage("Could not load HOD profile.");
+      }
+
+      $("backBtn").addEventListener("click", goBack);
+      $("resetPasswordBtn").addEventListener("click", () => {
+        window.location.href = "hod_reset_password.html";
+      });
+      $("hodLogoutBtn").addEventListener("click", logout);
+      $("hodLogoutActionBtn").addEventListener("click", logout);
+
+      $("editEmailBtn").addEventListener("click", openEmailEditor);
+      $("cancelEmailEditBtn").addEventListener("click", closeEmailEditor);
+      $("sendCodeBtn").addEventListener("click", () => startEmailVerification(false));
+      $("resendCodeBtn").addEventListener("click", () => startEmailVerification(true));
+      $("verifyCodeBtn").addEventListener("click", verifyEmailCode);
     });
-    $("hodLogoutBtn").addEventListener("click", logout);
-    $("hodLogoutActionBtn").addEventListener("click", logout);
-    $("verifyCodeBtn").addEventListener("click", verifyEmailCode);
-  });
-})();
+  })();
 </script>
 </body>
 </html>
