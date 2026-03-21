@@ -1,0 +1,1379 @@
+<!-- 🔹 HISTORY SCREEN START -->
+<div id="screen-history" class="screen">
+  <style>
+    #screen-history .page-title-block {
+      margin: 4px 2px 10px;
+    }
+
+    #screen-history .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    #screen-history .page-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    #screen-history .search-bar-wrap {
+      margin: 6px 2px 10px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      padding: 5px 10px;
+      gap: 8px;
+    }
+
+    #screen-history .search-icon {
+      width: 16px;
+      height: 16px;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    #screen-history .search-input {
+      border: none;
+      outline: none;
+      font-size: 16px;
+      flex: 1;
+      min-width: 0;
+      color: var(--text-main);
+      background: transparent;
+    }
+
+    #screen-history .search-input::placeholder {
+      color: #9ca3af;
+    }
+
+    #screen-history .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 2px 8px;
+    }
+
+    #screen-history .stats-text {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    #screen-history .csv-btn {
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      padding: 5px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #screen-history .csv-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    #screen-history .csv-btn:active {
+      transform: scale(0.97);
+    }
+
+    #screen-history .history-section-title {
+      margin: 10px 2px 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    #screen-history .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    #screen-history .history-card {
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 10px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      cursor: pointer;
+    }
+
+    #screen-history .history-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    #screen-history .history-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: #e0ebff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    #screen-history .history-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: #2563eb;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    #screen-history .history-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    #screen-history .history-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #screen-history .history-sub {
+      font-size: 11px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #screen-history .history-meta-row {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    #screen-history .history-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      margin-left: 8px;
+    }
+
+    #screen-history .status-chip {
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 11px;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    #screen-history .status-chip.class {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    #screen-history .status-chip.scan {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    #screen-history .status-chip.announcement {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    #screen-history .count-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    #screen-history .empty-state {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 10px 2px;
+      display: none;
+    }
+
+    #screen-history .download-btn {
+      border-radius: 999px;
+      border: 1px solid #2563eb;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 6px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    #screen-history .download-btn:active {
+      transform: scale(0.97);
+    }
+
+    #screen-history .error-box {
+      margin: 6px 2px;
+      font-size: 12px;
+      color: #b91c1c;
+      background: #fef2f2;
+      border-radius: 10px;
+      padding: 6px 8px;
+      display: none;
+    }
+
+    #screen-history .student-history-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    #screen-history .student-history-modal.active {
+      display: flex;
+    }
+
+    #screen-history .student-history-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    #screen-history .student-history-sheet {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 380px;
+      margin: 0 16px;
+      border-radius: 20px;
+      background: #f9fafb;
+      padding: 16px 16px 12px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+    }
+
+    #screen-history .student-history-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+
+    #screen-history .student-history-sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    #screen-history .student-history-summary {
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 10px 10px 8px;
+      margin-bottom: 10px;
+    }
+
+    #screen-history .sh-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      margin: 3px 0;
+    }
+
+    #screen-history .sh-label {
+      color: #6b7280;
+      flex: 0 0 90px;
+    }
+
+    #screen-history .sh-value {
+      color: #111827;
+      text-align: right;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #screen-history .sh-value.status {
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    #screen-history .student-history-footer-btn {
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #screen-history .student-history-footer-btn:active {
+      transform: scale(0.97);
+    }
+  </style>
+
+  <section class="hero">
+    <div class="hero-line-1">History</div>
+    <h1 class="hero-title">
+      Created classes, announcements &amp;<br />
+      <span>scan downloads</span>
+    </h1>
+  </section>
+
+  <div class="page-title-block">
+    <p class="page-sub">
+      Review your created class codes, school announcements and scanned sheet downloads.
+      Tap a class to see students who joined it.
+    </p>
+  </div>
+
+  <div class="search-bar-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="6" stroke="#9ca3af" stroke-width="1.6" />
+      <line
+        x1="15.5"
+        y1="15.5"
+        x2="20"
+        y2="20"
+        stroke="#9ca3af"
+        stroke-width="1.6"
+        stroke-linecap="round"
+      />
+    </svg>
+    <input
+      id="fullHistorySearch"
+      class="search-input"
+      type="search"
+      placeholder="Search by course code, announcement title or file name"
+    />
+  </div>
+
+  <div class="stats-row">
+    <div id="fullStatsText" class="stats-text">Loading history...</div>
+    <button
+      type="button"
+      class="csv-btn"
+      onclick="downloadFullHistoryCsv()"
+    >
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 4v10m0 0l-4-4m4 4l4-4M6 18h12"
+          stroke="#4b5563"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <span>Export CSV</span>
+    </button>
+  </div>
+
+  <div id="fullHistoryError" class="error-box"></div>
+
+  <div class="history-section-title">History</div>
+  <div id="fullHistoryList" class="history-list"></div>
+  <div id="fullHistoryEmpty" class="empty-state">
+    No history yet. When you create classes, receive school announcements or scan sheets, they will appear here.
+  </div>
+
+  <div id="studentHistoryModal" class="student-history-modal">
+    <div class="student-history-backdrop"></div>
+    <div class="student-history-sheet">
+      <div class="student-history-title" id="shCourseHeading">
+        Attendance details
+      </div>
+      <div class="student-history-sub">
+        Overview of one submission.
+      </div>
+
+      <div class="student-history-summary">
+        <div class="sh-row">
+          <div class="sh-label">Course</div>
+          <div id="shCourseLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Lecturer</div>
+          <div id="shLecturerLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Status</div>
+          <div id="shStatusLine" class="sh-value status"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Time</div>
+          <div id="shTimeLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">PIN used</div>
+          <div id="shPinLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Your name</div>
+          <div id="shNameLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Matric no.</div>
+          <div id="shMatricLine" class="sh-value"></div>
+        </div>
+        <div class="sh-row">
+          <div class="sh-label">Department</div>
+          <div id="shDeptLine" class="sh-value"></div>
+        </div>
+      </div>
+
+      <button
+        id="studentHistoryClose"
+        type="button"
+        class="student-history-footer-btn"
+      >
+        Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (typeof STUDENT_HISTORY_KEY === "undefined") {
+    var STUDENT_HISTORY_KEY = "colspot_student_history";
+  }
+
+  const HISTORY_REFRESH_INTERVAL_MS = 10000;
+
+  let studentHistoryEntries = [];
+  let fullHistoryClasses = [];
+  let scanHistoryItems = [];
+  let schoolAnnouncementItems = [];
+  let combinedHistoryItems = [];
+  let combinedHistoryFiltered = [];
+
+  function showFullHistoryError(msg) {
+    const box = document.getElementById("fullHistoryError");
+    if (!box) return;
+    if (!msg) {
+      box.textContent = "";
+      box.style.display = "none";
+    } else {
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+  }
+
+  function setFullHistoryStats(text) {
+    const el = document.getElementById("fullStatsText");
+    if (el) el.textContent = text;
+  }
+
+  function formatHistoryDateShort(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString([], {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  }
+
+  function formatHistoryTimeShort(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function isHistoryOffline() {
+    try {
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.isBrowserOffline === "function"
+      ) {
+        return ColspotGuard.isBrowserOffline();
+      }
+    } catch (e) {}
+    try {
+      return typeof navigator !== "undefined" && navigator.onLine === false;
+    } catch {
+      return false;
+    }
+  }
+
+  function isLikelyOfflineErrorHistory(err) {
+    try {
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.isLikelyOfflineError === "function"
+      ) {
+        if (ColspotGuard.isLikelyOfflineError(err)) return true;
+      }
+    } catch (e) {}
+    return isHistoryOffline();
+  }
+
+  const SCAN_BUCKET = "colspot-scan-uploads-saheed";
+  const SCAN_REGION = "eu-west-1";
+
+  function buildScanDownloadUrl(scanRow) {
+    if (scanRow.download_url) return scanRow.download_url;
+    if (scanRow.result_json && scanRow.result_json.download_url) {
+      return scanRow.result_json.download_url;
+    }
+    if (!scanRow.s3_object_key) return null;
+    return (
+      "https://" +
+      SCAN_BUCKET +
+      ".s3." +
+      SCAN_REGION +
+      ".amazonaws.com/" +
+      encodeURIComponent(scanRow.s3_object_key)
+    );
+  }
+
+  async function openScanDownload(url, filename) {
+    if (!url) return;
+
+    const isNative =
+      !!window.Capacitor && !!window.Capacitor.isNativePlatform;
+    const hasBrowserPlugin =
+      !!window.Capacitor &&
+      !!window.Capacitor.Plugins &&
+      !!window.Capacitor.Plugins.Browser;
+
+    try {
+      if (isNative && hasBrowserPlugin) {
+        await window.Capacitor.Plugins.Browser.open({ url });
+      } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        if (filename) a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (err) {
+      console.error("openScanDownload error:", err);
+      window.open(url, "_blank");
+    }
+  }
+
+  function loadStudentHistoryFromCache() {
+    studentHistoryEntries = [];
+    try {
+      const raw = localStorage.getItem(STUDENT_HISTORY_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          studentHistoryEntries = parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse student history cache:", e);
+    }
+  }
+
+  async function loadSchoolAnnouncementsForHistory(user) {
+    if (typeof supabase === "undefined" || !user?.id) return [];
+
+    let schoolName = "";
+
+    try {
+      const { data: studentRow, error: studentErr } = await supabase
+        .from("student_accounts")
+        .select("school_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!studentErr && studentRow?.school_name) {
+        schoolName = studentRow.school_name;
+      }
+
+      if (!schoolName) {
+        const { data: lecturerRow, error: lecturerErr } = await supabase
+          .from("lecturer_accounts")
+          .select("school_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (!lecturerErr && lecturerRow?.school_name) {
+          schoolName = lecturerRow.school_name;
+        }
+      }
+
+      if (!schoolName) return [];
+
+      const { data, error } = await supabase
+        .from("school_announcements")
+        .select("id, school_name, title, message, created_at")
+        .ilike("school_name", schoolName)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error("Announcement history load error:", error);
+        return [];
+      }
+
+      return data || [];
+    } catch (e) {
+      console.error("loadSchoolAnnouncementsForHistory error:", e);
+      return [];
+    }
+  }
+
+  function rebuildCombinedHistory() {
+    combinedHistoryItems = [];
+
+    studentHistoryEntries.forEach((entry) => {
+      combinedHistoryItems.push({
+        type: "student",
+        created_at: entry.attended_at || entry.created_at || null,
+        entry,
+      });
+    });
+
+    fullHistoryClasses.forEach((item) => {
+      combinedHistoryItems.push({
+        type: "class",
+        created_at: item.course.created_at || null,
+        course: item.course,
+        memberCount: item.memberCount,
+      });
+    });
+
+    scanHistoryItems.forEach((scan) => {
+      combinedHistoryItems.push({
+        type: "scan",
+        created_at: scan.created_at,
+        scan,
+      });
+    });
+
+    schoolAnnouncementItems.forEach((announcement) => {
+      combinedHistoryItems.push({
+        type: "announcement",
+        created_at: announcement.created_at || null,
+        announcement,
+      });
+    });
+
+    combinedHistoryItems.sort((a, b) => {
+      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return db - da;
+    });
+
+    applyFullHistorySearchFilter();
+  }
+
+  function openStudentHistoryDetail(entry) {
+    const modal = document.getElementById("studentHistoryModal");
+    if (!modal) return;
+
+    const courseHeading = document.getElementById("shCourseHeading");
+    const courseLine = document.getElementById("shCourseLine");
+    const lecturerLine = document.getElementById("shLecturerLine");
+    const statusLine = document.getElementById("shStatusLine");
+    const timeLine = document.getElementById("shTimeLine");
+    const pinLine = document.getElementById("shPinLine");
+    const nameLine = document.getElementById("shNameLine");
+    const matricLine = document.getElementById("shMatricLine");
+    const deptLine = document.getElementById("shDeptLine");
+
+    if (courseHeading)
+      courseHeading.textContent =
+        entry.course_code || "Attendance details";
+
+    if (courseLine) courseLine.textContent = entry.course_code || "—";
+    if (lecturerLine)
+      lecturerLine.textContent = entry.lecturer_name || "—";
+    if (statusLine) statusLine.textContent = entry.status || "Present";
+
+    const datePart = formatHistoryDateShort(entry.attended_at);
+    const timePart = formatHistoryTimeShort(entry.attended_at);
+    if (timeLine)
+      timeLine.textContent =
+        datePart && timePart ? `${datePart} · ${timePart}` : datePart || "";
+
+    if (pinLine) pinLine.textContent = entry.pin_used || "—";
+    if (nameLine) nameLine.textContent = entry.student_name || "—";
+    if (matricLine) matricLine.textContent = entry.student_matric || "—";
+    if (deptLine) deptLine.textContent = entry.student_department || "—";
+
+    modal.classList.add("active");
+  }
+
+  function closeStudentHistoryModal() {
+    const modal = document.getElementById("studentHistoryModal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  async function loadFullHistory(options = {}) {
+    const silent = options.silent === true;
+    const listEl = document.getElementById("fullHistoryList");
+    const emptyEl = document.getElementById("fullHistoryEmpty");
+    if (!listEl || !emptyEl) return;
+
+    if (loadFullHistory._loading) return;
+    loadFullHistory._loading = true;
+
+    const previousScrollY = window.scrollY;
+
+    try {
+      if (!silent) {
+        showFullHistoryError("");
+        setFullHistoryStats("Loading history...");
+        listEl.innerHTML = "";
+        emptyEl.style.display = "none";
+      } else {
+        showFullHistoryError("");
+      }
+
+      if (typeof supabase === "undefined") {
+        if (!silent) {
+          showFullHistoryError("Backend not available. Please reload later.");
+          setFullHistoryStats("Error loading history.");
+        }
+        return;
+      }
+
+      let user = null;
+      try {
+        const { data, error } = await supabase.auth.getUser();
+
+        if (error || !data || !data.user) {
+          const offline = isLikelyOfflineErrorHistory(error);
+          if (!silent) {
+            if (offline) {
+              showFullHistoryError(
+                "No internet connection or bad network. We’ll refresh automatically when you reconnect."
+              );
+            } else {
+              showFullHistoryError(
+                "Could not verify your account right now. Please try again or sign in again from the main screen."
+              );
+            }
+            setFullHistoryStats("0 items");
+          }
+          return;
+        }
+        user = data.user;
+      } catch (e) {
+        console.error(e);
+        const offline = isLikelyOfflineErrorHistory(e);
+        if (!silent) {
+          if (offline) {
+            showFullHistoryError(
+              "No internet connection or bad network. We’ll refresh automatically when you reconnect."
+            );
+          } else {
+            showFullHistoryError(
+              "Could not check your account right now. Please try again or sign in again from the main screen."
+            );
+          }
+          setFullHistoryStats("0 items");
+        }
+        return;
+      }
+
+      try {
+        const { data: classes, error: classError } = await supabase
+          .from("courses")
+          .select(`
+            id,
+            course_code,
+            course_title,
+            creator_name,
+            invite_code,
+            academic_session,
+            created_at,
+            allowed_departments,
+            allowed_levels,
+            allowed_department_levels
+          `)
+          .eq("created_by", user.id)
+          .order("created_at", { ascending: false });
+
+        if (classError) {
+          console.error(classError);
+          if (!silent) {
+            showFullHistoryError("Could not load class history. Please try again.");
+          }
+          fullHistoryClasses = [];
+        } else if (!classes || classes.length === 0) {
+          fullHistoryClasses = [];
+        } else {
+          const classIds = classes.map((c) => c.id);
+
+          const { data: memberships, error: memError } = await supabase
+            .from("course_memberships")
+            .select("course_id")
+            .in("course_id", classIds);
+
+          if (memError && !silent) {
+            console.error(memError);
+            showFullHistoryError(
+              "Could not load joined students count. Please try again."
+            );
+          }
+
+          const countMap = {};
+          (memberships || []).forEach((row) => {
+            countMap[row.course_id] = (countMap[row.course_id] || 0) + 1;
+          });
+
+          fullHistoryClasses = classes.map((course) => ({
+            course,
+            memberCount: countMap[course.id] || 0
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+        if (!silent) {
+          showFullHistoryError("Unexpected error while loading class history.");
+        }
+        fullHistoryClasses = [];
+      }
+
+      try {
+        const { data: scans, error: scansError } = await supabase
+          .from("scan_sheets")
+          .select("id, title, created_at, status, s3_object_key, result_json")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (scansError) {
+          console.error(scansError);
+          scanHistoryItems = [];
+        } else {
+          scanHistoryItems = scans || [];
+        }
+      } catch (e) {
+        console.error(e);
+        scanHistoryItems = [];
+      }
+
+      schoolAnnouncementItems = await loadSchoolAnnouncementsForHistory(user);
+
+      rebuildCombinedHistory();
+      updateFullHistoryStatsSummary();
+
+      const emptyElVisible = !combinedHistoryFiltered.length;
+      if (emptyElVisible) {
+        emptyEl.style.display = "block";
+      } else {
+        emptyEl.style.display = "none";
+        renderFullHistoryList();
+        if (silent) {
+          window.scrollTo(0, previousScrollY);
+        }
+      }
+    } finally {
+      loadFullHistory._loading = false;
+    }
+  }
+
+  function updateFullHistoryStatsSummary() {
+    const totalItems = combinedHistoryItems.length;
+    const totalClasses = fullHistoryClasses.length;
+    const totalAnnouncements = schoolAnnouncementItems.length;
+    setFullHistoryStats(
+      `${totalItems} items • ${totalClasses} classes • ${totalAnnouncements} announcements`
+    );
+  }
+
+  function applyFullHistorySearchFilter() {
+    const searchInput = document.getElementById("fullHistorySearch");
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) {
+      combinedHistoryFiltered = combinedHistoryItems.slice();
+      renderFullHistoryList();
+      return;
+    }
+
+    combinedHistoryFiltered = combinedHistoryItems.filter((item) => {
+      if (item.type === "student") {
+        const e = item.entry;
+        const course = (e.course_code || "").toLowerCase();
+        const lecturer = (e.lecturer_name || "").toLowerCase();
+        return course.includes(query) || lecturer.includes(query);
+      } else if (item.type === "class") {
+        const c = item.course;
+        const code = (c.course_code || "").toLowerCase();
+        const title = (c.course_title || "").toLowerCase();
+        const invite = (c.invite_code || "").toLowerCase();
+        const creator = (c.creator_name || "").toLowerCase();
+        return (
+          code.includes(query) ||
+          title.includes(query) ||
+          invite.includes(query) ||
+          creator.includes(query)
+        );
+      } else if (item.type === "announcement") {
+        const ann = item.announcement;
+        const title = (ann.title || "").toLowerCase();
+        const message = (ann.message || "").toLowerCase();
+        return title.includes(query) || message.includes(query);
+      } else {
+        const scan = item.scan;
+        const title = (scan.title || "").toLowerCase();
+        return title.includes(query);
+      }
+    });
+
+    renderFullHistoryList();
+  }
+
+  function renderFullHistoryList() {
+    const listEl = document.getElementById("fullHistoryList");
+    const emptyEl = document.getElementById("fullHistoryEmpty");
+    if (!listEl || !emptyEl) return;
+
+    listEl.innerHTML = "";
+
+    if (!combinedHistoryFiltered.length) {
+      emptyEl.style.display = "block";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+
+    combinedHistoryFiltered.forEach((item) => {
+      if (item.type === "student") {
+        const entry = item.entry;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+            <line x1="9" y1="3" x2="9" y2="7"></line>
+            <line x1="15" y1="3" x2="15" y2="7"></line>
+            <line x1="4" y1="11" x2="20" y2="11"></line>
+          </svg>
+        `;
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = entry.course_code || "Attendance";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent =
+          entry.lecturer_name ||
+          entry.course_title ||
+          "Submitted attendance";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const datePart = formatHistoryDateShort(entry.attended_at);
+        const timePart = formatHistoryTimeShort(entry.attended_at);
+        meta.textContent =
+          datePart && timePart ? `${datePart} · ${timePart}` : datePart || "";
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const status = document.createElement("div");
+        status.className = "status-chip";
+        status.textContent = entry.status || "Attended";
+
+        right.appendChild(status);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        card.addEventListener("click", () => openStudentHistoryDetail(entry));
+
+        listEl.appendChild(card);
+      } else if (item.type === "class") {
+        const { course, memberCount } = item;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16"></path>
+            <path d="M6 7v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"></path>
+            <path d="M9 11h6"></path>
+            <path d="M9 14h6"></path>
+          </svg>
+        `;
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = course.course_code || "Created class";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent =
+          course.course_title ||
+          course.creator_name ||
+          "Class code created";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const createdDate = formatHistoryDateShort(course.created_at);
+        const createdTime = formatHistoryTimeShort(course.created_at);
+        meta.textContent =
+          createdDate && createdTime
+            ? `${createdDate} · ${createdTime} · Code: ${course.invite_code || "—"}`
+            : `Code: ${course.invite_code || "—"}`;
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const status = document.createElement("div");
+        status.className = "status-chip class";
+        status.textContent = "Class";
+
+        const countText = document.createElement("div");
+        countText.className = "count-text";
+        countText.textContent = `${memberCount} joined`;
+
+        right.appendChild(status);
+        right.appendChild(countText);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        card.addEventListener("click", () => {
+          window.location.href = `class-live.html?course_id=${course.id}`;
+        });
+
+        listEl.appendChild(card);
+      } else if (item.type === "announcement") {
+        const ann = item.announcement;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22 2L11 13"></path>
+            <path d="M22 2L15 22l-4-9-9-4 20-7z"></path>
+          </svg>
+        `;
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = ann.title || "Announcement";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent = ann.message || "";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const datePart = formatHistoryDateShort(ann.created_at);
+        const timePart = formatHistoryTimeShort(ann.created_at);
+        meta.textContent =
+          datePart && timePart ? `${datePart} · ${timePart}` : datePart || "";
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const status = document.createElement("div");
+        status.className = "status-chip announcement";
+        status.textContent = "School";
+
+        right.appendChild(status);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        listEl.appendChild(card);
+      } else {
+        const scan = item.scan;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.textContent = "📄";
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = scan.title || "Scanned sheet";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent = "Scanned sheet";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const datePart = formatHistoryDateShort(scan.created_at);
+        const timePart = formatHistoryTimeShort(scan.created_at);
+        meta.textContent =
+          datePart && timePart ? `${datePart} · ${timePart}` : datePart || "";
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const statusEl = document.createElement("div");
+        statusEl.className = "status-chip scan";
+        statusEl.textContent =
+          scan.status === "completed"
+            ? "Ready to download"
+            : (scan.status || "Processing");
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.type = "button";
+        downloadBtn.className = "download-btn";
+        downloadBtn.textContent = "Download";
+
+        if (scan.status !== "completed") {
+          downloadBtn.disabled = true;
+          downloadBtn.style.opacity = "0.6";
+        } else {
+          downloadBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const url = buildScanDownloadUrl(scan);
+            if (!url) {
+              alert("File not available yet. Please try again later.");
+              return;
+            }
+            const filename = scan.title || "scan";
+            openScanDownload(url, filename);
+          });
+        }
+
+        right.appendChild(statusEl);
+        right.appendChild(downloadBtn);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        listEl.appendChild(card);
+      }
+    });
+  }
+
+  async function downloadFullHistoryCsv() {
+    if (!combinedHistoryItems.length) {
+      alert("No history to export yet.");
+      return;
+    }
+
+    const header = [
+      "Type",
+      "Title",
+      "Subtitle",
+      "Created at",
+      "Extra"
+    ];
+
+    const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
+
+    const rows = combinedHistoryItems.map((item) => {
+      if (item.type === "student") {
+        const e = item.entry;
+        return [
+          "Student attendance",
+          e.course_code || "",
+          e.lecturer_name || "",
+          e.attended_at || "",
+          e.student_matric || ""
+        ].map(esc).join(",");
+      }
+
+      if (item.type === "class") {
+        const c = item.course;
+        return [
+          "Created class",
+          c.course_code || "",
+          c.course_title || "",
+          c.created_at || "",
+          c.invite_code || ""
+        ].map(esc).join(",");
+      }
+
+      if (item.type === "announcement") {
+        const a = item.announcement;
+        return [
+          "School announcement",
+          a.title || "",
+          a.message || "",
+          a.created_at || "",
+          a.school_name || ""
+        ].map(esc).join(",");
+      }
+
+      const s = item.scan;
+      return [
+        "Scan sheet",
+        s.title || "",
+        s.status || "",
+        s.created_at || "",
+        s.s3_object_key || ""
+      ].map(esc).join(",");
+    });
+
+    const csv = [header.join(","), ...rows].join("\n");
+    const filename = "colspot_full_history.csv";
+
+    const Cap = window.Capacitor;
+    const isNative = !!Cap && !!Cap.isNativePlatform;
+    const Filesystem = Cap?.Plugins?.Filesystem;
+    const Share = Cap?.Plugins?.Share;
+
+    try {
+      if (isNative && Filesystem) {
+        const Directory = Filesystem.Directory || Filesystem?.Directory;
+        const Encoding = Filesystem.Encoding || Filesystem?.Encoding;
+
+        const writeRes = await Filesystem.writeFile({
+          path: filename,
+          data: csv,
+          directory: Directory ? Directory.Documents : "DOCUMENTS",
+          encoding: Encoding ? Encoding.UTF8 : "utf8",
+        });
+
+        if (Share && writeRes && writeRes.uri) {
+          await Share.share({
+            title: "Colspot Full History CSV",
+            text: "Full history export",
+            url: writeRes.uri,
+            dialogTitle: "Share / Save CSV",
+          });
+          return;
+        }
+
+        alert(
+          "CSV saved. Open your Files app / Documents and look for: " +
+            filename
+        );
+        return;
+      }
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) {
+      console.error("downloadFullHistoryCsv error", err);
+      alert("Could not start CSV download. Please try again.");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadStudentHistoryFromCache();
+    loadFullHistory({ silent: false });
+
+    setInterval(() => {
+      const scr = document.getElementById("screen-history");
+      if (!scr || !scr.classList.contains("active")) return;
+      if (isHistoryOffline()) return;
+      loadFullHistory({ silent: true });
+    }, HISTORY_REFRESH_INTERVAL_MS);
+
+    const closeBtn = document.getElementById("studentHistoryClose");
+    const backdrop = document.querySelector(
+      "#studentHistoryModal .student-history-backdrop"
+    );
+    if (closeBtn) closeBtn.addEventListener("click", closeStudentHistoryModal);
+    if (backdrop) backdrop.addEventListener("click", closeStudentHistoryModal);
+
+    const searchInput = document.getElementById("fullHistorySearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        applyFullHistorySearchFilter();
+      });
+    }
+  });
+</script>
+<!-- 🔹 HISTORY SCREEN END -->
