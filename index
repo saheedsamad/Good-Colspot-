@@ -909,14 +909,16 @@
     }
 
     function goToDashboard(role) {
-      const safeRole = String(role || "").toLowerCase();
+      const cleanRole = String(role || "").trim().toLowerCase();
 
-      if (safeRole === "super_admin") {
+      if (cleanRole === "super_admin") {
         window.location.href = "super_admin.html";
-      } else if (safeRole === "hos") {
+      } else if (cleanRole === "hos") {
         window.location.href = "hos.html";
-      } else if (safeRole === "hod") {
+      } else if (cleanRole === "hod") {
         window.location.href = "hod.html";
+      } else if (cleanRole === "report_admin") {
+        window.location.href = "report-admin.html";
       } else {
         if (adminMessage) {
           adminMessage.textContent = "Unknown admin role.";
@@ -932,8 +934,15 @@
 
       const { data, error } = await window.supabase.functions.invoke(functionName, { body });
 
+      console.log(functionName + " data:", data);
+      console.log(functionName + " error:", error);
+
       if (error) {
-        throw new Error(error.message || "Edge Function request failed.");
+        throw new Error(
+          (data && data.error) ||
+          error.message ||
+          "Edge Function request failed."
+        );
       }
 
       return data;
@@ -959,9 +968,9 @@
 
     window.toggleAuthMode = function() {
       if (
-        (adminForm && !adminForm.classList.contains("hidden")) ||
-        (adminLinkPanel && !adminLinkPanel.classList.contains("hidden")) ||
-        (adminVerifyPanel && !adminVerifyPanel.classList.contains("hidden"))
+        !adminForm.classList.contains("hidden") ||
+        !adminLinkPanel.classList.contains("hidden") ||
+        !adminVerifyPanel.classList.contains("hidden")
       ) {
         return restoreNormalMode("signin");
       }
@@ -997,6 +1006,10 @@
         }
 
         const admin = result.admin || {};
+
+        console.log("result from backend:", result);
+        console.log("final admin object:", admin);
+
         saveAdminSession(admin);
 
         if (admin.needs_email_link) {
@@ -1106,6 +1119,7 @@
         }
 
         const admin = result.admin || {};
+
         saveAdminSession(admin);
         clearPendingAdmin();
 
