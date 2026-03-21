@@ -89,7 +89,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
     }
 
     #screen-account .avatar-badge {
@@ -245,6 +244,7 @@
       margin-bottom: 4px;
     }
 
+    /* NEW: row just for delete button */
     #screen-account .delete-row {
       margin: 4px 0 10px;
     }
@@ -268,6 +268,7 @@
       justify-content: center;
     }
 
+    /* both logout + delete use the red style */
     #screen-account .action-btn.logout,
     #screen-account .action-btn.danger {
       border-color: #fecaca;
@@ -447,6 +448,7 @@
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
     }
 
+    /* small helper for readonly ID input */
     #screen-account .text-input.readonly {
       background: #f3f4f6;
     }
@@ -484,6 +486,7 @@
     }
   </style>
 
+  <!-- HEADER INSIDE ACCOUNT SCREEN -->
   <div id="accountHeaderView" class="account-header">
     <div class="account-header-left">
       <div>
@@ -508,11 +511,11 @@
     </button>
   </div>
 
+  <!-- VIEW SCREEN -->
   <section id="accountViewScreen">
     <div class="profile-card">
       <div class="profile-top">
-        <div class="avatar-circle" id="viewAvatarCircle">
-          <img id="viewAvatarImg" src="" alt="Profile picture" style="display:none;" />
+        <div class="avatar-circle">
           <span id="avatarInitial">S</span>
         </div>
 
@@ -573,6 +576,7 @@
           </svg>
         </div>
 
+        <!-- Matric / staff ID row -->
         <div class="detail-row" id="viewMatricRow" style="display:none;">
           <div class="detail-icon">
             <svg viewBox="0 0 24 24">
@@ -630,7 +634,6 @@
 
       <p id="verifyStatusText" class="status-text"></p>
     </div>
-
     <div class="actions-row">
       <button class="action-btn switch-mode" onclick="switchToLearnEarn()">
         <svg viewBox="0 0 24 24">
@@ -648,7 +651,6 @@
         Contact us
       </button>
     </div>
-
     <div class="actions-row">
       <button class="action-btn logout" onclick="accountSignOut()">
         <svg viewBox="0 0 24 24">
@@ -659,7 +661,6 @@
         Log out
       </button>
     </div>
-
     <div class="delete-row">
       <button class="action-btn danger" onclick="accountDeleteAccount()">
         <svg viewBox="0 0 24 24">
@@ -690,11 +691,11 @@
     </div>
   </section>
 
+  <!-- EDIT SCREEN -->
   <section id="accountEditScreen" style="display:none;">
     <div class="profile-card">
       <div class="profile-top">
-        <div class="avatar-circle" id="editAvatarCircle">
-          <img id="editAvatarImg" src="" alt="Profile picture" style="display:none;" />
+        <div class="avatar-circle">
           <span id="editAvatarInitial">S</span>
           <div class="avatar-badge">
             <svg viewBox="0 0 24 24">
@@ -704,14 +705,7 @@
           </div>
         </div>
 
-        <input
-          id="avatarFileInput"
-          type="file"
-          accept="image/*"
-          style="display:none;"
-        />
-
-        <button class="change-avatar-btn" type="button" id="changeAvatarBtn">
+        <button class="change-avatar-btn" type="button">
           Change
         </button>
 
@@ -745,6 +739,7 @@
         <input id="editDepartment" class="text-input" type="text" />
       </div>
 
+      <!-- Matric / staff ID editing for everyone -->
       <div class="form-group" id="editMatricGroup">
         <div class="form-label">
           Matric number / Staff ID
@@ -815,48 +810,10 @@
         (document.getElementById("viewMatricValue") &&
           document.getElementById("viewMatricValue").textContent) ||
         "";
-      const avatarUrl =
-        (document.getElementById("viewAvatarImg") &&
-          document.getElementById("viewAvatarImg").getAttribute("src")) ||
-        "";
-      return { name, dept, email, matric, avatarUrl };
+      return { name, dept, email, matric };
     }
 
-    function applyAvatarToUI(avatarUrl, initial) {
-      const viewAvatarImg = document.getElementById("viewAvatarImg");
-      const editAvatarImg = document.getElementById("editAvatarImg");
-      const avatarInitial = document.getElementById("avatarInitial");
-      const editAvatarInitial = document.getElementById("editAvatarInitial");
-
-      if (avatarInitial) avatarInitial.textContent = initial;
-      if (editAvatarInitial) editAvatarInitial.textContent = initial;
-
-      if (avatarUrl) {
-        if (viewAvatarImg) {
-          viewAvatarImg.src = avatarUrl;
-          viewAvatarImg.style.display = "block";
-        }
-        if (editAvatarImg) {
-          editAvatarImg.src = avatarUrl;
-          editAvatarImg.style.display = "block";
-        }
-        if (avatarInitial) avatarInitial.style.display = "none";
-        if (editAvatarInitial) editAvatarInitial.style.display = "none";
-      } else {
-        if (viewAvatarImg) {
-          viewAvatarImg.removeAttribute("src");
-          viewAvatarImg.style.display = "none";
-        }
-        if (editAvatarImg) {
-          editAvatarImg.removeAttribute("src");
-          editAvatarImg.style.display = "none";
-        }
-        if (avatarInitial) avatarInitial.style.display = "flex";
-        if (editAvatarInitial) editAvatarInitial.style.display = "flex";
-      }
-    }
-
-    function applyAccountDataToView({ name, dept, email, matric, avatarUrl }) {
+    function applyAccountDataToView({ name, dept, email, matric }) {
       const safeName =
         name ||
         (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
@@ -866,11 +823,16 @@
         email || (accountCurrentUser && accountCurrentUser.email) || "";
       const safeMatric = matric || "";
 
+      // 👇 THIS PART MAKES THE AVATAR LETTER COME FROM THE USER'S NAME
       const initial = safeName.trim()[0]
         ? safeName.trim()[0].toUpperCase()
         : "C";
 
-      applyAvatarToUI(avatarUrl || "", initial);
+      const avatarInitial = document.getElementById("avatarInitial");
+      const editAvatarInitial = document.getElementById("editAvatarInitial");
+      if (avatarInitial) avatarInitial.textContent = initial;
+      if (editAvatarInitial) editAvatarInitial.textContent = initial;
+      // 👆
 
       const vNameDisplay = document.getElementById("viewNameDisplay");
       const vNameValue = document.getElementById("viewNameValue");
@@ -906,7 +868,7 @@
       }
     }
 
-    function applyAccountDataToEdit({ name, dept, email, matric, avatarUrl }) {
+    function applyAccountDataToEdit({ name, dept, email, matric }) {
       const fn = document.getElementById("editFullName");
       const fd = document.getElementById("editDepartment");
       const mInput = document.getElementById("editMatricNumber");
@@ -929,16 +891,6 @@
         mHint.textContent =
           "This can be your matric number or staff ID. We’ll save it so you don’t have to type it again. You can only change it once every 30 days.";
       }
-
-      const safeName =
-        name ||
-        (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
-        "Lecturer";
-      const initial = safeName.trim()[0]
-        ? safeName.trim()[0].toUpperCase()
-        : "C";
-
-      applyAvatarToUI(avatarUrl || "", initial);
     }
 
     function getAccountStoredDeviceId() {
@@ -964,6 +916,7 @@
 
       const { data, error } = await supabase.auth.getUser();
       if (error || !data || !data.user) {
+        // main.js will already handle redirect if needed
         return;
       }
 
@@ -973,36 +926,9 @@
         name: accountCurrentUser.user_metadata?.full_name || "",
         dept: "",
         email: accountCurrentUser.email || "",
-        matric: "",
-        avatarUrl: ""
+        matric: ""
       });
       applyAccountDataToEdit(getAccountCurrentProfile());
-
-      const changeAvatarBtn = document.getElementById("changeAvatarBtn");
-      const avatarFileInput = document.getElementById("avatarFileInput");
-
-      if (changeAvatarBtn && avatarFileInput) {
-        changeAvatarBtn.addEventListener("click", () => {
-          avatarFileInput.click();
-        });
-
-        avatarFileInput.addEventListener("change", () => {
-          const file = avatarFileInput.files && avatarFileInput.files[0];
-          if (!file) return;
-
-          const localUrl = URL.createObjectURL(file);
-          const profile = getAccountCurrentProfile();
-
-          applyAccountDataToView({
-            ...profile,
-            avatarUrl: localUrl
-          });
-          applyAccountDataToEdit({
-            ...profile,
-            avatarUrl: localUrl
-          });
-        });
-      }
 
       await loadAccountProfile();
       await loadAccountDevices();
@@ -1014,7 +940,7 @@
       try {
         const { data: profiles, error } = await supabase
           .from("student_profiles")
-          .select("full_name, department, matric_number, avatar_url, avatar_path")
+          .select("full_name, department, matric_number")
           .eq("user_id", accountCurrentUser.id)
           .limit(1);
 
@@ -1028,20 +954,19 @@
           const dept = row.department || "";
           const matric = row.matric_number || "";
           const email = accountCurrentUser.email || "";
-          const avatarUrl = row.avatar_url || "";
 
           applyAccountDataToView({
             name,
             dept,
             email,
-            matric,
-            avatarUrl
+            matric
           });
-          applyAccountDataToEdit({ name, dept, email, matric, avatarUrl });
+          applyAccountDataToEdit({ name, dept, email, matric });
           lecturerProfileLoaded = true;
           return;
         }
 
+        // Fallback: no profile yet
         const name =
           accountCurrentUser.user_metadata?.full_name || "Lecturer";
         const dept = "";
@@ -1052,10 +977,9 @@
           name,
           dept,
           email,
-          matric,
-          avatarUrl: ""
+          matric
         });
-        applyAccountDataToEdit({ name, dept, email, matric, avatarUrl: "" });
+        applyAccountDataToEdit({ name, dept, email, matric });
         lecturerProfileLoaded = true;
       } catch (e) {
         console.error("Error loading account profile:", e);
@@ -1069,11 +993,6 @@
       const fn = document.getElementById("editFullName");
       const fd = document.getElementById("editDepartment");
       const fm = document.getElementById("editMatricNumber");
-      const avatarInput = document.getElementById("avatarFileInput");
-      const pickedAvatar =
-        avatarInput && avatarInput.files && avatarInput.files[0]
-          ? avatarInput.files[0]
-          : null;
 
       const name = fn ? fn.value.trim() : "";
       const dept = fd ? fd.value.trim() : "";
@@ -1086,14 +1005,13 @@
       }
 
       try {
+        // 1) Load existing matric + last_updated for this user
         let existingMatric = "";
         let existingLastUpdated = null;
-        let existingAvatarPath = "";
-        let existingAvatarUrl = "";
 
         const { data: existingRows, error: existingError } = await supabase
           .from("student_profiles")
-          .select("matric_number, matric_last_updated_at, avatar_path, avatar_url")
+          .select("matric_number, matric_last_updated_at")
           .eq("user_id", accountCurrentUser.id)
           .limit(1);
 
@@ -1101,13 +1019,12 @@
           existingMatric = existingRows[0].matric_number || "";
           existingLastUpdated =
             existingRows[0].matric_last_updated_at || null;
-          existingAvatarPath = existingRows[0].avatar_path || "";
-          existingAvatarUrl = existingRows[0].avatar_url || "";
         }
 
         const changedMatric =
           (existingMatric || "") !== (matric || "");
 
+        // 2) If matric is changing, enforce 30-day cool-down
         if (changedMatric && existingLastUpdated) {
           const last = new Date(existingLastUpdated);
           const now = new Date();
@@ -1133,41 +1050,15 @@
           }
         }
 
-        let avatarUrl = existingAvatarUrl || "";
-        let avatarPath = existingAvatarPath || "";
-
-        if (pickedAvatar) {
-          const ext = (pickedAvatar.name.split(".").pop() || "jpg").toLowerCase();
-          avatarPath = `${accountCurrentUser.id}/avatar_${Date.now()}.${ext}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("profile_pictures")
-            .upload(avatarPath, pickedAvatar, {
-              cacheControl: "3600",
-              upsert: true
-            });
-
-          if (uploadError) {
-            console.error(uploadError);
-            throw uploadError;
-          }
-
-          const { data: publicData } = supabase.storage
-            .from("profile_pictures")
-            .getPublicUrl(avatarPath);
-
-          avatarUrl = publicData?.publicUrl || "";
-        }
-
+        // 3) Build updates for student_profiles (for both students & lecturers)
         const updates = {
           user_id: accountCurrentUser.id,
           full_name: name,
           department: dept || null,
-          matric_number: matric || null,
-          ...(avatarPath ? { avatar_path: avatarPath } : {}),
-          ...(avatarUrl ? { avatar_url: avatarUrl } : {})
+          matric_number: matric || null
         };
 
+        // Only bump last_updated when matric actually changed
         if (changedMatric) {
           updates.matric_last_updated_at = new Date().toISOString();
         }
@@ -1181,6 +1072,7 @@
           throw upsertError;
         }
 
+        // 4) Also update auth user's full_name
         const { data: updated, error: authError } =
           await supabase.auth.updateUser({
             data: { full_name: name }
@@ -1198,20 +1090,14 @@
           name,
           dept,
           email,
-          matric,
-          avatarUrl
+          matric
         });
         applyAccountDataToEdit({
           name,
           dept,
           email,
-          matric,
-          avatarUrl
+          matric
         });
-
-        if (avatarInput) {
-          avatarInput.value = "";
-        }
 
         setAccountStatus("Profile saved.", "success");
         lecturerProfileLoaded = true;
@@ -1363,6 +1249,7 @@
       }
     }
 
+    // 🔻 Logout: sign out from Supabase + clear local user cache
     async function accountSignOut() {
       try {
         if (typeof supabase !== "undefined") {
@@ -1372,6 +1259,7 @@
         console.error("Sign out error:", e);
       } finally {
         try {
+          // IMPORTANT: key used by fast door in auth.js & main
           localStorage.removeItem("colspot_local_user");
         } catch (e) {
           console.error("Failed to clear local user cache on logout:", e);
@@ -1385,6 +1273,7 @@
       window.location.href = "contact.html";
     }
 
+    // 🔻 Delete account + all user data (sessions, records, scans, warmups, devices) + local cache
     async function accountDeleteAccount() {
       if (!accountCurrentUser) {
         alert("We could not find your account. Please sign in again.");
@@ -1408,6 +1297,7 @@
 
       try {
         if (typeof supabase !== "undefined") {
+          // 1) Get all session IDs created by this lecturer (for attendance_records cleanup)
           let sessionIds = [];
           try {
             const { data: sessions, error: sessionsError } = await supabase
@@ -1422,8 +1312,10 @@
             console.warn("Could not load lecturer sessions for delete:", e);
           }
 
+          // 2) Build delete promises
           const deletions = [];
 
+          // Delete per-attendee rows for these sessions (history/attendees)
           if (sessionIds.length > 0) {
             deletions.push(
               supabase
@@ -1433,10 +1325,12 @@
             );
           }
 
+          // Devices
           deletions.push(
             supabase.from("user_devices").delete().eq("user_id", userId)
           );
 
+          // Warmup data
           deletions.push(
             supabase
               .from("attendance_warmup_main")
@@ -1450,6 +1344,7 @@
               .eq("lecturer_id", userId)
           );
 
+          // Sessions themselves (used by History page)
           deletions.push(
             supabase
               .from("attendance_sessions")
@@ -1457,16 +1352,19 @@
               .eq("created_by", userId)
           );
 
+          // Scan history (scan_sheets table)
           deletions.push(
             supabase.from("scan_sheets").delete().eq("user_id", userId)
           );
 
+          // Lecturer profile row (if it exists from older versions)
           deletions.push(
             supabase.from("lecturers").delete().eq("id", userId)
           );
 
           await Promise.allSettled(deletions);
 
+          // 3) Edge function to delete auth user completely (email/password)
           try {
             if (supabase.functions && supabase.functions.invoke) {
               await supabase.functions.invoke("delete_my_account", {
@@ -1477,6 +1375,7 @@
             console.warn("delete_my_account function failed:", e);
           }
 
+          // 4) Sign out (just in case)
           try {
             await supabase.auth.signOut();
           } catch (e) {
@@ -1484,6 +1383,7 @@
           }
         }
 
+        // 5) Clear local cache / storage used by Colspot
         try {
           localStorage.removeItem("colspot_local_user");
           localStorage.removeItem("colspot_history_cache");
@@ -1503,6 +1403,7 @@
       }
     }
 
+    // expose for onclick
     window.enterAccountEditMode = enterAccountEditMode;
     window.saveAccountProfile = saveAccountProfile;
     window.accountSignOut = accountSignOut;
