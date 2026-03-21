@@ -6,50 +6,32 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot • HOS Main</title>
+  <title>Colspot • HOS Dashboard</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --page-bg:#f5f7fb;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --bg:#eef4ff;
       --card:#ffffff;
-      --text:#0f172a;
-      --muted:#707786;
-      --line:#e8edf5;
-
-      --blue-1:#2f6cff;
-      --blue-2:#2a56df;
-
-      --green-1:#77b84d;
-      --green-2:#5e9f3a;
-
-      --orange-1:#ffb13a;
-      --orange-2:#f39212;
-
-      --nav-text:#9aa3b2;
-      --shadow:0 14px 34px rgba(15,23,42,.08);
-      --soft-shadow:0 12px 24px rgba(47,108,255,.14);
-
-      --error:#991b1b;
-      --error-bg:#fef2f2;
-      --success:#166534;
-      --success-bg:#ecfdf5;
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --soft-blue:#eff6ff;
+      --shadow:0 12px 28px rgba(15,23,42,.08);
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
+    *{ box-sizing:border-box; }
 
     html,body{
       margin:0;
       padding:0;
       min-height:100%;
-      background:#edf2fb;
+      background:radial-gradient(circle at top, #e7f0ff, #ffffff 60%);
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
-      -webkit-text-size-adjust:100%;
     }
 
     body{
@@ -61,380 +43,327 @@
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:var(--page-bg);
-      padding:
-        calc(env(safe-area-inset-top) + 10px)
-        16px
-        calc(env(safe-area-inset-bottom) + 108px);
+      background:#fff;
+      padding:calc(env(safe-area-inset-top) + 10px) 14px 96px;
       position:relative;
-      overflow-x:hidden;
     }
 
-    .topbar{
+    header{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
+      margin-bottom:10px;
     }
 
     .brand{
       display:flex;
       align-items:center;
       gap:10px;
-      min-width:0;
     }
 
     .brand-logo{
-      width:38px;
-      height:38px;
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
       display:flex;
       align-items:center;
       justify-content:center;
-      flex-shrink:0;
+      color:#fff;
+      box-shadow:var(--shadow);
     }
 
     .brand-logo svg{
-      width:38px;
-      height:38px;
-      display:block;
+      width:18px;
+      height:18px;
     }
 
     .brand-name{
       font-size:17px;
       font-weight:800;
-      letter-spacing:-.03em;
-      color:#102043;
+      letter-spacing:-.02em;
     }
 
-    .avatar-wrap{
-      position:relative;
-      flex-shrink:0;
-    }
-
-    .avatar-btn{
-      width:50px;
-      height:50px;
-      border:none;
+    .avatar-chip{
+      width:40px;
+      height:40px;
       border-radius:999px;
-      color:#fff;
-      font-size:19px;
-      font-weight:800;
-      cursor:pointer;
-      background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
-      box-shadow:0 16px 28px rgba(47,108,255,.18);
-    }
-
-    .profile-menu{
-      position:absolute;
-      top:62px;
-      right:0;
-      width:205px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid #e7edf5;
-      box-shadow:0 20px 40px rgba(15,23,42,.14);
-      overflow:hidden;
-      display:none;
-      z-index:30;
-    }
-
-    .profile-menu.show{
-      display:block;
-    }
-
-    .profile-row{
-      width:100%;
       border:none;
-      background:#fff;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      text-align:left;
+      background:linear-gradient(135deg,#1d4ed8,#22c55e);
+      color:#fff;
+      font-weight:800;
+      box-shadow:var(--shadow);
       cursor:pointer;
-      font-size:14px;
-      font-weight:700;
-      color:#334155;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .profile-row:last-child{
-      border-bottom:none;
-    }
-
-    .profile-school{
-      display:block;
-      padding:14px 16px;
-      font-size:13px;
-      color:#6b7280;
-      background:#fff;
     }
 
     .hero{
-      margin-bottom:18px;
+      margin:4px 2px 16px;
     }
 
     .hero-line{
-      font-size:13px;
+      font-size:12px;
       color:var(--muted);
-      margin-bottom:8px;
-      font-weight:500;
-      word-break:break-word;
-    }
-
-    .hero-title{
-      margin:0;
-      font-size:29px;
-      line-height:1.08;
-      letter-spacing:-.055em;
-      font-weight:900;
-      color:#111c37;
-      max-width:310px;
-    }
-
-    .hero-title .accent{
-      display:block;
-      color:#2f6cff;
-    }
-
-    .message{
-      display:none;
-      margin:0 0 14px;
-      padding:12px 13px;
-      border-radius:16px;
-      font-size:13px;
-      line-height:1.45;
+      margin-bottom:4px;
       font-weight:600;
     }
 
-    .message.show{
-      display:block;
+    .hero-title{
+      font-size:24px;
+      line-height:1.18;
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:0 0 8px;
     }
 
-    .message.error{
-      background:var(--error-bg);
-      border:1px solid #fecaca;
-      color:var(--error);
+    .hero-title span{
+      color:var(--blue);
     }
 
-    .message.success{
-      background:var(--success-bg);
-      border:1px solid #bbf7d0;
-      color:var(--success);
+    .hero-sub{
+      font-size:13px;
+      line-height:1.45;
+      color:var(--muted);
+      margin-bottom:14px;
     }
 
-    .quick-actions{
+    .top-tools{
       display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-bottom:22px;
+      justify-content:flex-end;
+      margin-bottom:8px;
+      gap:8px;
     }
 
-    .quick-btn{
-      width:100%;
-      border:none;
-      border-radius:999px;
-      padding:18px 20px;
+    .icon-btn{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
       display:flex;
       align-items:center;
-      gap:14px;
-      color:#fff;
-      font-size:16px;
+      justify-content:center;
+      cursor:pointer;
+      color:var(--text);
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin:16px 2px 4px;
+    }
+
+    .stat-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 13px;
+      box-shadow:0 8px 24px rgba(15,23,42,.05);
+    }
+
+    .stat-value{
+      font-size:22px;
       font-weight:800;
-      letter-spacing:-.02em;
-      text-decoration:none;
-      box-shadow:var(--soft-shadow);
+      line-height:1;
+      margin-bottom:6px;
     }
 
-    .quick-btn svg{
-      width:23px;
-      height:23px;
-      flex-shrink:0;
-    }
-
-    .quick-btn.blue{
-      background:linear-gradient(90deg,var(--blue-1) 0%, var(--blue-2) 100%);
-    }
-
-    .quick-btn.green{
-      background:linear-gradient(90deg,var(--green-1) 0%, var(--green-2) 100%);
-    }
-
-    .quick-btn.orange{
-      background:linear-gradient(90deg,var(--orange-1) 0%, var(--orange-2) 100%);
+    .stat-label{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-weight:800;
+      letter-spacing:.06em;
     }
 
     .section-head{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin:4px 2px 12px;
+      align-items:center;
+      margin:20px 4px 10px;
     }
 
     .section-title{
       margin:0;
       font-size:15px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#111c37;
-    }
-
-    .section-link{
-      text-decoration:none;
-      color:#2563eb;
-      font-size:13px;
-      font-weight:700;
-      display:flex;
-      align-items:center;
-      gap:4px;
-      white-space:nowrap;
-    }
-
-    .overview-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:22px;
-    }
-
-    .overview-card{
-      color:#fff;
-      border-radius:18px;
-      padding:14px 14px 12px;
-      min-height:98px;
-      box-shadow:var(--shadow);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .overview-card.blue{
-      background:linear-gradient(135deg,#2f6cff 0%, #2357df 100%);
-    }
-
-    .overview-card.orange{
-      background:linear-gradient(135deg,#ffb13a 0%, #f39413 100%);
-    }
-
-    .overview-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .overview-icon{
-      width:38px;
-      height:38px;
-      border-radius:14px;
-      background:rgba(255,255,255,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      backdrop-filter:blur(8px);
-      flex-shrink:0;
-    }
-
-    .overview-icon svg{
-      width:21px;
-      height:21px;
-    }
-
-    .overview-value{
-      font-size:30px;
-      line-height:1;
-      font-weight:900;
-      letter-spacing:-.05em;
-      text-align:right;
-      white-space:nowrap;
-    }
-
-    .overview-label{
-      margin-top:12px;
-      font-size:13px;
       font-weight:800;
-      line-height:1.05;
+      letter-spacing:-.02em;
     }
 
     .card{
-      background:var(--card);
+      background:#fff;
       border:1px solid var(--line);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:12px;
+      border-radius:20px;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      margin:0 2px 14px;
     }
 
-    .list-wrap{
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:#334155;
+      margin-bottom:6px;
+    }
+
+    .input,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 13px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+    }
+
+    .textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mini-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:var(--shadow);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .history-list{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
 
-    .report-item{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      padding:12px;
+    .history-card{
+      border:1px solid var(--line);
       border-radius:18px;
+      padding:12px;
       background:#fff;
-      border:1px solid #edf2f7;
     }
 
-    .item-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      background:#eef4ff;
-      color:#255fe9;
+    .history-top{
       display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:8px;
     }
 
-    .item-icon svg{
-      width:20px;
-      height:20px;
-    }
-
-    .item-content{
-      flex:1;
-      min-width:0;
-    }
-
-    .item-title{
-      margin:0;
-      font-size:15px;
-      line-height:1.25;
+    .history-title{
+      font-size:14px;
       font-weight:800;
-      letter-spacing:-.02em;
-      color:#111c37;
+      line-height:1.2;
     }
 
-    .item-sub{
-      margin:4px 0 0;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.4;
-      word-break:break-word;
-    }
-
-    .item-time{
-      flex-shrink:0;
+    .history-sub{
       font-size:12px;
-      color:#7a8494;
-      font-weight:700;
-      white-space:nowrap;
-      margin-left:8px;
+      color:var(--muted);
+      line-height:1.35;
+      margin-top:3px;
+    }
+
+    .pill{
+      flex-shrink:0;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      background:#eff6ff;
+      color:var(--blue);
     }
 
     .empty{
-      padding:16px 8px;
-      text-align:center;
       font-size:13px;
       color:var(--muted);
+      text-align:center;
+      padding:16px 8px;
+    }
+
+    .message{
+      display:none;
+      margin:0 2px 14px;
+      padding:11px 12px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .message.error{
+      display:block;
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      display:block;
+      background:#ecfdf5;
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .result-card{
+      display:none;
+      margin:0 2px 14px;
+      padding:13px;
+      border-radius:16px;
+      border:1px solid #bbf7d0;
+      background:#ecfdf5;
+      color:#166534;
+    }
+
+    .result-card.show{
+      display:block;
+    }
+
+    .result-title{
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .result-row{
+      font-size:13px;
+      line-height:1.45;
+      margin-bottom:4px;
+    }
+
+    .result-row strong{
+      color:#14532d;
     }
 
     .bottom-nav{
@@ -442,233 +371,210 @@
       left:50%;
       transform:translateX(-50%);
       bottom:max(12px, env(safe-area-inset-bottom));
-      width:calc(100% - 24px);
-      max-width:396px;
-      background:rgba(255,255,255,.98);
-      border:1px solid #e7edf5;
-      border-radius:31px;
+      width:calc(100% - 28px);
+      max-width:392px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(16px);
+      border:1px solid rgba(229,231,235,.9);
       box-shadow:0 20px 40px rgba(15,23,42,.12);
-      padding:10px 8px 12px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:2px;
-      z-index:50;
-      backdrop-filter:blur(14px);
+      border-radius:26px;
+      padding:8px 8px 10px;
+      display:flex;
+      justify-content:space-between;
+      z-index:30;
     }
 
     .nav-btn{
-      color:var(--nav-text);
-      text-decoration:none;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:64px;
-      border-radius:18px;
-      padding:4px 2px;
-    }
-
-    .nav-btn svg{
-      width:22px;
-      height:22px;
-    }
-
-    .nav-btn span{
-      font-size:11px;
-      font-weight:700;
-      letter-spacing:-.01em;
+      flex:1;
+      border:none;
+      background:transparent;
+      color:#94a3b8;
       text-align:center;
-      line-height:1.2;
+      font-size:11px;
+      cursor:pointer;
+      padding-top:2px;
     }
 
     .nav-btn.active{
-      color:#2563eb;
+      color:var(--blue);
+      font-weight:800;
+    }
+
+    .nav-inner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
     }
 
     @media (max-width:360px){
-      .hero-title{
-        font-size:26px;
-      }
-
-      .quick-btn{
-        font-size:15px;
+      .btn-row{
+        flex-direction:column;
       }
     }
   </style>
 </head>
 <body>
   <div class="phone-shell">
-    <header class="topbar">
+    <header>
       <div class="brand">
-        <div class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M32 8 54 18v14c0 13.5-9.2 23.6-22 27C19.2 55.6 10 45.5 10 32V18L32 8Z" fill="url(#g1)"/>
-            <path d="M22 26h20M22 33h15" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            <path d="M20 19h24" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-            <defs>
-              <linearGradient id="g1" x1="10" y1="8" x2="54" y2="59" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#1d4ed8"/>
-                <stop offset="1" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6 5h12v14H6z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="brand-name">Colspot</div>
       </div>
 
-      <div class="avatar-wrap">
-        <button class="avatar-btn" id="avatarBtn" type="button">H</button>
-
-        <div class="profile-menu" id="profileMenu">
-          <button class="profile-row" type="button" id="accountMenuBtn">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-            </svg>
-            <span>My account</span>
-          </button>
-
-          <button class="profile-row" type="button" id="logoutBtn">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <path d="M16 17l5-5-5-5"></path>
-              <path d="M21 12H9"></path>
-            </svg>
-            <span>Logout</span>
-          </button>
-
-          <span class="profile-school" id="profileSchoolText">School</span>
-        </div>
-      </div>
+      <button class="avatar-chip" id="avatarChip">H</button>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-line" id="schoolNameText">Hello, School</div>
+        <div class="hero-line" id="schoolNameText">School</div>
         <h1 class="hero-title">
-          What would you like to
-          <span class="accent">do today?</span>
+          Manage your<br><span>students, HODs & announcements</span>
         </h1>
+        <div class="hero-sub">
+          This page now shows the student list, lets HOS send school announcements, and create HOD login accounts.
+        </div>
       </section>
 
-      <div class="message" id="pageMessageBox"></div>
-
-      <section class="quick-actions">
-        <a href="Announcement.html" class="quick-btn blue" id="announcementShortcut">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+      <div class="top-tools">
+        <button class="icon-btn" id="refreshStudentsBtn" type="button" aria-label="Refresh students">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M20 11a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>Send Announcement</span>
-        </a>
+        </button>
 
-        <a href="Hod.html" class="quick-btn green" id="hodShortcut">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9.5" cy="7" r="3"></circle>
-            <path d="M20 8v6"></path>
-            <path d="M17 11h6"></path>
+        <button class="icon-btn" id="refreshAnnouncementsBtn" type="button" aria-label="Refresh announcements">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 3v18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
-          <span>Create HOD Account</span>
-        </a>
-
-        <a href="report-agent.html" class="quick-btn orange" id="reportAgentShortcut">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M12 21s-6.5-4.35-8.5-7A5.48 5.48 0 0 1 3 11a5 5 0 0 1 9-3 5 5 0 0 1 9 3 5.48 5.48 0 0 1-.5 3c-2 2.65-8.5 7-8.5 7Z"></path>
-            <path d="M12 10v4"></path>
-            <path d="M10 12h4"></path>
-          </svg>
-          <span>Create Reports Agent</span>
-        </a>
-      </section>
-
-      <div class="section-head">
-        <h2 class="section-title">School Overview</h2>
+        </button>
       </div>
 
-      <section class="overview-grid">
-        <article class="overview-card blue">
-          <div class="overview-top">
-            <div class="overview-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9.5" cy="7" r="3"></circle>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            </div>
-            <div class="overview-value" id="hodCount">0</div>
-          </div>
-          <div class="overview-label">HODs</div>
-        </article>
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalStudentCount">--</div>
+          <div class="stat-label">Students</div>
+        </div>
 
-        <article class="overview-card orange">
-          <div class="overview-top">
-            <div class="overview-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
-                <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
-                <path d="M12 11h4M12 15h4"></path>
-              </svg>
-            </div>
-            <div class="overview-value" id="studentCount">0</div>
-          </div>
-          <div class="overview-label">Students</div>
-        </article>
+        <div class="stat-card">
+          <div class="stat-value" id="totalStudentShown">--</div>
+          <div class="stat-label">Shown</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalAnnouncementCount">--</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalAnnouncementShown">--</div>
+          <div class="stat-label">Recent</div>
+        </div>
       </section>
 
+      <div class="message" id="pageErrorBox"></div>
+      <div class="message" id="hodMessageBox"></div>
+      <div class="message" id="announcementMessageBox"></div>
+
       <div class="section-head">
-        <h2 class="section-title">Recent Reports</h2>
-        <a href="reports.html" class="section-link">
-          <span>View All Reports</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-        </a>
+        <div class="section-title">Create HOD account</div>
       </div>
 
       <section class="card">
-        <div class="list-wrap" id="recentReportsList">
-          <div class="empty">Loading reports...</div>
+        <div class="field">
+          <label for="hodFullName">Full name</label>
+          <input id="hodFullName" class="input" placeholder="Enter HOD full name">
+        </div>
+
+        <div class="field">
+          <label for="hodDepartment">Department</label>
+          <input id="hodDepartment" class="input" placeholder="Enter department name">
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="createHodBtn" type="button">Create HOD</button>
+          <button class="mini-btn secondary" id="clearHodBtn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <div class="result-card" id="hodResultCard">
+        <div class="result-title">HOD account created successfully</div>
+        <div class="result-row"><strong>Full name:</strong> <span id="resultHodName">-</span></div>
+        <div class="result-row"><strong>Department:</strong> <span id="resultHodDepartment">-</span></div>
+        <div class="result-row"><strong>Login ID:</strong> <span id="resultHodLoginId">-</span></div>
+        <div class="result-row"><strong>Temporary password:</strong> <span id="resultHodPassword">-</span></div>
+      </div>
+
+      <div class="section-head">
+        <div class="section-title">Send announcement</div>
+      </div>
+
+      <section class="card">
+        <div class="field">
+          <label for="announcementTitle">Title</label>
+          <input id="announcementTitle" class="input" placeholder="Enter announcement title">
+        </div>
+
+        <div class="field">
+          <label for="announcementBody">Message</label>
+          <textarea id="announcementBody" class="textarea" placeholder="Write the school announcement here..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send announcement</button>
+          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <div class="section-title">Recent announcement history</div>
+      </div>
+
+      <section class="card">
+        <div class="history-list" id="announcementList">
+          <div class="empty">Loading announcements...</div>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <div class="section-title">Students in this school</div>
+      </div>
+
+      <section class="card">
+        <div class="history-list" id="studentList">
+          <div class="empty">Loading students...</div>
         </div>
       </section>
     </main>
   </div>
 
   <nav class="bottom-nav">
-    <a href="hos.html" class="nav-btn active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 10.5 12 3l9 7.5"></path>
-        <path d="M5 9.5V21h14V9.5"></path>
-      </svg>
-      <span>Home</span>
-    </a>
+    <button class="nav-btn active" type="button">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Home</span>
+      </span>
+    </button>
 
-    <a href="Hod.html" class="nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9.5" cy="7" r="3"></circle>
-        <path d="M20 8v6"></path>
-        <path d="M17 11h6"></path>
-      </svg>
-      <span>HOD</span>
-    </a>
-
-    <a href="Announcement.html" class="nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-      </svg>
-      <span>Announcements</span>
-    </a>
-
-    <a href="history.html" class="nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 12a9 9 0 1 0 3-6.7"></path>
-        <path d="M3 4v5h5"></path>
-        <path d="M12 7v5l3 2"></path>
-      </svg>
-      <span>History</span>
-    </a>
+    <button class="nav-btn" type="button" id="logoutBtn">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 17l5-5-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M13 4H6a2 2 0 00-2 2v12a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>Logout</span>
+      </span>
+    </button>
   </nav>
 
   <script>
@@ -676,57 +582,60 @@
       const SUPABASE_URL = "YOUR_SUPABASE_URL";
       const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const EDGE = {
+        studentSummary: "hos-student-summary",
+        sendAnnouncement: "hos-send-announcement",
+        createHod: "create-hod-account"
+      };
 
-      const $ = (id) => document.getElementById(id);
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       let adminSession = null;
       let currentSchoolName = "";
 
-      function escapeHtml(value) {
-        return String(value || "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#39;");
+      function $(id){
+        return document.getElementById(id);
       }
 
-      function showMessage(text, type = "error") {
-        const box = $("pageMessageBox");
-        if (!text) {
+      function escapeHtml(value){
+        return String(value || "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#39;");
+      }
+
+      function formatDate(value){
+        if (!value) return "-";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "-";
+        return d.toLocaleString();
+      }
+
+      function getAdminSession(){
+        try{
+          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+        }catch{
+          return null;
+        }
+      }
+
+      function showMessage(id, text, type){
+        const box = $(id);
+        if (!text){
           box.textContent = "";
           box.className = "message";
           return;
         }
         box.textContent = text;
-        box.className = `message show ${type}`;
+        box.className = `message ${type === "success" ? "success" : "error"}`;
       }
 
-      function formatRelativeDate(value) {
-        if (!value) return "";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "";
-        return date.toLocaleString([], {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        });
-      }
-
-      function getAdminSession() {
-        try {
-          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-        } catch {
-          return null;
-        }
-      }
-
-      function requireHosSession() {
+      function requireHosSession(){
         adminSession = getAdminSession();
 
-        if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos") {
+        if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
           window.location.href = "index.html";
           return false;
         }
@@ -737,126 +646,252 @@
           adminSession.schoolName ||
           "";
 
-        $("schoolNameText").textContent = currentSchoolName
-          ? `Hello, ${currentSchoolName}`
-          : "Hello, School";
+        $("schoolNameText").textContent = currentSchoolName || "School not found";
 
-        $("profileSchoolText").textContent = currentSchoolName || "School";
+        const initial = (adminSession.full_name || "H")
+          .trim()
+          .charAt(0)
+          .toUpperCase() || "H";
 
-        const initial = (adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
-        $("avatarBtn").textContent = initial;
-
+        $("avatarChip").textContent = initial;
         return true;
       }
 
-      async function loadStats() {
-        try {
-          const { count: hodCount, error: hodError } = await sb
-            .from("admin_accounts")
-            .select("*", { count: "exact", head: true })
-            .eq("role", "hod")
-            .eq("school_name", currentSchoolName);
+      async function invokeEdge(functionName, body){
+        const { data, error } = await sb.functions.invoke(functionName, {
+          body: body || {}
+        });
 
-          if (hodError) throw hodError;
+        if (error){
+          throw new Error((data && data.error) || error.message || "Request failed.");
+        }
 
-          const { count: studentCount, error: studentError } = await sb
-            .from("student_accounts")
-            .select("*", { count: "exact", head: true })
-            .eq("school_name", currentSchoolName);
+        return data || {};
+      }
 
-          if (studentError) throw studentError;
+      function renderStudentList(rows){
+        const wrap = $("studentList");
+        if (!wrap) return;
 
-          $("hodCount").textContent = String(hodCount || 0);
-          $("studentCount").textContent = String(studentCount || 0);
-        } catch (err) {
+        if (!rows || !rows.length){
+          wrap.innerHTML = '<div class="empty">No students found for this school.</div>';
+          return;
+        }
+
+        wrap.innerHTML = rows.map((item) => `
+          <div class="history-card">
+            <div class="history-top">
+              <div>
+                <div class="history-title">${escapeHtml(item.full_name || "No name")}</div>
+                <div class="history-sub">${escapeHtml(item.matric_number || "No matric number")}</div>
+              </div>
+              <div class="pill">Student</div>
+            </div>
+            <div class="history-sub">Faculty: ${escapeHtml(item.faculty || "-")}</div>
+            <div class="history-sub">Department: ${escapeHtml(item.department || "-")}</div>
+            <div class="history-sub">Programme: ${escapeHtml(item.programme || "-")}</div>
+            <div class="history-sub">Level: ${escapeHtml(item.level || "-")}</div>
+            <div class="history-sub">School: ${escapeHtml(item.school_name || "-")}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderAnnouncementList(rows){
+        const wrap = $("announcementList");
+        if (!wrap) return;
+
+        if (!rows || !rows.length){
+          wrap.innerHTML = '<div class="empty">No announcements yet for this school.</div>';
+          return;
+        }
+
+        wrap.innerHTML = rows.map((item) => `
+          <div class="history-card">
+            <div class="history-top">
+              <div>
+                <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
+                <div class="history-sub">${escapeHtml((item.message || "").slice(0, 160) || "-")}</div>
+              </div>
+              <div class="pill">School</div>
+            </div>
+            <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+          </div>
+        `).join("");
+      }
+
+      async function loadStudentData(){
+        $("totalStudentCount").textContent = "--";
+        $("totalStudentShown").textContent = "--";
+        showMessage("pageErrorBox", "", "error");
+
+        try{
+          const result = await invokeEdge(EDGE.studentSummary, {
+            hos_admin_id: adminSession.id
+          });
+
+          if (!result.ok){
+            throw new Error(result.error || "Could not load student summary.");
+          }
+
+          const totals = result.totals || {};
+          const students = Array.isArray(result.students) ? result.students : [];
+
+          $("totalStudentCount").textContent = String(totals.students || 0);
+          $("totalStudentShown").textContent = String(students.length || 0);
+
+          renderStudentList(students);
+        }catch(err){
           console.error(err);
-          $("hodCount").textContent = "0";
-          $("studentCount").textContent = "0";
-          showMessage("Could not load school overview.");
+          $("totalStudentCount").textContent = "0";
+          $("totalStudentShown").textContent = "0";
+          renderStudentList([]);
+          showMessage("pageErrorBox", err.message || "Could not load students.", "error");
         }
       }
 
-      async function loadRecentReports() {
-        const wrap = $("recentReportsList");
-        wrap.innerHTML = '<div class="empty">Loading reports...</div>';
+      async function createHodAccount(){
+        showMessage("hodMessageBox", "", "error");
+        $("hodResultCard").classList.remove("show");
 
-        try {
-          const { data, error } = await sb
-            .from("student_reports")
-            .select("title, category, created_at, is_anonymous, full_name, department")
-            .eq("school_name", currentSchoolName)
-            .order("created_at", { ascending: false })
-            .limit(2);
+        const fullName = ($("hodFullName").value || "").trim();
+        const departmentName = ($("hodDepartment").value || "").trim();
 
-          if (error) throw error;
+        if (!fullName){
+          showMessage("hodMessageBox", "Please enter the full name.", "error");
+          return;
+        }
 
-          if (!data || !data.length) {
-            wrap.innerHTML = '<div class="empty">No recent reports yet.</div>';
-            return;
+        if (!departmentName){
+          showMessage("hodMessageBox", "Please enter the department.", "error");
+          return;
+        }
+
+        const btn = $("createHodBtn");
+        btn.disabled = true;
+
+        try{
+          const result = await invokeEdge(EDGE.createHod, {
+            hos_admin_id: adminSession.id,
+            full_name: fullName,
+            department_name: departmentName
+          });
+
+          if (!result.ok){
+            throw new Error(result.error || "Could not create HOD account.");
           }
 
-          wrap.innerHTML = data.map((item) => {
-            const personText = item.is_anonymous ? "Anonymous" : (item.full_name || "Student");
+          const account = result.hod_account || {};
 
-            return `
-              <article class="report-item">
-                <div class="item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 21s-6.5-4.35-8.5-7A5.48 5.48 0 0 1 3 11a5 5 0 0 1 9-3 5 5 0 0 1 9 3 5.48 5.48 0 0 1-.5 3c-2 2.65-8.5 7-8.5 7Z"></path>
-                  </svg>
-                </div>
+          $("resultHodName").textContent = account.full_name || fullName;
+          $("resultHodDepartment").textContent = account.department_name || departmentName;
+          $("resultHodLoginId").textContent = account.login_id || "-";
+          $("resultHodPassword").textContent = result.temporary_password || "-";
 
-                <div class="item-content">
-                  <h3 class="item-title">${escapeHtml(item.title || "Untitled report")}</h3>
-                  <p class="item-sub">${escapeHtml(personText)}${item.category ? ` • ${escapeHtml(item.category)}` : ""}</p>
-                  <p class="item-sub">${escapeHtml(item.department || "-")}</p>
-                </div>
+          $("hodResultCard").classList.add("show");
+          $("hodFullName").value = "";
+          $("hodDepartment").value = "";
 
-                <div class="item-time">${escapeHtml(formatRelativeDate(item.created_at))}</div>
-              </article>
-            `;
-          }).join("");
-        } catch (err) {
+          showMessage("hodMessageBox", result.message || "HOD account created successfully.", "success");
+        }catch(err){
           console.error(err);
-          wrap.innerHTML = '<div class="empty">Could not load recent reports.</div>';
+          showMessage("hodMessageBox", err.message || "Could not create HOD account.", "error");
+        }finally{
+          btn.disabled = false;
         }
       }
 
-      function setupProfileMenu() {
-        const avatarBtn = $("avatarBtn");
-        const profileMenu = $("profileMenu");
-
-        avatarBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          profileMenu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", (e) => {
-          if (!profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
-            profileMenu.classList.remove("show");
-          }
-        });
+      function clearHodForm(){
+        $("hodFullName").value = "";
+        $("hodDepartment").value = "";
+        $("hodResultCard").classList.remove("show");
+        showMessage("hodMessageBox", "", "error");
       }
 
-      function setupActions() {
-        $("logoutBtn").addEventListener("click", () => {
-          localStorage.removeItem("colspot_admin_session");
-          localStorage.removeItem("colspot_pending_admin");
-          window.location.href = "index.html";
-        });
+      async function sendAnnouncement(){
+        showMessage("announcementMessageBox", "", "error");
 
-        $("accountMenuBtn").addEventListener("click", () => {
-          window.location.href = "account.html";
-        });
+        const title = ($("announcementTitle").value || "").trim();
+        const message = ($("announcementBody").value || "").trim();
+
+        if (!title){
+          showMessage("announcementMessageBox", "Please enter the title.", "error");
+          return;
+        }
+
+        if (!message){
+          showMessage("announcementMessageBox", "Please enter the message.", "error");
+          return;
+        }
+
+        const btn = $("sendAnnouncementBtn");
+        btn.disabled = true;
+
+        try{
+          const result = await invokeEdge(EDGE.sendAnnouncement, {
+            hos_admin_id: adminSession.id,
+            title,
+            message
+          });
+
+          if (!result.ok){
+            throw new Error(result.error || "Could not send announcement.");
+          }
+
+          $("announcementTitle").value = "";
+          $("announcementBody").value = "";
+
+          const totals = result.totals || {};
+          const recentAnnouncements = Array.isArray(result.recent_announcements)
+            ? result.recent_announcements
+            : [];
+
+          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+          $("totalAnnouncementShown").textContent = String(recentAnnouncements.length || 0);
+
+          renderAnnouncementList(recentAnnouncements);
+          showMessage("announcementMessageBox", result.message || "Announcement sent successfully.", "success");
+        }catch(err){
+          console.error(err);
+          showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
+        }finally{
+          btn.disabled = false;
+        }
+      }
+
+      function clearAnnouncementForm(){
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
+        showMessage("announcementMessageBox", "", "error");
+      }
+
+      async function refreshAnnouncementHistoryOnly(){
+        showMessage("announcementMessageBox", "", "error");
+        renderAnnouncementList([]);
+        $("totalAnnouncementCount").textContent = "--";
+        $("totalAnnouncementShown").textContent = "--";
+      }
+
+      function logoutAdmin(){
+        localStorage.removeItem("colspot_admin_session");
+        localStorage.removeItem("colspot_pending_admin");
+        window.location.href = "index.html";
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
         if (!requireHosSession()) return;
-        setupProfileMenu();
-        setupActions();
-        showMessage("");
-        await loadStats();
-        await loadRecentReports();
+
+        $("refreshStudentsBtn").addEventListener("click", loadStudentData);
+        $("refreshAnnouncementsBtn").addEventListener("click", refreshAnnouncementHistoryOnly);
+        $("createHodBtn").addEventListener("click", createHodAccount);
+        $("clearHodBtn").addEventListener("click", clearHodForm);
+        $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+        $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
+        $("logoutBtn").addEventListener("click", logoutAdmin);
+
+        await loadStudentData();
+        renderAnnouncementList([]);
+        $("totalAnnouncementCount").textContent = "0";
+        $("totalAnnouncementShown").textContent = "0";
       });
     })();
   </script>
