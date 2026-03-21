@@ -115,6 +115,8 @@
       background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
       box-shadow:0 16px 28px rgba(47,108,255,.18);
       flex-shrink:0;
+      border:none;
+      cursor:pointer;
     }
 
     .hero{
@@ -525,7 +527,7 @@
         <div class="brand-name">Colspot</div>
       </div>
 
-      <a href="hod_account.html" class="profile-link" id="profileLink">H</a>
+      <button class="profile-link" id="profileLink" type="button">H</button>
     </header>
 
     <main>
@@ -541,7 +543,6 @@
       <div class="message" id="announcementMessageBox"></div>
       <div class="message" id="studentMessageBox"></div>
 
-      <!-- HOME SCREEN -->
       <section class="screen active" id="screen-home">
         <div class="section-head">
           <h2 class="section-title">Department Overview</h2>
@@ -597,7 +598,6 @@
         </section>
       </section>
 
-      <!-- SEARCH SCREEN -->
       <section class="screen" id="screen-search">
         <div class="section-head">
           <h2 class="section-title">Search Student</h2>
@@ -626,7 +626,6 @@
         </section>
       </section>
 
-      <!-- ANNOUNCEMENT SCREEN -->
       <section class="screen" id="screen-announcements">
         <div class="section-head">
           <h2 class="section-title">Send Announcement</h2>
@@ -690,13 +689,13 @@
   <script>
     (() => {
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-     const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y"
+      const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_SUPABASE_ANON_KEY_HERE";
       const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
       const EDGE = {
         hodStudents: "get-hod-students",
-        sendAnnouncement: "send-hod-announcement"
+        sendAnnouncement: "send-hod-announcement",
+        getAnnouncements: "get-hod-announcements"
       };
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -816,6 +815,32 @@
         return result;
       }
 
+      function renderAnnouncementList(data) {
+        const wrap = $("announcementList");
+
+        if (!data || !data.length) {
+          wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
+          return;
+        }
+
+        wrap.innerHTML = data.map((item) => `
+          <article class="announcement-item">
+            <div class="item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+              </svg>
+            </div>
+
+            <div class="item-content">
+              <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
+              <p class="item-sub">${escapeHtml(item.message || "")}</p>
+            </div>
+
+            <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
+          </article>
+        `).join("");
+      }
+
       async function fetchStudentsFromEdge(searchValue = "") {
         return await invokeEdge(EDGE.hodStudents, {
           hod_id: hodSession.id,
@@ -826,21 +851,11 @@
       async function loadCounts() {
         try {
           const studentResult = await fetchStudentsFromEdge("");
-
-          const { data: announcementRows, error: announcementError } = await sb
-            .from("school_announcements")
-            .select("id")
-            .eq("school_name", schoolName);
-
-          if (announcementError) throw announcementError;
-
           $("studentCount").textContent = String(studentResult?.totals?.students || 0);
-          $("announcementCount").textContent = String((announcementRows || []).length);
           showMessage("pageMessageBox", "", "error");
         } catch (err) {
           console.error("loadCounts error:", err);
           $("studentCount").textContent = "0";
-          $("announcementCount").textContent = "0";
           showMessage("pageMessageBox", err.message || "Could not load department overview.");
         }
       }
@@ -850,38 +865,19 @@
         wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
 
         try {
-          const { data, error } = await sb
-            .from("school_announcements")
-            .select("title, message, created_at")
-            .eq("school_name", schoolName)
-            .order("created_at", { ascending: false })
-            .limit(20);
+          const result = await invokeEdge(EDGE.getAnnouncements, {
+            hod_id: hodSession.id
+          });
 
-          if (error) throw error;
+          const recent = Array.isArray(result.recent_announcements)
+            ? result.recent_announcements
+            : [];
 
-          if (!data || !data.length) {
-            wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
-            return;
-          }
-
-          wrap.innerHTML = data.map((item) => `
-            <article class="announcement-item">
-              <div class="item-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-                </svg>
-              </div>
-
-              <div class="item-content">
-                <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
-                <p class="item-sub">${escapeHtml(item.message || "")}</p>
-              </div>
-
-              <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
-            </article>
-          `).join("");
+          $("announcementCount").textContent = String(result?.totals?.announcements || 0);
+          renderAnnouncementList(recent);
         } catch (err) {
           console.error("loadAnnouncements error:", err);
+          $("announcementCount").textContent = "0";
           wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
         }
       }
@@ -915,14 +911,15 @@
           $("announcementTitle").value = "";
           $("announcementBody").value = "";
 
+          $("announcementCount").textContent = String(result?.totals?.announcements || 0);
+          renderAnnouncementList(result.recent_announcements || []);
+
           showMessage(
             "announcementMessageBox",
             result.message || "Announcement sent successfully.",
             "success"
           );
 
-          await loadAnnouncements();
-          await loadCounts();
           setActiveScreen("announcements");
         } catch (err) {
           console.error("sendAnnouncement error:", err);
@@ -977,12 +974,19 @@
       document.addEventListener("DOMContentLoaded", async () => {
         if (!requireHodSession()) return;
 
+        $("profileLink").addEventListener("click", () => {
+          window.location.href = "hod_account.html";
+        });
+
         $("navHomeBtn").addEventListener("click", () => setActiveScreen("home"));
         $("navSearchBtn").addEventListener("click", () => setActiveScreen("search"));
         $("navAnnouncementsBtn").addEventListener("click", () => setActiveScreen("announcements"));
 
         $("goSearchFromHome").addEventListener("click", () => setActiveScreen("search"));
-        $("goAnnouncementFromHome").addEventListener("click", () => setActiveScreen("announcements"));
+        $("goAnnouncementFromHome").addEventListener("click", async () => {
+          setActiveScreen("announcements");
+          await loadAnnouncements();
+        });
 
         $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
 
@@ -1014,4 +1018,3 @@
   </script>
 </body>
 </html>
-  
