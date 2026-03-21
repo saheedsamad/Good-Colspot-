@@ -757,7 +757,7 @@
     </div>
   </div>
 
- <script>
+<script>
   (function adminFrontendBridge() {
     const titleEl = document.getElementById("card-title");
     const subEl = document.getElementById("card-subtitle");
@@ -872,6 +872,7 @@
 
     function restoreNormalMode(mode) {
       clearAdminMessages();
+
       if (mode === "signup") {
         if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
           window.switchMode.__original__("signup");
@@ -908,13 +909,13 @@
     }
 
     function goToDashboard(role) {
-      const cleanRole = String(role || "").trim().toLowerCase();
+      const safeRole = String(role || "").toLowerCase();
 
-      if (cleanRole === "super_admin") {
+      if (safeRole === "super_admin") {
         window.location.href = "super_admin.html";
-      } else if (cleanRole === "hos") {
+      } else if (safeRole === "hos") {
         window.location.href = "hos.html";
-      } else if (cleanRole === "hod") {
+      } else if (safeRole === "hod") {
         window.location.href = "hod.html";
       } else {
         if (adminMessage) {
@@ -931,15 +932,8 @@
 
       const { data, error } = await window.supabase.functions.invoke(functionName, { body });
 
-      console.log(functionName + " data:", data);
-      console.log(functionName + " error:", error);
-
       if (error) {
-        throw new Error(
-          (data && data.error) ||
-          error.message ||
-          "Edge Function request failed."
-        );
+        throw new Error(error.message || "Edge Function request failed.");
       }
 
       return data;
@@ -965,9 +959,9 @@
 
     window.toggleAuthMode = function() {
       if (
-        !adminForm.classList.contains("hidden") ||
-        !adminLinkPanel.classList.contains("hidden") ||
-        !adminVerifyPanel.classList.contains("hidden")
+        (adminForm && !adminForm.classList.contains("hidden")) ||
+        (adminLinkPanel && !adminLinkPanel.classList.contains("hidden")) ||
+        (adminVerifyPanel && !adminVerifyPanel.classList.contains("hidden"))
       ) {
         return restoreNormalMode("signin");
       }
@@ -1002,14 +996,7 @@
           throw new Error(result?.error || "Admin login failed.");
         }
 
-        const admin = {
-          ...(result.account || {}),
-          role: result.role || ""
-        };
-
-        console.log("result from backend:", result);
-        console.log("final admin object:", admin);
-
+        const admin = result.admin || {};
         saveAdminSession(admin);
 
         if (admin.needs_email_link) {
@@ -1118,11 +1105,7 @@
           throw new Error(result?.error || "Verification failed.");
         }
 
-        const admin = {
-          ...(result.admin || result.account || {}),
-          role: result.role || (result.admin && result.admin.role) || ""
-        };
-
+        const admin = result.admin || {};
         saveAdminSession(admin);
         clearPendingAdmin();
 
