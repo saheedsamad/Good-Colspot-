@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
   <title>Colspot • HOD Account</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --bg:#f4f7fb;
@@ -28,7 +28,10 @@
       --shadow:0 14px 36px rgba(15,23,42,.08);
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
     html,body{
       margin:0;
@@ -90,6 +93,12 @@
     .account-sub{
       font-size:12px;
       color:var(--text-muted);
+    }
+
+    .account-header-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
 
     .account-header-pill{
@@ -194,12 +203,6 @@
       color:var(--green);
     }
 
-    .status-pill.off{
-      border-color:var(--red-border);
-      background:var(--red-bg);
-      color:var(--red);
-    }
-
     .status-dot{
       width:8px;
       height:8px;
@@ -259,9 +262,7 @@
       font-size:14px;
       color:var(--text-main);
       font-weight:600;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      word-break:break-word;
     }
 
     .section-heading{
@@ -312,143 +313,30 @@
       color:var(--red);
     }
 
-    .status-text{
-      font-size:12px;
-      margin:0 4px 8px;
-      min-height:16px;
-    }
-
-    .status-text.success{ color:#16a34a; }
-    .status-text.error{ color:#dc2626; }
-
-    .device-card{
-      margin-top:4px;
-      margin-bottom:10px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:12px 14px 10px;
-    }
-
-    .device-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-bottom:6px;
-    }
-
-    .device-title{
+    .message{
+      display:none;
+      margin:0 0 14px;
+      padding:12px 13px;
+      border-radius:16px;
       font-size:13px;
-      font-weight:700;
-      color:var(--text-main);
-    }
-
-    .device-sub{
-      font-size:11px;
-      color:var(--text-muted);
-      margin-top:2px;
-    }
-
-    .device-count-badge{
-      padding:3px 10px;
-      border-radius:999px;
-      background:#eff6ff;
-      border:1px solid #dbeafe;
-      font-size:11px;
-      color:#1d4ed8;
-      font-weight:700;
-      white-space:nowrap;
-    }
-
-    .device-list{
-      margin-top:6px;
-    }
-
-    .device-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      padding:8px 0;
-    }
-
-    .device-row + .device-row{
-      border-top:1px solid #f3f4f6;
-    }
-
-    .device-main{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-    }
-
-    .device-icon{
-      width:30px;
-      height:30px;
-      border-radius:999px;
-      background:#eef2ff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-    }
-
-    .device-icon svg{
-      width:16px;
-      height:16px;
-      stroke-width:1.7;
-      stroke:#4f46e5;
-      fill:none;
-    }
-
-    .device-name{
-      font-size:13px;
+      line-height:1.45;
       font-weight:600;
-      color:var(--text-main);
     }
 
-    .device-meta{
-      font-size:11px;
-      color:var(--text-muted);
+    .message.show{
+      display:block;
     }
 
-    .device-tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:4px;
-      margin-top:2px;
-    }
-
-    .device-pill{
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:10px;
-      border:1px solid #d1d5db;
-      color:#4b5563;
-      background:#f9fafb;
-    }
-
-    .device-pill.primary{
-      border-color:#bbf7d0;
-      background:#ecfdf5;
-      color:#15803d;
-    }
-
-    .device-remove-btn{
-      border-radius:999px;
-      border:1px solid #fee2e2;
-      background:#fff7ed;
-      padding:4px 8px;
-      font-size:11px;
-      color:#b91c1c;
-      cursor:pointer;
-      white-space:nowrap;
+    .message.error{
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
     }
 
     @media (max-width:360px){
-      .actions-row{ flex-direction:column; }
+      .actions-row{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
@@ -462,13 +350,19 @@
           <div class="account-sub">HOD account profile.</div>
         </div>
       </div>
-      <button class="account-header-pill" id="hodLogoutBtn">Logout</button>
+
+      <div class="account-header-actions">
+        <button class="account-header-pill" id="backBtn" type="button">Back</button>
+        <button class="account-header-pill" id="hodLogoutBtn" type="button">Logout</button>
+      </div>
     </div>
+
+    <div class="message" id="pageMessage"></div>
 
     <section class="profile-card">
       <div class="profile-top">
         <div class="avatar-circle">
-          <span id="hodAvatarInitial">D</span>
+          <span id="hodAvatarInitial">H</span>
         </div>
 
         <div class="profile-name" id="hodName">Loading...</div>
@@ -476,17 +370,17 @@
 
         <div class="profile-email-line">
           <svg viewBox="0 0 24 24">
-            <path d="M4 6h16v12H4z"></path>
-            <path d="M4 7l8 6 8-6"></path>
+            <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10Z"></path>
+            <circle cx="12" cy="11" r="2.5"></circle>
           </svg>
           <span id="hodDepartmentTop">Department</span>
         </div>
 
         <div class="role-pill">HOD Account</div>
 
-        <div class="status-pill" id="hodStatusPill">
+        <div class="status-pill">
           <span class="status-dot"></span>
-          <span id="hodStatusText">Active</span>
+          <span>Active</span>
         </div>
       </div>
 
@@ -548,15 +442,14 @@
 
     <div class="section-heading">Account actions</div>
     <div class="actions-row">
-      <button class="action-btn primary" id="hodResetBtn">
+      <button class="action-btn primary" id="backDashboardBtn" type="button">
         <svg viewBox="0 0 24 24">
-          <path d="M12 3a9 9 0 1 0 8.2 5.3"></path>
-          <path d="M21 3v6h-6"></path>
+          <path d="M15 18l-6-6 6-6"></path>
         </svg>
-        Reset login
+        Back to dashboard
       </button>
 
-      <button class="action-btn danger" id="hodLogoutActionBtn">
+      <button class="action-btn danger" id="hodLogoutActionBtn" type="button">
         <svg viewBox="0 0 24 24">
           <path d="M15 3h4v18h-4"></path>
           <path d="M10 17l5-5-5-5"></path>
@@ -565,41 +458,13 @@
         Log out
       </button>
     </div>
-
-    <p id="hodStatusMessage" class="status-text"></p>
-
-    <div class="section-heading">Devices</div>
-    <div class="device-card">
-      <div class="device-header">
-        <div>
-          <div class="device-title">Linked phones</div>
-          <div class="device-sub">This HOD can be signed in on linked devices.</div>
-        </div>
-        <span id="hodDevicesCountBadge" class="device-count-badge">0</span>
-      </div>
-
-      <div id="hodDevicesList" class="device-list"></div>
-      <p id="hodDevicesStatus" class="status-text"></p>
-    </div>
   </div>
 
   <script>
     (() => {
-      const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-      const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
-
-      const EDGE = {
-        resetHodLogin: "reset-hod-login"
-      };
-
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const DEVICE_STORAGE_KEY = "colspot_device_id";
-
-      let hodSession = null;
-      let hodData = null;
-
-      function $(id){ return document.getElementById(id); }
+      function $(id) {
+        return document.getElementById(id);
+      }
 
       function getSession() {
         try {
@@ -609,49 +474,35 @@
         }
       }
 
-      function showStatus(text = "", type = "") {
-        const el = $("hodStatusMessage");
-        if (!el) return;
-        el.textContent = text;
-        el.className = "status-text";
-        if (type) el.classList.add(type);
-      }
-
-      function getDeviceId() {
-        try {
-          return localStorage.getItem(DEVICE_STORAGE_KEY) || null;
-        } catch {
-          return null;
+      function showMessage(text = "", type = "error") {
+        const box = $("pageMessage");
+        if (!text) {
+          box.className = "message";
+          box.textContent = "";
+          return;
         }
+        box.className = `message show ${type}`;
+        box.textContent = text;
       }
 
-      async function invokeEdge(name, payload = {}) {
-        const res = await fetch(`${EDGE_BASE}/${name}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify(payload)
-        });
+      function loadHodProfile() {
+        const hodSession = getSession();
 
-        const result = await res.json().catch(() => ({}));
-        if (!res.ok || !result.ok) {
-          throw new Error(result.error || `Edge function failed: ${name}`);
+        if (!hodSession) {
+          window.location.href = "index.html";
+          return;
         }
-        return result;
-      }
 
-      function renderHod(data) {
-        hodData = data || {};
-        const fullName = hodData.full_name || "HOD";
-        const schoolName = hodData.school_name || "-";
-        const loginId = hodData.login_id || "-";
-        const departmentName = hodData.department_name || "-";
-        const isActive = !!hodData.is_active;
+        if (String(hodSession.role || "").toLowerCase() !== "hod") {
+          window.location.href = "index.html";
+          return;
+        }
 
-        const initial = fullName.trim()[0] ? fullName.trim()[0].toUpperCase() : "D";
+        const fullName = hodSession.full_name || "HOD";
+        const schoolName = hodSession.school_name || "-";
+        const departmentName = hodSession.department_name || "-";
+        const loginId = hodSession.login_id || "-";
+        const initial = fullName.trim().charAt(0).toUpperCase() || "H";
 
         $("hodAvatarInitial").textContent = initial;
         $("hodName").textContent = fullName;
@@ -660,132 +511,32 @@
         $("hodDepartmentValue").textContent = departmentName;
         $("hodSchoolValue").textContent = schoolName;
         $("hodLoginIdValue").textContent = loginId;
-        $("hodStatusText").textContent = isActive ? "Active" : "Disabled";
-        $("hodStatusPill").className = isActive ? "status-pill" : "status-pill off";
+
+        showMessage("", "error");
       }
 
-      async function loadHodProfile() {
-        hodSession = getSession();
-        if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
-          window.location.href = "index.html";
-          return;
-        }
-
-        try {
-          const { data, error } = await sb
-            .from("hod_accounts")
-            .select("id, full_name, school_name, department_name, login_id, is_active, created_at")
-            .eq("id", hodSession.id)
-            .maybeSingle();
-
-          if (error) throw error;
-          if (!data) throw new Error("HOD account not found.");
-
-          renderHod(data);
-        } catch (e) {
-          console.error("loadHodProfile error:", e);
-          showStatus("Could not load HOD account.", "error");
-        }
-      }
-
-      async function loadHodDevices() {
-        const list = $("hodDevicesList");
-        const statusEl = $("hodDevicesStatus");
-        const badge = $("hodDevicesCountBadge");
-
-        if (!hodSession || !list || !statusEl || !badge) return;
-
-        list.innerHTML = "";
-        statusEl.textContent = "Loading devices...";
-
-        try {
-          const { data, error } = await sb
-            .from("user_devices")
-            .select("id, device_id, created_at")
-            .eq("user_id", hodSession.id)
-            .order("created_at", { ascending: true });
-
-          if (error) throw error;
-
-          const devices = data || [];
-          badge.textContent = String(devices.length);
-
-          if (!devices.length) {
-            statusEl.textContent = "No linked devices yet.";
-            return;
-          }
-
-          statusEl.textContent = "";
-          const currentDeviceId = getDeviceId();
-
-          devices.forEach((row) => {
-            const isThis = currentDeviceId && row.device_id === currentDeviceId;
-
-            const deviceRow = document.createElement("div");
-            deviceRow.className = "device-row";
-
-            deviceRow.innerHTML = `
-              <div class="device-main">
-                <div class="device-icon">
-                  <svg viewBox="0 0 24 24">
-                    <rect x="7" y="3" width="10" height="18" rx="2"></rect>
-                    <circle cx="12" cy="17" r="1"></circle>
-                  </svg>
-                </div>
-                <div>
-                  <div class="device-name">${isThis ? "This phone" : "Linked device"}</div>
-                  <div class="device-meta">${row.created_at ? new Date(row.created_at).toLocaleString() : "Linked device"}</div>
-                  <div class="device-tags">
-                    <span class="device-pill primary">${isThis ? "Active here" : "Signed in"}</span>
-                  </div>
-                </div>
-              </div>
-            `;
-            list.appendChild(deviceRow);
-          });
-        } catch (e) {
-          console.error("loadHodDevices error:", e);
-          statusEl.textContent = "Could not load devices.";
-        }
-      }
-
-      async function resetHodLogin() {
-        if (!hodSession) return;
-        showStatus("Resetting login...", "success");
-
-        try {
-          const result = await invokeEdge(EDGE.resetHodLogin, {
-            hod_id: hodSession.id
-          });
-
-          const tempPassword = result?.temporary_password || "";
-          showStatus(
-            tempPassword
-              ? `New temporary password: ${tempPassword}`
-              : "Login reset successfully.",
-            "success"
-          );
-
-          await loadHodProfile();
-        } catch (e) {
-          console.error("resetHodLogin error:", e);
-          showStatus(e.message || "Could not reset login.", "error");
-        }
-      }
-
-      async function logout() {
+      function logout() {
         localStorage.removeItem("colspot_admin_session");
         localStorage.removeItem("colspot_pending_admin");
         window.location.href = "index.html";
       }
 
-      document.addEventListener("DOMContentLoaded", async () => {
+      function goBack() {
+        window.location.href = "hod.html";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        try {
+          loadHodProfile();
+        } catch (e) {
+          console.error("loadHodProfile error:", e);
+          showMessage("Could not load HOD profile.");
+        }
+
+        $("backBtn").addEventListener("click", goBack);
+        $("backDashboardBtn").addEventListener("click", goBack);
         $("hodLogoutBtn").addEventListener("click", logout);
         $("hodLogoutActionBtn").addEventListener("click", logout);
-        $("hodResetBtn").addEventListener("click", resetHodLogin);
-
-        await loadHodProfile();
-        await loadHodDevices();
       });
     })();
   </script>
