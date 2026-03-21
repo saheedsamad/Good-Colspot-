@@ -6,36 +6,50 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot • HOS Dashboard</title>
+  <title>Colspot • HOD Dashboard</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --bg:#eef4ff;
+      --page-bg:#f5f7fb;
       --card:#ffffff;
-      --line:#e5e7eb;
-      --muted:#6b7280;
-      --text:#111827;
-      --soft-blue:#eff6ff;
-      --shadow:0 12px 28px rgba(15,23,42,.08);
-      --green:#16a34a;
-      --green-bg:#ecfdf5;
-      --red:#991b1b;
-      --red-bg:#fef2f2;
+      --text:#0f172a;
+      --muted:#707786;
+      --line:#e8edf5;
+
+      --blue-1:#2f6cff;
+      --blue-2:#2a56df;
+
+      --green-1:#77b84d;
+      --green-2:#5e9f3a;
+
+      --orange-1:#ffb13a;
+      --orange-2:#f39212;
+
+      --nav-text:#9aa3b2;
+      --shadow:0 14px 34px rgba(15,23,42,.08);
+      --soft-shadow:0 12px 24px rgba(47,108,255,.14);
+
+      --error:#991b1b;
+      --error-bg:#fef2f2;
+      --success:#166534;
+      --success-bg:#ecfdf5;
     }
 
-    *{ box-sizing:border-box; }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
     html,body{
       margin:0;
       padding:0;
       min-height:100%;
-      background:radial-gradient(circle at top, #e7f0ff, #ffffff 60%);
+      background:#edf2fb;
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
+      -webkit-text-size-adjust:100%;
     }
 
     body{
@@ -47,160 +61,297 @@
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:#fff;
-      padding:calc(env(safe-area-inset-top) + 10px) 14px 96px;
+      background:var(--page-bg);
+      padding:
+        calc(env(safe-area-inset-top) + 10px)
+        16px
+        calc(env(safe-area-inset-bottom) + 108px);
       position:relative;
+      overflow-x:hidden;
     }
 
-    header{
+    .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      margin-bottom:10px;
+      gap:12px;
+      margin-bottom:18px;
     }
 
     .brand{
       display:flex;
       align-items:center;
       gap:10px;
+      min-width:0;
     }
 
     .brand-logo{
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      width:38px;
+      height:38px;
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
-      box-shadow:var(--shadow);
+      flex-shrink:0;
     }
 
     .brand-logo svg{
-      width:18px;
-      height:18px;
+      width:38px;
+      height:38px;
+      display:block;
     }
 
     .brand-name{
       font-size:17px;
       font-weight:800;
-      letter-spacing:-.02em;
+      letter-spacing:-.03em;
+      color:#102043;
     }
 
-    .avatar-chip{
-      width:40px;
-      height:40px;
-      border-radius:999px;
+    .avatar-wrap{
+      position:relative;
+      flex-shrink:0;
+    }
+
+    .avatar-btn{
+      width:50px;
+      height:50px;
       border:none;
-      background:linear-gradient(135deg,#1d4ed8,#22c55e);
+      border-radius:999px;
       color:#fff;
+      font-size:19px;
       font-weight:800;
-      box-shadow:var(--shadow);
       cursor:pointer;
+      background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
+      box-shadow:0 16px 28px rgba(47,108,255,.18);
+    }
+
+    .profile-menu{
+      position:absolute;
+      top:62px;
+      right:0;
+      width:215px;
+      border-radius:20px;
+      background:#fff;
+      border:1px solid #e7edf5;
+      box-shadow:0 20px 40px rgba(15,23,42,.14);
+      overflow:hidden;
+      display:none;
+      z-index:30;
+    }
+
+    .profile-menu.show{
+      display:block;
+    }
+
+    .profile-row{
+      width:100%;
+      border:none;
+      background:#fff;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-align:left;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:700;
+      color:#334155;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .profile-row:last-child{
+      border-bottom:none;
+    }
+
+    .profile-school{
+      display:block;
+      padding:14px 16px;
+      font-size:13px;
+      color:#6b7280;
+      background:#fff;
+      border-top:1px solid #eef2f7;
     }
 
     .hero{
-      margin:4px 2px 16px;
+      margin-bottom:18px;
     }
 
     .hero-line{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
-      margin-bottom:4px;
-      font-weight:600;
+      margin-bottom:8px;
+      font-weight:500;
+      word-break:break-word;
     }
 
     .hero-title{
-      font-size:24px;
-      line-height:1.18;
-      font-weight:800;
-      letter-spacing:-.03em;
-      margin:0 0 8px;
+      margin:0;
+      font-size:29px;
+      line-height:1.08;
+      letter-spacing:-.055em;
+      font-weight:900;
+      color:#111c37;
+      max-width:320px;
     }
 
-    .hero-title span{
-      color:var(--blue);
+    .hero-title .accent{
+      display:block;
+      color:#2f6cff;
     }
 
-    .hero-sub{
+    .message{
+      display:none;
+      margin:0 0 14px;
+      padding:12px 13px;
+      border-radius:16px;
       font-size:13px;
       line-height:1.45;
-      color:var(--muted);
-      margin-bottom:14px;
+      font-weight:600;
     }
 
-    .top-tools{
+    .message.show{
+      display:block;
+    }
+
+    .message.error{
+      background:var(--error-bg);
+      border:1px solid #fecaca;
+      color:var(--error);
+    }
+
+    .message.success{
+      background:var(--success-bg);
+      border:1px solid #bbf7d0;
+      color:var(--success);
+    }
+
+    .quick-actions{
       display:flex;
-      justify-content:flex-end;
-      margin-bottom:8px;
-      gap:8px;
+      flex-direction:column;
+      gap:12px;
+      margin-bottom:22px;
     }
 
-    .icon-btn{
-      width:38px;
-      height:38px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
+    .quick-btn{
+      width:100%;
+      border:none;
+      border-radius:999px;
+      padding:18px 20px;
       display:flex;
       align-items:center;
-      justify-content:center;
+      gap:14px;
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:-.02em;
+      text-decoration:none;
+      box-shadow:var(--soft-shadow);
       cursor:pointer;
-      color:var(--text);
     }
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
-      margin:16px 2px 4px;
+    .quick-btn svg{
+      width:23px;
+      height:23px;
+      flex-shrink:0;
     }
 
-    .stat-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px 13px;
-      box-shadow:0 8px 24px rgba(15,23,42,.05);
+    .quick-btn.blue{
+      background:linear-gradient(90deg,var(--blue-1) 0%, var(--blue-2) 100%);
     }
 
-    .stat-value{
-      font-size:22px;
-      font-weight:800;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .stat-label{
-      font-size:11px;
-      color:var(--muted);
-      text-transform:uppercase;
-      font-weight:800;
-      letter-spacing:.06em;
+    .quick-btn.green{
+      background:linear-gradient(90deg,var(--green-1) 0%, var(--green-2) 100%);
     }
 
     .section-head{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      margin:20px 4px 10px;
+      justify-content:space-between;
+      gap:10px;
+      margin:4px 2px 12px;
     }
 
     .section-title{
       margin:0;
       font-size:15px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:-.02em;
+      color:#111c37;
+    }
+
+    .overview-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .overview-card{
+      color:#fff;
+      border-radius:18px;
+      padding:14px 14px 12px;
+      min-height:98px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .overview-card.blue{
+      background:linear-gradient(135deg,#2f6cff 0%, #2357df 100%);
+    }
+
+    .overview-card.orange{
+      background:linear-gradient(135deg,#ffb13a 0%, #f39413 100%);
+    }
+
+    .overview-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .overview-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:rgba(255,255,255,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      backdrop-filter:blur(8px);
+      flex-shrink:0;
+    }
+
+    .overview-icon svg{
+      width:21px;
+      height:21px;
+    }
+
+    .overview-value{
+      font-size:30px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.05em;
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .overview-label{
+      margin-top:12px;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.05;
     }
 
     .card{
-      background:#fff;
+      background:var(--card);
       border:1px solid var(--line);
-      border-radius:20px;
+      border-radius:24px;
+      box-shadow:var(--shadow);
       padding:14px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-      margin:0 2px 14px;
+      margin-bottom:16px;
     }
 
     .field{
@@ -249,8 +400,8 @@
 
     .mini-btn.primary{
       color:#fff;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      box-shadow:var(--shadow);
+      background:linear-gradient(135deg,var(--blue-1),var(--blue-2));
+      box-shadow:var(--soft-shadow);
     }
 
     .mini-btn.secondary{
@@ -264,112 +415,76 @@
       cursor:not-allowed;
     }
 
-    .history-list{
+    .list-wrap{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
 
-    .history-card{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      background:#fff;
-    }
-
-    .history-top{
+    .student-item,
+    .announcement-item{
       display:flex;
-      justify-content:space-between;
       align-items:flex-start;
-      gap:10px;
-      margin-bottom:8px;
+      gap:12px;
+      padding:12px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid #edf2f7;
     }
 
-    .history-title{
-      font-size:14px;
+    .item-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:#eef4ff;
+      color:#255fe9;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .item-icon svg{
+      width:20px;
+      height:20px;
+    }
+
+    .item-content{
+      flex:1;
+      min-width:0;
+    }
+
+    .item-title{
+      margin:0;
+      font-size:15px;
+      line-height:1.25;
       font-weight:800;
-      line-height:1.2;
+      letter-spacing:-.02em;
+      color:#111c37;
     }
 
-    .history-sub{
-      font-size:12px;
+    .item-sub{
+      margin:4px 0 0;
+      font-size:13px;
       color:var(--muted);
-      line-height:1.35;
-      margin-top:3px;
+      line-height:1.4;
       word-break:break-word;
     }
 
-    .pill{
+    .item-time{
       flex-shrink:0;
-      border-radius:999px;
-      padding:5px 10px;
-      font-size:10px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      background:#eff6ff;
-      color:var(--blue);
-    }
-
-    .result-card{
-      display:none;
-      border:1px solid #bbf7d0;
-      background:var(--green-bg);
-      border-radius:18px;
-      padding:13px;
-      margin:0 2px 14px;
-    }
-
-    .result-card.show{
-      display:block;
-    }
-
-    .result-title{
-      font-size:14px;
-      font-weight:800;
-      color:#166534;
-      margin-bottom:10px;
-    }
-
-    .result-row{
-      font-size:13px;
-      line-height:1.45;
-      margin-bottom:6px;
-      color:#14532d;
-    }
-
-    .result-row strong{
-      color:#052e16;
+      font-size:12px;
+      color:#7a8494;
+      font-weight:700;
+      white-space:nowrap;
+      margin-left:8px;
     }
 
     .empty{
+      padding:16px 8px;
+      text-align:center;
       font-size:13px;
       color:var(--muted);
-      text-align:center;
-      padding:16px 8px;
-    }
-
-    .message{
-      display:none;
-      margin:0 2px 14px;
-      padding:11px 12px;
-      border-radius:14px;
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .message.error{
-      display:block;
-      background:var(--red-bg);
-      border:1px solid #fecaca;
-      color:var(--red);
-    }
-
-    .message.success{
-      display:block;
-      background:var(--green-bg);
-      border:1px solid #bbf7d0;
-      color:#166534;
     }
 
     .bottom-nav{
@@ -377,43 +492,62 @@
       left:50%;
       transform:translateX(-50%);
       bottom:max(12px, env(safe-area-inset-bottom));
-      width:calc(100% - 28px);
-      max-width:392px;
-      background:rgba(255,255,255,.96);
-      backdrop-filter:blur(16px);
-      border:1px solid rgba(229,231,235,.9);
+      width:calc(100% - 24px);
+      max-width:396px;
+      background:rgba(255,255,255,.98);
+      border:1px solid #e7edf5;
+      border-radius:31px;
       box-shadow:0 20px 40px rgba(15,23,42,.12);
-      border-radius:26px;
-      padding:8px 8px 10px;
-      display:flex;
-      justify-content:space-between;
-      z-index:30;
+      padding:10px 8px 12px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:2px;
+      z-index:50;
+      backdrop-filter:blur(14px);
     }
 
     .nav-btn{
-      flex:1;
+      color:var(--nav-text);
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      min-height:64px;
+      border-radius:18px;
+      padding:4px 2px;
+      cursor:pointer;
       border:none;
       background:transparent;
-      color:#94a3b8;
-      text-align:center;
+    }
+
+    .nav-btn svg{
+      width:22px;
+      height:22px;
+    }
+
+    .nav-btn span{
       font-size:11px;
-      cursor:pointer;
-      padding-top:2px;
+      font-weight:700;
+      letter-spacing:-.01em;
+      text-align:center;
+      line-height:1.2;
     }
 
     .nav-btn.active{
-      color:var(--blue);
-      font-weight:800;
-    }
-
-    .nav-inner{
-      display:inline-flex;
-      flex-direction:column;
-      align-items:center;
-      gap:3px;
+      color:#2563eb;
     }
 
     @media (max-width:360px){
+      .hero-title{
+        font-size:26px;
+      }
+
+      .quick-btn{
+        font-size:15px;
+      }
+
       .btn-row{
         flex-direction:column;
       }
@@ -422,104 +556,106 @@
 </head>
 <body>
   <div class="phone-shell">
-    <header>
+    <header class="topbar">
       <div class="brand">
-        <div class="brand-logo">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M6 5h12v14H6z" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M32 8 54 18v14c0 13.5-9.2 23.6-22 27C19.2 55.6 10 45.5 10 32V18L32 8Z" fill="url(#g1)"/>
+            <path d="M22 26h20M22 33h15" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <path d="M20 19h24" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="g1" x1="10" y1="8" x2="54" y2="59" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1d4ed8"/>
+                <stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
           </svg>
         </div>
         <div class="brand-name">Colspot</div>
       </div>
 
-      <button class="avatar-chip" id="avatarChip">H</button>
+      <div class="avatar-wrap">
+        <button class="avatar-btn" id="avatarBtn" type="button">H</button>
+
+        <div class="profile-menu" id="profileMenu">
+          <button class="profile-row" type="button" id="logoutBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <path d="M16 17l5-5-5-5"></path>
+              <path d="M21 12H9"></path>
+            </svg>
+            <span>Logout</span>
+          </button>
+
+          <span class="profile-school" id="profileSchoolText">School</span>
+        </div>
+      </div>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-line" id="schoolNameText">School</div>
+        <div class="hero-line" id="departmentNameText">Hello, Department</div>
         <h1 class="hero-title">
-          Manage your<br><span>HODs, students & announcements</span>
+          What would you like to
+          <span class="accent">do today?</span>
         </h1>
-        <div class="hero-sub">
-          Create HOD accounts, view student summary, and send school announcements from one place.
-        </div>
       </section>
 
-      <div class="top-tools">
-        <button class="icon-btn" id="refreshStudentsBtn" type="button" aria-label="Refresh students">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M20 11a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-
-        <button class="icon-btn" id="refreshAnnouncementsBtn" type="button" aria-label="Refresh announcements">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M12 3v18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <section class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalStudentCount">--</div>
-          <div class="stat-label">Students</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalStudentShown">--</div>
-          <div class="stat-label">Shown</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalAnnouncementCount">--</div>
-          <div class="stat-label">Announcements</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalHodCount">--</div>
-          <div class="stat-label">HODs</div>
-        </div>
-      </section>
-
-      <div class="message" id="pageErrorBox"></div>
+      <div class="message" id="pageMessageBox"></div>
       <div class="message" id="announcementMessageBox"></div>
-      <div class="message" id="hodMessageBox"></div>
+      <div class="message" id="studentMessageBox"></div>
 
-      <div class="section-head">
-        <div class="section-title">Create HOD account</div>
-      </div>
+      <section class="quick-actions">
+        <button class="quick-btn blue" type="button" id="jumpAnnouncementBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+          </svg>
+          <span>Send Department Announcement</span>
+        </button>
 
-      <section class="card">
-        <div class="field">
-          <label for="hodFullName">Full name</label>
-          <input id="hodFullName" class="input" placeholder="Enter HOD full name">
-        </div>
-
-        <div class="field">
-          <label for="hodDepartment">Department</label>
-          <input id="hodDepartment" class="input" placeholder="Enter department name">
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="createHodBtn" type="button">Create HOD</button>
-          <button class="mini-btn secondary" id="clearHodBtn" type="button">Clear</button>
-        </div>
+        <button class="quick-btn green" type="button" id="jumpStudentBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <span>Search Student</span>
+        </button>
       </section>
 
-      <div class="result-card" id="hodResultCard">
-        <div class="result-title">HOD account created successfully</div>
-        <div class="result-row"><strong>Full name:</strong> <span id="resultHodName">-</span></div>
-        <div class="result-row"><strong>Department:</strong> <span id="resultHodDepartment">-</span></div>
-        <div class="result-row"><strong>Login ID:</strong> <span id="resultHodLoginId">-</span></div>
-        <div class="result-row"><strong>Temporary password:</strong> <span id="resultHodPassword">-</span></div>
+      <div class="section-head">
+        <h2 class="section-title">Department Overview</h2>
       </div>
 
-      <div class="section-head">
-        <div class="section-title">Send announcement</div>
+      <section class="overview-grid">
+        <article class="overview-card blue">
+          <div class="overview-top">
+            <div class="overview-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
+                <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+                <path d="M12 11h4M12 15h4"></path>
+              </svg>
+            </div>
+            <div class="overview-value" id="studentCount">0</div>
+          </div>
+          <div class="overview-label">Students</div>
+        </article>
+
+        <article class="overview-card orange">
+          <div class="overview-top">
+            <div class="overview-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+              </svg>
+            </div>
+            <div class="overview-value" id="announcementCount">0</div>
+          </div>
+          <div class="overview-label">Announcements</div>
+        </article>
+      </section>
+
+      <div class="section-head" id="announcementSection">
+        <h2 class="section-title">Send Announcement</h2>
       </div>
 
       <section class="card">
@@ -530,7 +666,7 @@
 
         <div class="field">
           <label for="announcementBody">Message</label>
-          <textarea id="announcementBody" class="textarea" placeholder="Write the school announcement here..."></textarea>
+          <textarea id="announcementBody" class="textarea" placeholder="Write your department announcement here..."></textarea>
         </div>
 
         <div class="btn-row">
@@ -540,21 +676,37 @@
       </section>
 
       <div class="section-head">
-        <div class="section-title">Recent announcement history</div>
+        <h2 class="section-title">Recent Announcements</h2>
       </div>
 
       <section class="card">
-        <div class="history-list" id="announcementList">
+        <div class="list-wrap" id="announcementList">
           <div class="empty">Loading announcements...</div>
         </div>
       </section>
 
-      <div class="section-head">
-        <div class="section-title">Students in this school</div>
+      <div class="section-head" id="studentSection">
+        <h2 class="section-title">Search Student</h2>
       </div>
 
       <section class="card">
-        <div class="history-list" id="studentList">
+        <div class="field">
+          <label for="studentSearchInput">Matric number or student name</label>
+          <input id="studentSearchInput" class="input" placeholder="Enter matric number or full name">
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="searchStudentBtn" type="button">Search</button>
+          <button class="mini-btn secondary" id="clearStudentBtn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <h2 class="section-title">Students</h2>
+      </div>
+
+      <section class="card">
+        <div class="list-wrap" id="studentList">
           <div class="empty">Loading students...</div>
         </div>
       </section>
@@ -563,23 +715,35 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" type="button">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        </svg>
-        <span>Home</span>
-      </span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 10.5 12 3l9 7.5"></path>
+        <path d="M5 9.5V21h14V9.5"></path>
+      </svg>
+      <span>Home</span>
     </button>
 
-    <button class="nav-btn" type="button" id="logoutBtn">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 17l5-5-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M20 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M13 4H6a2 2 0 00-2 2v12a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <span>Logout</span>
-      </span>
+    <button class="nav-btn" type="button" id="navStudentsBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <span>Students</span>
+    </button>
+
+    <button class="nav-btn" type="button" id="navAnnouncementsBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+      </svg>
+      <span>Announcements</span>
+    </button>
+
+    <button class="nav-btn" type="button" id="navLogoutBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <path d="M16 17l5-5-5-5"></path>
+        <path d="M21 12H9"></path>
+      </svg>
+      <span>Logout</span>
     </button>
   </nav>
 
@@ -588,355 +752,325 @@
       const SUPABASE_URL = "YOUR_SUPABASE_URL";
       const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-      const EDGE = {
-        studentSummary: "hos-student-summary",
-        sendAnnouncement: "hos-send-announcement",
-        createHod: "create-hod-account",
-        listHods: "list-hod-accounts"
-      };
-
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      let adminSession = null;
-      let currentSchoolName = "";
+      const $ = (id) => document.getElementById(id);
 
-      function $(id){
-        return document.getElementById(id);
-      }
+      let hodSession = null;
+      let schoolName = "";
+      let departmentName = "";
 
-      function escapeHtml(value){
+      function escapeHtml(value) {
         return String(value || "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#39;");
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
       }
 
-      function formatDate(value){
-        if (!value) return "-";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "-";
-        return d.toLocaleString();
-      }
-
-      function getAdminSession(){
-        try{
-          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-        }catch{
-          return null;
-        }
-      }
-
-      function showMessage(id, text, type){
+      function showMessage(id, text, type = "error") {
         const box = $(id);
-        if (!text){
+        if (!text) {
           box.textContent = "";
           box.className = "message";
           return;
         }
         box.textContent = text;
-        box.className = `message ${type === "success" ? "success" : "error"}`;
+        box.className = `message show ${type}`;
       }
 
-      function requireHosSession(){
-        adminSession = getAdminSession();
+      function formatDate(value) {
+        if (!value) return "";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      }
 
-        if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
+      function getAdminSession() {
+        try {
+          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+        } catch {
+          return null;
+        }
+      }
+
+      function requireHodSession() {
+        hodSession = getAdminSession();
+
+        if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
           window.location.href = "index.html";
           return false;
         }
 
-        currentSchoolName =
-          adminSession.school_name ||
-          adminSession.school ||
-          adminSession.schoolName ||
-          "";
+        schoolName = hodSession.school_name || "";
+        departmentName = hodSession.department_name || "";
 
-        $("schoolNameText").textContent = currentSchoolName || "School not found";
+        $("departmentNameText").textContent = departmentName
+          ? `Hello, ${departmentName}`
+          : "Hello, Department";
 
-        const initial = (adminSession.full_name || "H")
-          .trim()
-          .charAt(0)
-          .toUpperCase() || "H";
+        $("profileSchoolText").textContent = schoolName || "School";
 
-        $("avatarChip").textContent = initial;
+        const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
+        $("avatarBtn").textContent = initial;
+
         return true;
       }
 
-      async function invokeEdge(functionName, body){
-        const { data, error } = await sb.functions.invoke(functionName, {
-          body: body || {}
-        });
+      async function loadCounts() {
+        try {
+          const { count: studentCount, error: studentError } = await sb
+            .from("student_accounts")
+            .select("*", { count: "exact", head: true })
+            .eq("school_name", schoolName)
+            .eq("department", departmentName);
 
-        if (error){
-          throw new Error((data && data.error) || error.message || "Request failed.");
+          if (studentError) throw studentError;
+
+          const { count: announcementCount, error: announcementError } = await sb
+            .from("department_announcements")
+            .select("*", { count: "exact", head: true })
+            .eq("school_name", schoolName)
+            .eq("department_name", departmentName);
+
+          if (announcementError && !String(announcementError.message).toLowerCase().includes("does not exist")) {
+            throw announcementError;
+          }
+
+          $("studentCount").textContent = String(studentCount || 0);
+          $("announcementCount").textContent = String(announcementCount || 0);
+        } catch (err) {
+          console.error(err);
+          $("studentCount").textContent = "0";
+          $("announcementCount").textContent = "0";
+          showMessage("pageMessageBox", "Could not load department overview.");
         }
-
-        return data || {};
       }
 
-      function renderStudentList(rows){
-        const wrap = $("studentList");
-        if (!wrap) return;
-
-        if (!rows || !rows.length){
-          wrap.innerHTML = '<div class="empty">No students found for this school.</div>';
-          return;
-        }
-
-        wrap.innerHTML = rows.map((item) => `
-          <div class="history-card">
-            <div class="history-top">
-              <div>
-                <div class="history-title">${escapeHtml(item.full_name || "No name")}</div>
-                <div class="history-sub">${escapeHtml(item.matric_number || "No matric number")}</div>
-              </div>
-              <div class="pill">Student</div>
-            </div>
-            <div class="history-sub">Faculty: ${escapeHtml(item.faculty || "-")}</div>
-            <div class="history-sub">Department: ${escapeHtml(item.department || "-")}</div>
-            <div class="history-sub">Programme: ${escapeHtml(item.programme || "-")}</div>
-            <div class="history-sub">Level: ${escapeHtml(item.level || "-")}</div>
-            <div class="history-sub">School: ${escapeHtml(item.school_name || "-")}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderAnnouncementList(rows){
+      async function loadAnnouncements() {
         const wrap = $("announcementList");
-        if (!wrap) return;
+        wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
 
-        if (!rows || !rows.length){
-          wrap.innerHTML = '<div class="empty">No announcements yet for this school.</div>';
-          return;
-        }
+        try {
+          const { data, error } = await sb
+            .from("department_announcements")
+            .select("title, message, created_at")
+            .eq("school_name", schoolName)
+            .eq("department_name", departmentName)
+            .order("created_at", { ascending: false })
+            .limit(10);
 
-        wrap.innerHTML = rows.map((item) => `
-          <div class="history-card">
-            <div class="history-top">
-              <div>
-                <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
-                <div class="history-sub">${escapeHtml((item.message || "").slice(0, 160) || "-")}</div>
-              </div>
-              <div class="pill">School</div>
-            </div>
-            <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
-          </div>
-        `).join("");
-      }
+          if (error) {
+            if (String(error.message).toLowerCase().includes("does not exist")) {
+              wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
+              $("announcementCount").textContent = "0";
+              return;
+            }
+            throw error;
+          }
 
-      async function loadHodCount(){
-        try{
-          const result = await invokeEdge(EDGE.listHods, {
-            hos_admin_id: adminSession.id
-          });
-
-          if (!result.ok){
-            $("totalHodCount").textContent = "0";
+          if (!data || !data.length) {
+            wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
+            $("announcementCount").textContent = "0";
             return;
           }
 
-          const hods = Array.isArray(result.hod_accounts) ? result.hod_accounts : [];
-          $("totalHodCount").textContent = String(hods.length || 0);
-        }catch(err){
+          $("announcementCount").textContent = String(data.length);
+
+          wrap.innerHTML = data.map((item) => `
+            <article class="announcement-item">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+                </svg>
+              </div>
+
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
+                <p class="item-sub">${escapeHtml(item.message || "")}</p>
+              </div>
+
+              <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
+            </article>
+          `).join("");
+        } catch (err) {
           console.error(err);
-          $("totalHodCount").textContent = "0";
+          wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
         }
       }
 
-      async function loadStudentData(){
-        $("totalStudentCount").textContent = "--";
-        $("totalStudentShown").textContent = "--";
-        showMessage("pageErrorBox", "", "error");
-
-        try{
-          const result = await invokeEdge(EDGE.studentSummary, {
-            hos_admin_id: adminSession.id
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not load student summary.");
-          }
-
-          const totals = result.totals || {};
-          const students = Array.isArray(result.students) ? result.students : [];
-
-          $("totalStudentCount").textContent = String(totals.students || 0);
-          $("totalStudentShown").textContent = String(students.length || 0);
-
-          renderStudentList(students);
-        }catch(err){
-          console.error(err);
-          $("totalStudentCount").textContent = "0";
-          $("totalStudentShown").textContent = "0";
-          renderStudentList([]);
-          showMessage("pageErrorBox", err.message || "Could not load students.", "error");
-        }
-      }
-
-      async function sendAnnouncement(){
+      async function sendAnnouncement() {
         showMessage("announcementMessageBox", "", "error");
 
         const title = ($("announcementTitle").value || "").trim();
         const message = ($("announcementBody").value || "").trim();
 
-        if (!title){
-          showMessage("announcementMessageBox", "Please enter the title.", "error");
+        if (!title) {
+          showMessage("announcementMessageBox", "Please enter the announcement title.");
           return;
         }
 
-        if (!message){
-          showMessage("announcementMessageBox", "Please enter the message.", "error");
+        if (!message) {
+          showMessage("announcementMessageBox", "Please enter the announcement message.");
           return;
         }
 
         const btn = $("sendAnnouncementBtn");
         btn.disabled = true;
 
-        try{
-          const result = await invokeEdge(EDGE.sendAnnouncement, {
-            hos_admin_id: adminSession.id,
-            title,
-            message
-          });
+        try {
+          const { error } = await sb
+            .from("department_announcements")
+            .insert({
+              school_name: schoolName,
+              department_name: departmentName,
+              title,
+              message,
+              created_by: hodSession.id
+            });
 
-          if (!result.ok){
-            throw new Error(result.error || "Could not send announcement.");
-          }
+          if (error) throw error;
 
           $("announcementTitle").value = "";
           $("announcementBody").value = "";
 
-          const totals = result.totals || {};
-          const recentAnnouncements = Array.isArray(result.recent_announcements)
-            ? result.recent_announcements
-            : [];
-
-          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
-          renderAnnouncementList(recentAnnouncements);
-          showMessage("announcementMessageBox", result.message || "Announcement sent successfully.", "success");
-        }catch(err){
+          showMessage("announcementMessageBox", "Announcement sent successfully.", "success");
+          await loadAnnouncements();
+          await loadCounts();
+        } catch (err) {
           console.error(err);
-          showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
-        }finally{
+          showMessage("announcementMessageBox", err.message || "Could not send announcement.");
+        } finally {
           btn.disabled = false;
         }
       }
 
-      async function createHodAccount(){
-        showMessage("hodMessageBox", "", "error");
-        $("hodResultCard").classList.remove("show");
+      async function loadStudents(searchValue = "") {
+        const wrap = $("studentList");
+        wrap.innerHTML = '<div class="empty">Loading students...</div>';
 
-        const fullName = ($("hodFullName").value || "").trim();
-        const departmentName = ($("hodDepartment").value || "").trim();
+        try {
+          let query = sb
+            .from("student_accounts")
+            .select("full_name, matric_number, department, level, school_name")
+            .eq("school_name", schoolName)
+            .eq("department", departmentName)
+            .order("full_name", { ascending: true })
+            .limit(20);
 
-        if (!fullName){
-          showMessage("hodMessageBox", "Please enter the full name.", "error");
-          return;
-        }
-
-        if (!departmentName){
-          showMessage("hodMessageBox", "Please enter the department.", "error");
-          return;
-        }
-
-        const btn = $("createHodBtn");
-        btn.disabled = true;
-
-        try{
-          const result = await invokeEdge(EDGE.createHod, {
-            hos_admin_id: adminSession.id,
-            full_name: fullName,
-            department_name: departmentName
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not create HOD account.");
+          const q = String(searchValue || "").trim();
+          if (q) {
+            if (/^\d/.test(q)) {
+              query = query.ilike("matric_number", `%${q}%`);
+            } else {
+              query = query.ilike("full_name", `%${q}%`);
+            }
           }
 
-          const account = result.hod_account || {};
+          const { data, error } = await query;
+          if (error) throw error;
 
-          $("resultHodName").textContent = account.full_name || fullName;
-          $("resultHodDepartment").textContent = account.department_name || departmentName;
-          $("resultHodLoginId").textContent = account.login_id || result.login_id || "-";
-          $("resultHodPassword").textContent = result.temporary_password || "-";
-          $("hodResultCard").classList.add("show");
-
-          $("hodFullName").value = "";
-          $("hodDepartment").value = "";
-
-          showMessage("hodMessageBox", "HOD account created successfully.", "success");
-          await loadHodCount();
-        }catch(err){
-          console.error(err);
-          showMessage("hodMessageBox", err.message || "Could not create HOD account.", "error");
-        }finally{
-          btn.disabled = false;
-        }
-      }
-
-      function clearHodForm(){
-        $("hodFullName").value = "";
-        $("hodDepartment").value = "";
-        showMessage("hodMessageBox", "", "error");
-        $("hodResultCard").classList.remove("show");
-      }
-
-      function clearAnnouncementForm(){
-        $("announcementTitle").value = "";
-        $("announcementBody").value = "";
-        showMessage("announcementMessageBox", "", "error");
-      }
-
-      async function refreshAnnouncementHistoryOnly(){
-        try{
-          const result = await invokeEdge(EDGE.sendAnnouncement, {
-            hos_admin_id: adminSession.id,
-            refresh_only: true
-          });
-
-          if (!result.ok){
-            $("totalAnnouncementCount").textContent = "0";
-            renderAnnouncementList([]);
+          if (!data || !data.length) {
+            wrap.innerHTML = '<div class="empty">No students found.</div>';
+            if (!q) $("studentCount").textContent = "0";
             return;
           }
 
-          const totals = result.totals || {};
-          const recentAnnouncements = Array.isArray(result.recent_announcements)
-            ? result.recent_announcements
-            : [];
+          if (!q) {
+            $("studentCount").textContent = String(data.length);
+          }
 
-          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
-          renderAnnouncementList(recentAnnouncements);
-        }catch(err){
+          wrap.innerHTML = data.map((item) => `
+            <article class="student-item">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
+                </svg>
+              </div>
+
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
+                <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
+                <p class="item-sub">${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
+              </div>
+            </article>
+          `).join("");
+        } catch (err) {
           console.error(err);
-          $("totalAnnouncementCount").textContent = "0";
-          renderAnnouncementList([]);
+          wrap.innerHTML = '<div class="empty">Could not load students.</div>';
         }
       }
 
-      function logoutAdmin(){
+      function setupProfileMenu() {
+        const avatarBtn = $("avatarBtn");
+        const profileMenu = $("profileMenu");
+
+        avatarBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          profileMenu.classList.toggle("show");
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
+            profileMenu.classList.remove("show");
+          }
+        });
+      }
+
+      function logout() {
         localStorage.removeItem("colspot_admin_session");
         localStorage.removeItem("colspot_pending_admin");
         window.location.href = "index.html";
       }
 
+      function jumpToSection(id) {
+        const el = $(id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!requireHosSession()) return;
+        if (!requireHodSession()) return;
 
-        $("refreshStudentsBtn").addEventListener("click", loadStudentData);
-        $("refreshAnnouncementsBtn").addEventListener("click", refreshAnnouncementHistoryOnly);
+        setupProfileMenu();
+
+        $("logoutBtn").addEventListener("click", logout);
+        $("navLogoutBtn").addEventListener("click", logout);
+
+        $("jumpAnnouncementBtn").addEventListener("click", () => jumpToSection("announcementSection"));
+        $("jumpStudentBtn").addEventListener("click", () => jumpToSection("studentSection"));
+        $("navStudentsBtn").addEventListener("click", () => jumpToSection("studentSection"));
+        $("navAnnouncementsBtn").addEventListener("click", () => jumpToSection("announcementSection"));
+
         $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
-        $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
-        $("createHodBtn").addEventListener("click", createHodAccount);
-        $("clearHodBtn").addEventListener("click", clearHodForm);
-        $("logoutBtn").addEventListener("click", logoutAdmin);
+        $("clearAnnouncementBtn").addEventListener("click", () => {
+          $("announcementTitle").value = "";
+          $("announcementBody").value = "";
+          showMessage("announcementMessageBox", "", "error");
+        });
 
-        await loadStudentData();
-        await loadHodCount();
-        renderAnnouncementList([]);
-        $("totalAnnouncementCount").textContent = "0";
+        $("searchStudentBtn").addEventListener("click", async () => {
+          showMessage("studentMessageBox", "", "error");
+          const q = ($("studentSearchInput").value || "").trim();
+          await loadStudents(q);
+        });
+
+        $("clearStudentBtn").addEventListener("click", async () => {
+          $("studentSearchInput").value = "";
+          showMessage("studentMessageBox", "", "error");
+          await loadStudents("");
+        });
+
+        await loadCounts();
+        await loadAnnouncements();
+        await loadStudents("");
       });
     })();
   </script>
