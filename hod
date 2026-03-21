@@ -6,37 +6,44 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot • HOD Account</title>
+  <title>Colspot • HOD Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
-      --bg:#f4f7fb;
-      --card:#f9fafb;
-      --white:#ffffff;
-      --line:#e5e7eb;
-      --text-main:#111827;
-      --text-muted:#6b7280;
-      --blue:#2563eb;
-      --blue-soft:#e0ecff;
-      --blue-soft-border:#d1ddff;
-      --red:#b91c1c;
-      --red-bg:#fef2f2;
-      --red-border:#fecaca;
-      --green:#15803d;
-      --green-bg:#ecfdf5;
-      --green-border:#bbf7d0;
-      --shadow:0 14px 36px rgba(15,23,42,.08);
+      --page-bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#707786;
+      --line:#e8edf5;
+      --blue-1:#2f6cff;
+      --blue-2:#2a56df;
+      --green-1:#77b84d;
+      --green-2:#5e9f3a;
+      --orange-1:#ffb13a;
+      --orange-2:#f39212;
+      --nav-text:#9aa3b2;
+      --shadow:0 14px 34px rgba(15,23,42,.08);
+      --soft-shadow:0 12px 24px rgba(47,108,255,.14);
+      --error:#991b1b;
+      --error-bg:#fef2f2;
+      --success:#166534;
+      --success-bg:#ecfdf5;
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
     html,body{
       margin:0;
       padding:0;
-      background:var(--bg);
-      color:var(--text-main);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       min-height:100%;
+      background:#edf2fb;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+      -webkit-text-size-adjust:100%;
     }
 
     body{
@@ -48,18 +55,24 @@
       width:100%;
       max-width:420px;
       min-height:100vh;
-      padding:16px 14px 32px;
+      background:var(--page-bg);
+      padding:
+        calc(env(safe-area-inset-top) + 10px)
+        16px
+        calc(env(safe-area-inset-bottom) + 108px);
+      position:relative;
+      overflow-x:hidden;
     }
 
-    .account-header{
+    .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin:4px 2px 10px;
+      gap:12px;
+      margin-bottom:18px;
     }
 
-    .account-header-left{
+    .brand{
       display:flex;
       align-items:center;
       gap:10px;
@@ -67,521 +80,612 @@
     }
 
     .brand-logo{
-      width:42px;
-      height:42px;
-      border-radius:12px;
-      background:linear-gradient(135deg,#60a5fa,#2563eb);
+      width:38px;
+      height:38px;
       display:flex;
       align-items:center;
       justify-content:center;
+      flex-shrink:0;
+    }
+
+    .brand-logo svg{
+      width:38px;
+      height:38px;
+      display:block;
+    }
+
+    .brand-name{
+      font-size:17px;
+      font-weight:800;
+      letter-spacing:-.03em;
+      color:#102043;
+    }
+
+    .profile-link{
+      width:50px;
+      height:50px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
       color:#fff;
-      font-size:22px;
+      font-size:19px;
       font-weight:800;
-      flex-shrink:0;
-      box-shadow:0 12px 22px rgba(37,99,235,.24);
-    }
-
-    .account-title{
-      font-size:18px;
-      font-weight:800;
-      color:var(--text-main);
-    }
-
-    .account-sub{
-      font-size:12px;
-      color:var(--text-muted);
-    }
-
-    .account-header-pill{
-      padding:8px 16px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:13px;
-      font-weight:700;
-      cursor:pointer;
-      box-shadow:0 8px 18px rgba(15,23,42,.06);
-    }
-
-    .profile-card{
-      background:var(--card);
-      border-radius:24px;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      padding:18px 16px 18px;
-      margin-bottom:14px;
-    }
-
-    .profile-top{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-      gap:10px;
-      margin-bottom:10px;
-    }
-
-    .avatar-circle{
-      width:92px;
-      height:92px;
-      border-radius:999px;
-      background:radial-gradient(circle at 30% 20%, #bfdbfe 0, #2563eb 90%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      font-size:40px;
-      font-weight:800;
-      overflow:hidden;
-      position:relative;
-    }
-
-    .profile-name{
-      font-size:20px;
-      font-weight:800;
-      color:var(--text-main);
-    }
-
-    .profile-role{
-      font-size:13px;
-      color:var(--text-muted);
-      margin-top:-4px;
-    }
-
-    .profile-email-line{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      font-size:13px;
-      color:var(--text-muted);
-      flex-wrap:wrap;
-      text-align:center;
-    }
-
-    .profile-email-line svg{
-      width:14px;
-      height:14px;
-      stroke:#6b7280;
-      stroke-width:1.7;
-      fill:none;
-    }
-
-    .role-pill{
-      margin-top:6px;
-      padding:5px 14px;
-      border-radius:999px;
-      background:#e5edff;
-      color:#1e40af;
-      font-size:11px;
-      font-weight:700;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-    }
-
-    .status-pill{
-      margin-top:4px;
-      padding:6px 14px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border:1px solid var(--green-border);
-      background:var(--green-bg);
-      color:var(--green);
-    }
-
-    .status-pill.off{
-      border-color:var(--red-border);
-      background:var(--red-bg);
-      color:var(--red);
-    }
-
-    .status-dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:currentColor;
-    }
-
-    .profile-detail-card{
-      margin-top:12px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:var(--white);
-      padding:4px 0;
-    }
-
-    .detail-row{
-      padding:11px 14px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .detail-row + .detail-row{
-      border-top:1px solid var(--line);
-    }
-
-    .detail-icon{
-      width:30px;
-      height:30px;
-      border-radius:999px;
-      background:#eef2ff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
+      box-shadow:0 16px 28px rgba(47,108,255,.18);
       flex-shrink:0;
     }
 
-    .detail-icon svg{
-      width:16px;
-      height:16px;
-      stroke-width:1.7;
-      stroke:#4f46e5;
-      fill:none;
+    .hero{
+      margin-bottom:18px;
     }
 
-    .detail-text{
-      flex:1;
-      min-width:0;
-    }
-
-    .detail-label{
-      font-size:12px;
-      color:var(--text-muted);
-    }
-
-    .detail-value{
-      font-size:14px;
-      color:var(--text-main);
-      font-weight:600;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .section-heading{
+    .hero-line{
       font-size:13px;
-      font-weight:700;
-      color:var(--text-muted);
-      margin:10px 4px 6px;
-    }
-
-    .actions-row{
-      display:flex;
-      gap:8px;
+      color:var(--muted);
       margin-bottom:8px;
+      font-weight:500;
+      word-break:break-word;
     }
 
-    .action-btn{
-      flex:1;
-      padding:11px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
+    .hero-title{
+      margin:0;
+      font-size:29px;
+      line-height:1.08;
+      letter-spacing:-.055em;
+      font-weight:900;
+      color:#111c37;
+      max-width:320px;
+    }
+
+    .hero-title .accent{
+      display:block;
+      color:#2f6cff;
+    }
+
+    .message{
+      display:none;
+      margin:0 0 14px;
+      padding:12px 13px;
+      border-radius:16px;
       font-size:13px;
-      font-weight:700;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      cursor:pointer;
+      line-height:1.45;
+      font-weight:600;
     }
 
-    .action-btn svg{
-      width:16px;
-      height:16px;
-      stroke-width:1.8;
-      stroke:currentColor;
-      fill:none;
+    .message.show{
+      display:block;
     }
 
-    .action-btn.primary{
-      background:var(--blue-soft);
-      border-color:var(--blue-soft-border);
-      color:#1d4ed8;
+    .message.error{
+      background:var(--error-bg);
+      border:1px solid #fecaca;
+      color:var(--error);
     }
 
-    .action-btn.danger{
-      background:var(--red-bg);
-      border-color:var(--red-border);
-      color:var(--red);
+    .message.success{
+      background:var(--success-bg);
+      border:1px solid #bbf7d0;
+      color:var(--success);
     }
 
-    .status-text{
-      font-size:12px;
-      margin:0 4px 8px;
-      min-height:16px;
+    .screen{
+      display:none;
     }
 
-    .status-text.success{ color:#16a34a; }
-    .status-text.error{ color:#dc2626; }
-
-    .device-card{
-      margin-top:4px;
-      margin-bottom:10px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:12px 14px 10px;
+    .screen.active{
+      display:block;
     }
 
-    .device-header{
+    .section-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:8px;
+      gap:10px;
+      margin:4px 2px 12px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#111c37;
+    }
+
+    .overview-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .overview-card{
+      color:#fff;
+      border-radius:18px;
+      padding:14px 14px 12px;
+      min-height:98px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .overview-card.blue{
+      background:linear-gradient(135deg,#2f6cff 0%, #2357df 100%);
+    }
+
+    .overview-card.orange{
+      background:linear-gradient(135deg,#ffb13a 0%, #f39413 100%);
+    }
+
+    .overview-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .overview-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:rgba(255,255,255,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      backdrop-filter:blur(8px);
+      flex-shrink:0;
+    }
+
+    .overview-icon svg{
+      width:21px;
+      height:21px;
+    }
+
+    .overview-value{
+      font-size:30px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.05em;
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .overview-label{
+      margin-top:12px;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.05;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .quick-btn{
+      width:100%;
+      border:none;
+      border-radius:999px;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:-.02em;
+      text-decoration:none;
+      box-shadow:var(--soft-shadow);
+      cursor:pointer;
+    }
+
+    .quick-btn svg{
+      width:23px;
+      height:23px;
+      flex-shrink:0;
+    }
+
+    .quick-btn.blue{
+      background:linear-gradient(90deg,var(--blue-1) 0%, var(--blue-2) 100%);
+    }
+
+    .quick-btn.green{
+      background:linear-gradient(90deg,var(--green-1) 0%, var(--green-2) 100%);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-bottom:16px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:#334155;
       margin-bottom:6px;
     }
 
-    .device-title{
-      font-size:13px;
-      font-weight:700;
-      color:var(--text-main);
+    .input,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 13px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
     }
 
-    .device-sub{
-      font-size:11px;
-      color:var(--text-muted);
-      margin-top:2px;
+    .textarea{
+      min-height:110px;
+      resize:vertical;
     }
 
-    .device-count-badge{
-      padding:3px 10px;
-      border-radius:999px;
-      background:#eff6ff;
-      border:1px solid #dbeafe;
-      font-size:11px;
-      color:#1d4ed8;
-      font-weight:700;
-      white-space:nowrap;
-    }
-
-    .device-list{
-      margin-top:6px;
-    }
-
-    .device-row{
+    .btn-row{
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      padding:8px 0;
+      gap:10px;
+      margin-top:12px;
     }
 
-    .device-row + .device-row{
-      border-top:1px solid #f3f4f6;
-    }
-
-    .device-main{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-    }
-
-    .device-icon{
-      width:30px;
-      height:30px;
+    .mini-btn{
+      flex:1;
+      border:none;
       border-radius:999px;
-      background:#eef2ff;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue-1),var(--blue-2));
+      box-shadow:var(--soft-shadow);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .list-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .student-item,
+    .announcement-item{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:12px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid #edf2f7;
+    }
+
+    .item-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:#eef4ff;
+      color:#255fe9;
       display:flex;
       align-items:center;
       justify-content:center;
       flex-shrink:0;
     }
 
-    .device-icon svg{
-      width:16px;
-      height:16px;
-      stroke-width:1.7;
-      stroke:#4f46e5;
-      fill:none;
+    .item-icon svg{
+      width:20px;
+      height:20px;
     }
 
-    .device-name{
+    .item-content{
+      flex:1;
+      min-width:0;
+    }
+
+    .item-title{
+      margin:0;
+      font-size:15px;
+      line-height:1.25;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#111c37;
+    }
+
+    .item-sub{
+      margin:4px 0 0;
       font-size:13px;
-      font-weight:600;
-      color:var(--text-main);
+      color:var(--muted);
+      line-height:1.4;
+      word-break:break-word;
     }
 
-    .device-meta{
-      font-size:11px;
-      color:var(--text-muted);
-    }
-
-    .device-tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:4px;
-      margin-top:2px;
-    }
-
-    .device-pill{
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:10px;
-      border:1px solid #d1d5db;
-      color:#4b5563;
-      background:#f9fafb;
-    }
-
-    .device-pill.primary{
-      border-color:#bbf7d0;
-      background:#ecfdf5;
-      color:#15803d;
-    }
-
-    .device-remove-btn{
-      border-radius:999px;
-      border:1px solid #fee2e2;
-      background:#fff7ed;
-      padding:4px 8px;
-      font-size:11px;
-      color:#b91c1c;
-      cursor:pointer;
+    .item-time{
+      flex-shrink:0;
+      font-size:12px;
+      color:#7a8494;
+      font-weight:700;
       white-space:nowrap;
+      margin-left:8px;
+    }
+
+    .empty{
+      padding:16px 8px;
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:max(12px, env(safe-area-inset-bottom));
+      width:calc(100% - 24px);
+      max-width:396px;
+      background:rgba(255,255,255,.98);
+      border:1px solid #e7edf5;
+      border-radius:31px;
+      box-shadow:0 20px 40px rgba(15,23,42,.12);
+      padding:10px 8px 12px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:2px;
+      z-index:50;
+      backdrop-filter:blur(14px);
+    }
+
+    .nav-btn{
+      color:var(--nav-text);
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      min-height:64px;
+      border-radius:18px;
+      padding:4px 2px;
+      cursor:pointer;
+      border:none;
+      background:transparent;
+    }
+
+    .nav-btn svg{
+      width:22px;
+      height:22px;
+    }
+
+    .nav-btn span{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:-.01em;
+      text-align:center;
+      line-height:1.2;
+    }
+
+    .nav-btn.active{
+      color:#2563eb;
     }
 
     @media (max-width:360px){
-      .actions-row{ flex-direction:column; }
+      .hero-title{
+        font-size:26px;
+      }
+      .quick-btn{
+        font-size:15px;
+      }
+      .btn-row{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
 <body>
   <div class="phone-shell">
-    <div class="account-header">
-      <div class="account-header-left">
-        <div class="brand-logo">C</div>
-        <div>
-          <div class="account-title">Colspot</div>
-          <div class="account-sub">HOD account profile.</div>
-        </div>
-      </div>
-      <button class="account-header-pill" id="hodLogoutBtn">Logout</button>
-    </div>
-
-    <section class="profile-card">
-      <div class="profile-top">
-        <div class="avatar-circle">
-          <span id="hodAvatarInitial">D</span>
-        </div>
-
-        <div class="profile-name" id="hodName">Loading...</div>
-        <div class="profile-role">Head of Department</div>
-
-        <div class="profile-email-line">
-          <svg viewBox="0 0 24 24">
-            <path d="M4 6h16v12H4z"></path>
-            <path d="M4 7l8 6 8-6"></path>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M32 8 54 18v14c0 13.5-9.2 23.6-22 27C19.2 55.6 10 45.5 10 32V18L32 8Z" fill="url(#g1)"/>
+            <path d="M22 26h20M22 33h15" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <path d="M20 19h24" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="g1" x1="10" y1="8" x2="54" y2="59" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1d4ed8"/>
+                <stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
           </svg>
-          <span id="hodDepartmentTop">Department</span>
         </div>
-
-        <div class="role-pill">HOD Account</div>
-
-        <div class="status-pill" id="hodStatusPill">
-          <span class="status-dot"></span>
-          <span id="hodStatusText">Active</span>
-        </div>
+        <div class="brand-name">Colspot</div>
       </div>
 
-      <div class="profile-detail-card">
-        <div class="detail-row">
-          <div class="detail-icon">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="3.2"></circle>
-              <path d="M5 18c1-3 3-4.5 7-4.5s6 1.5 7 4.5"></path>
+      <a href="hod_account.html" class="profile-link" id="profileLink">H</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-line" id="departmentNameText">Hello, Department</div>
+        <h1 class="hero-title">
+          What would you like to
+          <span class="accent">do today?</span>
+        </h1>
+      </section>
+
+      <div class="message" id="pageMessageBox"></div>
+      <div class="message" id="announcementMessageBox"></div>
+      <div class="message" id="studentMessageBox"></div>
+
+      <!-- HOME SCREEN -->
+      <section class="screen active" id="screen-home">
+        <div class="section-head">
+          <h2 class="section-title">Department Overview</h2>
+        </div>
+
+        <section class="overview-grid">
+          <article class="overview-card blue">
+            <div class="overview-top">
+              <div class="overview-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
+                  <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+                  <path d="M12 11h4M12 15h4"></path>
+                </svg>
+              </div>
+              <div class="overview-value" id="studentCount">0</div>
+            </div>
+            <div class="overview-label">Students</div>
+          </article>
+
+          <article class="overview-card orange">
+            <div class="overview-top">
+              <div class="overview-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+                </svg>
+              </div>
+              <div class="overview-value" id="announcementCount">0</div>
+            </div>
+            <div class="overview-label">Announcements</div>
+          </article>
+        </section>
+
+        <div class="section-head">
+          <h2 class="section-title">Quick Actions</h2>
+        </div>
+
+        <section class="quick-grid">
+          <button class="quick-btn green" type="button" id="goSearchFromHome">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m21 21-4.3-4.3"></path>
             </svg>
-          </div>
-          <div class="detail-text">
-            <div class="detail-label">Full name</div>
-            <div class="detail-value" id="hodFullNameValue">-</div>
-          </div>
-        </div>
+            <span>Open Search</span>
+          </button>
 
-        <div class="detail-row">
-          <div class="detail-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="4" y="5" width="16" height="14" rx="2"></rect>
-              <path d="M8 9h8"></path>
-              <path d="M8 13h5"></path>
+          <button class="quick-btn blue" type="button" id="goAnnouncementFromHome">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
             </svg>
-          </div>
-          <div class="detail-text">
-            <div class="detail-label">Login ID</div>
-            <div class="detail-value" id="hodLoginIdValue">-</div>
-          </div>
+            <span>Open Announcements</span>
+          </button>
+        </section>
+      </section>
+
+      <!-- SEARCH SCREEN -->
+      <section class="screen" id="screen-search">
+        <div class="section-head">
+          <h2 class="section-title">Search Student</h2>
         </div>
 
-        <div class="detail-row">
-          <div class="detail-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10Z"></path>
-              <circle cx="12" cy="11" r="2.5"></circle>
-            </svg>
+        <section class="card">
+          <div class="field">
+            <label for="studentSearchInput">Matric number or student name</label>
+            <input id="studentSearchInput" class="input" placeholder="Enter matric number or full name">
           </div>
-          <div class="detail-text">
-            <div class="detail-label">Department</div>
-            <div class="detail-value" id="hodDepartmentValue">-</div>
+
+          <div class="btn-row">
+            <button class="mini-btn primary" id="searchStudentBtn" type="button">Search</button>
+            <button class="mini-btn secondary" id="clearStudentBtn" type="button">Clear</button>
           </div>
+        </section>
+
+        <div class="section-head">
+          <h2 class="section-title">Students</h2>
         </div>
 
-        <div class="detail-row">
-          <div class="detail-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M4 6h16v12H4z"></path>
-              <path d="M4 7l8 6 8-6"></path>
-            </svg>
+        <section class="card">
+          <div class="list-wrap" id="studentList">
+            <div class="empty">Loading students...</div>
           </div>
-          <div class="detail-text">
-            <div class="detail-label">School name</div>
-            <div class="detail-value" id="hodSchoolValue">-</div>
+        </section>
+      </section>
+
+      <!-- ANNOUNCEMENT SCREEN -->
+      <section class="screen" id="screen-announcements">
+        <div class="section-head">
+          <h2 class="section-title">Send Announcement</h2>
+        </div>
+
+        <section class="card">
+          <div class="field">
+            <label for="announcementTitle">Title</label>
+            <input id="announcementTitle" class="input" placeholder="Enter announcement title">
           </div>
+
+          <div class="field">
+            <label for="announcementBody">Message</label>
+            <textarea id="announcementBody" class="textarea" placeholder="Write your department announcement here..."></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send announcement</button>
+            <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
+          </div>
+        </section>
+
+        <div class="section-head">
+          <h2 class="section-title">Announcement History</h2>
         </div>
-      </div>
-    </section>
 
-    <div class="section-heading">Account actions</div>
-    <div class="actions-row">
-      <button class="action-btn primary" id="hodResetBtn">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 3a9 9 0 1 0 8.2 5.3"></path>
-          <path d="M21 3v6h-6"></path>
-        </svg>
-        Reset login
-      </button>
-
-      <button class="action-btn danger" id="hodLogoutActionBtn">
-        <svg viewBox="0 0 24 24">
-          <path d="M15 3h4v18h-4"></path>
-          <path d="M10 17l5-5-5-5"></path>
-          <path d="M4 12h11"></path>
-        </svg>
-        Log out
-      </button>
-    </div>
-
-    <p id="hodStatusMessage" class="status-text"></p>
-
-    <div class="section-heading">Devices</div>
-    <div class="device-card">
-      <div class="device-header">
-        <div>
-          <div class="device-title">Linked phones</div>
-          <div class="device-sub">This HOD can be signed in on linked devices.</div>
-        </div>
-        <span id="hodDevicesCountBadge" class="device-count-badge">0</span>
-      </div>
-
-      <div id="hodDevicesList" class="device-list"></div>
-      <p id="hodDevicesStatus" class="status-text"></p>
-    </div>
+        <section class="card">
+          <div class="list-wrap" id="announcementList">
+            <div class="empty">Loading announcements...</div>
+          </div>
+        </section>
+      </section>
+    </main>
   </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" type="button" id="navHomeBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 10.5 12 3l9 7.5"></path>
+        <path d="M5 9.5V21h14V9.5"></path>
+      </svg>
+      <span>Home</span>
+    </button>
+
+    <button class="nav-btn" type="button" id="navSearchBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <span>Search</span>
+    </button>
+
+    <button class="nav-btn" type="button" id="navAnnouncementsBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+      </svg>
+      <span>Announcements</span>
+    </button>
+  </nav>
 
   <script>
     (() => {
@@ -590,18 +694,51 @@
       const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
       const EDGE = {
-        resetHodLogin: "reset-hod-login"
+        hodStudents: "get-hod-students",
+        sendAnnouncement: "send-hod-announcement"
       };
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const DEVICE_STORAGE_KEY = "colspot_device_id";
+
+      const $ = (id) => document.getElementById(id);
 
       let hodSession = null;
-      let hodData = null;
+      let schoolName = "";
+      let departmentName = "";
 
-      function $(id){ return document.getElementById(id); }
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
 
-      function getSession() {
+      function showMessage(id, text, type = "error") {
+        const box = $(id);
+        if (!text) {
+          box.textContent = "";
+          box.className = "message";
+          return;
+        }
+        box.textContent = text;
+        box.className = `message show ${type}`;
+      }
+
+      function formatDate(value) {
+        if (!value) return "";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      }
+
+      function getAdminSession() {
         try {
           return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
         } catch {
@@ -609,19 +746,52 @@
         }
       }
 
-      function showStatus(text = "", type = "") {
-        const el = $("hodStatusMessage");
-        if (!el) return;
-        el.textContent = text;
-        el.className = "status-text";
-        if (type) el.classList.add(type);
+      function requireHodSession() {
+        hodSession = getAdminSession();
+
+        if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
+          window.location.href = "index.html";
+          return false;
+        }
+
+        schoolName = hodSession.school_name || "";
+        departmentName = hodSession.department_name || "";
+
+        $("departmentNameText").textContent = departmentName
+          ? `Hello, ${departmentName}`
+          : "Hello, Department";
+
+        const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
+        $("profileLink").textContent = initial;
+
+        return true;
       }
 
-      function getDeviceId() {
-        try {
-          return localStorage.getItem(DEVICE_STORAGE_KEY) || null;
-        } catch {
-          return null;
+      function setActiveScreen(name) {
+        const screens = {
+          home: $("screen-home"),
+          search: $("screen-search"),
+          announcements: $("screen-announcements")
+        };
+
+        Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+
+        const navButtons = [
+          $("navHomeBtn"),
+          $("navSearchBtn"),
+          $("navAnnouncementsBtn")
+        ];
+        navButtons.forEach((btn) => btn.classList.remove("active"));
+
+        if (name === "search") {
+          screens.search.classList.add("active");
+          $("navSearchBtn").classList.add("active");
+        } else if (name === "announcements") {
+          screens.announcements.classList.add("active");
+          $("navAnnouncementsBtn").classList.add("active");
+        } else {
+          screens.home.classList.add("active");
+          $("navHomeBtn").classList.add("active");
         }
       }
 
@@ -637,155 +807,207 @@
         });
 
         const result = await res.json().catch(() => ({}));
+
         if (!res.ok || !result.ok) {
           throw new Error(result.error || `Edge function failed: ${name}`);
         }
+
         return result;
       }
 
-      function renderHod(data) {
-        hodData = data || {};
-        const fullName = hodData.full_name || "HOD";
-        const schoolName = hodData.school_name || "-";
-        const loginId = hodData.login_id || "-";
-        const departmentName = hodData.department_name || "-";
-        const isActive = !!hodData.is_active;
-
-        const initial = fullName.trim()[0] ? fullName.trim()[0].toUpperCase() : "D";
-
-        $("hodAvatarInitial").textContent = initial;
-        $("hodName").textContent = fullName;
-        $("hodFullNameValue").textContent = fullName;
-        $("hodDepartmentTop").textContent = departmentName;
-        $("hodDepartmentValue").textContent = departmentName;
-        $("hodSchoolValue").textContent = schoolName;
-        $("hodLoginIdValue").textContent = loginId;
-        $("hodStatusText").textContent = isActive ? "Active" : "Disabled";
-        $("hodStatusPill").className = isActive ? "status-pill" : "status-pill off";
+      async function fetchStudentsFromEdge(searchValue = "") {
+        return await invokeEdge(EDGE.hodStudents, {
+          hod_id: hodSession.id,
+          search: searchValue
+        });
       }
 
-      async function loadHodProfile() {
-        hodSession = getSession();
-        if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
-          window.location.href = "index.html";
-          return;
-        }
-
+      async function loadCounts() {
         try {
-          const { data, error } = await sb
-            .from("hod_accounts")
-            .select("id, full_name, school_name, department_name, login_id, is_active, created_at")
-            .eq("id", hodSession.id)
-            .maybeSingle();
+          const studentResult = await fetchStudentsFromEdge("");
 
-          if (error) throw error;
-          if (!data) throw new Error("HOD account not found.");
+          const { data: announcementRows, error: announcementError } = await sb
+            .from("school_announcements")
+            .select("id")
+            .eq("school_name", schoolName);
 
-          renderHod(data);
-        } catch (e) {
-          console.error("loadHodProfile error:", e);
-          showStatus("Could not load HOD account.", "error");
+          if (announcementError) throw announcementError;
+
+          $("studentCount").textContent = String(studentResult?.totals?.students || 0);
+          $("announcementCount").textContent = String((announcementRows || []).length);
+          showMessage("pageMessageBox", "", "error");
+        } catch (err) {
+          console.error("loadCounts error:", err);
+          $("studentCount").textContent = "0";
+          $("announcementCount").textContent = "0";
+          showMessage("pageMessageBox", err.message || "Could not load department overview.");
         }
       }
 
-      async function loadHodDevices() {
-        const list = $("hodDevicesList");
-        const statusEl = $("hodDevicesStatus");
-        const badge = $("hodDevicesCountBadge");
-
-        if (!hodSession || !list || !statusEl || !badge) return;
-
-        list.innerHTML = "";
-        statusEl.textContent = "Loading devices...";
+      async function loadAnnouncements() {
+        const wrap = $("announcementList");
+        wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
 
         try {
           const { data, error } = await sb
-            .from("user_devices")
-            .select("id, device_id, created_at")
-            .eq("user_id", hodSession.id)
-            .order("created_at", { ascending: true });
+            .from("school_announcements")
+            .select("title, message, created_at")
+            .eq("school_name", schoolName)
+            .order("created_at", { ascending: false })
+            .limit(20);
 
           if (error) throw error;
 
-          const devices = data || [];
-          badge.textContent = String(devices.length);
-
-          if (!devices.length) {
-            statusEl.textContent = "No linked devices yet.";
+          if (!data || !data.length) {
+            wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
             return;
           }
 
-          statusEl.textContent = "";
-          const currentDeviceId = getDeviceId();
-
-          devices.forEach((row) => {
-            const isThis = currentDeviceId && row.device_id === currentDeviceId;
-
-            const deviceRow = document.createElement("div");
-            deviceRow.className = "device-row";
-
-            deviceRow.innerHTML = `
-              <div class="device-main">
-                <div class="device-icon">
-                  <svg viewBox="0 0 24 24">
-                    <rect x="7" y="3" width="10" height="18" rx="2"></rect>
-                    <circle cx="12" cy="17" r="1"></circle>
-                  </svg>
-                </div>
-                <div>
-                  <div class="device-name">${isThis ? "This phone" : "Linked device"}</div>
-                  <div class="device-meta">${row.created_at ? new Date(row.created_at).toLocaleString() : "Linked device"}</div>
-                  <div class="device-tags">
-                    <span class="device-pill primary">${isThis ? "Active here" : "Signed in"}</span>
-                  </div>
-                </div>
+          wrap.innerHTML = data.map((item) => `
+            <article class="announcement-item">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+                </svg>
               </div>
-            `;
-            list.appendChild(deviceRow);
-          });
-        } catch (e) {
-          console.error("loadHodDevices error:", e);
-          statusEl.textContent = "Could not load devices.";
+
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
+                <p class="item-sub">${escapeHtml(item.message || "")}</p>
+              </div>
+
+              <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
+            </article>
+          `).join("");
+        } catch (err) {
+          console.error("loadAnnouncements error:", err);
+          wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
         }
       }
 
-      async function resetHodLogin() {
-        if (!hodSession) return;
-        showStatus("Resetting login...", "success");
+      async function sendAnnouncement() {
+        showMessage("announcementMessageBox", "", "error");
+
+        const title = ($("announcementTitle").value || "").trim();
+        const message = ($("announcementBody").value || "").trim();
+
+        if (!title) {
+          showMessage("announcementMessageBox", "Please enter the announcement title.");
+          return;
+        }
+
+        if (!message) {
+          showMessage("announcementMessageBox", "Please enter the announcement message.");
+          return;
+        }
+
+        const btn = $("sendAnnouncementBtn");
+        btn.disabled = true;
 
         try {
-          const result = await invokeEdge(EDGE.resetHodLogin, {
-            hod_id: hodSession.id
+          const result = await invokeEdge(EDGE.sendAnnouncement, {
+            hod_id: hodSession.id,
+            title,
+            message
           });
 
-          const tempPassword = result?.temporary_password || "";
-          showStatus(
-            tempPassword
-              ? `New temporary password: ${tempPassword}`
-              : "Login reset successfully.",
+          $("announcementTitle").value = "";
+          $("announcementBody").value = "";
+
+          showMessage(
+            "announcementMessageBox",
+            result.message || "Announcement sent successfully.",
             "success"
           );
 
-          await loadHodProfile();
-        } catch (e) {
-          console.error("resetHodLogin error:", e);
-          showStatus(e.message || "Could not reset login.", "error");
+          await loadAnnouncements();
+          await loadCounts();
+          setActiveScreen("announcements");
+        } catch (err) {
+          console.error("sendAnnouncement error:", err);
+          showMessage(
+            "announcementMessageBox",
+            err.message || "Could not send announcement."
+          );
+        } finally {
+          btn.disabled = false;
         }
       }
 
-      async function logout() {
-        localStorage.removeItem("colspot_admin_session");
-        localStorage.removeItem("colspot_pending_admin");
-        window.location.href = "index.html";
+      async function loadStudents(searchValue = "") {
+        const wrap = $("studentList");
+        wrap.innerHTML = '<div class="empty">Loading students...</div>';
+
+        try {
+          const result = await fetchStudentsFromEdge(searchValue);
+          const data = result.students || [];
+
+          $("studentCount").textContent = String(result?.totals?.students || 0);
+
+          if (!data.length) {
+            wrap.innerHTML = '<div class="empty">No students found.</div>';
+            return;
+          }
+
+          wrap.innerHTML = data.map((item) => `
+            <article class="student-item">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
+                </svg>
+              </div>
+
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
+                <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
+                <p class="item-sub">Faculty: ${escapeHtml(item.faculty || "-")}</p>
+                <p class="item-sub">Department: ${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
+              </div>
+            </article>
+          `).join("");
+        } catch (err) {
+          console.error("loadStudents error:", err);
+          wrap.innerHTML = '<div class="empty">Could not load students.</div>';
+          showMessage("studentMessageBox", err.message || "Could not load students.");
+        }
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
-        $("hodLogoutBtn").addEventListener("click", logout);
-        $("hodLogoutActionBtn").addEventListener("click", logout);
-        $("hodResetBtn").addEventListener("click", resetHodLogin);
+        if (!requireHodSession()) return;
 
-        await loadHodProfile();
-        await loadHodDevices();
+        $("navHomeBtn").addEventListener("click", () => setActiveScreen("home"));
+        $("navSearchBtn").addEventListener("click", () => setActiveScreen("search"));
+        $("navAnnouncementsBtn").addEventListener("click", () => setActiveScreen("announcements"));
+
+        $("goSearchFromHome").addEventListener("click", () => setActiveScreen("search"));
+        $("goAnnouncementFromHome").addEventListener("click", () => setActiveScreen("announcements"));
+
+        $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+
+        $("clearAnnouncementBtn").addEventListener("click", () => {
+          $("announcementTitle").value = "";
+          $("announcementBody").value = "";
+          showMessage("announcementMessageBox", "", "error");
+        });
+
+        $("searchStudentBtn").addEventListener("click", async () => {
+          showMessage("studentMessageBox", "", "error");
+          const q = ($("studentSearchInput").value || "").trim();
+          await loadStudents(q);
+          setActiveScreen("search");
+        });
+
+        $("clearStudentBtn").addEventListener("click", async () => {
+          $("studentSearchInput").value = "";
+          showMessage("studentMessageBox", "", "error");
+          await loadStudents("");
+        });
+
+        await loadCounts();
+        await loadAnnouncements();
+        await loadStudents("");
+        setActiveScreen("home");
       });
     })();
   </script>
