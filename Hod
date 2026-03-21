@@ -6,30 +6,26 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot • HOD Dashboard</title>
-
+  <title>Colspot • HOS Profile</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --page-bg:#f5f7fb;
+      --bg:#eef3fb;
       --card:#ffffff;
       --text:#0f172a;
-      --muted:#707786;
-      --line:#e8edf5;
-      --blue-1:#2f6cff;
-      --blue-2:#2a56df;
-      --green-1:#77b84d;
-      --green-2:#5e9f3a;
-      --orange-1:#ffb13a;
-      --orange-2:#f39212;
-      --nav-text:#9aa3b2;
-      --shadow:0 14px 34px rgba(15,23,42,.08);
-      --soft-shadow:0 12px 24px rgba(47,108,255,.14);
-      --error:#991b1b;
-      --error-bg:#fef2f2;
-      --success:#166534;
-      --success-bg:#ecfdf5;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --blue:#2563eb;
+      --blue2:#3b82f6;
+      --soft-blue:#eaf1ff;
+      --danger:#d94b69;
+      --danger-bg:#fdecef;
+      --success:#2f9e44;
+      --success-bg:#e7f7ea;
+      --shadow:0 18px 40px rgba(15,23,42,.10);
+      --soft-shadow:0 12px 28px rgba(37,99,235,.14);
+      --radius:28px;
     }
 
     *{
@@ -41,10 +37,9 @@
       margin:0;
       padding:0;
       min-height:100%;
-      background:#edf2fb;
+      background:linear-gradient(180deg,#eaf0fa 0%, #eef3fb 100%);
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
-      -webkit-text-size-adjust:100%;
     }
 
     body{
@@ -56,13 +51,16 @@
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:var(--page-bg);
-      padding:
-        calc(env(safe-area-inset-top) + 10px)
-        16px
-        calc(env(safe-area-inset-bottom) + 108px);
+      padding:18px 14px 110px;
       position:relative;
-      overflow-x:hidden;
+    }
+
+    .profile-shell{
+      background:#f8fbff;
+      border-radius:30px;
+      overflow:hidden;
+      border:1px solid #dde6f4;
+      box-shadow:var(--shadow);
     }
 
     .topbar{
@@ -70,7 +68,9 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:18px;
+      padding:20px 18px 14px;
+      background:#ffffff;
+      border-bottom:1px solid #edf2f7;
     }
 
     .brand{
@@ -80,995 +80,930 @@
       min-width:0;
     }
 
-    .brand-logo{
+    .brand-icon{
       width:38px;
       height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg,#60a5fa,#2563eb);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
+      box-shadow:0 10px 20px rgba(37,99,235,.25);
+      flex-shrink:0;
+    }
+
+    .brand-name{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    .logout-btn{
+      border:none;
+      background:#fff;
+      border-radius:999px;
+      padding:10px 16px;
+      font-size:13px;
+      font-weight:800;
+      color:#111827;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+      cursor:pointer;
+      border:1px solid #e5e7eb;
+    }
+
+    .banner{
+      min-height:150px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.45) 0 10%, transparent 11%),
+        radial-gradient(circle at 85% 15%, rgba(255,255,255,.35) 0 8%, transparent 9%),
+        linear-gradient(135deg,#dbeafe 0%, #c7d2fe 58%, #f5d0fe 100%);
+      padding:18px 18px 78px;
+    }
+
+    .banner-title{
+      font-size:17px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    .profile-card{
+      background:#fff;
+      margin:-58px 14px 14px;
+      border:1px solid #e8edf4;
+      border-radius:28px;
+      padding:16px;
+      box-shadow:0 14px 28px rgba(15,23,42,.08);
+      position:relative;
+    }
+
+    .profile-top{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      margin-top:-76px;
+      margin-bottom:14px;
+    }
+
+    .avatar-ring{
+      width:138px;
+      height:138px;
+      border-radius:999px;
+      padding:6px;
+      background:#fff;
+      box-shadow:0 10px 25px rgba(15,23,42,.08);
+      border:1px solid #ececec;
+    }
+
+    .avatar{
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(135deg,#9ec5ff,#4c7ef3);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:46px;
+      font-weight:900;
+      overflow:hidden;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .profile-name{
+      margin-top:14px;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    .profile-role{
+      font-size:13px;
+      color:#5b6472;
+      margin-top:2px;
+    }
+
+    .profile-school{
+      font-size:14px;
+      color:#374151;
+      margin-top:10px;
+      font-weight:500;
+    }
+
+    .status-pill{
+      margin-top:12px;
+      padding:8px 18px;
+      border-radius:999px;
+      background:var(--success-bg);
+      color:var(--success);
+      font-size:13px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      min-width:120px;
+      justify-content:center;
+    }
+
+    .status-pill.disabled{
+      background:#fef2f2;
+      color:#b91c1c;
+    }
+
+    .status-dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:currentColor;
+      opacity:.9;
+    }
+
+    .divider{
+      height:1px;
+      background:#eef2f7;
+      margin:16px 0;
+    }
+
+    .info-group{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .info-row{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .info-icon{
+      width:32px;
+      height:32px;
+      border-radius:999px;
+      background:#eef3ff;
       display:flex;
       align-items:center;
       justify-content:center;
       flex-shrink:0;
     }
 
-    .brand-logo svg{
-      width:38px;
-      height:38px;
-      display:block;
+    .info-icon svg{
+      width:16px;
+      height:16px;
+      stroke:#5b6ddc;
+      stroke-width:1.9;
+      fill:none;
     }
 
-    .brand-name{
-      font-size:17px;
-      font-weight:800;
-      letter-spacing:-.03em;
-      color:#102043;
+    .info-content{
+      flex:1;
+      min-width:0;
     }
 
-    .avatar-wrap{
-      position:relative;
-      flex-shrink:0;
-    }
-
-    .avatar-btn{
-      width:50px;
-      height:50px;
-      border:none;
-      border-radius:999px;
-      color:#fff;
-      font-size:19px;
-      font-weight:800;
-      cursor:pointer;
-      background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
-      box-shadow:0 16px 28px rgba(47,108,255,.18);
-    }
-
-    .profile-menu{
-      position:absolute;
-      top:62px;
-      right:0;
-      width:215px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid #e7edf5;
-      box-shadow:0 20px 40px rgba(15,23,42,.14);
-      overflow:hidden;
-      display:none;
-      z-index:30;
-    }
-
-    .profile-menu.show{
-      display:block;
-    }
-
-    .profile-row{
-      width:100%;
-      border:none;
-      background:#fff;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      text-align:left;
-      cursor:pointer;
+    .info-value{
       font-size:14px;
-      font-weight:700;
-      color:#334155;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .profile-row:last-child{
-      border-bottom:none;
-    }
-
-    .profile-school{
-      display:block;
-      padding:14px 16px;
-      font-size:13px;
-      color:#6b7280;
-      background:#fff;
-      border-top:1px solid #eef2f7;
-    }
-
-    .hero{
-      margin-bottom:18px;
-    }
-
-    .hero-line{
-      font-size:13px;
-      color:var(--muted);
-      margin-bottom:8px;
-      font-weight:500;
+      color:#1f2937;
+      font-weight:600;
+      line-height:1.4;
       word-break:break-word;
     }
 
-    .hero-title{
-      margin:0;
-      font-size:29px;
-      line-height:1.08;
-      letter-spacing:-.055em;
-      font-weight:900;
-      color:#111c37;
-      max-width:320px;
+    .info-note{
+      font-size:12px;
+      color:#6b7280;
+      margin-top:5px;
+      line-height:1.45;
     }
 
-    .hero-title .accent{
-      display:block;
-      color:#2f6cff;
+    .action-row{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .action-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      min-height:48px;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .action-btn svg{
+      width:17px;
+      height:17px;
+      stroke:currentColor;
+      stroke-width:2;
+      fill:none;
+      flex-shrink:0;
+    }
+
+    .action-btn.primary{
+      background:linear-gradient(135deg,var(--blue2),var(--blue));
+      color:#fff;
+      box-shadow:var(--soft-shadow);
+    }
+
+    .action-btn.danger{
+      background:var(--danger-bg);
+      color:var(--danger);
+      border:1px solid #f8cfd8;
+    }
+
+    .action-btn.success{
+      background:#eaf8ee;
+      color:#1f8f45;
+      border:1px solid #c8ebd3;
+    }
+
+    .section{
+      padding:0 14px 14px;
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:900;
+      color:#111827;
+      letter-spacing:-.02em;
+      margin:0 0 10px;
+    }
+
+    .activity-card{
+      background:#fff;
+      border:1px solid #e8edf4;
+      border-radius:24px;
+      padding:12px;
+      box-shadow:0 12px 25px rgba(15,23,42,.06);
+    }
+
+    .activity-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .activity-item{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:10px 6px;
+    }
+
+    .activity-item + .activity-item{
+      border-top:1px solid #f1f5f9;
+    }
+
+    .activity-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:#eef4ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#2563eb;
+      flex-shrink:0;
+    }
+
+    .activity-icon svg{
+      width:18px;
+      height:18px;
+      stroke:currentColor;
+      stroke-width:2;
+      fill:none;
+    }
+
+    .activity-body{
+      flex:1;
+      min-width:0;
+    }
+
+    .activity-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .activity-title{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
+      line-height:1.35;
+    }
+
+    .activity-time{
+      font-size:12px;
+      color:#6b7280;
+      white-space:nowrap;
+    }
+
+    .activity-sub{
+      margin-top:4px;
+      font-size:13px;
+      color:#6b7280;
+      line-height:1.4;
+    }
+
+    .empty{
+      padding:16px 10px;
+      text-align:center;
+      color:#6b7280;
+      font-size:13px;
     }
 
     .message{
-      display:none;
-      margin:0 0 14px;
-      padding:12px 13px;
+      margin:0 14px 14px;
+      padding:12px 14px;
       border-radius:16px;
       font-size:13px;
       line-height:1.45;
-      font-weight:600;
+      display:none;
     }
 
     .message.show{
       display:block;
     }
 
-    .message.error{
-      background:var(--error-bg);
-      border:1px solid #fecaca;
-      color:var(--error);
-    }
-
     .message.success{
-      background:var(--success-bg);
+      background:#ecfdf3;
       border:1px solid #bbf7d0;
-      color:var(--success);
+      color:#166534;
     }
 
-    .quick-actions{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-bottom:22px;
+    .message.error{
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
     }
 
-    .quick-btn{
-      width:100%;
-      border:none;
-      border-radius:999px;
-      padding:18px 20px;
-      display:flex;
-      align-items:center;
-      gap:14px;
-      color:#fff;
-      font-size:16px;
-      font-weight:800;
-      letter-spacing:-.02em;
-      text-decoration:none;
-      box-shadow:var(--soft-shadow);
-      cursor:pointer;
-    }
-
-    .quick-btn svg{
-      width:23px;
-      height:23px;
-      flex-shrink:0;
-    }
-
-    .quick-btn.blue{
-      background:linear-gradient(90deg,var(--blue-1) 0%, var(--blue-2) 100%);
-    }
-
-    .quick-btn.green{
-      background:linear-gradient(90deg,var(--green-1) 0%, var(--green-2) 100%);
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin:4px 2px 12px;
-    }
-
-    .section-title{
-      margin:0;
-      font-size:15px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#111c37;
-    }
-
-    .overview-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:22px;
-    }
-
-    .overview-card{
-      color:#fff;
-      border-radius:18px;
-      padding:14px 14px 12px;
-      min-height:98px;
-      box-shadow:var(--shadow);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .overview-card.blue{
-      background:linear-gradient(135deg,#2f6cff 0%, #2357df 100%);
-    }
-
-    .overview-card.orange{
-      background:linear-gradient(135deg,#ffb13a 0%, #f39413 100%);
-    }
-
-    .overview-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .overview-icon{
-      width:38px;
-      height:38px;
-      border-radius:14px;
-      background:rgba(255,255,255,.18);
-      display:flex;
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.45);
+      display:none;
       align-items:center;
       justify-content:center;
-      backdrop-filter:blur(8px);
-      flex-shrink:0;
+      padding:16px;
+      z-index:200;
     }
 
-    .overview-icon svg{
-      width:21px;
-      height:21px;
+    .modal.show{
+      display:flex;
     }
 
-    .overview-value{
-      font-size:30px;
-      line-height:1;
-      font-weight:900;
-      letter-spacing:-.05em;
-      text-align:right;
-      white-space:nowrap;
-    }
-
-    .overview-label{
-      margin-top:12px;
-      font-size:13px;
-      font-weight:800;
-      line-height:1.05;
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
+    .modal-card{
+      width:100%;
+      max-width:360px;
+      background:#fff;
       border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:14px;
-      margin-bottom:16px;
+      padding:18px;
+      box-shadow:0 18px 40px rgba(15,23,42,.18);
     }
 
-    .field{
-      margin-bottom:12px;
+    .modal-title{
+      font-size:17px;
+      font-weight:900;
+      color:#111827;
+      margin-bottom:8px;
     }
 
-    .field label{
-      display:block;
-      font-size:12px;
-      font-weight:700;
-      color:#334155;
-      margin-bottom:6px;
-    }
-
-    .input,.textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 13px;
-      background:#fff;
-      font-size:14px;
-      color:var(--text);
-      outline:none;
-    }
-
-    .textarea{
-      min-height:110px;
-      resize:vertical;
-    }
-
-    .btn-row{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .mini-btn{
-      flex:1;
-      border:none;
-      border-radius:999px;
-      padding:12px 14px;
-      font-size:14px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .mini-btn.primary{
-      color:#fff;
-      background:linear-gradient(135deg,var(--blue-1),var(--blue-2));
-      box-shadow:var(--soft-shadow);
-    }
-
-    .mini-btn.secondary{
-      color:var(--text);
-      background:#fff;
-      border:1px solid var(--line);
-    }
-
-    .mini-btn:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-    }
-
-    .list-wrap{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .student-item,
-    .announcement-item{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      padding:12px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid #edf2f7;
-    }
-
-    .item-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      background:#eef4ff;
-      color:#255fe9;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-    }
-
-    .item-icon svg{
-      width:20px;
-      height:20px;
-    }
-
-    .item-content{
-      flex:1;
-      min-width:0;
-    }
-
-    .item-title{
-      margin:0;
-      font-size:15px;
-      line-height:1.25;
-      font-weight:800;
-      letter-spacing:-.02em;
-      color:#111c37;
-    }
-
-    .item-sub{
-      margin:4px 0 0;
+    .modal-text{
       font-size:13px;
-      color:var(--muted);
-      line-height:1.4;
+      color:#6b7280;
+      line-height:1.5;
+      margin-bottom:14px;
+    }
+
+    .reset-result{
+      background:#f8fbff;
+      border:1px solid #dde8ff;
+      border-radius:18px;
+      padding:12px;
+      margin-bottom:14px;
+      display:none;
+    }
+
+    .reset-result.show{
+      display:block;
+    }
+
+    .reset-line{
+      margin-bottom:8px;
+    }
+
+    .reset-line:last-child{
+      margin-bottom:0;
+    }
+
+    .reset-label{
+      display:block;
+      font-size:11px;
+      color:#6b7280;
+      margin-bottom:3px;
+    }
+
+    .reset-value{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
       word-break:break-word;
     }
 
-    .item-time{
-      flex-shrink:0;
-      font-size:12px;
-      color:#7a8494;
-      font-weight:700;
-      white-space:nowrap;
-      margin-left:8px;
-    }
-
-    .empty{
-      padding:16px 8px;
-      text-align:center;
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:max(12px, env(safe-area-inset-bottom));
-      width:calc(100% - 24px);
-      max-width:396px;
-      background:rgba(255,255,255,.98);
-      border:1px solid #e7edf5;
-      border-radius:31px;
-      box-shadow:0 20px 40px rgba(15,23,42,.12);
-      padding:10px 8px 12px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:2px;
-      z-index:50;
-      backdrop-filter:blur(14px);
-    }
-
-    .nav-btn{
-      color:var(--nav-text);
-      text-decoration:none;
+    .modal-actions{
       display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:64px;
-      border-radius:18px;
-      padding:4px 2px;
-      cursor:pointer;
+      gap:10px;
+    }
+
+    .modal-btn{
+      flex:1;
       border:none;
-      background:transparent;
+      border-radius:999px;
+      min-height:46px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
     }
 
-    .nav-btn svg{
-      width:22px;
-      height:22px;
+    .modal-btn.secondary{
+      background:#fff;
+      color:#111827;
+      border:1px solid #e5e7eb;
     }
 
-    .nav-btn span{
-      font-size:11px;
-      font-weight:700;
-      letter-spacing:-.01em;
-      text-align:center;
-      line-height:1.2;
+    .modal-btn.primary{
+      background:linear-gradient(135deg,var(--blue2),var(--blue));
+      color:#fff;
     }
 
-    .nav-btn.active{
-      color:#2563eb;
+    .modal-btn.danger{
+      background:#fee2e2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
     }
 
     @media (max-width:360px){
-      .hero-title{
-        font-size:26px;
-      }
-      .quick-btn{
-        font-size:15px;
-      }
-      .btn-row{
+      .action-row,
+      .modal-actions{
         flex-direction:column;
+      }
+
+      .profile-name{
+        font-size:17px;
       }
     }
   </style>
 </head>
 <body>
   <div class="phone-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M32 8 54 18v14c0 13.5-9.2 23.6-22 27C19.2 55.6 10 45.5 10 32V18L32 8Z" fill="url(#g1)"/>
-            <path d="M22 26h20M22 33h15" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            <path d="M20 19h24" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-            <defs>
-              <linearGradient id="g1" x1="10" y1="8" x2="54" y2="59" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#1d4ed8"/>
-                <stop offset="1" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
-          </svg>
+    <div class="profile-shell">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-icon">C</div>
+          <div class="brand-name">Colspot</div>
         </div>
-        <div class="brand-name">Colspot</div>
+        <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
       </div>
 
-      <div class="avatar-wrap">
-        <button class="avatar-btn" id="avatarBtn" type="button">H</button>
+      <div class="banner">
+        <div class="banner-title">HOS Profile</div>
+      </div>
 
-        <div class="profile-menu" id="profileMenu">
-          <button class="profile-row" type="button" id="logoutBtn">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <path d="M16 17l5-5-5-5"></path>
-              <path d="M21 12H9"></path>
+      <div class="message" id="pageMessage"></div>
+
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="avatar-ring">
+            <div class="avatar" id="profileAvatar">H</div>
+          </div>
+
+          <div class="profile-name" id="profileName">Loading...</div>
+          <div class="profile-role">Head of School</div>
+          <div class="profile-school" id="profileSchool">School</div>
+
+          <div class="status-pill" id="statusPill">
+            <span class="status-dot"></span>
+            <span id="statusText">Active</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-group">
+          <div class="info-row">
+            <div class="info-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-value" id="loginIdValue">-</div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 6h16v12H4z"></path>
+                <path d="M4 7l8 6 8-6"></path>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-value" id="emailValue">No linked email</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="info-row">
+            <div class="info-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10Z"></path>
+                <circle cx="12" cy="11" r="2.5"></circle>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-value" id="schoolInfoValue">School</div>
+              <div class="info-note">School account profile and administration access.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="action-btn primary" id="resetLoginBtn" type="button">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3a9 9 0 1 0 8.2 5.3"></path>
+              <path d="M21 3v6h-6"></path>
             </svg>
-            <span>Logout</span>
+            <span>Reset Login</span>
           </button>
 
-          <span class="profile-school" id="profileSchoolText">School</span>
+          <button class="action-btn danger" id="toggleStatusBtn" type="button">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 9v4"></path>
+              <path d="M12 17h.01"></path>
+              <path d="M10.3 3.8 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"></path>
+            </svg>
+            <span id="toggleStatusText">Disable HOS</span>
+          </button>
         </div>
       </div>
-    </header>
 
-    <main>
-      <section class="hero">
-        <div class="hero-line" id="departmentNameText">Hello, Department</div>
-        <h1 class="hero-title">
-          What would you like to
-          <span class="accent">do today?</span>
-        </h1>
-      </section>
+      <div class="section">
+        <h3 class="section-title">Activity Log</h3>
 
-      <div class="message" id="pageMessageBox"></div>
-      <div class="message" id="announcementMessageBox"></div>
-      <div class="message" id="studentMessageBox"></div>
-
-      <section class="quick-actions">
-        <button class="quick-btn blue" type="button" id="jumpAnnouncementBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-          </svg>
-          <span>Send Department Announcement</span>
-        </button>
-
-        <button class="quick-btn green" type="button" id="jumpStudentBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-          <span>Search Student</span>
-        </button>
-      </section>
-
-      <div class="section-head">
-        <h2 class="section-title">Department Overview</h2>
-      </div>
-
-      <section class="overview-grid">
-        <article class="overview-card blue">
-          <div class="overview-top">
-            <div class="overview-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
-                <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
-                <path d="M12 11h4M12 15h4"></path>
-              </svg>
-            </div>
-            <div class="overview-value" id="studentCount">0</div>
+        <div class="activity-card">
+          <div class="activity-list" id="activityList">
+            <div class="empty">Loading activity...</div>
           </div>
-          <div class="overview-label">Students</div>
-        </article>
-
-        <article class="overview-card orange">
-          <div class="overview-top">
-            <div class="overview-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-              </svg>
-            </div>
-            <div class="overview-value" id="announcementCount">0</div>
-          </div>
-          <div class="overview-label">Announcements</div>
-        </article>
-      </section>
-
-      <div class="section-head" id="announcementSection">
-        <h2 class="section-title">Send Announcement</h2>
+        </div>
       </div>
-
-      <section class="card">
-        <div class="field">
-          <label for="announcementTitle">Title</label>
-          <input id="announcementTitle" class="input" placeholder="Enter announcement title">
-        </div>
-
-        <div class="field">
-          <label for="announcementBody">Message</label>
-          <textarea id="announcementBody" class="textarea" placeholder="Write your department announcement here..."></textarea>
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send announcement</button>
-          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
-        </div>
-      </section>
-
-      <div class="section-head">
-        <h2 class="section-title">Recent Announcements</h2>
-      </div>
-
-      <section class="card">
-        <div class="list-wrap" id="announcementList">
-          <div class="empty">Loading announcements...</div>
-        </div>
-      </section>
-
-      <div class="section-head" id="studentSection">
-        <h2 class="section-title">Search Student</h2>
-      </div>
-
-      <section class="card">
-        <div class="field">
-          <label for="studentSearchInput">Matric number or student name</label>
-          <input id="studentSearchInput" class="input" placeholder="Enter matric number or full name">
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="searchStudentBtn" type="button">Search</button>
-          <button class="mini-btn secondary" id="clearStudentBtn" type="button">Clear</button>
-        </div>
-      </section>
-
-      <div class="section-head">
-        <h2 class="section-title">Students</h2>
-      </div>
-
-      <section class="card">
-        <div class="list-wrap" id="studentList">
-          <div class="empty">Loading students...</div>
-        </div>
-      </section>
-    </main>
+    </div>
   </div>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn active" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 10.5 12 3l9 7.5"></path>
-        <path d="M5 9.5V21h14V9.5"></path>
-      </svg>
-      <span>Home</span>
-    </button>
+  <div class="modal" id="resetModal">
+    <div class="modal-card">
+      <div class="modal-title">Reset login</div>
+      <div class="modal-text">
+        Generate a new temporary password for this HOS account. Share it securely.
+      </div>
 
-    <button class="nav-btn" type="button" id="navStudentsBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="m21 21-4.3-4.3"></path>
-      </svg>
-      <span>Students</span>
-    </button>
+      <div class="reset-result" id="resetResult">
+        <div class="reset-line">
+          <span class="reset-label">Login ID</span>
+          <div class="reset-value" id="resetLoginId">-</div>
+        </div>
+        <div class="reset-line">
+          <span class="reset-label">Temporary password</span>
+          <div class="reset-value" id="resetPassword">-</div>
+        </div>
+      </div>
 
-    <button class="nav-btn" type="button" id="navAnnouncementsBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-      </svg>
-      <span>Announcements</span>
-    </button>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="closeResetModalBtn" type="button">Close</button>
+        <button class="modal-btn primary" id="confirmResetBtn" type="button">Generate</button>
+      </div>
+    </div>
+  </div>
 
-    <button class="nav-btn" type="button" id="navLogoutBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <path d="M16 17l5-5-5-5"></path>
-        <path d="M21 12H9"></path>
-      </svg>
-      <span>Logout</span>
-    </button>
-  </nav>
+  <div class="modal" id="statusModal">
+    <div class="modal-card">
+      <div class="modal-title" id="statusModalTitle">Disable HOS</div>
+      <div class="modal-text" id="statusModalText">
+        This HOS will not be able to log in until enabled again.
+      </div>
 
-<script>
-  (() => {
-    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-    const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="closeStatusModalBtn" type="button">Cancel</button>
+        <button class="modal-btn danger" id="confirmStatusBtn" type="button">Disable</button>
+      </div>
+    </div>
+  </div>
 
-    const EDGE = {
-      hodStudents: "get-hod-students",
-      sendAnnouncement: "send-hod-announcement"
-    };
+  <script>
+    (() => {
+      const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+      const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const EDGE = {
+        resetHosLogin: "reset-hos-login",
+        toggleHosStatus: "toggle-hos-status"
+      };
 
-    const $ = (id) => document.getElementById(id);
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const $ = (id) => document.getElementById(id);
 
-    let hodSession = null;
-    let schoolName = "";
-    let departmentName = "";
+      let hosSession = null;
+      let hosData = null;
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    function showMessage(id, text, type = "error") {
-      const box = $(id);
-      if (!text) {
-        box.textContent = "";
-        box.className = "message";
-        return;
-      }
-      box.textContent = text;
-      box.className = `message show ${type}`;
-    }
-
-    function formatDate(value) {
-      if (!value) return "";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "";
-      return d.toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      });
-    }
-
-    function getAdminSession() {
-      try {
-        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-      } catch {
-        return null;
-      }
-    }
-
-    function requireHodSession() {
-      hodSession = getAdminSession();
-
-      if (!hodSession || String(hodSession.role || "").toLowerCase() !== "hod") {
-        window.location.href = "index.html";
-        return false;
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
       }
 
-      schoolName = hodSession.school_name || "";
-      departmentName = hodSession.department_name || "";
-
-      $("departmentNameText").textContent = departmentName
-        ? `Hello, ${departmentName}`
-        : "Hello, Department";
-
-      $("profileSchoolText").textContent = schoolName || "School";
-
-      const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
-      $("avatarBtn").textContent = initial;
-
-      return true;
-    }
-
-    async function invokeEdge(name, payload = {}) {
-      const res = await fetch(`${EDGE_BASE}/${name}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await res.json().catch(() => ({}));
-
-      if (!res.ok || !result.ok) {
-        throw new Error(result.error || `Edge function failed: ${name}`);
-      }
-
-      return result;
-    }
-
-    async function fetchStudentsFromEdge(searchValue = "") {
-      return await invokeEdge(EDGE.hodStudents, {
-        hod_id: hodSession.id,
-        search: searchValue
-      });
-    }
-
-    async function loadCounts() {
-      try {
-        const studentResult = await fetchStudentsFromEdge("");
-
-        const { data: announcementRows, error: announcementError } = await sb
-          .from("school_announcements")
-          .select("id")
-          .eq("school_name", schoolName);
-
-        if (announcementError) throw announcementError;
-
-        $("studentCount").textContent = String(studentResult?.totals?.students || 0);
-        $("announcementCount").textContent = String((announcementRows || []).length);
-        showMessage("pageMessageBox", "", "error");
-      } catch (err) {
-        console.error("loadCounts error:", err);
-        $("studentCount").textContent = "0";
-        $("announcementCount").textContent = "0";
-        showMessage("pageMessageBox", err.message || "Could not load department overview.");
-      }
-    }
-
-    async function loadAnnouncements() {
-      const wrap = $("announcementList");
-      wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
-
-      try {
-        const { data, error } = await sb
-          .from("school_announcements")
-          .select("title, message, created_at")
-          .eq("school_name", schoolName)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        if (error) throw error;
-
-        if (!data || !data.length) {
-          wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
-          $("announcementCount").textContent = "0";
+      function showMessage(text = "", type = "error") {
+        const box = $("pageMessage");
+        if (!text) {
+          box.className = "message";
+          box.textContent = "";
           return;
         }
-
-        $("announcementCount").textContent = String(data.length);
-
-        wrap.innerHTML = data.map((item) => `
-          <article class="announcement-item">
-            <div class="item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-              </svg>
-            </div>
-
-            <div class="item-content">
-              <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
-              <p class="item-sub">${escapeHtml(item.message || "")}</p>
-            </div>
-
-            <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
-          </article>
-        `).join("");
-      } catch (err) {
-        console.error("loadAnnouncements error:", err);
-        wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
-      }
-    }
-
-    async function sendAnnouncement() {
-      showMessage("announcementMessageBox", "", "error");
-
-      const title = ($("announcementTitle").value || "").trim();
-      const message = ($("announcementBody").value || "").trim();
-
-      if (!title) {
-        showMessage("announcementMessageBox", "Please enter the announcement title.");
-        return;
+        box.className = `message show ${type}`;
+        box.textContent = text;
       }
 
-      if (!message) {
-        showMessage("announcementMessageBox", "Please enter the announcement message.");
-        return;
+      function formatDate(value) {
+        if (!value) return "";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
       }
 
-      const btn = $("sendAnnouncementBtn");
-      btn.disabled = true;
+      function getAdminSession() {
+        try {
+          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+        } catch {
+          return null;
+        }
+      }
 
-      try {
-        const result = await invokeEdge(EDGE.sendAnnouncement, {
-          hod_id: hodSession.id,
-          title,
-          message
+      function getInitial(name) {
+        return String(name || "").trim().charAt(0).toUpperCase() || "H";
+      }
+
+      async function invokeEdge(name, payload = {}) {
+        const res = await fetch(`${EDGE_BASE}/${name}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify(payload)
         });
 
-        $("announcementTitle").value = "";
-        $("announcementBody").value = "";
+        const result = await res.json().catch(() => ({}));
 
-        showMessage(
-          "announcementMessageBox",
-          result.message || "Announcement sent successfully.",
-          "success"
-        );
-
-        await loadAnnouncements();
-        await loadCounts();
-      } catch (err) {
-        console.error("sendAnnouncement error:", err);
-        showMessage(
-          "announcementMessageBox",
-          err.message || "Could not send announcement."
-        );
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    async function loadStudents(searchValue = "") {
-      const wrap = $("studentList");
-      wrap.innerHTML = '<div class="empty">Loading students...</div>';
-
-      try {
-        const result = await fetchStudentsFromEdge(searchValue);
-        const data = result.students || [];
-
-        $("studentCount").textContent = String(result?.totals?.students || 0);
-        console.log("get-hod-students debug:", result.debug);
-
-        if (!data.length) {
-          wrap.innerHTML = '<div class="empty">No students found.</div>';
-          return;
+        if (!res.ok || !result.ok) {
+          throw new Error(result.error || `Edge function failed: ${name}`);
         }
 
-        wrap.innerHTML = data.map((item) => `
-          <article class="student-item">
-            <div class="item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="8" r="4"></circle>
-                <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
-              </svg>
-            </div>
-
-            <div class="item-content">
-              <h3 class="item-title">${escapeHtml(item.full_name || "No name")}</h3>
-              <p class="item-sub">${escapeHtml(item.matric_number || "No matric number")}</p>
-              <p class="item-sub">Faculty: ${escapeHtml(item.faculty || "-")}</p>
-              <p class="item-sub">Department: ${escapeHtml(item.department || "-")} • Level ${escapeHtml(item.level || "-")}</p>
-            </div>
-          </article>
-        `).join("");
-      } catch (err) {
-        console.error("loadStudents error:", err);
-        wrap.innerHTML = '<div class="empty">Could not load students.</div>';
-        showMessage("studentMessageBox", err.message || "Could not load students.");
+        return result;
       }
-    }
 
-    function setupProfileMenu() {
-      const avatarBtn = $("avatarBtn");
-      const profileMenu = $("profileMenu");
+      function requireHosSession() {
+        hosSession = getAdminSession();
 
-      avatarBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        profileMenu.classList.toggle("show");
-      });
-
-      document.addEventListener("click", (e) => {
-        if (!profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
-          profileMenu.classList.remove("show");
+        if (!hosSession || String(hosSession.role || "").toLowerCase() !== "hos") {
+          window.location.href = "index.html";
+          return false;
         }
+
+        return true;
+      }
+
+      function renderProfile(data) {
+        hosData = data;
+
+        const fullName = data.full_name || "HOS User";
+        const schoolName = data.school_name || "School";
+        const loginId = data.login_id || "-";
+        const linkedEmail = data.linked_email || "No linked email";
+        const isActive = !!data.is_active;
+
+        $("profileAvatar").textContent = getInitial(fullName);
+        $("profileName").textContent = fullName;
+        $("profileSchool").textContent = schoolName;
+        $("loginIdValue").textContent = `Login ID: ${loginId}`;
+        $("emailValue").textContent = linkedEmail;
+        $("schoolInfoValue").textContent = schoolName;
+
+        $("statusText").textContent = isActive ? "Active" : "Disabled";
+        $("statusPill").className = isActive ? "status-pill" : "status-pill disabled";
+
+        $("toggleStatusText").textContent = isActive ? "Disable HOS" : "Enable HOS";
+        $("statusModalTitle").textContent = isActive ? "Disable HOS" : "Enable HOS";
+        $("statusModalText").textContent = isActive
+          ? "This HOS will not be able to log in until enabled again."
+          : "This HOS account will be allowed to log in again.";
+        $("confirmStatusBtn").textContent = isActive ? "Disable" : "Enable";
+        $("confirmStatusBtn").className = isActive ? "modal-btn danger" : "modal-btn primary";
+      }
+
+      async function loadHosProfile() {
+        showMessage("", "error");
+
+        try {
+          const { data, error } = await sb
+            .from("hos_accounts")
+            .select("id, full_name, school_name, login_id, linked_email, is_active, created_at")
+            .eq("id", hosSession.id)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (!data) throw new Error("HOS profile not found.");
+
+          renderProfile(data);
+        } catch (err) {
+          console.error("loadHosProfile error:", err);
+          showMessage(err.message || "Could not load HOS profile.");
+        }
+      }
+
+      async function loadActivity() {
+        const wrap = $("activityList");
+        wrap.innerHTML = '<div class="empty">Loading activity...</div>';
+
+        try {
+          const { data, error } = await sb
+            .from("admin_activity_log")
+            .select("title, description, created_at, type")
+            .eq("created_by", hosSession.id)
+            .order("created_at", { ascending: false })
+            .limit(10);
+
+          if (error) {
+            wrap.innerHTML = '<div class="empty">No activity found yet.</div>';
+            return;
+          }
+
+          if (!data || !data.length) {
+            wrap.innerHTML = '<div class="empty">No activity found yet.</div>';
+            return;
+          }
+
+          wrap.innerHTML = data.map((item) => {
+            const icon = item.type === "announcement"
+              ? `<svg viewBox="0 0 24 24"><path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path></svg>`
+              : `<svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path><rect x="4" y="4" width="16" height="16" rx="3"></rect></svg>`;
+
+            return `
+              <div class="activity-item">
+                <div class="activity-icon">${icon}</div>
+                <div class="activity-body">
+                  <div class="activity-head">
+                    <div class="activity-title">${escapeHtml(item.title || "Activity")}</div>
+                    <div class="activity-time">${escapeHtml(formatDate(item.created_at))}</div>
+                  </div>
+                  <div class="activity-sub">${escapeHtml(item.description || "")}</div>
+                </div>
+              </div>
+            `;
+          }).join("");
+        } catch (err) {
+          console.error("loadActivity error:", err);
+          wrap.innerHTML = '<div class="empty">Could not load activity.</div>';
+        }
+      }
+
+      function openResetModal() {
+        $("resetModal").classList.add("show");
+        $("resetResult").classList.remove("show");
+        $("resetLoginId").textContent = hosData?.login_id || "-";
+        $("resetPassword").textContent = "-";
+      }
+
+      function closeResetModal() {
+        $("resetModal").classList.remove("show");
+      }
+
+      function openStatusModal() {
+        $("statusModal").classList.add("show");
+      }
+
+      function closeStatusModal() {
+        $("statusModal").classList.remove("show");
+      }
+
+      async function resetHosLogin() {
+        const btn = $("confirmResetBtn");
+        btn.disabled = true;
+        btn.textContent = "Generating...";
+
+        try {
+          const result = await invokeEdge(EDGE.resetHosLogin, {
+            hos_id: hosSession.id
+          });
+
+          $("resetLoginId").textContent = result?.account?.login_id || hosData?.login_id || "-";
+          $("resetPassword").textContent = result?.temporary_password || "-";
+          $("resetResult").classList.add("show");
+
+          showMessage("Login reset successfully.", "success");
+          await loadHosProfile();
+          await loadActivity();
+        } catch (err) {
+          console.error("resetHosLogin error:", err);
+          showMessage(err.message || "Could not reset login.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Generate";
+        }
+      }
+
+      async function toggleHosStatus() {
+        const btn = $("confirmStatusBtn");
+        btn.disabled = true;
+
+        try {
+          const result = await invokeEdge(EDGE.toggleHosStatus, {
+            hos_id: hosSession.id,
+            enable: !hosData?.is_active
+          });
+
+          showMessage(result.message || "Status updated successfully.", "success");
+          closeStatusModal();
+          await loadHosProfile();
+          await loadActivity();
+        } catch (err) {
+          console.error("toggleHosStatus error:", err);
+          showMessage(err.message || "Could not update account status.");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("colspot_admin_session");
+        localStorage.removeItem("colspot_pending_admin");
+        window.location.href = "index.html";
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (!requireHosSession()) return;
+
+        $("logoutBtn").addEventListener("click", logout);
+        $("resetLoginBtn").addEventListener("click", openResetModal);
+        $("toggleStatusBtn").addEventListener("click", openStatusModal);
+
+        $("closeResetModalBtn").addEventListener("click", closeResetModal);
+        $("confirmResetBtn").addEventListener("click", resetHosLogin);
+
+        $("closeStatusModalBtn").addEventListener("click", closeStatusModal);
+        $("confirmStatusBtn").addEventListener("click", toggleHosStatus);
+
+        $("resetModal").addEventListener("click", (e) => {
+          if (e.target.id === "resetModal") closeResetModal();
+        });
+
+        $("statusModal").addEventListener("click", (e) => {
+          if (e.target.id === "statusModal") closeStatusModal();
+        });
+
+        await loadHosProfile();
+        await loadActivity();
       });
-    }
-
-    function logout() {
-      localStorage.removeItem("colspot_admin_session");
-      localStorage.removeItem("colspot_pending_admin");
-      window.location.href = "index.html";
-    }
-
-    function jumpToSection(id) {
-      const el = $(id);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      if (!requireHodSession()) return;
-
-      setupProfileMenu();
-
-      $("logoutBtn").addEventListener("click", logout);
-      $("navLogoutBtn").addEventListener("click", logout);
-
-      $("jumpAnnouncementBtn").addEventListener("click", () => jumpToSection("announcementSection"));
-      $("jumpStudentBtn").addEventListener("click", () => jumpToSection("studentSection"));
-      $("navStudentsBtn").addEventListener("click", () => jumpToSection("studentSection"));
-      $("navAnnouncementsBtn").addEventListener("click", () => jumpToSection("announcementSection"));
-
-      $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
-
-      $("clearAnnouncementBtn").addEventListener("click", () => {
-        $("announcementTitle").value = "";
-        $("announcementBody").value = "";
-        showMessage("announcementMessageBox", "", "error");
-      });
-
-      $("searchStudentBtn").addEventListener("click", async () => {
-        showMessage("studentMessageBox", "", "error");
-        const q = ($("studentSearchInput").value || "").trim();
-        await loadStudents(q);
-      });
-
-      $("clearStudentBtn").addEventListener("click", async () => {
-        $("studentSearchInput").value = "";
-        showMessage("studentMessageBox", "", "error");
-        await loadStudents("");
-      });
-
-      await loadCounts();
-      await loadAnnouncements();
-      await loadStudents("");
-    });
-  })();
-</script>
+    })();
+  </script>
 </body>
 </html>
