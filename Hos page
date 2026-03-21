@@ -130,6 +130,7 @@
       display:flex;
       justify-content:flex-end;
       margin-bottom:8px;
+      gap:8px;
     }
 
     .icon-btn{
@@ -196,6 +197,67 @@
       padding:14px;
       box-shadow:0 10px 30px rgba(15,23,42,.06);
       margin:0 2px 14px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:#334155;
+      margin-bottom:6px;
+    }
+
+    .input,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 13px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+    }
+
+    .textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mini-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:var(--shadow);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
     }
 
     .history-list{
@@ -267,6 +329,13 @@
       color:#991b1b;
     }
 
+    .message.success{
+      display:block;
+      background:#ecfdf5;
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -307,6 +376,12 @@
       align-items:center;
       gap:3px;
     }
+
+    @media (max-width:360px){
+      .btn-row{
+        flex-direction:column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -329,18 +404,25 @@
       <section class="hero">
         <div class="hero-line" id="schoolNameText">School</div>
         <h1 class="hero-title">
-          Manage your<br><span>students</span>
+          Manage your<br><span>students & announcements</span>
         </h1>
         <div class="hero-sub">
-          This page is now focused on pulling the student count and student list for the HOS school.
+          This page now shows the student list and lets HOS send school announcements with history.
         </div>
       </section>
 
       <div class="top-tools">
-        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh dashboard">
+        <button class="icon-btn" id="refreshStudentsBtn" type="button" aria-label="Refresh students">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M20 11a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             <path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="refreshAnnouncementsBtn" type="button" aria-label="Refresh announcements">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 3v18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
@@ -355,9 +437,51 @@
           <div class="stat-value" id="totalStudentShown">--</div>
           <div class="stat-label">Shown</div>
         </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalAnnouncementCount">--</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-value" id="totalAnnouncementShown">--</div>
+          <div class="stat-label">Recent</div>
+        </div>
       </section>
 
       <div class="message" id="pageErrorBox"></div>
+      <div class="message" id="announcementMessageBox"></div>
+
+      <div class="section-head">
+        <div class="section-title">Send announcement</div>
+      </div>
+
+      <section class="card">
+        <div class="field">
+          <label for="announcementTitle">Title</label>
+          <input id="announcementTitle" class="input" placeholder="Enter announcement title">
+        </div>
+
+        <div class="field">
+          <label for="announcementBody">Message</label>
+          <textarea id="announcementBody" class="textarea" placeholder="Write the school announcement here..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send announcement</button>
+          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <div class="section-title">Recent announcement history</div>
+      </div>
+
+      <section class="card">
+        <div class="history-list" id="announcementList">
+          <div class="empty">Loading announcements...</div>
+        </div>
+      </section>
 
       <div class="section-head">
         <div class="section-title">Students in this school</div>
@@ -399,7 +523,8 @@
       const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
       const EDGE = {
-        summary: "hos-student-summary"
+        studentSummary: "hos-student-summary",
+        sendAnnouncement: "hos-send-announcement"
       };
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -420,6 +545,13 @@
           .replaceAll("'","&#39;");
       }
 
+      function formatDate(value){
+        if (!value) return "-";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "-";
+        return d.toLocaleString();
+      }
+
       function getAdminSession(){
         try{
           return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
@@ -428,15 +560,15 @@
         }
       }
 
-      function showPageError(text){
-        const box = $("pageErrorBox");
+      function showMessage(id, text, type){
+        const box = $(id);
         if (!text){
           box.textContent = "";
           box.className = "message";
           return;
         }
         box.textContent = text;
-        box.className = "message error";
+        box.className = `message ${type === "success" ? "success" : "error"}`;
       }
 
       function requireHosSession(){
@@ -503,21 +635,38 @@
         `).join("");
       }
 
-      async function loadDashboardData(){
+      function renderAnnouncementList(rows){
+        const wrap = $("announcementList");
+        if (!wrap) return;
+
+        if (!rows || !rows.length){
+          wrap.innerHTML = '<div class="empty">No announcements yet for this school.</div>';
+          return;
+        }
+
+        wrap.innerHTML = rows.map((item) => `
+          <div class="history-card">
+            <div class="history-top">
+              <div>
+                <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
+                <div class="history-sub">${escapeHtml((item.message || "").slice(0, 160) || "-")}</div>
+              </div>
+              <div class="pill">School</div>
+            </div>
+            <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+          </div>
+        `).join("");
+      }
+
+      async function loadStudentData(){
         $("totalStudentCount").textContent = "--";
         $("totalStudentShown").textContent = "--";
-        showPageError("");
+        showMessage("pageErrorBox", "", "error");
 
         try{
-          console.log("HOS SESSION:", adminSession);
-          console.log("CURRENT SCHOOL:", currentSchoolName);
-
-          const result = await invokeEdge(EDGE.summary, {
-            hos_admin_id: adminSession.id,
-            school_name: currentSchoolName
+          const result = await invokeEdge(EDGE.studentSummary, {
+            hos_admin_id: adminSession.id
           });
-
-          console.log("HOS STUDENT SUMMARY RESULT:", result);
 
           if (!result.ok){
             throw new Error(result.error || "Could not load student summary.");
@@ -535,8 +684,72 @@
           $("totalStudentCount").textContent = "0";
           $("totalStudentShown").textContent = "0";
           renderStudentList([]);
-          showPageError(err.message || "Could not load students.");
+          showMessage("pageErrorBox", err.message || "Could not load students.", "error");
         }
+      }
+
+      async function sendAnnouncement(){
+        showMessage("announcementMessageBox", "", "error");
+
+        const title = ($("announcementTitle").value || "").trim();
+        const message = ($("announcementBody").value || "").trim();
+
+        if (!title){
+          showMessage("announcementMessageBox", "Please enter the title.", "error");
+          return;
+        }
+
+        if (!message){
+          showMessage("announcementMessageBox", "Please enter the message.", "error");
+          return;
+        }
+
+        const btn = $("sendAnnouncementBtn");
+        btn.disabled = true;
+
+        try{
+          const result = await invokeEdge(EDGE.sendAnnouncement, {
+            hos_admin_id: adminSession.id,
+            title,
+            message
+          });
+
+          if (!result.ok){
+            throw new Error(result.error || "Could not send announcement.");
+          }
+
+          $("announcementTitle").value = "";
+          $("announcementBody").value = "";
+
+          const totals = result.totals || {};
+          const recentAnnouncements = Array.isArray(result.recent_announcements)
+            ? result.recent_announcements
+            : [];
+
+          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+          $("totalAnnouncementShown").textContent = String(recentAnnouncements.length || 0);
+
+          renderAnnouncementList(recentAnnouncements);
+          showMessage("announcementMessageBox", result.message || "Announcement sent successfully.", "success");
+        }catch(err){
+          console.error(err);
+          showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
+        }finally{
+          btn.disabled = false;
+        }
+      }
+
+      function clearAnnouncementForm(){
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
+        showMessage("announcementMessageBox", "", "error");
+      }
+
+      async function refreshAnnouncementHistoryOnly(){
+        showMessage("announcementMessageBox", "", "error");
+        renderAnnouncementList([]);
+        $("totalAnnouncementCount").textContent = "--";
+        $("totalAnnouncementShown").textContent = "--";
       }
 
       function logoutAdmin(){
@@ -548,10 +761,16 @@
       document.addEventListener("DOMContentLoaded", async () => {
         if (!requireHosSession()) return;
 
-        $("refreshBtn").addEventListener("click", loadDashboardData);
+        $("refreshStudentsBtn").addEventListener("click", loadStudentData);
+        $("refreshAnnouncementsBtn").addEventListener("click", refreshAnnouncementHistoryOnly);
+        $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+        $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
         $("logoutBtn").addEventListener("click", logoutAdmin);
 
-        await loadDashboardData();
+        await loadStudentData();
+        renderAnnouncementList([]);
+        $("totalAnnouncementCount").textContent = "0";
+        $("totalAnnouncementShown").textContent = "0";
       });
     })();
   </script>
