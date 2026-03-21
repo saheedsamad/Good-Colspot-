@@ -17,20 +17,15 @@
       --text:#0f172a;
       --muted:#707786;
       --line:#e8edf5;
-
       --blue-1:#2f6cff;
       --blue-2:#2a56df;
-
       --green-1:#77b84d;
       --green-2:#5e9f3a;
-
       --orange-1:#ffb13a;
       --orange-2:#f39212;
-
       --nav-text:#9aa3b2;
       --shadow:0 14px 34px rgba(15,23,42,.08);
       --soft-shadow:0 12px 24px rgba(47,108,255,.14);
-
       --error:#991b1b;
       --error-bg:#fef2f2;
       --success:#166534;
@@ -543,11 +538,9 @@
       .hero-title{
         font-size:26px;
       }
-
       .quick-btn{
         font-size:15px;
       }
-
       .btn-row{
         flex-direction:column;
       }
@@ -834,14 +827,12 @@
           if (studentError) throw studentError;
 
           const { count: announcementCount, error: announcementError } = await sb
-            .from("department_announcements")
+            .from("school_announcements")
             .select("*", { count: "exact", head: true })
             .eq("school_name", schoolName)
-            .eq("department_name", departmentName);
+            .eq("department", departmentName);
 
-          if (announcementError && !String(announcementError.message).toLowerCase().includes("does not exist")) {
-            throw announcementError;
-          }
+          if (announcementError) throw announcementError;
 
           $("studentCount").textContent = String(studentCount || 0);
           $("announcementCount").textContent = String(announcementCount || 0);
@@ -859,21 +850,14 @@
 
         try {
           const { data, error } = await sb
-            .from("department_announcements")
+            .from("school_announcements")
             .select("title, message, created_at")
             .eq("school_name", schoolName)
-            .eq("department_name", departmentName)
+            .eq("department", departmentName)
             .order("created_at", { ascending: false })
             .limit(10);
 
-          if (error) {
-            if (String(error.message).toLowerCase().includes("does not exist")) {
-              wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
-              $("announcementCount").textContent = "0";
-              return;
-            }
-            throw error;
-          }
+          if (error) throw error;
 
           if (!data || !data.length) {
             wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
@@ -926,13 +910,13 @@
 
         try {
           const { error } = await sb
-            .from("department_announcements")
+            .from("school_announcements")
             .insert({
               school_name: schoolName,
-              department_name: departmentName,
+              department: departmentName,
               title,
               message,
-              created_by: hodSession.id
+              created_by_hos: hodSession.id
             });
 
           if (error) throw error;
@@ -966,11 +950,7 @@
 
           const q = String(searchValue || "").trim();
           if (q) {
-            if (/^\d/.test(q)) {
-              query = query.ilike("matric_number", `%${q}%`);
-            } else {
-              query = query.ilike("full_name", `%${q}%`);
-            }
+            query = query.or(`matric_number.ilike.%${q}%,full_name.ilike.%${q}%`);
           }
 
           const { data, error } = await query;
