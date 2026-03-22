@@ -153,13 +153,21 @@
       margin-bottom: 18px;
     }
 
+    .entry-toggle,
     .mode-toggle {
       display: flex;
       background: #e5edff;
       border-radius: 999px;
       padding: 4px;
-      margin-bottom: 20px;
       gap: 4px;
+    }
+
+    .entry-toggle {
+      margin-bottom: 10px;
+    }
+
+    .mode-toggle {
+      margin-bottom: 20px;
     }
 
     .mode-btn {
@@ -445,15 +453,21 @@
         <h1 id="card-title">Welcome back</h1>
         <p class="subtitle" id="card-subtitle">Sign in to your Colspot account</p>
 
+        <div id="entry-toggle" class="entry-toggle">
+          <button id="entry-user" class="mode-btn active" type="button" onclick="switchEntryMode('user')">
+            User
+          </button>
+          <button id="entry-admin" class="mode-btn" type="button" onclick="switchEntryMode('admin')">
+            Admin
+          </button>
+        </div>
+
         <div id="mode-toggle" class="mode-toggle">
           <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
             Sign in
           </button>
           <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
             Sign up
-          </button>
-          <button id="tab-admin" class="mode-btn" type="button" onclick="switchMode('admin')">
-            Admin
           </button>
         </div>
 
@@ -874,9 +888,11 @@
     const titleEl = document.getElementById("card-title");
     const subEl = document.getElementById("card-subtitle");
 
+    const entryUser = document.getElementById("entry-user");
+    const entryAdmin = document.getElementById("entry-admin");
+
     const tabSignin = document.getElementById("tab-signin");
     const tabSignup = document.getElementById("tab-signup");
-    const tabAdmin = document.getElementById("tab-admin");
 
     const modeToggle = document.getElementById("mode-toggle");
     const switchRow = document.getElementById("switch-row");
@@ -930,8 +946,19 @@
       });
     }
 
-    function setActive(tab) {
-      [tabSignin, tabSignup, tabAdmin].forEach((btn) => btn && btn.classList.remove("active"));
+    function setEntryActive(type) {
+      if (entryUser) entryUser.classList.remove("active");
+      if (entryAdmin) entryAdmin.classList.remove("active");
+
+      if (type === "admin") {
+        if (entryAdmin) entryAdmin.classList.add("active");
+      } else {
+        if (entryUser) entryUser.classList.add("active");
+      }
+    }
+
+    function setUserModeActive(tab) {
+      [tabSignin, tabSignup].forEach((btn) => btn && btn.classList.remove("active"));
       if (tab) tab.classList.add("active");
     }
 
@@ -950,17 +977,18 @@
 
     function showAdminLogin() {
       hideAllPanels();
+      setEntryActive("admin");
       if (titleEl) titleEl.textContent = "Admin login";
       if (subEl) subEl.textContent = "Sign in to your Colspot admin account";
-      if (modeToggle) modeToggle.classList.remove("hidden");
+      if (modeToggle) modeToggle.classList.add("hidden");
       if (switchRow) switchRow.classList.add("hidden");
       if (adminForm) adminForm.classList.remove("hidden");
       clearAdminMessages();
-      setActive(tabAdmin);
     }
 
     function showAdminLinkEmail(prefill = "") {
       hideAllPanels();
+      setEntryActive("admin");
       if (titleEl) titleEl.textContent = "Link your email";
       if (subEl) subEl.textContent = "Add your email to continue";
       if (modeToggle) modeToggle.classList.add("hidden");
@@ -972,6 +1000,7 @@
 
     function showAdminVerify(email = "") {
       hideAllPanels();
+      setEntryActive("admin");
       if (titleEl) titleEl.textContent = "Verify admin email";
       if (subEl) subEl.textContent = "Enter the code sent to your email";
       if (modeToggle) modeToggle.classList.add("hidden");
@@ -984,13 +1013,18 @@
 
     function restoreNormalMode(mode) {
       clearAdminMessages();
+      setEntryActive("user");
+      if (modeToggle) modeToggle.classList.remove("hidden");
+
       if (mode === "signup") {
+        setUserModeActive(tabSignup);
         if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
           window.switchMode.__original__("signup");
         } else if (typeof window.switchMode === "function") {
           window.switchMode("signup");
         }
       } else {
+        setUserModeActive(tabSignin);
         if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
           window.switchMode.__original__("signin");
         } else if (typeof window.switchMode === "function") {
@@ -1067,6 +1101,14 @@
       }
 
       clearPendingAdmin();
+      setEntryActive("user");
+      if (modeToggle) modeToggle.classList.remove("hidden");
+
+      if (mode === "signup") {
+        setUserModeActive(tabSignup);
+      } else {
+        setUserModeActive(tabSignin);
+      }
 
       if (typeof originalSwitchMode === "function") {
         return originalSwitchMode(mode);
@@ -1086,6 +1128,14 @@
 
       if (typeof originalToggleAuthMode === "function") {
         return originalToggleAuthMode();
+      }
+    };
+
+    window.switchEntryMode = function(mode) {
+      if (mode === "admin") {
+        window.switchMode("admin");
+      } else {
+        restoreNormalMode("signin");
       }
     };
 
@@ -1294,5 +1344,10 @@
       const pending = getPendingAdmin();
       showAdminLinkEmail(pending?.email || "");
     });
+
+    setEntryActive("user");
+    setUserModeActive(tabSignin);
   })();
-</script>
+  </script>
+</body>
+</html>
