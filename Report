@@ -12,9 +12,9 @@
 
   <style>
     :root{
-      --bg:#f6f8ff;
+      --bg:#f5f8ff;
       --card:#ffffff;
-      --line:#e7eaf3;
+      --line:#e6eaf3;
       --text:#111827;
       --muted:#6b7280;
       --blue:#2563eb;
@@ -25,16 +25,21 @@
       --green-soft:#ecfdf5;
       --red:#dc2626;
       --red-soft:#fef2f2;
+      --orange:#ea580c;
+      --orange-soft:#fff7ed;
       --shadow:0 16px 34px rgba(15,23,42,.08);
       --radius:22px;
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
     html,body{
       margin:0;
       padding:0;
-      background:linear-gradient(180deg,#eef4ff 0%, #f9fbff 100%);
+      background:linear-gradient(180deg,#eef4ff 0%, #fafcff 100%);
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
       min-height:100%;
@@ -49,7 +54,10 @@
       width:100%;
       max-width:430px;
       min-height:100vh;
-      padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 28px);
+      padding:
+        calc(env(safe-area-inset-top) + 14px)
+        16px
+        calc(env(safe-area-inset-bottom) + 28px);
     }
 
     .topbar{
@@ -94,7 +102,7 @@
     .page-sub{
       font-size:12px;
       color:var(--muted);
-      line-height:1.4;
+      line-height:1.45;
     }
 
     .hero-card,
@@ -195,7 +203,7 @@
       cursor:pointer;
       text-align:left;
       font-size:13px;
-      font-weight:700;
+      font-weight:800;
       color:#334155;
       transition:.15s ease;
     }
@@ -231,7 +239,7 @@
 
     .choice-title{
       font-size:13px;
-      font-weight:800;
+      font-weight:900;
       margin-bottom:4px;
     }
 
@@ -267,7 +275,7 @@
     }
 
     .textarea{
-      min-height:150px;
+      min-height:170px;
       resize:vertical;
       line-height:1.5;
     }
@@ -301,8 +309,8 @@
     }
 
     .inline-note.urgent{
-      background:#fff7ed;
-      color:#c2410c;
+      background:var(--orange-soft);
+      color:var(--orange);
       border:1px solid #fed7aa;
     }
 
@@ -513,25 +521,20 @@
 
       <div class="row">
         <div class="field">
-          <label for="reportDate">Date / time (optional)</label>
-          <input id="reportDate" class="input" type="datetime-local">
-        </div>
-
-        <div class="field">
           <label for="reportUrgency">Urgency</label>
           <select id="reportUrgency" class="select">
             <option value="normal">Normal</option>
             <option value="urgent">Urgent</option>
           </select>
         </div>
-      </div>
 
-      <div class="field">
-        <label for="allowReplySelect">Allow school authority to reply through this report</label>
-        <select id="allowReplySelect" class="select">
-          <option value="true">Yes, allow anonymous/private replies</option>
-          <option value="false">No, just review the report</option>
-        </select>
+        <div class="field">
+          <label for="allowReplySelect">School authority reply</label>
+          <select id="allowReplySelect" class="select">
+            <option value="true">Allow private replies</option>
+            <option value="false">Do not allow replies</option>
+          </select>
+        </div>
       </div>
 
       <div class="inline-note urgent" id="urgencyNote" style="display:none;">
@@ -618,13 +621,6 @@
       }
     }
 
-    function formatIncidentDate(value) {
-      if (!value) return null;
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return null;
-      return d.toISOString();
-    }
-
     async function copyReportDetails() {
       if (!lastTrackingCode || !lastReplyPin) return;
 
@@ -646,7 +642,6 @@
       const message = $("reportMessageInput").value.trim();
       const locationText = $("reportLocation").value.trim();
       const personInvolved = $("reportPerson").value.trim();
-      const incidentDate = formatIncidentDate($("reportDate").value);
       const urgency = $("reportUrgency").value;
       const allowAnonymousReply = $("allowReplySelect").value === "true";
 
@@ -673,7 +668,6 @@
             title,
             message,
             location_text: locationText,
-            incident_date: incidentDate,
             person_involved: personInvolved,
             urgency,
             allow_anonymous_reply: allowAnonymousReply
@@ -708,9 +702,11 @@
         $("reportMessageInput").value = "";
         $("reportLocation").value = "";
         $("reportPerson").value = "";
-        $("reportDate").value = "";
         $("reportUrgency").value = "normal";
         $("allowReplySelect").value = "true";
+
+        setCategory("bullying");
+        setPrivacyMode(true);
         updateUrgencyNote();
 
         showMessage(data.message || "Report submitted successfully.", "success");
