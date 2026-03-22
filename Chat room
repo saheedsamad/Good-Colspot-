@@ -41,9 +41,6 @@
       --bubble-them:#F6F8FC;
       --bubble-them-ink:#0b0f14;
 
-      --tick-white: rgba(255,255,255,.95);
-      --tick-blue: #7ec3ff;
-
       --shellMax:420px;
     }
 
@@ -115,6 +112,7 @@
     .icon-xs{
       width:12px;
       height:12px;
+      stroke-width:2;
     }
 
     .chat-header{
@@ -229,27 +227,37 @@
       bottom:6px;
       font-size:12px;
       color:var(--muted);
-      opacity:.95;
+      opacity:.92;
       white-space:nowrap;
       display:flex;
-      gap:.30rem;
+      gap:.35rem;
       align-items:center;
     }
 
     .me .bubble .meta{
-      color:rgba(255,255,255,.90);
+      color:rgba(255,255,255,.88);
     }
 
-    .msg-ticks{
+    .tick{
       display:inline-flex;
       align-items:center;
-      gap:0;
-      margin-left:2px;
+      opacity:.95;
       line-height:1;
-      vertical-align:middle;
     }
 
-    .msg-ticks .tick-icon{
+    .tick.single{
+      gap:0;
+    }
+
+    .tick.double{
+      gap:0;
+    }
+
+    .tick.double .tick-icon + .tick-icon{
+      margin-left:-5px;
+    }
+
+    .tick .tick-icon{
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -257,17 +265,17 @@
       height:12px;
     }
 
-    .msg-ticks.double .tick-icon + .tick-icon{
-      margin-left:-4px;
+    .me .tick.sent,
+    .me .tick.delivered{
+      color:rgba(255,255,255,.96);
     }
 
-    .msg-ticks.sent,
-    .msg-ticks.delivered{
-      color:var(--tick-white);
+    .me .tick.read{
+      color:#7fd3ff;
     }
 
-    .msg-ticks.read{
-      color:var(--tick-blue);
+    .them .tick{
+      display:none;
     }
 
     .sysrow{
@@ -763,13 +771,13 @@
     let currentAdmin = null;
     let reportId = "";
     let pollTimer = null;
+    let markingRead = false;
 
     let recording = null;
     let recordingChunks = [];
     let recordingStream = null;
     let recordingSeconds = 0;
     let recordingTimer = null;
-    let markingRead = false;
 
     function esc(s) {
       return String(s || "").replace(/[&<>"']/g, (c) => ({
@@ -963,39 +971,30 @@
       return null;
     }
 
-    function getTickState(message) {
-      if (!message) return "sent";
-      if (message.read_at) return "read";
-      if (message.delivered_at) return "delivered";
-      return "sent";
-    }
-
-    function renderTicks(message, mine) {
+    function getTickMarkup(message, mine) {
       if (!mine) return "";
 
-      const state = getTickState(message);
-
-      if (state === "read") {
+      if (message.read_at) {
         return `
-          <span class="msg-ticks double read" aria-label="Read">
-            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
-            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+          <span class="tick double read" aria-label="Read">
+            <span class="tick-icon"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
+            <span class="tick-icon"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
           </span>
         `;
       }
 
-      if (state === "delivered") {
+      if (message.delivered_at) {
         return `
-          <span class="msg-ticks double delivered" aria-label="Delivered">
-            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
-            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+          <span class="tick double delivered" aria-label="Delivered">
+            <span class="tick-icon"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
+            <span class="tick-icon"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
           </span>
         `;
       }
 
       return `
-        <span class="msg-ticks sent" aria-label="Sent">
-          <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+        <span class="tick single sent" aria-label="Sent">
+          <span class="tick-icon"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
         </span>
       `;
     }
@@ -1045,7 +1044,7 @@
       row.className = `row ${mine ? "me" : "them"}`;
 
       const rich = parseRichMessage(m.message || "");
-      const ticks = renderTicks(m, mine);
+      const ticks = getTickMarkup(m, mine);
 
       if (rich && rich.kind === "voice") {
         row.innerHTML = `
@@ -1125,25 +1124,20 @@
     }
 
     async function markChatRead() {
-      if (markingRead || !reportId || !currentMode) return 0;
+      if (markingRead) return;
       markingRead = true;
 
       try {
-        let body = {
+        const body = {
           report_id: reportId,
-          role: currentMode
+          role: currentMode,
+          submitted_by_user_id: currentMode === "student" ? currentUser?.id || "" : "",
+          report_agent_id: currentMode === "report_agent" ? currentAdmin?.id || "" : "",
+          assistant_agent_id: currentMode === "assistant_report_agent" ? currentAdmin?.id || "" : ""
         };
 
-        if (currentMode === "student") {
-          body.submitted_by_user_id = currentUser.id;
-        } else if (currentMode === "report_agent") {
-          body.report_agent_id = currentAdmin.id;
-        } else if (currentMode === "assistant_report_agent") {
-          body.assistant_agent_id = currentAdmin.id;
-        }
-
-        const data = await invokeEdge("mark-report-chat-read", body);
-        return Number(data?.marked_count || 0);
+        const result = await invokeEdge("mark-report-chat-read", body);
+        return Number(result?.marked_count || 0);
       } catch (err) {
         console.error("markChatRead error:", err);
         return 0;
@@ -1152,7 +1146,7 @@
       }
     }
 
-    async function loadChat(shouldMarkRead = false) {
+    async function loadChat(markReadAfterLoad = false) {
       let data;
 
       if (currentMode === "student") {
@@ -1191,9 +1185,9 @@
       scrollToBottom(false);
       toggleJump();
 
-      if (shouldMarkRead) {
-        const marked = await markChatRead();
-        if (marked > 0) {
+      if (markReadAfterLoad) {
+        const changed = await markChatRead();
+        if (changed > 0) {
           await loadChat(false);
         }
       }
