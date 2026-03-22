@@ -14,24 +14,32 @@
     :root{
       --blue:#2563eb;
       --blue-dark:#1d4ed8;
-      --bg:#eef4ff;
+      --blue-soft:#eaf2ff;
+      --bg:#f5f9ff;
       --card:#ffffff;
       --line:#e5e7eb;
       --muted:#6b7280;
       --text:#111827;
-      --soft-blue:#eff6ff;
-      --shadow:0 12px 28px rgba(15,23,42,.08);
+      --shadow:0 14px 32px rgba(15,23,42,.08);
+      --shadow-soft:0 8px 20px rgba(37,99,235,.08);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
     }
 
-    *{ box-sizing:border-box; }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
     html,body{
       margin:0;
-      padding:0;
       min-height:100%;
-      background:radial-gradient(circle at top, #e7f0ff, #ffffff 60%);
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
+      background:
+        radial-gradient(circle at top, #dfecff 0%, #f7fbff 52%, #ffffff 100%);
     }
 
     body{
@@ -39,20 +47,28 @@
       justify-content:center;
     }
 
-    .phone-shell{
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .app{
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:#fff;
-      padding:calc(env(safe-area-inset-top) + 10px) 14px 96px;
+      padding:
+        calc(env(safe-area-inset-top) + 12px)
+        14px
+        calc(env(safe-area-inset-bottom) + 102px);
       position:relative;
     }
 
-    header{
+    .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
     .brand{
@@ -62,202 +78,219 @@
     }
 
     .brand-logo{
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
-      box-shadow:var(--shadow);
+      overflow:hidden;
     }
 
-    .brand-logo svg{
-      width:18px;
-      height:18px;
+    .brand-logo img{
+      width:34px;
+      height:34px;
+      object-fit:contain;
+      display:block;
     }
 
     .brand-name{
-      font-size:17px;
-      font-weight:800;
+      font-size:19px;
+      font-weight:900;
       letter-spacing:-.02em;
+      color:#10224a;
     }
 
     .avatar-chip{
-      width:40px;
-      height:40px;
-      border-radius:999px;
+      width:42px;
+      height:42px;
       border:none;
-      background:linear-gradient(135deg,#1d4ed8,#22c55e);
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
       color:#fff;
-      font-weight:800;
+      font-weight:900;
+      font-size:15px;
       box-shadow:var(--shadow);
       cursor:pointer;
     }
 
     .hero{
-      margin:4px 2px 16px;
+      margin:8px 2px 16px;
+      padding:20px 16px;
+      border-radius:26px;
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 18px 34px rgba(37,99,235,.22);
     }
 
-    .hero-line{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:4px;
-      font-weight:600;
+    .hero::before{
+      content:"";
+      position:absolute;
+      right:-28px;
+      top:-30px;
+      width:140px;
+      height:140px;
+      border-radius:50%;
+      background:rgba(255,255,255,.10);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:18px;
+      bottom:-50px;
+      width:160px;
+      height:90px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      transform:rotate(-16deg);
+    }
+
+    .hero-school{
+      font-size:14px;
+      font-weight:800;
+      opacity:.96;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
     }
 
     .hero-title{
-      font-size:24px;
-      line-height:1.18;
-      font-weight:800;
-      letter-spacing:-.03em;
       margin:0 0 8px;
-    }
-
-    .hero-title span{
-      color:var(--blue);
+      font-size:34px;
+      line-height:1.02;
+      font-weight:900;
+      letter-spacing:-.05em;
+      position:relative;
+      z-index:1;
     }
 
     .hero-sub{
       font-size:13px;
+      line-height:1.5;
+      opacity:.96;
+      max-width:260px;
+      position:relative;
+      z-index:1;
+    }
+
+    .message{
+      display:none;
+      margin:0 2px 14px;
+      padding:12px 13px;
+      border-radius:16px;
+      font-size:13px;
       line-height:1.45;
-      color:var(--muted);
-      margin-bottom:14px;
     }
 
-    .top-tools{
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:8px;
-      gap:8px;
-    }
-
-    .icon-btn{
-      width:38px;
-      height:38px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      color:var(--text);
+    .message.error{
+      display:block;
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
     }
 
     .stats-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
-      margin:16px 2px 4px;
+      gap:12px;
+      margin:0 2px 14px;
     }
 
     .stat-card{
-      background:#fff;
+      background:var(--card);
       border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px 13px;
-      box-shadow:0 8px 24px rgba(15,23,42,.05);
-    }
-
-    .stat-value{
-      font-size:22px;
-      font-weight:800;
-      line-height:1;
-      margin-bottom:6px;
+      border-radius:20px;
+      padding:18px 14px;
+      box-shadow:var(--shadow-soft);
+      text-align:center;
     }
 
     .stat-label{
       font-size:11px;
       color:var(--muted);
       text-transform:uppercase;
+      letter-spacing:.08em;
       font-weight:800;
-      letter-spacing:.06em;
+      margin-bottom:10px;
+    }
+
+    .stat-value{
+      font-size:31px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.05em;
+      color:#0f172a;
+    }
+
+    .action-card{
+      margin:0 2px 18px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:14px;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .action-btn{
+      width:100%;
+      border:none;
+      border-radius:999px;
+      padding:15px 16px;
+      font-size:15px;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 14px 28px rgba(37,99,235,.20);
+      cursor:pointer;
+    }
+
+    .action-note{
+      margin-top:10px;
+      text-align:center;
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
     }
 
     .section-head{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      margin:20px 4px 10px;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 4px 10px;
     }
 
     .section-title{
       margin:0;
-      font-size:15px;
-      font-weight:800;
+      font-size:17px;
+      font-weight:900;
       letter-spacing:-.02em;
     }
 
-    .card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:14px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-      margin:0 2px 14px;
-    }
-
-    .field{
-      margin-bottom:12px;
-    }
-
-    .field label{
-      display:block;
-      font-size:12px;
-      font-weight:700;
-      color:#334155;
-      margin-bottom:6px;
-    }
-
-    .input,.textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 13px;
-      background:#fff;
-      font-size:14px;
-      color:var(--text);
-      outline:none;
-    }
-
-    .textarea{
-      min-height:110px;
-      resize:vertical;
-    }
-
-    .btn-row{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .mini-btn{
-      flex:1;
+    .view-btn{
       border:none;
-      border-radius:999px;
-      padding:12px 14px;
-      font-size:14px;
+      background:var(--blue-soft);
+      color:var(--blue);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:12px;
       font-weight:800;
       cursor:pointer;
     }
 
-    .mini-btn.primary{
-      color:#fff;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      box-shadow:var(--shadow);
-    }
-
-    .mini-btn.secondary{
-      color:var(--text);
-      background:#fff;
+    .history-wrap{
+      margin:0 2px;
+      background:var(--card);
       border:1px solid var(--line);
-    }
-
-    .mini-btn:disabled{
-      opacity:.65;
-      cursor:not-allowed;
+      border-radius:22px;
+      padding:14px;
+      box-shadow:var(--shadow-soft);
     }
 
     .history-list{
@@ -266,7 +299,7 @@
       gap:10px;
     }
 
-    .history-card{
+    .history-item{
       border:1px solid var(--line);
       border-radius:18px;
       padding:12px;
@@ -275,29 +308,30 @@
 
     .history-top{
       display:flex;
-      justify-content:space-between;
       align-items:flex-start;
+      justify-content:space-between;
       gap:10px;
-      margin-bottom:8px;
+      margin-bottom:6px;
     }
 
     .history-title{
       font-size:14px;
+      line-height:1.3;
       font-weight:800;
-      line-height:1.2;
+      color:#111827;
     }
 
     .history-sub{
       font-size:12px;
+      line-height:1.45;
       color:var(--muted);
-      line-height:1.35;
       margin-top:3px;
     }
 
-    .pill{
+    .history-type{
       flex-shrink:0;
       border-radius:999px;
-      padding:5px 10px;
+      padding:6px 10px;
       font-size:10px;
       font-weight:800;
       text-transform:uppercase;
@@ -310,60 +344,7 @@
       font-size:13px;
       color:var(--muted);
       text-align:center;
-      padding:16px 8px;
-    }
-
-    .message{
-      display:none;
-      margin:0 2px 14px;
-      padding:11px 12px;
-      border-radius:14px;
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .message.error{
-      display:block;
-      background:#fef2f2;
-      border:1px solid #fecaca;
-      color:#991b1b;
-    }
-
-    .message.success{
-      display:block;
-      background:#ecfdf5;
-      border:1px solid #bbf7d0;
-      color:#166534;
-    }
-
-    .result-card{
-      display:none;
-      margin:0 2px 14px;
-      padding:13px;
-      border-radius:16px;
-      border:1px solid #bbf7d0;
-      background:#ecfdf5;
-      color:#166534;
-    }
-
-    .result-card.show{
-      display:block;
-    }
-
-    .result-title{
-      font-size:14px;
-      font-weight:800;
-      margin-bottom:8px;
-    }
-
-    .result-row{
-      font-size:13px;
-      line-height:1.45;
-      margin-bottom:4px;
-    }
-
-    .result-row strong{
-      color:#14532d;
+      padding:18px 8px;
     }
 
     .bottom-nav{
@@ -375,17 +356,18 @@
       max-width:392px;
       background:rgba(255,255,255,.96);
       backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
       border:1px solid rgba(229,231,235,.9);
       box-shadow:0 20px 40px rgba(15,23,42,.12);
       border-radius:26px;
       padding:8px 8px 10px;
-      display:flex;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:4px;
       z-index:30;
     }
 
     .nav-btn{
-      flex:1;
       border:none;
       background:transparent;
       color:#94a3b8;
@@ -404,25 +386,22 @@
       display:inline-flex;
       flex-direction:column;
       align-items:center;
-      gap:3px;
+      gap:4px;
     }
 
-    @media (max-width:360px){
-      .btn-row{
-        flex-direction:column;
-      }
+    .nav-inner svg{
+      width:20px;
+      height:20px;
+      display:block;
     }
   </style>
 </head>
 <body>
-  <div class="phone-shell">
-    <header>
+  <div class="app">
+    <header class="topbar">
       <div class="brand">
         <div class="brand-logo">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M6 5h12v14H6z" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
         </div>
         <div class="brand-name">Colspot</div>
       </div>
@@ -432,177 +411,86 @@
 
     <main>
       <section class="hero">
-        <div class="hero-line" id="schoolNameText">School</div>
-        <h1 class="hero-title">
-          Manage your<br><span>students, HODs & announcements</span>
-        </h1>
+        <div class="hero-school" id="schoolNameText">School</div>
+        <h1 class="hero-title">HOS Dashboard</h1>
         <div class="hero-sub">
-          This page now shows the student list, lets HOS send school announcements, and create HOD login accounts.
-        </div>
-      </section>
-
-      <div class="top-tools">
-        <button class="icon-btn" id="refreshStudentsBtn" type="button" aria-label="Refresh students">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M20 11a8 8 0 10-2.34 5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-
-        <button class="icon-btn" id="refreshAnnouncementsBtn" type="button" aria-label="Refresh announcements">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M12 3v18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <section class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalStudentCount">--</div>
-          <div class="stat-label">Students</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalStudentShown">--</div>
-          <div class="stat-label">Shown</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalAnnouncementCount">--</div>
-          <div class="stat-label">Announcements</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-value" id="totalAnnouncementShown">--</div>
-          <div class="stat-label">Recent</div>
+          Manage your school overview and recent activities.
         </div>
       </section>
 
       <div class="message" id="pageErrorBox"></div>
-      <div class="message" id="hodMessageBox"></div>
-      <div class="message" id="announcementMessageBox"></div>
-      <div class="message" id="reportAgentMessageBox"></div>
 
-      <div class="section-head">
-        <div class="section-title">Create HOD account</div>
-      </div>
-
-      <section class="card">
-        <div class="field">
-          <label for="hodFullName">Full name</label>
-          <input id="hodFullName" class="input" placeholder="Enter HOD full name">
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total students</div>
+          <div class="stat-value" id="totalStudentCount">0</div>
         </div>
 
-        <div class="field">
-          <label for="hodDepartment">Department</label>
-          <input id="hodDepartment" class="input" placeholder="Enter department name">
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="createHodBtn" type="button">Create HOD</button>
-          <button class="mini-btn secondary" id="clearHodBtn" type="button">Clear</button>
+        <div class="stat-card">
+          <div class="stat-label">Total HODs</div>
+          <div class="stat-value" id="totalHodCount">0</div>
         </div>
       </section>
 
-      <div class="result-card" id="hodResultCard">
-        <div class="result-title">HOD account created successfully</div>
-        <div class="result-row"><strong>Full name:</strong> <span id="resultHodName">-</span></div>
-        <div class="result-row"><strong>Department:</strong> <span id="resultHodDepartment">-</span></div>
-        <div class="result-row"><strong>Login ID:</strong> <span id="resultHodLoginId">-</span></div>
-        <div class="result-row"><strong>Temporary password:</strong> <span id="resultHodPassword">-</span></div>
-      </div>
-
-      <div class="section-head">
-        <div class="section-title">Send announcement</div>
-      </div>
-
-      <section class="card">
-        <div class="field">
-          <label for="announcementTitle">Title</label>
-          <input id="announcementTitle" class="input" placeholder="Enter announcement title">
-        </div>
-
-        <div class="field">
-          <label for="announcementBody">Message</label>
-          <textarea id="announcementBody" class="textarea" placeholder="Write the school announcement here..."></textarea>
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">Send announcement</button>
-          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
+      <section class="action-card">
+        <button class="action-btn" id="createAccountBtn" type="button">
+          Create account for HOD / Agent
+        </button>
+        <div class="action-note">
+          Create HOD and report agent accounts from one place.
         </div>
       </section>
 
       <div class="section-head">
-        <div class="section-title">Create report agent</div>
+        <h2 class="section-title">Latest history</h2>
+        <button class="view-btn" id="viewHistoryBtn" type="button">View all</button>
       </div>
 
-      <section class="card">
-        <div class="field">
-          <label for="reportAgentFullName">Full name</label>
-          <input id="reportAgentFullName" class="input" placeholder="Enter report agent full name">
-        </div>
-
-        <div class="field">
-          <label for="reportAgentEmail">Linked email (optional)</label>
-          <input id="reportAgentEmail" class="input" type="email" placeholder="Enter email address">
-        </div>
-
-        <div class="btn-row">
-          <button class="mini-btn primary" id="createReportAgentBtn" type="button">Create report agent</button>
-          <button class="mini-btn secondary" id="clearReportAgentBtn" type="button">Clear</button>
-        </div>
-      </section>
-
-      <div class="result-card" id="reportAgentResultCard">
-        <div class="result-title">Report agent account created successfully</div>
-        <div class="result-row"><strong>Full name:</strong> <span id="resultReportAgentName">-</span></div>
-        <div class="result-row"><strong>School:</strong> <span id="resultReportAgentSchool">-</span></div>
-        <div class="result-row"><strong>Login ID:</strong> <span id="resultReportAgentLoginId">-</span></div>
-        <div class="result-row"><strong>Temporary password:</strong> <span id="resultReportAgentPassword">-</span></div>
-      </div>
-
-      <div class="section-head">
-        <div class="section-title">Recent announcement history</div>
-      </div>
-
-      <section class="card">
-        <div class="history-list" id="announcementList">
-          <div class="empty">Loading announcements...</div>
-        </div>
-      </section>
-
-      <div class="section-head">
-        <div class="section-title">Students in this school</div>
-      </div>
-
-      <section class="card">
-        <div class="history-list" id="studentList">
-          <div class="empty">Loading students...</div>
+      <section class="history-wrap">
+        <div class="history-list" id="historyList">
+          <div class="empty">Loading history...</div>
         </div>
       </section>
     </main>
   </div>
 
   <nav class="bottom-nav">
-    <button class="nav-btn active" type="button">
+    <button class="nav-btn active" type="button" onclick="window.location.href='hos.html'">
       <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
         </svg>
-        <span>Home</span>
+        <span>Dashboard</span>
       </span>
     </button>
 
-    <button class="nav-btn" type="button" id="logoutBtn">
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_create_account.html'">
       <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 17l5-5-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M20 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M13 4H6a2 2 0 00-2 2v12a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
         </svg>
-        <span>Logout</span>
+        <span>Accounts</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_announcement.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Announcement</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_history.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>History</span>
       </span>
     </button>
   </nav>
@@ -610,18 +498,10 @@
   <script>
     (() => {
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-
-      const SUPABASE_ANON_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
-
-      const EDGE = {
-        studentSummary: "hos-student-summary",
-        sendAnnouncement: "hos-send-announcement",
-        createHod: "create-hod-account",
-        createReportAgent: "create-report-agent-account"
-      };
+      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const HISTORY_KEY = "hos_activity_history";
 
       let adminSession = null;
       let currentSchoolName = "";
@@ -654,7 +534,17 @@
         }
       }
 
-      function showMessage(id, text, type){
+      function getHosHistory(){
+        try{
+          const raw = localStorage.getItem(HISTORY_KEY);
+          const arr = JSON.parse(raw || "[]");
+          return Array.isArray(arr) ? arr : [];
+        }catch{
+          return [];
+        }
+      }
+
+      function showMessage(id, text){
         const box = $(id);
         if (!text){
           box.textContent = "";
@@ -662,7 +552,7 @@
           return;
         }
         box.textContent = text;
-        box.className = `message ${type === "success" ? "success" : "error"}`;
+        box.className = "message error";
       }
 
       function requireHosSession(){
@@ -679,288 +569,72 @@
           adminSession.schoolName ||
           "";
 
-        $("schoolNameText").textContent = currentSchoolName || "School not found";
+        $("schoolNameText").textContent = currentSchoolName || "School";
 
-        const initial = (adminSession.full_name || "H")
-          .trim()
-          .charAt(0)
-          .toUpperCase() || "H";
-
+        const initial = (adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
         $("avatarChip").textContent = initial;
+
         return true;
       }
 
-      async function invokeEdge(functionName, body){
-        const { data, error } = await sb.functions.invoke(functionName, {
-          body: body || {}
-        });
+      async function loadDashboard(){
+        showMessage("pageErrorBox", "");
 
-        if (error){
-          throw new Error((data && data.error) || error.message || "Request failed.");
+        try{
+          const schoolName = currentSchoolName;
+
+          const [studentsRes, hodsRes] = await Promise.all([
+            sb
+              .from("student_profiles")
+              .select("id", { count: "exact", head: true })
+              .eq("school_name", schoolName),
+
+            sb
+              .from("hod_accounts")
+              .select("id", { count: "exact", head: true })
+              .eq("school_name", schoolName)
+          ]);
+
+          if (studentsRes.error) throw studentsRes.error;
+          if (hodsRes.error) throw hodsRes.error;
+
+          $("totalStudentCount").textContent = String(studentsRes.count || 0);
+          $("totalHodCount").textContent = String(hodsRes.count || 0);
+
+          const history = getHosHistory()
+            .sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+            .slice(0,2);
+
+          renderHistory(history);
+        } catch(err){
+          console.error(err);
+          $("totalStudentCount").textContent = "0";
+          $("totalHodCount").textContent = "0";
+          renderHistory([]);
+          showMessage("pageErrorBox", err.message || "Could not load dashboard.");
         }
-
-        return data || {};
       }
 
-      function renderStudentList(rows){
-        const wrap = $("studentList");
-        if (!wrap) return;
+      function renderHistory(items){
+        const wrap = $("historyList");
 
-        if (!rows || !rows.length){
-          wrap.innerHTML = '<div class="empty">No students found for this school.</div>';
+        if (!items.length){
+          wrap.innerHTML = '<div class="empty">No recent history yet.</div>';
           return;
         }
 
-        wrap.innerHTML = rows.map((item) => `
-          <div class="history-card">
+        wrap.innerHTML = items.map((item) => `
+          <div class="history-item">
             <div class="history-top">
               <div>
-                <div class="history-title">${escapeHtml(item.full_name || "No name")}</div>
-                <div class="history-sub">${escapeHtml(item.matric_number || "No matric number")}</div>
+                <div class="history-title">${escapeHtml(item.title || "-")}</div>
+                <div class="history-sub">${escapeHtml(item.description || "-")}</div>
               </div>
-              <div class="pill">Student</div>
-            </div>
-            <div class="history-sub">Faculty: ${escapeHtml(item.faculty || "-")}</div>
-            <div class="history-sub">Department: ${escapeHtml(item.department || "-")}</div>
-            <div class="history-sub">Programme: ${escapeHtml(item.programme || "-")}</div>
-            <div class="history-sub">Level: ${escapeHtml(item.level || "-")}</div>
-            <div class="history-sub">School: ${escapeHtml(item.school_name || "-")}</div>
-          </div>
-        `).join("");
-      }
-
-      function renderAnnouncementList(rows){
-        const wrap = $("announcementList");
-        if (!wrap) return;
-
-        if (!rows || !rows.length){
-          wrap.innerHTML = '<div class="empty">No announcements yet for this school.</div>';
-          return;
-        }
-
-        wrap.innerHTML = rows.map((item) => `
-          <div class="history-card">
-            <div class="history-top">
-              <div>
-                <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
-                <div class="history-sub">${escapeHtml((item.message || "").slice(0, 160) || "-")}</div>
-              </div>
-              <div class="pill">School</div>
+              <div class="history-type">${escapeHtml(item.type || "Item")}</div>
             </div>
             <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
           </div>
         `).join("");
-      }
-
-      async function loadStudentData(){
-        $("totalStudentCount").textContent = "--";
-        $("totalStudentShown").textContent = "--";
-        showMessage("pageErrorBox", "", "error");
-
-        try{
-          const result = await invokeEdge(EDGE.studentSummary, {
-            hos_admin_id: adminSession.id
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not load student summary.");
-          }
-
-          const totals = result.totals || {};
-          const students = Array.isArray(result.students) ? result.students : [];
-
-          $("totalStudentCount").textContent = String(totals.students || 0);
-          $("totalStudentShown").textContent = String(students.length || 0);
-
-          renderStudentList(students);
-        }catch(err){
-          console.error(err);
-          $("totalStudentCount").textContent = "0";
-          $("totalStudentShown").textContent = "0";
-          renderStudentList([]);
-          showMessage("pageErrorBox", err.message || "Could not load students.", "error");
-        }
-      }
-
-      async function createHodAccount(){
-        showMessage("hodMessageBox", "", "error");
-        $("hodResultCard").classList.remove("show");
-
-        const fullName = ($("hodFullName").value || "").trim();
-        const departmentName = ($("hodDepartment").value || "").trim();
-
-        if (!fullName){
-          showMessage("hodMessageBox", "Please enter the full name.", "error");
-          return;
-        }
-
-        if (!departmentName){
-          showMessage("hodMessageBox", "Please enter the department.", "error");
-          return;
-        }
-
-        const btn = $("createHodBtn");
-        btn.disabled = true;
-
-        try{
-          const result = await invokeEdge(EDGE.createHod, {
-            hos_admin_id: adminSession.id,
-            full_name: fullName,
-            department_name: departmentName
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not create HOD account.");
-          }
-
-          const account = result.hod_account || {};
-
-          $("resultHodName").textContent = account.full_name || fullName;
-          $("resultHodDepartment").textContent = account.department_name || departmentName;
-          $("resultHodLoginId").textContent = account.login_id || "-";
-          $("resultHodPassword").textContent = result.temporary_password || "-";
-
-          $("hodResultCard").classList.add("show");
-          $("hodFullName").value = "";
-          $("hodDepartment").value = "";
-
-          showMessage("hodMessageBox", result.message || "HOD account created successfully.", "success");
-        }catch(err){
-          console.error(err);
-          showMessage("hodMessageBox", err.message || "Could not create HOD account.", "error");
-        }finally{
-          btn.disabled = false;
-        }
-      }
-
-      function clearHodForm(){
-        $("hodFullName").value = "";
-        $("hodDepartment").value = "";
-        $("hodResultCard").classList.remove("show");
-        showMessage("hodMessageBox", "", "error");
-      }
-
-      async function sendAnnouncement(){
-        showMessage("announcementMessageBox", "", "error");
-
-        const title = ($("announcementTitle").value || "").trim();
-        const message = ($("announcementBody").value || "").trim();
-
-        if (!title){
-          showMessage("announcementMessageBox", "Please enter the title.", "error");
-          return;
-        }
-
-        if (!message){
-          showMessage("announcementMessageBox", "Please enter the message.", "error");
-          return;
-        }
-
-        const btn = $("sendAnnouncementBtn");
-        btn.disabled = true;
-
-        try{
-          const result = await invokeEdge(EDGE.sendAnnouncement, {
-            hos_admin_id: adminSession.id,
-            title,
-            message
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not send announcement.");
-          }
-
-          $("announcementTitle").value = "";
-          $("announcementBody").value = "";
-
-          const totals = result.totals || {};
-          const recentAnnouncements = Array.isArray(result.recent_announcements)
-            ? result.recent_announcements
-            : [];
-
-          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
-          $("totalAnnouncementShown").textContent = String(recentAnnouncements.length || 0);
-
-          renderAnnouncementList(recentAnnouncements);
-          showMessage("announcementMessageBox", result.message || "Announcement sent successfully.", "success");
-        }catch(err){
-          console.error(err);
-          showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
-        }finally{
-          btn.disabled = false;
-        }
-      }
-
-      function clearAnnouncementForm(){
-        $("announcementTitle").value = "";
-        $("announcementBody").value = "";
-        showMessage("announcementMessageBox", "", "error");
-      }
-
-      async function createReportAgent(){
-        showMessage("reportAgentMessageBox", "", "error");
-        $("reportAgentResultCard").classList.remove("show");
-
-        const fullName = ($("reportAgentFullName").value || "").trim();
-        const linkedEmail = ($("reportAgentEmail").value || "").trim();
-
-        if (!fullName){
-          showMessage("reportAgentMessageBox", "Please enter the full name.", "error");
-          return;
-        }
-
-        const btn = $("createReportAgentBtn");
-        btn.disabled = true;
-
-        try{
-          const result = await invokeEdge(EDGE.createReportAgent, {
-            hos_admin_id: adminSession.id,
-            full_name: fullName,
-            linked_email: linkedEmail
-          });
-
-          if (!result.ok){
-            throw new Error(result.error || "Could not create report agent account.");
-          }
-
-          const account = result.report_agent_account || {};
-
-          $("resultReportAgentName").textContent = account.full_name || fullName;
-          $("resultReportAgentSchool").textContent = account.school_name || currentSchoolName || "-";
-          $("resultReportAgentLoginId").textContent = account.login_id || "-";
-          $("resultReportAgentPassword").textContent = result.temporary_password || "-";
-
-          $("reportAgentResultCard").classList.add("show");
-          $("reportAgentFullName").value = "";
-          $("reportAgentEmail").value = "";
-
-          showMessage("reportAgentMessageBox", result.message || "Report agent account created successfully.", "success");
-        }catch(err){
-          console.error(err);
-          showMessage("reportAgentMessageBox", err.message || "Could not create report agent account.", "error");
-        }finally{
-          btn.disabled = false;
-        }
-      }
-
-      function clearReportAgentForm(){
-        $("reportAgentFullName").value = "";
-        $("reportAgentEmail").value = "";
-        $("reportAgentResultCard").classList.remove("show");
-        showMessage("reportAgentMessageBox", "", "error");
-      }
-
-      async function refreshAnnouncementHistoryOnly(){
-        showMessage("announcementMessageBox", "", "error");
-        renderAnnouncementList([]);
-        $("totalAnnouncementCount").textContent = "--";
-        $("totalAnnouncementShown").textContent = "--";
-      }
-
-      function logoutAdmin(){
-        localStorage.removeItem("colspot_admin_session");
-        localStorage.removeItem("colspot_pending_admin");
-        window.location.href = "index.html";
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
@@ -970,20 +644,15 @@
           window.location.href = "hos_account.html";
         });
 
-        $("refreshStudentsBtn").addEventListener("click", loadStudentData);
-        $("refreshAnnouncementsBtn").addEventListener("click", refreshAnnouncementHistoryOnly);
-        $("createHodBtn").addEventListener("click", createHodAccount);
-        $("clearHodBtn").addEventListener("click", clearHodForm);
-        $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
-        $("clearAnnouncementBtn").addEventListener("click", clearAnnouncementForm);
-        $("createReportAgentBtn").addEventListener("click", createReportAgent);
-        $("clearReportAgentBtn").addEventListener("click", clearReportAgentForm);
-        $("logoutBtn").addEventListener("click", logoutAdmin);
+        $("createAccountBtn").addEventListener("click", () => {
+          window.location.href = "hos_create_account.html";
+        });
 
-        await loadStudentData();
-        renderAnnouncementList([]);
-        $("totalAnnouncementCount").textContent = "0";
-        $("totalAnnouncementShown").textContent = "0";
+        $("viewHistoryBtn").addEventListener("click", () => {
+          window.location.href = "hos_history.html";
+        });
+
+        await loadDashboard();
       });
     })();
   </script>
