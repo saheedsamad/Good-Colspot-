@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • HOS History</title>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --danger-soft:#fef2f2;
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 26px rgba(37,99,235,.10);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:420px;
+      min-height:100vh;
+      padding:calc(env(safe-area-inset-top) + 12px) 14px 108px;
+      position:relative;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+      color:#111827;
+      flex-shrink:0;
+    }
+
+    .brand-logo{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      flex-shrink:0;
+    }
+
+    .brand-logo img{
+      width:30px;
+      height:30px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brand-name{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#10224a;
+      white-space:nowrap;
+    }
+
+    .avatar-chip{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
+      color:#fff;
+      font-weight:900;
+      font-size:15px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .hero{
+      margin:4px 2px 16px;
+      padding:22px 18px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 24px 44px rgba(37,99,235,.22);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      right:-34px;
+      top:-26px;
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:rgba(255,255,255,.10);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      bottom:-34px;
+      width:190px;
+      height:96px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      transform:rotate(-18deg);
+    }
+
+    .hero-line{
+      font-size:13px;
+      font-weight:800;
+      opacity:.95;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-title{
+      font-size:30px;
+      line-height:1.05;
+      font-weight:900;
+      letter-spacing:-.04em;
+      margin:0 0 8px;
+      position:relative;
+      z-index:1;
+      max-width:240px;
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.5;
+      opacity:.96;
+      position:relative;
+      z-index:1;
+      max-width:270px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      margin:0 2px 14px;
+    }
+
+    .search-wrap{
+      flex:1;
+      position:relative;
+    }
+
+    .search-input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:13px 14px 13px 42px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .search-input:focus,
+    .filter-select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .search-icon{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;
+      height:18px;
+      color:#94a3b8;
+      pointer-events:none;
+    }
+
+    .filter-select{
+      width:128px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:13px 12px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .message{
+      display:none;
+      margin:0 2px 14px;
+      padding:12px 13px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .message.error{
+      display:block;
+      background:var(--danger-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 4px 10px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .section-note{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:14px;
+      box-shadow:var(--shadow-soft);
+      margin:0 2px 14px;
+    }
+
+    .history-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .history-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .history-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    .history-title{
+      font-size:14px;
+      font-weight:800;
+      line-height:1.25;
+      color:#111827;
+    }
+
+    .history-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+      margin-top:3px;
+    }
+
+    .history-meta{
+      margin-top:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .pill{
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      background:#eff6ff;
+      color:var(--blue);
+      flex-shrink:0;
+    }
+
+    .empty{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      padding:22px 10px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:max(12px, env(safe-area-inset-bottom));
+      width:calc(100% - 28px);
+      max-width:392px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 20px 40px rgba(15,23,42,.12);
+      border-radius:26px;
+      padding:8px 8px 10px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:4px;
+      z-index:30;
+    }
+
+    .nav-btn{
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      text-align:center;
+      font-size:11px;
+      cursor:pointer;
+      padding-top:2px;
+    }
+
+    .nav-btn.active{
+      color:var(--blue);
+      font-weight:800;
+    }
+
+    .nav-inner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
+    }
+
+    .nav-inner svg{
+      width:20px;
+      height:20px;
+      display:block;
+    }
+
+    @media (max-width:360px){
+      .toolbar{
+        flex-direction:column;
+      }
+
+      .filter-select{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <header>
+      <div class="brand">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+        </div>
+
+        <div class="brand-name">History</div>
+      </div>
+
+      <button class="avatar-chip" id="avatarChip">H</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-line" id="schoolNameText">School</div>
+        <h1 class="hero-title">Activity history</h1>
+        <div class="hero-sub">
+          View all HOD accounts, agent accounts, and announcements created in your school.
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+            <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            placeholder="Search history"
+          />
+        </div>
+
+        <select id="typeFilter" class="filter-select">
+          <option value="all">All history</option>
+          <option value="HOD">HOD</option>
+          <option value="Agent">Agent</option>
+          <option value="Announcement">Announcement</option>
+        </select>
+      </section>
+
+      <div class="message" id="pageMessage"></div>
+
+      <div class="section-head">
+        <h2 class="section-title">Recent activity</h2>
+        <div class="section-note" id="historyCountText">0 items</div>
+      </div>
+
+      <section class="card">
+        <div class="history-list" id="historyList">
+          <div class="empty">Loading history...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" type="button" onclick="window.location.href='hos.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Dashboard</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_create_account.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Accounts</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_announcement.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Announcement</span>
+      </span>
+    </button>
+
+    <button class="nav-btn active" type="button" onclick="window.location.href='hos_history.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>History</span>
+      </span>
+    </button>
+  </nav>
+
+<script>
+  (() => {
+    const HISTORY_KEY = "hos_activity_history";
+
+    let adminSession = null;
+    let currentSchoolName = "";
+    let currentHistory = [];
+
+    function $(id){
+      return document.getElementById(id);
+    }
+
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    function formatDate(value){
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+
+    function getAdminSession(){
+      try{
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      }catch{
+        return null;
+      }
+    }
+
+    function getHosHistory(){
+      try{
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const arr = JSON.parse(raw || "[]");
+        return Array.isArray(arr) ? arr : [];
+      }catch{
+        return [];
+      }
+    }
+
+    function showMessage(id, text){
+      const box = $(id);
+      if (!text){
+        box.textContent = "";
+        box.className = "message";
+        return;
+      }
+      box.textContent = text;
+      box.className = "message error";
+    }
+
+    function requireHosSession(){
+      adminSession = getAdminSession();
+
+      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
+        window.location.href = "index.html";
+        return false;
+      }
+
+      currentSchoolName =
+        adminSession.school_name ||
+        adminSession.school ||
+        adminSession.schoolName ||
+        "";
+
+      $("schoolNameText").textContent = currentSchoolName || "School";
+      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      return true;
+    }
+
+    function loadHistory(){
+      showMessage("pageMessage", "");
+
+      try{
+        currentHistory = getHosHistory()
+          .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        renderHistory();
+      }catch(err){
+        console.error(err);
+        currentHistory = [];
+        renderHistory();
+        showMessage("pageMessage", err.message || "Could not load history.");
+      }
+    }
+
+    function getFilteredHistory(){
+      const search = ($("searchInput").value || "").trim().toLowerCase();
+      const type = $("typeFilter").value || "all";
+
+      return currentHistory.filter((item) => {
+        const matchType = type === "all" ? true : String(item.type || "") === type;
+
+        const haystack = [
+          item.title,
+          item.description,
+          item.type
+        ].join(" ").toLowerCase();
+
+        const matchSearch = !search || haystack.includes(search);
+
+        return matchType && matchSearch;
+      });
+    }
+
+    function renderHistory(){
+      const wrap = $("historyList");
+      const items = getFilteredHistory();
+
+      $("historyCountText").textContent = `${items.length} item${items.length === 1 ? "" : "s"}`;
+
+      if (!items.length){
+        wrap.innerHTML = '<div class="empty">No history found.</div>';
+        return;
+      }
+
+      wrap.innerHTML = items.map((item) => `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-title">${escapeHtml(item.title || "-")}</div>
+              <div class="history-sub">${escapeHtml(item.description || "-")}</div>
+            </div>
+            <div class="pill">${escapeHtml(item.type || "Item")}</div>
+          </div>
+
+          <div class="history-meta">
+            <div class="pill">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!requireHosSession()) return;
+
+      $("avatarChip").addEventListener("click", () => {
+        window.location.href = "hos_account.html";
+      });
+
+      $("backBtn").addEventListener("click", () => {
+        window.history.back();
+      });
+
+      $("searchInput").addEventListener("input", renderHistory);
+      $("typeFilter").addEventListener("change", renderHistory);
+
+      loadHistory();
+    });
+  })();
+</script>
+</body>
+</html>
