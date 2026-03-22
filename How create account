@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Create Accounts</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --blue-soft-2:#f7faff;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --success:#16a34a;
+      --success-soft:#ecfdf5;
+      --danger:#dc2626;
+      --danger-soft:#fef2f2;
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 26px rgba(37,99,235,.10);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:420px;
+      min-height:100vh;
+      padding:calc(env(safe-area-inset-top) + 12px) 14px 108px;
+      position:relative;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+      color:#111827;
+      flex-shrink:0;
+    }
+
+    .brand-logo{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      flex-shrink:0;
+    }
+
+    .brand-logo img{
+      width:30px;
+      height:30px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brand-name{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#10224a;
+      white-space:nowrap;
+    }
+
+    .avatar-chip{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
+      color:#fff;
+      font-weight:900;
+      font-size:15px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .hero{
+      margin:4px 2px 16px;
+      padding:22px 18px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 24px 44px rgba(37,99,235,.22);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      right:-34px;
+      top:-26px;
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:rgba(255,255,255,.10);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      bottom:-34px;
+      width:190px;
+      height:96px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      transform:rotate(-18deg);
+    }
+
+    .hero-line{
+      font-size:13px;
+      font-weight:800;
+      opacity:.95;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-title{
+      font-size:30px;
+      line-height:1.05;
+      font-weight:900;
+      letter-spacing:-.04em;
+      margin:0 0 8px;
+      position:relative;
+      z-index:1;
+      max-width:240px;
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.5;
+      opacity:.96;
+      position:relative;
+      z-index:1;
+      max-width:255px;
+    }
+
+    .toggle-wrap{
+      margin:0 2px 16px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .toggle-btn{
+      border:none;
+      background:transparent;
+      color:#64748b;
+      padding:13px 12px;
+      border-radius:16px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .toggle-btn.active{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      box-shadow:0 12px 22px rgba(37,99,235,.18);
+    }
+
+    .panel{
+      display:none;
+    }
+
+    .panel.active{
+      display:block;
+    }
+
+    .message{
+      display:none;
+      margin:0 2px 14px;
+      padding:12px 13px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .message.error{
+      display:block;
+      background:var(--danger-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      display:block;
+      background:var(--success-soft);
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:16px;
+      box-shadow:var(--shadow-soft);
+      margin:0 2px 14px;
+    }
+
+    .card-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin:0 0 4px;
+      color:#0f172a;
+    }
+
+    .card-sub{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:#334155;
+      margin-bottom:6px;
+    }
+
+    .input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:15px;
+      padding:13px 14px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+      transition:.18s ease;
+    }
+
+    .input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .mini-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:13px 14px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 16px 28px rgba(37,99,235,.20);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn.copy{
+      color:#166534;
+      background:#ecfdf5;
+      border:1px solid #bbf7d0;
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .result-card{
+      display:none;
+      margin:0 2px 14px;
+      border-radius:22px;
+      padding:16px;
+      background:linear-gradient(180deg,#ffffff 0%, #f7fffb 100%);
+      border:1px solid #bbf7d0;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .result-card.show{
+      display:block;
+    }
+
+    .result-top{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .result-icon{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      background:#dcfce7;
+      color:#16a34a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .result-icon svg{
+      width:24px;
+      height:24px;
+    }
+
+    .result-title{
+      font-size:16px;
+      font-weight:900;
+      color:#166534;
+      margin-bottom:4px;
+      letter-spacing:-.02em;
+    }
+
+    .result-sub{
+      font-size:13px;
+      line-height:1.5;
+      color:#166534;
+    }
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .result-box{
+      border-radius:18px;
+      padding:12px 13px;
+      background:#fff;
+      border:1px solid #d1fae5;
+    }
+
+    .result-label{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      color:#059669;
+      margin-bottom:6px;
+    }
+
+    .result-value{
+      font-size:15px;
+      font-weight:950;
+      color:#14532d;
+      word-break:break-word;
+    }
+
+    .copy-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:max(12px, env(safe-area-inset-bottom));
+      width:calc(100% - 28px);
+      max-width:392px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 20px 40px rgba(15,23,42,.12);
+      border-radius:26px;
+      padding:8px 8px 10px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:4px;
+      z-index:30;
+    }
+
+    .nav-btn{
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      text-align:center;
+      font-size:11px;
+      cursor:pointer;
+      padding-top:2px;
+    }
+
+    .nav-btn.active{
+      color:var(--blue);
+      font-weight:800;
+    }
+
+    .nav-inner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
+    }
+
+    .nav-inner svg{
+      width:20px;
+      height:20px;
+      display:block;
+    }
+
+    @media (max-width:360px){
+      .btn-row,
+      .copy-row,
+      .result-grid{
+        grid-template-columns:1fr;
+        display:grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <header>
+      <div class="brand">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+        </div>
+
+        <div class="brand-name">Create Accounts</div>
+      </div>
+
+      <button class="avatar-chip" id="avatarChip">H</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-line" id="schoolNameText">School</div>
+        <h1 class="hero-title">Create school accounts</h1>
+        <div class="hero-sub">
+          Switch between HOD and Agent, create the account, then copy the login details immediately.
+        </div>
+      </section>
+
+      <section class="toggle-wrap">
+        <button class="toggle-btn active" id="toggleHodBtn" type="button">HOD Account</button>
+        <button class="toggle-btn" id="toggleAgentBtn" type="button">Agent Account</button>
+      </section>
+
+      <div class="panel active" id="hodPanel">
+        <div class="message" id="hodMessageBox"></div>
+
+        <section class="card">
+          <div class="card-title">Create HOD account</div>
+          <div class="card-sub">Create a head of department login for this school.</div>
+
+          <div class="field">
+            <label for="hodFullName">Full name</label>
+            <input id="hodFullName" class="input" placeholder="Enter HOD full name" />
+          </div>
+
+          <div class="field">
+            <label for="hodDepartment">Department</label>
+            <input id="hodDepartment" class="input" placeholder="Enter department name" />
+          </div>
+
+          <div class="btn-row">
+            <button class="mini-btn primary" id="createHodBtn" type="button">Create HOD Account</button>
+            <button class="mini-btn secondary" id="clearHodBtn" type="button">Clear</button>
+          </div>
+        </section>
+
+        <section class="result-card" id="hodResultCard">
+          <div class="result-top">
+            <div class="result-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 7 9 18l-5-5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="result-title">HOD account created</div>
+              <div class="result-sub">The account has been created successfully. Copy the details below now.</div>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-box">
+              <div class="result-label">Full name</div>
+              <div class="result-value" id="resultHodName">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">Department</div>
+              <div class="result-value" id="resultHodDepartment">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">Login ID</div>
+              <div class="result-value" id="resultHodLoginId">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">Password</div>
+              <div class="result-value" id="resultHodPassword">-</div>
+            </div>
+          </div>
+
+          <div class="copy-row">
+            <button class="mini-btn copy" id="copyHodLoginBtn" type="button">Copy Login ID</button>
+            <button class="mini-btn copy" id="copyHodPasswordBtn" type="button">Copy Password</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel" id="agentPanel">
+        <div class="message" id="reportAgentMessageBox"></div>
+
+        <section class="card">
+          <div class="card-title">Create report agent</div>
+          <div class="card-sub">Create a report agent account linked to this school.</div>
+
+          <div class="field">
+            <label for="reportAgentFullName">Full name</label>
+            <input id="reportAgentFullName" class="input" placeholder="Enter report agent full name" />
+          </div>
+
+          <div class="field">
+            <label for="reportAgentEmail">Linked email (optional)</label>
+            <input id="reportAgentEmail" class="input" type="email" placeholder="Enter email address" />
+          </div>
+
+          <div class="btn-row">
+            <button class="mini-btn primary" id="createReportAgentBtn" type="button">Create Agent Account</button>
+            <button class="mini-btn secondary" id="clearReportAgentBtn" type="button">Clear</button>
+          </div>
+        </section>
+
+        <section class="result-card" id="reportAgentResultCard">
+          <div class="result-top">
+            <div class="result-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 7 9 18l-5-5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="result-title">Agent account created</div>
+              <div class="result-sub">The account has been created successfully. Copy the details below now.</div>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-box">
+              <div class="result-label">Full name</div>
+              <div class="result-value" id="resultReportAgentName">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">School</div>
+              <div class="result-value" id="resultReportAgentSchool">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">Login ID</div>
+              <div class="result-value" id="resultReportAgentLoginId">-</div>
+            </div>
+
+            <div class="result-box">
+              <div class="result-label">Password</div>
+              <div class="result-value" id="resultReportAgentPassword">-</div>
+            </div>
+          </div>
+
+          <div class="copy-row">
+            <button class="mini-btn copy" id="copyAgentLoginBtn" type="button">Copy Login ID</button>
+            <button class="mini-btn copy" id="copyAgentPasswordBtn" type="button">Copy Password</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" type="button" onclick="window.location.href='hos.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Dashboard</span>
+      </span>
+    </button>
+
+    <button class="nav-btn active" type="button" onclick="window.location.href='hos_create_account.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Accounts</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_announcement.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Announcement</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_history.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>History</span>
+      </span>
+    </button>
+  </nav>
+
+<script>
+  (() => {
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "YOUR_SUPABASE_ANON_KEY_HERE";
+
+    const EDGE = {
+      createHod: "create-hod-account",
+      createReportAgent: "create-report-agent-account"
+    };
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let adminSession = null;
+    let currentSchoolName = "";
+    let lastGeneratedHodLoginId = "";
+    let lastGeneratedHodPassword = "";
+    let lastGeneratedAgentLoginId = "";
+    let lastGeneratedAgentPassword = "";
+
+    function $(id){
+      return document.getElementById(id);
+    }
+
+    function getAdminSession(){
+      try{
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      }catch{
+        return null;
+      }
+    }
+
+    function showMessage(id, text, type){
+      const box = $(id);
+      if (!text){
+        box.textContent = "";
+        box.className = "message";
+        return;
+      }
+      box.textContent = text;
+      box.className = `message ${type === "success" ? "success" : "error"}`;
+    }
+
+    function requireHosSession(){
+      adminSession = getAdminSession();
+
+      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
+        window.location.href = "index.html";
+        return false;
+      }
+
+      currentSchoolName =
+        adminSession.school_name ||
+        adminSession.school ||
+        adminSession.schoolName ||
+        "";
+
+      $("schoolNameText").textContent = currentSchoolName || "School";
+      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      return true;
+    }
+
+    async function invokeEdge(functionName, body){
+      const { data, error } = await sb.functions.invoke(functionName, {
+        body: body || {}
+      });
+
+      if (error){
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      return data || {};
+    }
+
+    function showPanel(type){
+      const isHod = type === "hod";
+
+      $("toggleHodBtn").classList.toggle("active", isHod);
+      $("toggleAgentBtn").classList.toggle("active", !isHod);
+
+      $("hodPanel").classList.toggle("active", isHod);
+      $("agentPanel").classList.toggle("active", !isHod);
+    }
+
+    function setCopiedState(button, originalText){
+      button.textContent = "Copied";
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 1200);
+    }
+
+    async function copyText(text, button, originalText){
+      if (!text) return;
+      try{
+        await navigator.clipboard.writeText(text);
+        setCopiedState(button, originalText);
+      }catch(err){
+        console.error(err);
+      }
+    }
+
+    async function createHodAccount(){
+      showMessage("hodMessageBox", "", "error");
+      $("hodResultCard").classList.remove("show");
+
+      const fullName = ($("hodFullName").value || "").trim();
+      const departmentName = ($("hodDepartment").value || "").trim();
+
+      if (!fullName){
+        showMessage("hodMessageBox", "Please enter the full name.", "error");
+        return;
+      }
+
+      if (!departmentName){
+        showMessage("hodMessageBox", "Please enter the department.", "error");
+        return;
+      }
+
+      const btn = $("createHodBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating...";
+
+      try{
+        const result = await invokeEdge(EDGE.createHod, {
+          hos_admin_id: adminSession.id,
+          full_name: fullName,
+          department_name: departmentName
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not create HOD account.");
+        }
+
+        const account = result.hod_account || {};
+
+        lastGeneratedHodLoginId = account.login_id || "";
+        lastGeneratedHodPassword = result.temporary_password || "";
+
+        $("resultHodName").textContent = account.full_name || fullName;
+        $("resultHodDepartment").textContent = account.department_name || departmentName;
+        $("resultHodLoginId").textContent = lastGeneratedHodLoginId || "-";
+        $("resultHodPassword").textContent = lastGeneratedHodPassword || "-";
+
+        $("hodResultCard").classList.add("show");
+        $("hodFullName").value = "";
+        $("hodDepartment").value = "";
+
+        showMessage("hodMessageBox", result.message || "HOD account created successfully.", "success");
+      }catch(err){
+        console.error(err);
+        showMessage("hodMessageBox", err.message || "Could not create HOD account.", "error");
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "Create HOD Account";
+      }
+    }
+
+    function clearHodForm(){
+      $("hodFullName").value = "";
+      $("hodDepartment").value = "";
+      $("hodResultCard").classList.remove("show");
+      showMessage("hodMessageBox", "", "error");
+    }
+
+    async function createReportAgent(){
+      showMessage("reportAgentMessageBox", "", "error");
+      $("reportAgentResultCard").classList.remove("show");
+
+      const fullName = ($("reportAgentFullName").value || "").trim();
+      const linkedEmail = ($("reportAgentEmail").value || "").trim();
+
+      if (!fullName){
+        showMessage("reportAgentMessageBox", "Please enter the full name.", "error");
+        return;
+      }
+
+      const btn = $("createReportAgentBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating...";
+
+      try{
+        const result = await invokeEdge(EDGE.createReportAgent, {
+          hos_admin_id: adminSession.id,
+          full_name: fullName,
+          linked_email: linkedEmail
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not create report agent account.");
+        }
+
+        const account = result.report_agent_account || {};
+
+        lastGeneratedAgentLoginId = account.login_id || "";
+        lastGeneratedAgentPassword = result.temporary_password || "";
+
+        $("resultReportAgentName").textContent = account.full_name || fullName;
+        $("resultReportAgentSchool").textContent = account.school_name || currentSchoolName || "-";
+        $("resultReportAgentLoginId").textContent = lastGeneratedAgentLoginId || "-";
+        $("resultReportAgentPassword").textContent = lastGeneratedAgentPassword || "-";
+
+        $("reportAgentResultCard").classList.add("show");
+        $("reportAgentFullName").value = "";
+        $("reportAgentEmail").value = "";
+
+        showMessage("reportAgentMessageBox", result.message || "Report agent account created successfully.", "success");
+      }catch(err){
+        console.error(err);
+        showMessage("reportAgentMessageBox", err.message || "Could not create report agent account.", "error");
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "Create Agent Account";
+      }
+    }
+
+    function clearReportAgentForm(){
+      $("reportAgentFullName").value = "";
+      $("reportAgentEmail").value = "";
+      $("reportAgentResultCard").classList.remove("show");
+      showMessage("reportAgentMessageBox", "", "error");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!requireHosSession()) return;
+
+      $("avatarChip").addEventListener("click", () => {
+        window.location.href = "hos_account.html";
+      });
+
+      $("backBtn").addEventListener("click", () => {
+        window.history.back();
+      });
+
+      $("toggleHodBtn").addEventListener("click", () => showPanel("hod"));
+      $("toggleAgentBtn").addEventListener("click", () => showPanel("agent"));
+
+      $("createHodBtn").addEventListener("click", createHodAccount);
+      $("clearHodBtn").addEventListener("click", clearHodForm);
+
+      $("createReportAgentBtn").addEventListener("click", createReportAgent);
+      $("clearReportAgentBtn").addEventListener("click", clearReportAgentForm);
+
+      $("copyHodLoginBtn").addEventListener("click", function(){
+        copyText(lastGeneratedHodLoginId, this, "Copy Login ID");
+      });
+
+      $("copyHodPasswordBtn").addEventListener("click", function(){
+        copyText(lastGeneratedHodPassword, this, "Copy Password");
+      });
+
+      $("copyAgentLoginBtn").addEventListener("click", function(){
+        copyText(lastGeneratedAgentLoginId, this, "Copy Login ID");
+      });
+
+      $("copyAgentPasswordBtn").addEventListener("click", function(){
+        copyText(lastGeneratedAgentPassword, this, "Copy Password");
+      });
+    });
+  })();
+</script>
+</body>
+</html>
