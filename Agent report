@@ -871,8 +871,6 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let reportAgentSession = null;
-    let currentReports = [];
-    let currentAssistants = [];
 
     function $(id) {
       return document.getElementById(id);
@@ -966,38 +964,38 @@
         return;
       }
 
-      const latestReports = reports.slice(0, 3);
+      const latestReport = reports[0];
 
-      wrap.innerHTML = latestReports.map((report) => `
+      wrap.innerHTML = `
         <article class="report-item">
           <div class="report-top">
             <div>
-              <div class="report-title">${escapeHtml(report.title || report.category || "Untitled report")}</div>
-              <div class="report-sub">${escapeHtml(report.tracking_code || "")}</div>
+              <div class="report-title">${escapeHtml(latestReport.title || latestReport.category || "Untitled report")}</div>
+              <div class="report-sub">${escapeHtml(latestReport.tracking_code || "")}</div>
             </div>
-            <div class="status-pill ${statusClass(report.status)}">${escapeHtml(report.status || "new")}</div>
+            <div class="status-pill ${statusClass(latestReport.status)}">${escapeHtml(latestReport.status || "new")}</div>
           </div>
 
           <div class="meta-row">
-            <div class="meta-pill">${escapeHtml(report.category || "other")}</div>
-            <div class="meta-pill">${escapeHtml(report.urgency || "normal")}</div>
-            <div class="meta-pill">${report.is_anonymous ? "Anonymous" : "Named"}</div>
+            <div class="meta-pill">${escapeHtml(latestReport.category || "other")}</div>
+            <div class="meta-pill">${escapeHtml(latestReport.urgency || "normal")}</div>
+            <div class="meta-pill">${latestReport.is_anonymous ? "Anonymous" : "Named"}</div>
           </div>
 
           <div class="report-sub">
-            ${escapeHtml((report.message || "").slice(0, 110))}
+            ${escapeHtml((latestReport.message || "").slice(0, 110))}
           </div>
 
           <div class="report-sub" style="margin-top:8px;">
-            ${escapeHtml(formatDateTime(report.created_at))}
+            ${escapeHtml(formatDateTime(latestReport.created_at))}
           </div>
 
           <div class="report-actions">
-            <button class="mini-btn open" onclick="openReportCase('${report.id}')">Open case</button>
+            <button class="mini-btn open" onclick="openReportCase('${latestReport.id}')">Open case</button>
             <button class="mini-btn case" onclick="window.location.href='agent_cases.html'">All cases</button>
           </div>
         </article>
-      `).join("");
+      `;
     }
 
     function renderAssistants(assistants = []) {
@@ -1008,18 +1006,18 @@
         return;
       }
 
-      const latestAssistants = assistants.slice(0, 3);
+      const latestAssistant = assistants[0];
 
-      wrap.innerHTML = latestAssistants.map((assistant) => `
+      wrap.innerHTML = `
         <article class="assistant-item">
           <div>
-            <div class="assistant-name">${escapeHtml(assistant.full_name || "No name")}</div>
-            <div class="assistant-sub">${escapeHtml(assistant.school_name || "-")}</div>
-            <div class="assistant-sub">Assigned reports: ${escapeHtml(assistant.assigned_reports_count || 0)}</div>
+            <div class="assistant-name">${escapeHtml(latestAssistant.full_name || "No name")}</div>
+            <div class="assistant-sub">${escapeHtml(latestAssistant.school_name || "-")}</div>
+            <div class="assistant-sub">Assigned reports: ${escapeHtml(latestAssistant.assigned_reports_count || 0)}</div>
           </div>
-          <div class="assistant-badge">${assistant.is_active ? "Active" : "Disabled"}</div>
+          <div class="assistant-badge">${latestAssistant.is_active ? "Active" : "Disabled"}</div>
         </article>
-      `).join("");
+      `;
     }
 
     async function loadDashboard() {
@@ -1031,12 +1029,11 @@
           status: ""
         });
 
-        currentReports = Array.isArray(data.reports) ? data.reports : [];
+        const reports = Array.isArray(data.reports) ? data.reports : [];
         renderDashboardTotals(data.totals || {});
-        renderReports(currentReports);
+        renderReports(reports);
       } catch (err) {
         console.error(err);
-        currentReports = [];
         renderReports([]);
         showMessage("pageMessage", err.message || "Could not load dashboard.");
       }
@@ -1048,11 +1045,10 @@
           report_agent_id: reportAgentSession.id
         });
 
-        currentAssistants = Array.isArray(data.assistants) ? data.assistants : [];
-        renderAssistants(currentAssistants);
+        const assistants = Array.isArray(data.assistants) ? data.assistants : [];
+        renderAssistants(assistants);
       } catch (err) {
         console.error(err);
-        currentAssistants = [];
         renderAssistants([]);
       }
     }
@@ -1063,7 +1059,7 @@
     }
 
     function goToAccountPage() {
-      window.location.href = "report_agent_account.html";
+      window.location.href = "account.html";
     }
 
     function logout() {
