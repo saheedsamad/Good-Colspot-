@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, maximum-scale=1, user-scalable=no"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
   <title>Colspot • HOS Dashboard</title>
 
@@ -14,15 +14,15 @@
     :root{
       --blue:#2563eb;
       --blue-dark:#1d4ed8;
-      --blue-soft:#eaf2ff;
-      --blue-soft-2:#f4f8ff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
+      --blue-soft:#eef4ff;
+      --blue-soft-2:#f7faff;
       --card:#ffffff;
-      --bg:#f5f9ff;
-      --shadow:0 16px 38px rgba(15,23,42,.08);
-      --shadow-soft:0 10px 24px rgba(37,99,235,.10);
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --success:#16a34a;
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 26px rgba(37,99,235,.10);
       --radius-xl:28px;
       --radius-lg:22px;
       --radius-md:18px;
@@ -36,11 +36,12 @@
 
     html,body{
       margin:0;
+      padding:0;
       min-height:100%;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      color:var(--text);
       background:
         radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
     }
 
     body{
@@ -54,23 +55,20 @@
       display:none;
     }
 
-    .app{
+    .phone-shell{
       width:100%;
       max-width:420px;
       min-height:100vh;
-      padding:
-        calc(env(safe-area-inset-top) + 12px)
-        14px
-        calc(env(safe-area-inset-bottom) + 104px);
+      padding:calc(env(safe-area-inset-top) + 12px) 14px 108px;
       position:relative;
     }
 
-    .topbar{
+    header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:12px;
+      margin-bottom:14px;
     }
 
     .brand{
@@ -80,48 +78,22 @@
       min-width:0;
     }
 
-    .back-btn{
-      width:40px;
-      height:40px;
-      border:none;
-      border-radius:12px;
-      background:#fff;
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:var(--shadow-soft);
-      cursor:pointer;
-      flex-shrink:0;
-      color:#111827;
-    }
-
-    .logo-wrap{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
     .brand-logo{
-      width:38px;
-      height:38px;
-      border-radius:12px;
-      overflow:hidden;
-      background:#fff;
-      border:1px solid var(--line);
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
       display:flex;
       align-items:center;
       justify-content:center;
+      color:#fff;
       box-shadow:var(--shadow-soft);
       flex-shrink:0;
     }
 
-    .brand-logo img{
-      width:30px;
-      height:30px;
-      object-fit:contain;
-      display:block;
+    .brand-logo svg{
+      width:20px;
+      height:20px;
     }
 
     .brand-name{
@@ -135,36 +107,34 @@
     .avatar-chip{
       width:42px;
       height:42px;
-      border:none;
       border-radius:999px;
-      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
+      border:none;
+      background:linear-gradient(135deg,#1d4ed8,#22c55e);
       color:#fff;
       font-weight:900;
-      font-size:15px;
       box-shadow:var(--shadow);
       cursor:pointer;
       flex-shrink:0;
     }
 
     .hero{
-      margin:8px 2px 16px;
+      margin:4px 2px 18px;
       padding:22px 18px;
-      border-radius:28px;
-      background:
-        linear-gradient(135deg, var(--blue) 0%, #3b82f6 100%);
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
       color:#fff;
       position:relative;
       overflow:hidden;
-      box-shadow:0 22px 40px rgba(37,99,235,.22);
+      box-shadow:0 24px 44px rgba(37,99,235,.22);
     }
 
     .hero::before{
       content:"";
       position:absolute;
-      right:-28px;
-      top:-22px;
-      width:140px;
-      height:140px;
+      right:-34px;
+      top:-26px;
+      width:150px;
+      height:150px;
       border-radius:50%;
       background:rgba(255,255,255,.10);
     }
@@ -172,7 +142,7 @@
     .hero::after{
       content:"";
       position:absolute;
-      right:-20px;
+      right:-18px;
       bottom:-34px;
       width:190px;
       height:96px;
@@ -181,32 +151,33 @@
       transform:rotate(-18deg);
     }
 
-    .hero-school{
-      font-size:14px;
+    .hero-line{
+      font-size:13px;
       font-weight:800;
-      opacity:.96;
-      margin-bottom:7px;
+      opacity:.95;
+      margin-bottom:6px;
       position:relative;
       z-index:1;
     }
 
     .hero-title{
-      margin:0 0 8px;
-      font-size:33px;
-      line-height:1.02;
+      font-size:30px;
+      line-height:1.05;
       font-weight:900;
-      letter-spacing:-.05em;
+      letter-spacing:-.04em;
+      margin:0 0 8px;
       position:relative;
       z-index:1;
+      max-width:240px;
     }
 
     .hero-sub{
       font-size:13px;
       line-height:1.5;
       opacity:.96;
-      max-width:250px;
       position:relative;
       z-index:1;
+      max-width:255px;
     }
 
     .message{
@@ -235,70 +206,114 @@
     .stat-card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:20px;
       padding:18px 14px;
       box-shadow:var(--shadow-soft);
-      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .stat-card::after{
+      content:"";
+      position:absolute;
+      right:-16px;
+      bottom:-18px;
+      width:72px;
+      height:72px;
+      border-radius:50%;
+      background:var(--blue-soft);
     }
 
     .stat-label{
+      position:relative;
+      z-index:1;
       font-size:11px;
       color:var(--muted);
       text-transform:uppercase;
-      letter-spacing:.08em;
       font-weight:800;
+      letter-spacing:.08em;
       margin-bottom:10px;
     }
 
     .stat-value{
-      font-size:31px;
-      line-height:1;
+      position:relative;
+      z-index:1;
+      font-size:30px;
       font-weight:900;
+      line-height:1;
       letter-spacing:-.05em;
+      margin-bottom:6px;
+    }
+
+    .stat-note{
+      position:relative;
+      z-index:1;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .quick-links{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+      margin:0 2px 18px;
+    }
+
+    .quick-link{
+      border:none;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 10px;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+      text-align:left;
+      min-height:96px;
+    }
+
+    .quick-link-icon{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      background:var(--blue-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--blue);
+      margin-bottom:10px;
+    }
+
+    .quick-link-icon svg{
+      width:18px;
+      height:18px;
+    }
+
+    .quick-link-title{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.25;
+      margin-bottom:4px;
       color:#0f172a;
     }
 
-    .action-card{
-      margin:0 2px 18px;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:15px;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .action-btn{
-      width:100%;
-      border:none;
-      border-radius:999px;
-      padding:15px 16px;
-      font-size:15px;
-      font-weight:900;
-      color:#fff;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      box-shadow:0 16px 28px rgba(37,99,235,.20);
-      cursor:pointer;
-    }
-
-    .action-note{
-      margin-top:10px;
-      text-align:center;
-      font-size:12px;
-      line-height:1.45;
+    .quick-link-sub{
+      font-size:11px;
+      line-height:1.35;
       color:var(--muted);
     }
 
     .section-head{
       display:flex;
-      align-items:center;
       justify-content:space-between;
+      align-items:center;
       gap:10px;
       margin:0 4px 10px;
     }
 
     .section-title{
       margin:0;
-      font-size:17px;
+      font-size:16px;
       font-weight:900;
       letter-spacing:-.02em;
     }
@@ -314,13 +329,13 @@
       cursor:pointer;
     }
 
-    .history-wrap{
-      margin:0 2px;
-      background:var(--card);
+    .card{
+      background:#fff;
       border:1px solid var(--line);
-      border-radius:24px;
+      border-radius:22px;
       padding:14px;
       box-shadow:var(--shadow-soft);
+      margin:0 2px 14px;
     }
 
     .history-list{
@@ -329,7 +344,7 @@
       gap:10px;
     }
 
-    .history-item{
+    .history-card{
       border:1px solid var(--line);
       border-radius:18px;
       padding:12px;
@@ -338,30 +353,30 @@
 
     .history-top{
       display:flex;
-      align-items:flex-start;
       justify-content:space-between;
+      align-items:flex-start;
       gap:10px;
-      margin-bottom:6px;
+      margin-bottom:8px;
     }
 
     .history-title{
       font-size:14px;
-      line-height:1.3;
       font-weight:800;
+      line-height:1.25;
       color:#111827;
     }
 
     .history-sub{
       font-size:12px;
-      line-height:1.45;
       color:var(--muted);
+      line-height:1.4;
       margin-top:3px;
     }
 
-    .history-type{
+    .pill{
       flex-shrink:0;
       border-radius:999px;
-      padding:6px 10px;
+      padding:5px 10px;
       font-size:10px;
       font-weight:800;
       text-transform:uppercase;
@@ -416,7 +431,7 @@
       display:inline-flex;
       flex-direction:column;
       align-items:center;
-      gap:4px;
+      gap:3px;
     }
 
     .nav-inner svg{
@@ -424,24 +439,25 @@
       height:20px;
       display:block;
     }
+
+    @media (max-width:360px){
+      .quick-links{
+        grid-template-columns:1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
+  <div class="phone-shell">
+    <header>
       <div class="brand">
-        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
+        <div class="brand-logo">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 5h12v14H6z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
-        </button>
-
-        <div class="logo-wrap">
-          <div class="brand-logo">
-            <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
-          </div>
-          <div class="brand-name">Colspot</div>
         </div>
+        <div class="brand-name">Colspot</div>
       </div>
 
       <button class="avatar-chip" id="avatarChip">H</button>
@@ -449,10 +465,10 @@
 
     <main>
       <section class="hero">
-        <div class="hero-school" id="schoolNameText">School</div>
+        <div class="hero-line" id="schoolNameText">School</div>
         <h1 class="hero-title">HOS Dashboard</h1>
         <div class="hero-sub">
-          Manage your school overview, accounts, and recent administrative activity.
+          Manage students, announcements, and key admin sections from one clean dashboard.
         </div>
       </section>
 
@@ -460,23 +476,51 @@
 
       <section class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Total students</div>
-          <div class="stat-value" id="totalStudentCount">0</div>
+          <div class="stat-label">Students</div>
+          <div class="stat-value" id="totalStudentCount">--</div>
+          <div class="stat-note">Total student records</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-label">Total HODs</div>
-          <div class="stat-value" id="totalHodCount">0</div>
+          <div class="stat-label">Announcements</div>
+          <div class="stat-value" id="totalAnnouncementCount">--</div>
+          <div class="stat-note">School announcements sent</div>
         </div>
       </section>
 
-      <section class="action-card">
-        <button class="action-btn" id="createAccountBtn" type="button">
-          Create account for HOD / Agent
+      <section class="quick-links">
+        <button class="quick-link" id="goAccountsBtn" type="button">
+          <div class="quick-link-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="quick-link-title">Create accounts</div>
+          <div class="quick-link-sub">HOD and agent accounts</div>
         </button>
-        <div class="action-note">
-          Create HOD and report agent accounts from one place.
-        </div>
+
+        <button class="quick-link" id="goAnnouncementBtn" type="button">
+          <div class="quick-link-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="quick-link-title">Announcement</div>
+          <div class="quick-link-sub">Send school updates</div>
+        </button>
+
+        <button class="quick-link" id="goHistoryBtn" type="button">
+          <div class="quick-link-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="quick-link-title">History</div>
+          <div class="quick-link-sub">Recent admin activity</div>
+        </button>
       </section>
 
       <div class="section-head">
@@ -484,9 +528,9 @@
         <button class="view-btn" id="viewHistoryBtn" type="button">View all</button>
       </div>
 
-      <section class="history-wrap">
+      <section class="card">
         <div class="history-list" id="historyList">
-          <div class="empty">Loading history...</div>
+          <div class="empty">Loading recent history...</div>
         </div>
       </section>
     </main>
@@ -496,7 +540,7 @@
     <button class="nav-btn active" type="button" onclick="window.location.href='hos.html'">
       <span class="nav-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
         </svg>
         <span>Dashboard</span>
       </span>
@@ -533,170 +577,180 @@
     </button>
   </nav>
 
-  <script>
-    (() => {
-      const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+<script>
+  (() => {
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
 
-      const HISTORY_KEY = "hos_activity_history";
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const EDGE = {
+      studentSummary: "hos-student-summary"
+    };
 
-      let adminSession = null;
-      let currentSchoolName = "";
+    const HISTORY_KEY = "hos_activity_history";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      function $(id){
-        return document.getElementById(id);
+    let adminSession = null;
+    let currentSchoolName = "";
+
+    function $(id){
+      return document.getElementById(id);
+    }
+
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    function formatDate(value){
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+
+    function getAdminSession(){
+      try{
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      }catch{
+        return null;
+      }
+    }
+
+    function getHosHistory(){
+      try{
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const arr = JSON.parse(raw || "[]");
+        return Array.isArray(arr) ? arr : [];
+      }catch{
+        return [];
+      }
+    }
+
+    function showMessage(id, text){
+      const box = $(id);
+      if (!text){
+        box.textContent = "";
+        box.className = "message";
+        return;
+      }
+      box.textContent = text;
+      box.className = "message error";
+    }
+
+    function requireHosSession(){
+      adminSession = getAdminSession();
+
+      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
+        window.location.href = "index.html";
+        return false;
       }
 
-      function escapeHtml(value){
-        return String(value || "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#39;");
-      }
+      currentSchoolName =
+        adminSession.school_name ||
+        adminSession.school ||
+        adminSession.schoolName ||
+        "";
 
-      function formatDate(value){
-        if (!value) return "-";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "-";
-        return d.toLocaleString();
-      }
+      $("schoolNameText").textContent = currentSchoolName || "School";
+      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      return true;
+    }
 
-      function getAdminSession(){
-        try{
-          return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-        }catch{
-          return null;
-        }
-      }
-
-      function getHosHistory(){
-        try{
-          const raw = localStorage.getItem(HISTORY_KEY);
-          const arr = JSON.parse(raw || "[]");
-          return Array.isArray(arr) ? arr : [];
-        }catch{
-          return [];
-        }
-      }
-
-      function showMessage(id, text){
-        const box = $(id);
-        if (!text){
-          box.textContent = "";
-          box.className = "message";
-          return;
-        }
-        box.textContent = text;
-        box.className = "message error";
-      }
-
-      function requireHosSession(){
-        adminSession = getAdminSession();
-
-        if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
-          window.location.href = "index.html";
-          return false;
-        }
-
-        currentSchoolName =
-          adminSession.school_name ||
-          adminSession.school ||
-          adminSession.schoolName ||
-          "";
-
-        $("schoolNameText").textContent = currentSchoolName || "School";
-
-        const initial = (adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
-        $("avatarChip").textContent = initial;
-
-        return true;
-      }
-
-      async function loadDashboard(){
-        showMessage("pageErrorBox", "");
-
-        try{
-          const schoolName = currentSchoolName;
-
-          const [studentsRes, hodsRes] = await Promise.all([
-            sb
-              .from("student_profiles")
-              .select("id", { count: "exact", head: true })
-              .eq("school_name", schoolName),
-
-            sb
-              .from("hod_accounts")
-              .select("id", { count: "exact", head: true })
-              .eq("school_name", schoolName)
-          ]);
-
-          if (studentsRes.error) throw studentsRes.error;
-          if (hodsRes.error) throw hodsRes.error;
-
-          $("totalStudentCount").textContent = String(studentsRes.count || 0);
-          $("totalHodCount").textContent = String(hodsRes.count || 0);
-
-          const history = getHosHistory()
-            .sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-            .slice(0,2);
-
-          renderHistory(history);
-        } catch(err){
-          console.error(err);
-          $("totalStudentCount").textContent = "0";
-          $("totalHodCount").textContent = "0";
-          renderHistory([]);
-          showMessage("pageErrorBox", err.message || "Could not load dashboard.");
-        }
-      }
-
-      function renderHistory(items){
-        const wrap = $("historyList");
-
-        if (!items.length){
-          wrap.innerHTML = '<div class="empty">No recent history yet.</div>';
-          return;
-        }
-
-        wrap.innerHTML = items.map((item) => `
-          <div class="history-item">
-            <div class="history-top">
-              <div>
-                <div class="history-title">${escapeHtml(item.title || "-")}</div>
-                <div class="history-sub">${escapeHtml(item.description || "-")}</div>
-              </div>
-              <div class="history-type">${escapeHtml(item.type || "Item")}</div>
-            </div>
-            <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
-          </div>
-        `).join("");
-      }
-
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (!requireHosSession()) return;
-
-        $("avatarChip").addEventListener("click", () => {
-          window.location.href = "hos_account.html";
-        });
-
-        $("backBtn").addEventListener("click", () => {
-          window.history.back();
-        });
-
-        $("createAccountBtn").addEventListener("click", () => {
-          window.location.href = "hos_create_account.html";
-        });
-
-        $("viewHistoryBtn").addEventListener("click", () => {
-          window.location.href = "hos_history.html";
-        });
-
-        await loadDashboard();
+    async function invokeEdge(functionName, body){
+      const { data, error } = await sb.functions.invoke(functionName, {
+        body: body || {}
       });
-    })();
-  </script>
+
+      if (error){
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      return data || {};
+    }
+
+    async function loadDashboardData(){
+      showMessage("pageErrorBox", "");
+
+      try{
+        const result = await invokeEdge(EDGE.studentSummary, {
+          hos_admin_id: adminSession.id
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not load dashboard summary.");
+        }
+
+        const totals = result.totals || {};
+        $("totalStudentCount").textContent = String(totals.students || 0);
+        $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+
+        renderHistory(
+          getHosHistory()
+            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+            .slice(0, 2)
+        );
+      }catch(err){
+        console.error(err);
+        $("totalStudentCount").textContent = "0";
+        $("totalAnnouncementCount").textContent = "0";
+        renderHistory([]);
+        showMessage("pageErrorBox", err.message || "Could not load dashboard data.");
+      }
+    }
+
+    function renderHistory(items){
+      const wrap = $("historyList");
+
+      if (!items || !items.length){
+        wrap.innerHTML = '<div class="empty">No recent history yet.</div>';
+        return;
+      }
+
+      wrap.innerHTML = items.map((item) => `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-title">${escapeHtml(item.title || "-")}</div>
+              <div class="history-sub">${escapeHtml(item.description || "-")}</div>
+            </div>
+            <div class="pill">${escapeHtml(item.type || "Item")}</div>
+          </div>
+          <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
+        </div>
+      `).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!requireHosSession()) return;
+
+      $("avatarChip").addEventListener("click", () => {
+        window.location.href = "hos_account.html";
+      });
+
+      $("goAccountsBtn").addEventListener("click", () => {
+        window.location.href = "hos_create_account.html";
+      });
+
+      $("goAnnouncementBtn").addEventListener("click", () => {
+        window.location.href = "hos_announcement.html";
+      });
+
+      $("goHistoryBtn").addEventListener("click", () => {
+        window.location.href = "hos_history.html";
+      });
+
+      $("viewHistoryBtn").addEventListener("click", () => {
+        window.location.href = "hos_history.html";
+      });
+
+      await loadDashboardData();
+    });
+  })();
+</script>
 </body>
 </html>
