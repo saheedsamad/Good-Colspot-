@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Agent Cases</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#dbeafe;
+      --blue-soft-2:#eff6ff;
+      --purple:#5b5ce6;
+      --purple-soft:#f3f0ff;
+      --green:#16a34a;
+      --green-soft:#ecfdf5;
+      --orange:#ea580c;
+      --orange-soft:#fff7ed;
+      --red:#dc2626;
+      --red-soft:#fef2f2;
+
+      --text:#0f172a;
+      --muted:#667085;
+      --line:#e7edf7;
+      --card:#ffffff;
+
+      --shadow:0 18px 45px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 30px rgba(37,99,235,.10);
+
+      --radius-xl:30px;
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --nav-h:88px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:
+        radial-gradient(860px 520px at 50% -8%, rgba(59,130,246,.20) 0%, rgba(59,130,246,0) 62%),
+        radial-gradient(700px 420px at 0% 32%, rgba(191,219,254,.42) 0%, rgba(191,219,254,0) 68%),
+        radial-gradient(700px 420px at 100% 34%, rgba(191,219,254,.34) 0%, rgba(191,219,254,0) 68%),
+        linear-gradient(180deg,#f3f7ff 0%, #f8fbff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .shell{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      padding:
+        calc(env(safe-area-inset-top) + 18px)
+        16px
+        calc(env(safe-area-inset-bottom) + var(--nav-h) + 24px);
+      position:relative;
+    }
+
+    .glow{
+      position:fixed;
+      inset:auto -15% -10% -15%;
+      height:36vh;
+      pointer-events:none;
+      z-index:0;
+      background:
+        radial-gradient(60% 100% at 50% 100%, rgba(255,255,255,.84) 0%, rgba(255,255,255,.32) 42%, rgba(255,255,255,0) 76%);
+      filter:blur(8px);
+    }
+
+    .content{
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-logo{
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.72);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex-shrink:0;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+
+    .brand-logo img{
+      width:42px;
+      height:42px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brand-title{
+      font-size:18px;
+      font-weight:950;
+      letter-spacing:-.03em;
+      margin-top:2px;
+      margin-bottom:2px;
+      color:#10224a;
+    }
+
+    .brand-sub{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .top-actions{
+      position:relative;
+      flex-shrink:0;
+    }
+
+    .avatar-btn{
+      width:46px;
+      height:46px;
+      border:none;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb 0%, #10b981 100%);
+      color:#fff;
+      font-size:17px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 16px 34px rgba(37,99,235,.22);
+    }
+
+    .account-menu{
+      position:absolute;
+      top:54px;
+      right:0;
+      width:210px;
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(226,232,240,.92);
+      border-radius:20px;
+      box-shadow:0 25px 50px rgba(15,23,42,.14);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      overflow:hidden;
+      display:none;
+      z-index:50;
+    }
+
+    .account-menu.show{
+      display:block;
+    }
+
+    .menu-head{
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .menu-name{
+      font-size:14px;
+      font-weight:900;
+      color:#111827;
+      line-height:1.3;
+    }
+
+    .menu-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+      line-height:1.4;
+    }
+
+    .menu-btn{
+      width:100%;
+      border:none;
+      background:#fff;
+      text-align:left;
+      padding:14px;
+      font-size:13px;
+      font-weight:800;
+      color:#1f2937;
+      cursor:pointer;
+      border-bottom:1px solid var(--line);
+    }
+
+    .menu-btn:last-child{
+      border-bottom:none;
+    }
+
+    .menu-btn.danger{
+      color:#b91c1c;
+    }
+
+    .hero{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(255,255,255,.82) 100%);
+      border:1px solid rgba(255,255,255,.78);
+      border-radius:var(--radius-xl);
+      padding:18px 16px 16px;
+      box-shadow:0 24px 55px rgba(37,99,235,.10);
+      margin-bottom:14px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      width:170px;
+      height:170px;
+      border-radius:50%;
+      right:-48px;
+      top:-52px;
+      background:radial-gradient(circle, rgba(37,99,235,.16) 0%, rgba(37,99,235,0) 70%);
+      pointer-events:none;
+    }
+
+    .hero-title{
+      font-size:20px;
+      font-weight:950;
+      line-height:1.18;
+      letter-spacing:-.03em;
+      margin:0 0 6px;
+      color:#111827;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-title span{
+      color:var(--blue);
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.55;
+      color:var(--muted);
+      margin-bottom:12px;
+      max-width:300px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-pills{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eef4ff;
+      color:#2563eb;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    .message{
+      display:none;
+      padding:13px 14px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.5;
+      font-weight:800;
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
+    }
+
+    .message.show{
+      display:block;
+    }
+
+    .message.error{
+      background:var(--red-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      background:var(--green-soft);
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:26px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:16px;
+      font-weight:950;
+      letter-spacing:-.02em;
+      color:#111827;
+    }
+
+    .section-btn{
+      border:none;
+      background:#eef4ff;
+      color:#2563eb;
+      padding:10px 13px;
+      border-radius:14px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .summary-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px 10px;
+      text-align:center;
+    }
+
+    .summary-card h4{
+      margin:0 0 6px;
+      font-size:11px;
+      color:#667085;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+
+    .summary-card div{
+      font-size:22px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.04em;
+      color:#0f172a;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .search-wrap{
+      position:relative;
+    }
+
+    .search-input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px 14px 14px 44px;
+      font-size:14px;
+      color:#111827;
+      outline:none;
+    }
+
+    .search-input:focus,
+    .filter-select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .search-icon{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;
+      height:18px;
+      color:#94a3b8;
+      pointer-events:none;
+    }
+
+    .toolbar-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .filter-select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:13px 14px;
+      font-size:14px;
+      color:#111827;
+      outline:none;
+    }
+
+    .filter-chips{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding-bottom:2px;
+    }
+
+    .filter-chip{
+      border:none;
+      background:#f3f4f6;
+      color:#374151;
+      border-radius:999px;
+      padding:10px 13px;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+
+    .filter-chip.active{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .cases-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .empty{
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      padding:24px 10px;
+    }
+
+    .case-card{
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:14px;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+    }
+
+    .case-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .case-title{
+      font-size:15px;
+      font-weight:950;
+      line-height:1.28;
+      margin-bottom:4px;
+      color:#111827;
+    }
+
+    .case-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .status-pill{
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+
+    .status-new{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .status-under_review{
+      background:#f5f3ff;
+      color:#7c3aed;
+    }
+
+    .status-waiting_reply{
+      background:#fff7ed;
+      color:#ea580c;
+    }
+
+    .status-resolved{
+      background:#ecfdf5;
+      color:#15803d;
+    }
+
+    .status-escalated{
+      background:#fef2f2;
+      color:#dc2626;
+    }
+
+    .meta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .meta-pill{
+      padding:7px 10px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#374151;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    .meta-pill.assigned{
+      background:#ecfdf5;
+      color:#15803d;
+    }
+
+    .meta-pill.unassigned{
+      background:#fff7ed;
+      color:#ea580c;
+    }
+
+    .case-body{
+      font-size:13px;
+      line-height:1.55;
+      color:#475467;
+      margin-bottom:10px;
+      white-space:pre-wrap;
+    }
+
+    .case-info{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .info-box{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fbfdff;
+      padding:10px 11px;
+    }
+
+    .info-label{
+      font-size:10px;
+      font-weight:900;
+      color:#64748b;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:5px;
+    }
+
+    .info-value{
+      font-size:12px;
+      font-weight:800;
+      line-height:1.45;
+      color:#111827;
+      word-break:break-word;
+    }
+
+    .case-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .mini-btn{
+      border:none;
+      border-radius:13px;
+      padding:10px 12px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .mini-btn.chat{
+      background:#eef2ff;
+      color:#5b5ce6;
+    }
+
+    .mini-btn.assign{
+      background:#ede9fe;
+      color:#6d28d9;
+    }
+
+    .mini-btn.success{
+      background:#ecfdf5;
+      color:#15803d;
+    }
+
+    .mini-btn.orange{
+      background:#fff7ed;
+      color:#ea580c;
+    }
+
+    .assign-panel{
+      display:none;
+      margin-top:12px;
+      border-top:1px solid var(--line);
+      padding-top:12px;
+    }
+
+    .assign-panel.show{
+      display:block;
+    }
+
+    .assign-head{
+      font-size:13px;
+      font-weight:900;
+      color:#111827;
+      margin-bottom:10px;
+    }
+
+    .assign-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      align-items:end;
+    }
+
+    .assign-select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:#fff;
+      padding:12px 13px;
+      font-size:13px;
+      color:#111827;
+      outline:none;
+    }
+
+    .assign-save{
+      border:none;
+      border-radius:15px;
+      padding:12px 14px;
+      font-size:12px;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(90deg,#5b5ce6 0%, #7c3aed 100%);
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .assign-note{
+      font-size:12px;
+      line-height:1.45;
+      color:#667085;
+      margin-top:8px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:calc(env(safe-area-inset-bottom) + 10px);
+      width:min(430px, calc(100vw - 18px));
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:30px;
+      box-shadow:0 24px 48px rgba(15,23,42,.12);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      padding:10px 8px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:4px;
+      z-index:40;
+    }
+
+    .nav-btn{
+      border:none;
+      background:transparent;
+      border-radius:18px;
+      min-height:62px;
+      color:#9aa3b2;
+      cursor:pointer;
+      padding:6px 4px;
+    }
+
+    .nav-btn.active{
+      color:#2563eb;
+    }
+
+    .nav-btn-inner{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      font-size:11px;
+      font-weight:800;
+      line-height:1.15;
+    }
+
+    .nav-btn svg{
+      width:22px;
+      height:22px;
+      display:block;
+    }
+
+    @media (max-width:380px){
+      .toolbar-row,
+      .case-info,
+      .summary-grid{
+        grid-template-columns:1fr;
+      }
+
+      .assign-row{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="shell">
+    <div class="content">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-logo">
+            <img
+              src="asset/logo walpaper.jpeg"
+              alt="Colspot"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;font-weight:900;color:#2563eb;font-size:18px;&quot;>C</span>';"
+            />
+          </div>
+
+          <div>
+            <div class="brand-title">Colspot</div>
+            <div class="brand-sub" id="schoolNameText">Agent cases</div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="avatar-btn" id="avatarBtn" type="button">R</button>
+
+          <div class="account-menu" id="accountMenu">
+            <div class="menu-head">
+              <div class="menu-name" id="menuAgentName">Report Agent</div>
+              <div class="menu-sub" id="menuSchoolName">School</div>
+            </div>
+
+            <button class="menu-btn" type="button" onclick="goToAccountPage()">Account</button>
+            <button class="menu-btn" type="button" onclick="window.location.href='agent_assistant.html'">Open assistants</button>
+            <button class="menu-btn danger" type="button" onclick="logout()">Log out</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="hero-title">Manage all <span>active cases</span></div>
+        <div class="hero-sub">
+          View report details, start chat, assign assistants, and move quickly to the next case that still needs work.
+        </div>
+        <div class="hero-pills">
+          <div class="hero-pill">Full details</div>
+          <div class="hero-pill">Start chat</div>
+          <div class="hero-pill">Assign assistant</div>
+        </div>
+      </section>
+
+      <div class="message" id="pageMessage"></div>
+      <div class="message" id="assignMessage"></div>
+      <div class="message" id="statusMessage"></div>
+
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">Cases overview</h2>
+          <button class="section-btn" id="refreshCasesBtn" type="button">Refresh</button>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card">
+            <h4>Total</h4>
+            <div id="totalCasesCount">0</div>
+          </article>
+          <article class="summary-card">
+            <h4>Assigned</h4>
+            <div id="assignedCasesCount">0</div>
+          </article>
+          <article class="summary-card">
+            <h4>Unassigned</h4>
+            <div id="unassignedCasesCount">0</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">Find cases</h2>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+              <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <input
+              id="caseSearchInput"
+              class="search-input"
+              type="text"
+              placeholder="Search by tracking code, title, message, category"
+            />
+          </div>
+
+          <div class="toolbar-row">
+            <select id="assignmentFilter" class="filter-select">
+              <option value="all">All assignments</option>
+              <option value="assigned">Assigned only</option>
+              <option value="unassigned">Unassigned only</option>
+            </select>
+
+            <select id="sortFilter" class="filter-select">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="urgent">Urgent first</option>
+            </select>
+          </div>
+
+          <div class="filter-chips" id="statusFilters">
+            <button class="filter-chip active" data-status="">All</button>
+            <button class="filter-chip" data-status="new">New</button>
+            <button class="filter-chip" data-status="under_review">Under review</button>
+            <button class="filter-chip" data-status="waiting_reply">Waiting reply</button>
+            <button class="filter-chip" data-status="resolved">Resolved</button>
+            <button class="filter-chip" data-status="escalated">Escalated</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">All cases</h2>
+        </div>
+
+        <div class="cases-list" id="casesList">
+          <div class="empty">Loading cases...</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" type="button" onclick="window.location.href='report_agent.html'">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Dashboard</span>
+      </div>
+    </button>
+
+    <button class="nav-btn active" type="button" onclick="window.location.href='agent_cases.html'">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h3l1.2 1.5h8.8A1.5 1.5 0 0 1 20 9v8.5A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Cases</span>
+      </div>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='agent_history.html'">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>History</span>
+      </div>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='agent_assistant.html'">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Assistants</span>
+      </div>
+    </button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+
+    const DASHBOARD_EDGE_FN = "get-report-agent-dashboard";
+    const ASSISTANTS_EDGE_FN = "get-report-agent-assistants";
+    const ASSIGN_EDGE_FN = "assign-report-to-assistant-agent";
+    const STATUS_EDGE_FN = "update-school-report-status";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let reportAgentSession = null;
+    let currentReports = [];
+    let currentAssistants = [];
+    let currentStatusFilter = "";
+    let currentSearch = "";
+    let currentAssignmentFilter = "all";
+    let currentSort = "newest";
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showMessage(id, text = "", type = "error") {
+      const box = $(id);
+      if (!text) {
+        box.className = "message";
+        box.textContent = "";
+        return;
+      }
+      box.className = `message show ${type}`;
+      box.textContent = text;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+
+    function getAdminSession() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function requireReportAgentSession() {
+      reportAgentSession = getAdminSession();
+
+      if (!reportAgentSession || String(reportAgentSession.role || "").toLowerCase() !== "report_agent") {
+        window.location.href = "index.html";
+        return false;
+      }
+
+      const fullName = reportAgentSession.full_name || "Report Agent";
+      const schoolName = reportAgentSession.school_name || "School";
+
+      $("schoolNameText").textContent = schoolName;
+      $("menuSchoolName").textContent = schoolName;
+      $("menuAgentName").textContent = fullName;
+      $("avatarBtn").textContent = (fullName.trim()[0] || "R").toUpperCase();
+
+      return true;
+    }
+
+    async function invokeEdge(name, body = {}) {
+      const { data, error } = await sb.functions.invoke(name, { body });
+
+      if (error) {
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Request failed.");
+      }
+
+      return data;
+    }
+
+    function statusClass(status) {
+      return `status-${String(status || "").toLowerCase()}`;
+    }
+
+    function getAssignedAssistantName(report) {
+      return (
+        report.assigned_assistant_name ||
+        report.assistant_agent_name ||
+        report.assistant_name ||
+        report.assigned_to_name ||
+        report.assigned_agent_name ||
+        report.assigned_full_name ||
+        report.handler_name ||
+        ""
+      );
+    }
+
+    function getAssignedAssistantId(report) {
+      return (
+        report.assigned_assistant_id ||
+        report.assistant_agent_id ||
+        report.assigned_to_id ||
+        report.assigned_agent_id ||
+        report.handler_id ||
+        ""
+      );
+    }
+
+    function isAssigned(report) {
+      return !!(getAssignedAssistantName(report) || getAssignedAssistantId(report));
+    }
+
+    function updateCounts(reports) {
+      const total = reports.length;
+      const assigned = reports.filter(isAssigned).length;
+      const unassigned = total - assigned;
+
+      $("totalCasesCount").textContent = String(total);
+      $("assignedCasesCount").textContent = String(assigned);
+      $("unassignedCasesCount").textContent = String(unassigned);
+    }
+
+    function filterReports(reports) {
+      let list = [...reports];
+
+      if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+        list = list.filter((report) => {
+          const hay = [
+            report.title,
+            report.category,
+            report.message,
+            report.tracking_code,
+            report.school_name,
+            report.department,
+            report.person_involved,
+            getAssignedAssistantName(report)
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      if (currentAssignmentFilter === "assigned") {
+        list = list.filter(isAssigned);
+      } else if (currentAssignmentFilter === "unassigned") {
+        list = list.filter((r) => !isAssigned(r));
+      }
+
+      if (currentSort === "oldest") {
+        list.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      } else if (currentSort === "urgent") {
+        list.sort((a, b) => {
+          const av = String(a.urgency || "").toLowerCase() === "urgent" ? 1 : 0;
+          const bv = String(b.urgency || "").toLowerCase() === "urgent" ? 1 : 0;
+          if (av !== bv) return bv - av;
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
+      } else {
+        list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      }
+
+      return list;
+    }
+
+    function renderCases() {
+      const wrap = $("casesList");
+      const list = filterReports(currentReports);
+
+      updateCounts(list);
+
+      if (!list.length) {
+        wrap.innerHTML = '<div class="empty">No cases match your current filters.</div>';
+        return;
+      }
+
+      wrap.innerHTML = list.map((report) => {
+        const assignedName = getAssignedAssistantName(report);
+        const assigned = isAssigned(report);
+        const reportId = report.id || "";
+        const status = report.status || "new";
+        const category = report.category || "other";
+        const urgency = report.urgency || "normal";
+        const anonymousText = report.is_anonymous ? "Anonymous" : "Named";
+        const department = report.department || "No department";
+
+        return `
+          <article class="case-card" id="case-${escapeHtml(reportId)}">
+            <div class="case-top">
+              <div>
+                <div class="case-title">${escapeHtml(report.title || category || "Untitled report")}</div>
+                <div class="case-sub">${escapeHtml(report.tracking_code || "")} • ${escapeHtml(report.school_name || "")}</div>
+              </div>
+              <div class="status-pill ${statusClass(status)}">${escapeHtml(status)}</div>
+            </div>
+
+            <div class="meta-row">
+              <div class="meta-pill">${escapeHtml(category)}</div>
+              <div class="meta-pill">${escapeHtml(urgency)}</div>
+              <div class="meta-pill">${escapeHtml(anonymousText)}</div>
+              <div class="meta-pill">${escapeHtml(department)}</div>
+              <div class="meta-pill ${assigned ? "assigned" : "unassigned"}">
+                ${assigned ? `Assigned: ${escapeHtml(assignedName || "Yes")}` : "Not assigned"}
+              </div>
+            </div>
+
+            <div class="case-body">${escapeHtml((report.message || "").slice(0, 220))}</div>
+
+            <div class="case-info">
+              <div class="info-box">
+                <div class="info-label">Created</div>
+                <div class="info-value">${escapeHtml(formatDateTime(report.created_at))}</div>
+              </div>
+              <div class="info-box">
+                <div class="info-label">Person involved</div>
+                <div class="info-value">${escapeHtml(report.person_involved || "Not provided")}</div>
+              </div>
+              <div class="info-box">
+                <div class="info-label">Location</div>
+                <div class="info-value">${escapeHtml(report.location_text || report.location || "Not provided")}</div>
+              </div>
+              <div class="info-box">
+                <div class="info-label">Reply mode</div>
+                <div class="info-value">${report.allow_anonymous_reply ? "Replies allowed" : "No reply requested"}</div>
+              </div>
+            </div>
+
+            <div class="case-actions">
+              <button class="mini-btn primary" type="button" onclick="openReportCase('${escapeHtml(reportId)}')">View details</button>
+              <button class="mini-btn chat" type="button" onclick="openReportChat('${escapeHtml(reportId)}')">Start chat</button>
+              <button class="mini-btn assign" type="button" onclick="toggleAssignPanel('${escapeHtml(reportId)}')">
+                ${assigned ? "Reassign" : "Assign"}
+              </button>
+              ${status !== "under_review" ? `<button class="mini-btn orange" type="button" onclick="markCaseStatus('${escapeHtml(reportId)}','under_review')">Mark review</button>` : ""}
+              ${status !== "resolved" ? `<button class="mini-btn success" type="button" onclick="markCaseStatus('${escapeHtml(reportId)}','resolved')">Mark resolved</button>` : ""}
+            </div>
+
+            <div class="assign-panel" id="assign-panel-${escapeHtml(reportId)}">
+              <div class="assign-head">
+                ${assigned ? `This case is already assigned to ${escapeHtml(assignedName || "an assistant")}. You can move it to another assistant below.` : "Choose assistant for this case"}
+              </div>
+
+              <div class="assign-row">
+                <select class="assign-select" id="assign-select-${escapeHtml(reportId)}">
+                  <option value="">Select assistant agent</option>
+                  ${currentAssistants.map((assistant) => `
+                    <option value="${escapeHtml(assistant.id)}" ${getAssignedAssistantId(report) === assistant.id ? "selected" : ""}>
+                      ${escapeHtml(assistant.full_name || "")} - ${escapeHtml(assistant.login_id || "")}
+                    </option>
+                  `).join("")}
+                </select>
+
+                <button class="assign-save" type="button" onclick="assignCaseFromPanel('${escapeHtml(reportId)}')">
+                  ${assigned ? "Move case" : "Assign"}
+                </button>
+              </div>
+
+              <div class="assign-note">
+                After assignment, this card will show who is handling the case so you can focus on another case that still needs work.
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadCases() {
+      showMessage("pageMessage", "");
+      try {
+        const data = await invokeEdge(DASHBOARD_EDGE_FN, {
+          report_agent_id: reportAgentSession.id,
+          status: currentStatusFilter
+        });
+
+        currentReports = Array.isArray(data.reports) ? data.reports : [];
+        renderCases();
+      } catch (err) {
+        console.error(err);
+        currentReports = [];
+        renderCases();
+        showMessage("pageMessage", err.message || "Could not load cases.");
+      }
+    }
+
+    async function loadAssistants() {
+      try {
+        const data = await invokeEdge(ASSISTANTS_EDGE_FN, {
+          report_agent_id: reportAgentSession.id
+        });
+
+        currentAssistants = Array.isArray(data.assistants) ? data.assistants : [];
+        renderCases();
+      } catch (err) {
+        console.error(err);
+        currentAssistants = [];
+        renderCases();
+      }
+    }
+
+    function toggleAssignPanel(reportId) {
+      const panel = document.getElementById(`assign-panel-${reportId}`);
+      if (!panel) return;
+      panel.classList.toggle("show");
+    }
+
+    async function assignCaseFromPanel(reportId) {
+      showMessage("assignMessage", "");
+
+      const select = document.getElementById(`assign-select-${reportId}`);
+      const assistantId = select ? select.value : "";
+
+      if (!assistantId) {
+        showMessage("assignMessage", "Please select an assistant agent.");
+        return;
+      }
+
+      try {
+        const data = await invokeEdge(ASSIGN_EDGE_FN, {
+          report_agent_id: reportAgentSession.id,
+          assistant_agent_id: assistantId,
+          report_id: reportId
+        });
+
+        showMessage("assignMessage", data.message || "Case assigned successfully.", "success");
+        await loadCases();
+        await loadAssistants();
+      } catch (err) {
+        console.error(err);
+        showMessage("assignMessage", err.message || "Could not assign case.");
+      }
+    }
+
+    async function markCaseStatus(reportId, status) {
+      showMessage("statusMessage", "");
+
+      try {
+        const data = await invokeEdge(STATUS_EDGE_FN, {
+          report_agent_id: reportAgentSession.id,
+          report_id: reportId,
+          status
+        });
+
+        showMessage("statusMessage", data.message || "Case updated successfully.", "success");
+        await loadCases();
+      } catch (err) {
+        console.error(err);
+        showMessage(
+          "statusMessage",
+          err.message || "Could not update case status. If your status edge function uses another name, change STATUS_EDGE_FN at the top of this file."
+        );
+      }
+    }
+
+    function openReportCase(reportId) {
+      localStorage.setItem("colspot_selected_report_id", reportId);
+      localStorage.setItem("colspot_report_case_open_tab", "details");
+      window.location.href = "report_agent_case.html";
+    }
+
+    function openReportChat(reportId) {
+      localStorage.setItem("colspot_selected_report_id", reportId);
+      localStorage.setItem("colspot_report_case_open_tab", "chat");
+      window.location.href = "report_agent_case.html";
+    }
+
+    function goToAccountPage() {
+      window.location.href = "account.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("colspot_admin_session");
+      localStorage.removeItem("colspot_pending_admin");
+      window.location.href = "index.html";
+    }
+
+    function toggleMenu() {
+      $("accountMenu").classList.toggle("show");
+    }
+
+    document.addEventListener("click", (e) => {
+      const menu = $("accountMenu");
+      const btn = $("avatarBtn");
+      if (!menu || !btn) return;
+
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove("show");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!requireReportAgentSession()) return;
+
+      $("avatarBtn").addEventListener("click", toggleMenu);
+
+      document.querySelectorAll("#statusFilters .filter-chip").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          document.querySelectorAll("#statusFilters .filter-chip").forEach((x) => x.classList.remove("active"));
+          btn.classList.add("active");
+          currentStatusFilter = btn.dataset.status || "";
+          await loadCases();
+        });
+      });
+
+      $("caseSearchInput").addEventListener("input", (e) => {
+        currentSearch = (e.target.value || "").trim();
+        renderCases();
+      });
+
+      $("assignmentFilter").addEventListener("change", (e) => {
+        currentAssignmentFilter = e.target.value || "all";
+        renderCases();
+      });
+
+      $("sortFilter").addEventListener("change", (e) => {
+        currentSort = e.target.value || "newest";
+        renderCases();
+      });
+
+      $("refreshCasesBtn").addEventListener("click", async () => {
+        await loadCases();
+        await loadAssistants();
+      });
+
+      await loadCases();
+      await loadAssistants();
+    });
+
+    window.openReportCase = openReportCase;
+    window.openReportChat = openReportChat;
+    window.toggleAssignPanel = toggleAssignPanel;
+    window.assignCaseFromPanel = assignCaseFromPanel;
+    window.markCaseStatus = markCaseStatus;
+    window.goToAccountPage = goToAccountPage;
+    window.logout = logout;
+  </script>
+</body>
+</html>
