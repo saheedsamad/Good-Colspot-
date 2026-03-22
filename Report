@@ -27,7 +27,6 @@
       --text:#0f172a;
       --muted:#667085;
       --line:#e5e7eb;
-      --line-soft:rgba(148,163,184,.18);
       --card:#ffffff;
       --shadow:0 18px 44px rgba(15,23,42,.08);
       --shadow-soft:0 10px 28px rgba(37,99,235,.10);
@@ -482,29 +481,16 @@
       gap:10px;
     }
 
-    .submit-wrap{
-      position:sticky;
-      bottom:calc(env(safe-area-inset-bottom) + 10px);
-      z-index:5;
-      margin-top:2px;
+    .submit-section{
+      margin-top:4px;
     }
 
     .submit-panel{
-      padding:12px;
+      padding:16px;
       border-radius:28px;
-      background:rgba(255,255,255,.85);
-      border:1px solid rgba(255,255,255,.72);
-      box-shadow:0 20px 42px rgba(15,23,42,.10);
-      backdrop-filter:blur(14px);
-      -webkit-backdrop-filter:blur(14px);
-    }
-
-    .submit-note{
-      font-size:12px;
-      line-height:1.45;
-      color:#667085;
-      text-align:center;
-      margin-top:10px;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(226,232,240,.85);
+      box-shadow:var(--shadow);
     }
 
     .submit-btn{
@@ -531,6 +517,14 @@
       opacity:.65;
       cursor:not-allowed;
       transform:none;
+    }
+
+    .submit-note{
+      font-size:12px;
+      line-height:1.45;
+      color:#667085;
+      text-align:center;
+      margin-top:10px;
     }
 
     .result-card{
@@ -837,7 +831,7 @@
         </div>
       </section>
 
-      <div class="submit-wrap">
+      <section class="submit-section">
         <div class="submit-panel">
           <button class="submit-btn" id="submitReportBtn" type="button">
             Send report to school authority
@@ -846,7 +840,7 @@
             Your report is handled privately and a tracking code will be generated after submission.
           </div>
         </div>
-      </div>
+      </section>
 
       <section class="result-card" id="resultCard">
         <div class="result-top">
@@ -902,7 +896,7 @@
     const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
     const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let selectedCategory = "bullying";
     let isAnonymous = true;
@@ -922,10 +916,12 @@
       if (!text) {
         box.className = "message";
         box.textContent = "";
+        box.style.display = "none";
         return;
       }
       box.className = `message show ${type}`;
       box.textContent = text;
+      box.style.display = "block";
     }
 
     function setCategory(category) {
@@ -1001,7 +997,7 @@
       submitBtn.textContent = "Sending...";
 
       try {
-        const { data, error } = await supabase.functions.invoke("submit-school-report", {
+        const { data, error } = await sb.functions.invoke("submit-school-report", {
           body: {
             submitted_by_user_id: userId,
             is_anonymous: isAnonymous,
