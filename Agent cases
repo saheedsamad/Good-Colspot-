@@ -871,9 +871,9 @@
 
           <div class="toolbar-row">
             <select id="assignmentFilter" class="filter-select">
+              <option value="unassigned" selected>Unassigned only</option>
               <option value="all">All assignments</option>
               <option value="assigned">Assigned only</option>
-              <option value="unassigned">Unassigned only</option>
             </select>
 
             <select id="sortFilter" class="filter-select">
@@ -963,7 +963,7 @@
     let currentAssistants = [];
     let currentStatusFilter = "";
     let currentSearch = "";
-    let currentAssignmentFilter = "all";
+    let currentAssignmentFilter = "unassigned";
     let currentSort = "newest";
 
     function $(id) {
@@ -1057,6 +1057,7 @@
 
     function getAssignedAssistantId(report) {
       return (
+        report.assigned_assistant_agent_id ||
         report.assigned_assistant_id ||
         report.assistant_agent_id ||
         report.assigned_to_id ||
@@ -1366,7 +1367,7 @@
       });
 
       $("assignmentFilter").addEventListener("change", (e) => {
-        currentAssignmentFilter = e.target.value || "all";
+        currentAssignmentFilter = e.target.value || "unassigned";
         renderCases();
       });
 
