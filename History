@@ -198,6 +198,36 @@
       color: #1d4ed8;
     }
 
+    #screen-history .status-chip.report {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
+    #screen-history .status-chip.report.new {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    #screen-history .status-chip.report.under_review {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
+    #screen-history .status-chip.report.waiting_reply {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    #screen-history .status-chip.report.resolved {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    #screen-history .status-chip.report.escalated {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
     #screen-history .count-text {
       font-size: 11px;
       color: var(--text-muted);
@@ -339,15 +369,15 @@
   <section class="hero">
     <div class="hero-line-1">History</div>
     <h1 class="hero-title">
-      Created classes, announcements &amp;<br />
-      <span>scan downloads</span>
+      Created classes, announcements,<br />
+      <span>reports &amp; scan downloads</span>
     </h1>
   </section>
 
   <div class="page-title-block">
     <p class="page-sub">
-      Review your created class codes, school announcements and scanned sheet downloads.
-      Tap a class to see students who joined it.
+      Review your created class codes, school announcements, submitted reports and scanned sheet downloads.
+      Tap a class to see students who joined it or tap a report to view full details.
     </p>
   </div>
 
@@ -368,7 +398,7 @@
       id="fullHistorySearch"
       class="search-input"
       type="search"
-      placeholder="Search by course code, announcement title or file name"
+      placeholder="Search by course code, announcement title, report or file name"
     />
   </div>
 
@@ -397,7 +427,7 @@
   <div class="history-section-title">History</div>
   <div id="fullHistoryList" class="history-list"></div>
   <div id="fullHistoryEmpty" class="empty-state">
-    No history yet. When you create classes, receive school announcements or scan sheets, they will appear here.
+    No history yet. When you create classes, submit reports, receive school announcements or scan sheets, they will appear here.
   </div>
 
   <div id="studentHistoryModal" class="student-history-modal">
@@ -467,6 +497,7 @@
   let fullHistoryClasses = [];
   let scanHistoryItems = [];
   let schoolAnnouncementItems = [];
+  let reportHistoryItems = [];
   let combinedHistoryItems = [];
   let combinedHistoryFiltered = [];
 
@@ -646,6 +677,33 @@
     }
   }
 
+  async function loadReportHistoryForHistory(user) {
+    if (typeof supabase === "undefined" || !user?.id) return [];
+
+    try {
+      const { data, error } = await supabase.functions.invoke("get-my-school-reports", {
+        body: {
+          submitted_by_user_id: user.id
+        }
+      });
+
+      if (error) {
+        console.error("Report history function error:", error);
+        return [];
+      }
+
+      if (!data?.ok) {
+        console.error("Report history data error:", data?.error);
+        return [];
+      }
+
+      return Array.isArray(data.reports) ? data.reports : [];
+    } catch (e) {
+      console.error("loadReportHistoryForHistory error:", e);
+      return [];
+    }
+  }
+
   function rebuildCombinedHistory() {
     combinedHistoryItems = [];
 
@@ -679,6 +737,14 @@
         type: "announcement",
         created_at: announcement.created_at || null,
         announcement,
+      });
+    });
+
+    reportHistoryItems.forEach((report) => {
+      combinedHistoryItems.push({
+        type: "report",
+        created_at: report.created_at || null,
+        report,
       });
     });
 
@@ -880,6 +946,7 @@
       }
 
       schoolAnnouncementItems = await loadSchoolAnnouncementsForHistory(user);
+      reportHistoryItems = await loadReportHistoryForHistory(user);
 
       rebuildCombinedHistory();
       updateFullHistoryStatsSummary();
@@ -903,8 +970,9 @@
     const totalItems = combinedHistoryItems.length;
     const totalClasses = fullHistoryClasses.length;
     const totalAnnouncements = schoolAnnouncementItems.length;
+    const totalReports = reportHistoryItems.length;
     setFullHistoryStats(
-      `${totalItems} items • ${totalClasses} classes • ${totalAnnouncements} announcements`
+      `${totalItems} items • ${totalClasses} classes • ${totalAnnouncements} announcements • ${totalReports} reports`
     );
   }
 
@@ -942,6 +1010,20 @@
         const title = (ann.title || "").toLowerCase();
         const message = (ann.message || "").toLowerCase();
         return title.includes(query) || message.includes(query);
+      } else if (item.type === "report") {
+        const report = item.report;
+        const title = (report.title || "").toLowerCase();
+        const category = (report.category || "").toLowerCase();
+        const message = (report.message || "").toLowerCase();
+        const code = (report.tracking_code || "").toLowerCase();
+        const status = (report.status || "").toLowerCase();
+        return (
+          title.includes(query) ||
+          category.includes(query) ||
+          message.includes(query) ||
+          code.includes(query) ||
+          status.includes(query)
+        );
       } else {
         const scan = item.scan;
         const title = (scan.title || "").toLowerCase();
@@ -950,6 +1032,16 @@
     });
 
     renderFullHistoryList();
+  }
+
+  function openReportDetails(report) {
+    try {
+      localStorage.setItem("colspot_selected_report_id", report.id);
+      localStorage.setItem("colspot_selected_report_tracking_code", report.tracking_code || "");
+    } catch (e) {
+      console.error("Failed to save selected report:", e);
+    }
+    window.location.href = "report_details.html";
   }
 
   function renderFullHistoryList() {
@@ -1158,6 +1250,66 @@
         card.appendChild(right);
 
         listEl.appendChild(card);
+      } else if (item.type === "report") {
+        const report = item.report;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z"></path>
+            <path d="M9.5 12.3l1.7 1.7 3.6-4"></path>
+          </svg>
+        `;
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = report.title || report.category || "Report";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent = report.message || "";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const datePart = formatHistoryDateShort(report.created_at);
+        const timePart = formatHistoryTimeShort(report.created_at);
+        meta.textContent =
+          datePart && timePart
+            ? `${datePart} · ${timePart} · ${report.tracking_code || ""}`
+            : report.tracking_code || "";
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const statusEl = document.createElement("div");
+        statusEl.className = `status-chip report ${report.status || "new"}`;
+        statusEl.textContent = report.status || "new";
+
+        right.appendChild(statusEl);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        card.addEventListener("click", () => openReportDetails(report));
+
+        listEl.appendChild(card);
       } else {
         const scan = item.scan;
 
@@ -1285,6 +1437,17 @@
           a.message || "",
           a.created_at || "",
           a.school_name || ""
+        ].map(esc).join(",");
+      }
+
+      if (item.type === "report") {
+        const r = item.report;
+        return [
+          "Student report",
+          r.title || r.category || "",
+          r.message || "",
+          r.created_at || "",
+          r.status || ""
         ].map(esc).join(",");
       }
 
