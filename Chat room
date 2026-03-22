@@ -1,0 +1,1495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Colspot — Report Chat Room</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#ffffff',
+            panel: '#f5f7fb',
+            brand: '#4C97FF',
+            line: '#E3E9F2'
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root{
+      --bg:#FAFBFE;
+      --panel:#F5F7FB;
+      --text:#0b0f14;
+      --muted:#8697ab;
+      --line:#E3E9F2;
+
+      --brand:#61A6FF;
+      --brand-600:#2f6cff;
+      --brand-700:#2458ec;
+
+      --bubble-me:#4C97FF;
+      --bubble-me-ink:#ffffff;
+      --bubble-them:#F6F8FC;
+      --bubble-them-ink:#0b0f14;
+
+      --tick-white: rgba(255,255,255,.95);
+      --tick-blue: #7ec3ff;
+
+      --shellMax:420px;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:radial-gradient(circle at top, #e8f1ff, #f8fbff);
+      color:var(--text);
+    }
+
+    *{ box-sizing:border-box; }
+    button, a, [role="button"]{ touch-action:manipulation; }
+    .hidden{ display:none !important; }
+
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      font-family:Inter, ui-sans-serif, system-ui;
+    }
+
+    .app-bg{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:var(--shellMax);
+      min-height:100vh;
+      background:#fff;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 20px 70px rgba(2,8,23,.10);
+    }
+
+    *::-webkit-scrollbar{
+      width:10px;
+      height:10px;
+    }
+
+    *::-webkit-scrollbar-thumb{
+      background:#cfd8e3;
+      border:2px solid transparent;
+      background-clip:padding-box;
+      border-radius:999px;
+    }
+
+    *::-webkit-scrollbar-track{
+      background:transparent;
+    }
+
+    .icon{
+      width:20px;
+      height:20px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.8;
+    }
+
+    .icon-sm{
+      width:16px;
+      height:16px;
+    }
+
+    .icon-xs{
+      width:12px;
+      height:12px;
+    }
+
+    .chat-header{
+      background:var(--panel);
+      border-bottom:1px solid var(--line);
+      padding-top:calc(env(safe-area-inset-top) + 4px);
+    }
+
+    .chat-header-inner{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 16px 10px;
+    }
+
+    .peer-ava,
+    #peer-ava{
+      width:40px;
+      height:40px;
+      background:linear-gradient(135deg,#e9f2ff,#eaf0f6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      color:var(--text);
+      overflow:hidden;
+      background-size:cover;
+      background-position:center;
+      border-radius:999px;
+      border:1px solid var(--line);
+      flex:0 0 auto;
+    }
+
+    .peer-meta{
+      flex:1;
+      min-width:0;
+    }
+
+    .peer-name{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.1;
+      color:#111827;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .back-btn{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#4b5563;
+      text-decoration:none;
+      flex:0 0 auto;
+    }
+
+    .chat-main{
+      flex:1;
+      overflow-y:auto;
+      padding:12px 16px 110px;
+    }
+
+    .msgs-shell{
+      width:100%;
+    }
+
+    .row{
+      display:flex;
+      margin:.40rem 0 .70rem;
+      position:relative;
+      width:100%;
+      align-items:flex-end;
+    }
+
+    .me{ justify-content:flex-end; }
+    .them{ justify-content:flex-start; }
+
+    .bubble{
+      max-width:70%;
+      position:relative;
+      padding:10px 56px 20px 14px;
+      line-height:1.35;
+      font-size:16px;
+      overflow-wrap:anywhere;
+      border-radius:16px;
+      border:1px solid var(--line);
+      box-shadow:0 2px 6px rgba(2,8,23,.04);
+    }
+
+    .me .bubble{
+      background:var(--bubble-me);
+      color:var(--bubble-me-ink);
+      border-color:#3C7DE0;
+      box-shadow:0 1px 4px rgba(3,28,64,.14);
+    }
+
+    .them .bubble{
+      background:var(--bubble-them);
+      color:var(--bubble-them-ink);
+      border-color:var(--line);
+    }
+
+    .meta{
+      position:absolute;
+      right:12px;
+      bottom:6px;
+      font-size:12px;
+      color:var(--muted);
+      opacity:.95;
+      white-space:nowrap;
+      display:flex;
+      gap:.30rem;
+      align-items:center;
+    }
+
+    .me .bubble .meta{
+      color:rgba(255,255,255,.90);
+    }
+
+    .msg-ticks{
+      display:inline-flex;
+      align-items:center;
+      gap:0;
+      margin-left:2px;
+      line-height:1;
+      vertical-align:middle;
+    }
+
+    .msg-ticks .tick-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:12px;
+      height:12px;
+    }
+
+    .msg-ticks.double .tick-icon + .tick-icon{
+      margin-left:-4px;
+    }
+
+    .msg-ticks.sent,
+    .msg-ticks.delivered{
+      color:var(--tick-white);
+    }
+
+    .msg-ticks.read{
+      color:var(--tick-blue);
+    }
+
+    .sysrow{
+      display:flex;
+      justify-content:center;
+      margin:.55rem 0;
+    }
+
+    .sysline{
+      font-size:.78rem;
+      letter-spacing:.1px;
+      color:#637085;
+      background:#fff;
+      border:1px dashed var(--line);
+      border-radius:999px;
+      padding:.35rem .7rem;
+      max-width:85%;
+      text-align:center;
+    }
+
+    #jump{
+      position:fixed;
+      right:max(16px, calc((100vw - var(--shellMax)) / 2 + 16px));
+      bottom:108px;
+      z-index:20;
+      display:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      box-shadow:0 12px 40px rgba(2,8,23,.08);
+    }
+
+    #jump.show{
+      display:flex;
+    }
+
+    #toasts{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:86px;
+      z-index:70;
+      display:flex;
+      justify-content:center;
+      pointer-events:none;
+    }
+
+    .toast{
+      pointer-events:auto;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:.55rem .75rem;
+      box-shadow:0 12px 40px rgba(2,8,23,.10);
+    }
+
+    .composer,
+    #composer{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:100%;
+      max-width:var(--shellMax);
+      background:transparent;
+      padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);
+      z-index:30;
+    }
+
+    .input-wrap{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      position:relative;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:10px;
+      box-shadow:0 12px 34px rgba(2,8,23,.08);
+    }
+
+    .form-shell{
+      flex:1;
+      display:flex;
+      gap:8px;
+    }
+
+    #text{
+      border:none !important;
+      outline:none !important;
+      background:#fff !important;
+      color:var(--text) !important;
+      border:1px solid var(--line) !important;
+      line-height:1.25;
+      min-height:44px;
+      max-height:60px;
+      flex:1;
+      border-radius:12px;
+      padding:12px 14px;
+      resize:none;
+    }
+
+    #btn-mic{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+
+    #sendBtn{
+      display:none;
+    }
+
+    .has-text #sendBtn{
+      display:inline-flex;
+    }
+
+    .has-text #btn-mic{
+      display:none;
+    }
+
+    .send-btn{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--brand-600);
+      color:#fff;
+      border:none;
+      font-weight:600;
+      box-shadow:0 4px 16px rgba(76,151,255,.20);
+      flex:0 0 auto;
+    }
+
+    .send-btn .icon{
+      stroke:#fff;
+    }
+
+    .mic-btn svg,
+    #btn-mic svg{
+      width:22px;
+      height:22px;
+      stroke:currentColor;
+      stroke-width:1.8;
+      fill:none;
+    }
+
+    #vnote-overlay{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:76px;
+      width:calc(100% - 24px);
+      max-width:460px;
+      padding:8px 12px;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:0 18px 60px rgba(2,8,23,.12);
+      z-index:60;
+      display:none;
+    }
+
+    #vnote-overlay.show{
+      display:block;
+    }
+
+    #vnote-overlay .rowx{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    #vnote-overlay .timer{
+      font-size:.9rem;
+      opacity:.9;
+    }
+
+    #vnote-overlay .actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .pill-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;
+      background:#fff;
+      color:#111827;
+      width:40px;
+      height:40px;
+    }
+
+    #vnote-overlay .send-btn2{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#4C97FF;
+      border:none;
+      color:#fff;
+    }
+
+    #vnote-overlay .send-btn2 .icon{
+      stroke:#fff;
+    }
+
+    .bubble.voice{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 56px 24px 12px;
+      border-radius:16px;
+      max-width:75%;
+    }
+
+    .voice-play{
+      position:relative;
+      width:34px;
+      height:34px;
+      flex:0 0 34px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      background:rgba(0,0,0,.06);
+    }
+
+    .me .voice-play{
+      background:rgba(255,255,255,.18);
+    }
+
+    .voice-play::before,
+    .voice-play::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+    }
+
+    .voice-play::before{
+      width:0;
+      height:0;
+      border-left:11px solid currentColor;
+      border-top:7px solid transparent;
+      border-bottom:7px solid transparent;
+    }
+
+    .voice-play::after{
+      width:3px;
+      height:14px;
+      background:currentColor;
+      box-shadow:7px 0 0 currentColor;
+      opacity:0;
+      left:calc(50% - 6.5px);
+      transform:translateY(-50%);
+    }
+
+    .bubble.voice.playing .voice-play::before{
+      opacity:0;
+    }
+
+    .bubble.voice.playing .voice-play::after{
+      opacity:1;
+    }
+
+    .voice-track{
+      position:relative;
+      flex:1;
+      min-width:130px;
+      height:20px;
+    }
+
+    .voice-track::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
+      height:5px;
+      border-radius:999px;
+      background:radial-gradient(circle at 3px 2.5px, currentColor 2px, transparent 2.4px) repeat-x;
+      background-size:11px 5px;
+      opacity:.35;
+    }
+
+    .voice-knob{
+      position:absolute;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:14px;
+      height:14px;
+      border-radius:999px;
+      background:currentColor;
+      left:0%;
+    }
+
+    .voice-dur{
+      position:absolute;
+      left:50%;
+      bottom:6px;
+      transform:translateX(-50%);
+      font-size:13px;
+      opacity:.95;
+      line-height:1;
+    }
+
+    .bubble.voice .meta{
+      position:absolute;
+      right:12px;
+      bottom:6px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .bubble.voice audio{
+      display:none;
+    }
+
+    .me .bubble.voice .voice-play::before{
+      border-left-color:#fff;
+    }
+
+    .me .bubble.voice .voice-play::after{
+      background:#fff;
+      box-shadow:7px 0 0 #fff;
+    }
+
+    .me .bubble.voice .voice-track::before{
+      background:radial-gradient(circle at 3px 2.5px, #fff 2px, transparent 2.4px) repeat-x;
+      opacity:.85;
+    }
+
+    .me .bubble.voice .voice-knob{
+      background:#fff;
+    }
+
+    .me .bubble.voice .voice-dur,
+    .me .bubble.voice .meta{
+      color:rgba(255,255,255,.88) !important;
+    }
+
+    @media (max-width:640px){
+      .phone-shell{
+        max-width:100%;
+        box-shadow:none;
+      }
+
+      .bubble,
+      .bubble.voice{
+        max-width:86%;
+      }
+
+      #text{
+        max-width:calc(100% - 110px);
+      }
+
+      #btn-mic,
+      #sendBtn{
+        flex:0 0 32px;
+      }
+
+      #inputWrap{
+        gap:4px;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-sans antialiased">
+  <div class="app-bg">
+    <div class="phone-shell">
+
+      <svg width="0" height="0" style="position:absolute;left:-9999px;visibility:hidden">
+        <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 19v3"/></symbol>
+        <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+      </svg>
+
+      <header class="chat-header sticky top-0 z-10">
+        <div class="chat-header-inner">
+          <a href="history.html" class="back-btn" aria-label="Back">
+            <svg class="icon"><use href="#i-back"/></svg>
+          </a>
+
+          <div id="peer-ava" class="peer-ava">S</div>
+
+          <div class="peer-meta">
+            <div id="peer-name" class="peer-name">School Authority</div>
+          </div>
+        </div>
+      </header>
+
+      <main id="scroller" class="chat-main" aria-label="Messages">
+        <div id="msgs" class="msgs-shell"></div>
+      </main>
+
+      <button id="jump" class="items-center gap-2 px-3 py-2 rounded-full text-sm">
+        <span>Jump to latest</span>
+      </button>
+
+      <footer id="composer" class="composer">
+        <div id="inputWrap" class="input-wrap">
+          <form id="form" class="form-shell">
+            <textarea
+              id="text"
+              rows="1"
+              placeholder="Type a message…"
+              autocomplete="off"
+              aria-label="Message"></textarea>
+
+            <button type="button" id="btn-mic" class="mic-btn" title="Record voice note" aria-label="Record voice note">
+              <svg class="icon"><use href="#i-mic"/></svg>
+            </button>
+
+            <button id="sendBtn" class="send-btn" title="Send" aria-label="Send">
+              <svg class="icon"><use href="#i-send"/></svg>
+            </button>
+          </form>
+        </div>
+      </footer>
+
+      <div id="vnote-overlay">
+        <div class="rowx">
+          <div class="timer" id="vnote-timer">0:00</div>
+          <div class="actions">
+            <button id="vnote-cancel" type="button" class="pill-btn" aria-label="Cancel">
+              <svg class="icon"><use href="#i-trash"/></svg>
+            </button>
+            <button id="vnote-pause" type="button" class="pill-btn" aria-label="Pause">
+              <span id="vnote-pause-label">Pause</span>
+            </button>
+            <button id="vnote-send" type="button" class="send-btn2" aria-label="Send">
+              <svg class="icon"><use href="#i-send"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toasts"></div>
+
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (() => {
+    "use strict";
+
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_SUPABASE_ANON_KEY_HERE";
+    const PROJECT_REF = "wtlrfujfimxcmsnqrnig";
+
+    const byId = (id) => document.getElementById(id);
+
+    const msgsEl = byId("msgs");
+    const scroller = byId("scroller");
+    const inputWrap = byId("inputWrap");
+    const textEl = byId("text");
+    const form = byId("form");
+    const sendBtn = byId("sendBtn");
+    const jumpBtn = byId("jump");
+
+    const peerNameEl = byId("peer-name");
+    const peerAvaEl = byId("peer-ava");
+
+    let sb = null;
+    let currentMode = "";
+    let currentUser = null;
+    let currentAdmin = null;
+    let reportId = "";
+    let pollTimer = null;
+
+    let recording = null;
+    let recordingChunks = [];
+    let recordingStream = null;
+    let recordingSeconds = 0;
+    let recordingTimer = null;
+    let markingRead = false;
+
+    function esc(s) {
+      return String(s || "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[c]));
+    }
+
+    function toast(msg, ok = false) {
+      const box = byId("toasts");
+      if (!box) return;
+      const pill = document.createElement("div");
+      pill.className = "toast";
+      pill.innerHTML = `${ok ? '<svg class="icon icon-sm"><use href="#i-check"/></svg>' : ""}<span>${esc(msg || "")}</span>`;
+      box.appendChild(pill);
+      setTimeout(() => pill.remove(), 1600);
+    }
+
+    function fmtTime(iso) {
+      try {
+        const d = new Date(iso);
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+      } catch {
+        return "";
+      }
+    }
+
+    function initials(name) {
+      const s = String(name || "School Authority").trim();
+      if (!s) return "S";
+      const parts = s.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function formatDuration(s) {
+      s = Number(s) || 0;
+      const m = Math.floor(s / 60);
+      const ss = String(Math.floor(s % 60)).padStart(2, "0");
+      return `${m}:${ss}`;
+    }
+
+    function getSelectedReportId() {
+      try {
+        return localStorage.getItem("colspot_selected_report_id") || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function getCurrentUser() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_last_user") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function getCurrentAdmin() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function getStoredStudentAccessToken() {
+      try {
+        const raw = localStorage.getItem(`sb-${PROJECT_REF}-auth-token`);
+        if (!raw) return "";
+
+        const parsed = JSON.parse(raw);
+
+        if (parsed && typeof parsed === "object" && parsed.access_token) {
+          return String(parsed.access_token);
+        }
+
+        if (Array.isArray(parsed) && parsed[0] && parsed[0].access_token) {
+          return String(parsed[0].access_token);
+        }
+
+        if (parsed && parsed.currentSession && parsed.currentSession.access_token) {
+          return String(parsed.currentSession.access_token);
+        }
+
+        return "";
+      } catch {
+        return "";
+      }
+    }
+
+    function detectMode() {
+      const forcedRole = String(localStorage.getItem("colspot_selected_case_role") || "").toLowerCase();
+      const admin = getCurrentAdmin();
+      const user = getCurrentUser();
+
+      currentMode = "";
+      currentUser = null;
+      currentAdmin = null;
+
+      if (forcedRole === "student" && user && user.id) {
+        currentUser = user;
+        currentMode = "student";
+        return;
+      }
+
+      if (
+        forcedRole &&
+        ["report_agent", "assistant_report_agent"].includes(forcedRole) &&
+        admin &&
+        String(admin.role || "").toLowerCase() === forcedRole
+      ) {
+        currentAdmin = admin;
+        currentMode = forcedRole;
+        return;
+      }
+
+      if (user && user.id) {
+        currentUser = user;
+        currentMode = "student";
+        return;
+      }
+
+      if (admin && ["report_agent", "assistant_report_agent"].includes(String(admin.role || "").toLowerCase())) {
+        currentAdmin = admin;
+        currentMode = String(admin.role || "").toLowerCase();
+        return;
+      }
+
+      currentMode = "";
+    }
+
+    function getBackUrl() {
+      if (currentMode === "student") return "report_details.html";
+      if (currentMode === "assistant_report_agent") return "assistant_report_agent.html";
+      if (currentMode === "report_agent") return "report_agent.html";
+      return "index.html";
+    }
+
+    function scrollToBottom(smooth = true) {
+      if (!scroller) return;
+      const top = scroller.scrollHeight + 9999;
+      scroller.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
+    }
+
+    function toggleJump() {
+      if (!scroller || !jumpBtn) return;
+      const nearBottom = (scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight) < 220;
+      if (nearBottom) jumpBtn.classList.remove("show");
+      else jumpBtn.classList.add("show");
+    }
+
+    if (jumpBtn) jumpBtn.addEventListener("click", () => scrollToBottom(true));
+    if (scroller) scroller.addEventListener("scroll", toggleJump);
+
+    function syncSendToggle() {
+      const has = (textEl?.value || "").trim().length > 0;
+      if (inputWrap) inputWrap.classList.toggle("has-text", has);
+      if (!textEl) return;
+      textEl.style.height = "auto";
+      textEl.style.height = Math.min(textEl.scrollHeight, 6 * 24) + "px";
+    }
+
+    if (textEl) {
+      textEl.addEventListener("input", syncSendToggle);
+      textEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          if ((textEl.value || "").trim()) form.requestSubmit();
+        }
+      });
+    }
+
+    function renderSystemLine(text) {
+      const row = document.createElement("div");
+      row.className = "sysrow";
+      row.innerHTML = `<div class="sysline">${esc(text)}</div>`;
+      msgsEl.appendChild(row);
+    }
+
+    function parseRichMessage(raw) {
+      try {
+        const j = JSON.parse(raw);
+        if (j && j.__colspot_rich === 1) return j;
+      } catch {}
+      return null;
+    }
+
+    function getTickState(message) {
+      if (!message) return "sent";
+      if (message.read_at) return "read";
+      if (message.delivered_at) return "delivered";
+      return "sent";
+    }
+
+    function renderTicks(message, mine) {
+      if (!mine) return "";
+
+      const state = getTickState(message);
+
+      if (state === "read") {
+        return `
+          <span class="msg-ticks double read" aria-label="Read">
+            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+          </span>
+        `;
+      }
+
+      if (state === "delivered") {
+        return `
+          <span class="msg-ticks double delivered" aria-label="Delivered">
+            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+            <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+          </span>
+        `;
+      }
+
+      return `
+        <span class="msg-ticks sent" aria-label="Sent">
+          <span class="tick-icon"><svg class="icon-xs"><use href="#i-check"/></svg></span>
+        </span>
+      `;
+    }
+
+    function wireVoiceBubble(bubble) {
+      const audio = bubble.querySelector(".voice-audio");
+      const play = bubble.querySelector(".voice-play");
+      const knob = bubble.querySelector(".voice-knob");
+      const durEl = bubble.querySelector(".voice-dur");
+      if (!audio || !play) return;
+
+      play.addEventListener("click", () => {
+        if (audio.paused) audio.play();
+        else audio.pause();
+      });
+
+      audio.addEventListener("play", () => bubble.classList.add("playing"));
+      audio.addEventListener("pause", () => bubble.classList.remove("playing"));
+
+      audio.addEventListener("loadedmetadata", () => {
+        const d = Number.isFinite(audio.duration) ? audio.duration : 0;
+        if (durEl && d > 0) durEl.textContent = formatDuration(d);
+      });
+
+      audio.addEventListener("timeupdate", () => {
+        if (audio.duration && knob) {
+          knob.style.left = Math.max(0, Math.min(100, (audio.currentTime / audio.duration) * 100)) + "%";
+        }
+        if (durEl) durEl.textContent = formatDuration(audio.currentTime);
+      });
+
+      audio.addEventListener("ended", () => {
+        bubble.classList.remove("playing");
+        if (knob) knob.style.left = "100%";
+        if (durEl) durEl.textContent = formatDuration(audio.duration || 0);
+      });
+    }
+
+    function renderMessage(m) {
+      const sender = String(m.sender_type || "").toLowerCase();
+      const mine =
+        (currentMode === "student" && sender === "student") ||
+        (currentMode === "report_agent" && sender === "report_agent") ||
+        (currentMode === "assistant_report_agent" && sender === "assistant_report_agent");
+
+      const row = document.createElement("div");
+      row.className = `row ${mine ? "me" : "them"}`;
+
+      const rich = parseRichMessage(m.message || "");
+      const ticks = renderTicks(m, mine);
+
+      if (rich && rich.kind === "voice") {
+        row.innerHTML = `
+          <div class="bubble voice">
+            <button class="voice-play" type="button" aria-label="Play/Pause"></button>
+            <div class="voice-track"><div class="voice-knob" style="left:0%"></div></div>
+            <div class="voice-dur">${esc(formatDuration(rich.durationSec || 0))}</div>
+            <audio class="voice-audio" preload="metadata" playsinline src="${esc(rich.url || "")}"></audio>
+            <div class="meta">
+              <span>${esc(fmtTime(m.created_at))}</span>
+              ${ticks}
+            </div>
+          </div>
+        `;
+        msgsEl.appendChild(row);
+        wireVoiceBubble(row.querySelector(".bubble.voice"));
+        return;
+      }
+
+      row.innerHTML = `
+        <div class="bubble">
+          <div>${esc(m.message || "")}</div>
+          <div class="meta">
+            <span>${esc(fmtTime(m.created_at))}</span>
+            ${ticks}
+          </div>
+        </div>
+      `;
+      msgsEl.appendChild(row);
+    }
+
+    async function getSupabaseClient() {
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        throw new Error("Supabase client not loaded.");
+      }
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    async function callFunction(functionName, body, requireStudentAuth = false) {
+      const headers = {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY
+      };
+
+      if (requireStudentAuth) {
+        const accessToken = getStoredStudentAccessToken();
+        if (!accessToken) {
+          throw new Error("Student session expired. Please sign in again.");
+        }
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || `Request failed (${res.status})`);
+      }
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Request failed.");
+      }
+
+      return data;
+    }
+
+    async function invokeEdge(functionName, body) {
+      if (currentMode === "student") {
+        return await callFunction(functionName, body, true);
+      }
+      return await callFunction(functionName, body, false);
+    }
+
+    async function markChatRead() {
+      if (markingRead || !reportId || !currentMode) return 0;
+      markingRead = true;
+
+      try {
+        let body = {
+          report_id: reportId,
+          role: currentMode
+        };
+
+        if (currentMode === "student") {
+          body.submitted_by_user_id = currentUser.id;
+        } else if (currentMode === "report_agent") {
+          body.report_agent_id = currentAdmin.id;
+        } else if (currentMode === "assistant_report_agent") {
+          body.assistant_agent_id = currentAdmin.id;
+        }
+
+        const data = await invokeEdge("mark-report-chat-read", body);
+        return Number(data?.marked_count || 0);
+      } catch (err) {
+        console.error("markChatRead error:", err);
+        return 0;
+      } finally {
+        markingRead = false;
+      }
+    }
+
+    async function loadChat(shouldMarkRead = false) {
+      let data;
+
+      if (currentMode === "student") {
+        data = await invokeEdge("get-my-report-chat", {
+          submitted_by_user_id: currentUser.id,
+          report_id: reportId
+        });
+      } else if (currentMode === "report_agent") {
+        data = await invokeEdge("get-report-details", {
+          report_agent_id: currentAdmin.id,
+          report_id: reportId
+        });
+      } else if (currentMode === "assistant_report_agent") {
+        data = await invokeEdge("get-report-details", {
+          assistant_agent_id: currentAdmin.id,
+          report_id: reportId
+        });
+      } else {
+        throw new Error("Invalid chat session.");
+      }
+
+      const peerName = currentMode === "student" ? "School Authority" : "Student";
+
+      if (peerNameEl) peerNameEl.textContent = peerName;
+      if (peerAvaEl) peerAvaEl.textContent = initials(peerName);
+
+      msgsEl.innerHTML = "";
+
+      const messages = Array.isArray(data.messages) ? data.messages : [];
+      if (!messages.length) {
+        renderSystemLine("No messages yet. Start the conversation below.");
+      } else {
+        messages.forEach(renderMessage);
+      }
+
+      scrollToBottom(false);
+      toggleJump();
+
+      if (shouldMarkRead) {
+        const marked = await markChatRead();
+        if (marked > 0) {
+          await loadChat(false);
+        }
+      }
+    }
+
+    async function sendTextMessage() {
+      const text = (textEl?.value || "").trim();
+      if (!text) return;
+
+      if (sendBtn) sendBtn.disabled = true;
+
+      try {
+        let data;
+
+        if (currentMode === "student") {
+          data = await invokeEdge("reply-to-my-report", {
+            submitted_by_user_id: currentUser.id,
+            report_id: reportId,
+            message: text
+          });
+        } else if (currentMode === "report_agent") {
+          data = await invokeEdge("reply-to-report", {
+            report_agent_id: currentAdmin.id,
+            report_id: reportId,
+            message: text
+          });
+        } else if (currentMode === "assistant_report_agent") {
+          data = await invokeEdge("reply-to-report", {
+            assistant_agent_id: currentAdmin.id,
+            report_id: reportId,
+            message: text
+          });
+        } else {
+          throw new Error("Invalid chat session.");
+        }
+
+        if (textEl) textEl.value = "";
+        syncSendToggle();
+        await loadChat(false);
+        toast(data.message || "Reply sent", true);
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to send message.");
+      } finally {
+        if (sendBtn) sendBtn.disabled = false;
+      }
+    }
+
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await sendTextMessage();
+      });
+    }
+
+    function clearRecordingOverlay() {
+      const overlay = byId("vnote-overlay");
+      if (overlay) overlay.classList.remove("show");
+
+      if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+      }
+
+      recordingSeconds = 0;
+      const pauseLabel = byId("vnote-pause-label");
+      if (pauseLabel) pauseLabel.textContent = "Pause";
+    }
+
+    function pickRecorderMime() {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) return "audio/webm;codecs=opus";
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported("audio/mp4")) return "audio/mp4";
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) return "audio/ogg;codecs=opus";
+      return "audio/webm";
+    }
+
+    function showRecordingOverlay() {
+      clearRecordingOverlay();
+
+      const overlay = byId("vnote-overlay");
+      if (overlay) overlay.classList.add("show");
+
+      const cancelBtn = byId("vnote-cancel");
+      const pauseBtn = byId("vnote-pause");
+      const sendVoiceBtn = byId("vnote-send");
+
+      if (cancelBtn) {
+        cancelBtn.onclick = () => {
+          try { recording?.stop(); } catch {}
+          try { recordingStream?.getTracks().forEach(t => t.stop()); } catch {}
+          recording = null;
+          recordingChunks = [];
+          clearRecordingOverlay();
+        };
+      }
+
+      if (pauseBtn) {
+        pauseBtn.onclick = () => {
+          if (!recording) return;
+          const pauseLabel = byId("vnote-pause-label");
+
+          if (typeof recording.pause === "function" && typeof recording.resume === "function") {
+            if (recording.state === "recording") {
+              recording.pause();
+              if (recordingTimer) {
+                clearInterval(recordingTimer);
+                recordingTimer = null;
+              }
+              if (pauseLabel) pauseLabel.textContent = "Resume";
+              return;
+            }
+
+            if (recording.state === "paused") {
+              recording.resume();
+              if (!recordingTimer) {
+                recordingTimer = setInterval(() => {
+                  recordingSeconds += 1;
+                  const t = byId("vnote-timer");
+                  if (t) t.textContent = formatDuration(recordingSeconds);
+                }, 1000);
+              }
+              if (pauseLabel) pauseLabel.textContent = "Pause";
+            }
+          }
+        };
+      }
+
+      if (sendVoiceBtn) {
+        sendVoiceBtn.onclick = async () => {
+          if (!recording) return;
+          const mime = recording.mimeType || "audio/webm";
+
+          const finished = new Promise((resolve) => {
+            recording.addEventListener("stop", resolve, { once: true });
+          });
+
+          try { recording.stop(); } catch {}
+          await finished;
+
+          try {
+            const blob = new Blob(recordingChunks, { type: mime });
+            const file = new File([blob], "voice-note.webm", { type: mime });
+
+            const storagePath = `report-chat/${reportId}/voice/${Date.now()}-voice-note.webm`;
+
+            const { error: uploadError } = await sb.storage
+              .from("chat_uploads")
+              .upload(storagePath, file, {
+                upsert: false,
+                contentType: mime
+              });
+
+            if (uploadError) throw uploadError;
+
+            const { data: signedData, error: signedError } = await sb.storage
+              .from("chat_uploads")
+              .createSignedUrl(storagePath, 3600);
+
+            if (signedError) throw signedError;
+
+            const body = JSON.stringify({
+              __colspot_rich: 1,
+              kind: "voice",
+              path: storagePath,
+              url: signedData?.signedUrl || "",
+              mime,
+              durationSec: recordingSeconds
+            });
+
+            let data;
+
+            if (currentMode === "student") {
+              data = await invokeEdge("reply-to-my-report", {
+                submitted_by_user_id: currentUser.id,
+                report_id: reportId,
+                message: body
+              });
+            } else if (currentMode === "report_agent") {
+              data = await invokeEdge("reply-to-report", {
+                report_agent_id: currentAdmin.id,
+                report_id: reportId,
+                message: body
+              });
+            } else if (currentMode === "assistant_report_agent") {
+              data = await invokeEdge("reply-to-report", {
+                assistant_agent_id: currentAdmin.id,
+                report_id: reportId,
+                message: body
+              });
+            } else {
+              throw new Error("Invalid chat session.");
+            }
+
+            toast(data.message || "Voice note sent", true);
+            await loadChat(false);
+          } catch (err) {
+            console.error(err);
+            alert(err.message || "Failed to send voice note.");
+          } finally {
+            try { recordingStream?.getTracks().forEach(t => t.stop()); } catch {}
+            recording = null;
+            recordingChunks = [];
+            clearRecordingOverlay();
+          }
+        };
+      }
+
+      recordingTimer = setInterval(() => {
+        recordingSeconds += 1;
+        const t = byId("vnote-timer");
+        if (t) t.textContent = formatDuration(recordingSeconds);
+      }, 1000);
+    }
+
+    async function startRecording() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        alert("Voice notes are not supported on this device.");
+        return;
+      }
+
+      try {
+        recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mime = pickRecorderMime();
+        recording = new MediaRecorder(recordingStream, { mimeType: mime });
+        recordingChunks = [];
+        recordingSeconds = 0;
+
+        recording.addEventListener("dataavailable", (e) => {
+          if (e.data && e.data.size > 0) recordingChunks.push(e.data);
+        });
+
+        recording.start(250);
+        showRecordingOverlay();
+      } catch {
+        alert("Mic permission denied.");
+      }
+    }
+
+    const micBtn = byId("btn-mic");
+    if (micBtn) {
+      micBtn.addEventListener("click", startRecording);
+      micBtn.addEventListener("touchstart", function (e) {
+        e.preventDefault();
+        startRecording();
+      }, { passive: false });
+    }
+
+    function startPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(async () => {
+        try {
+          await loadChat(true);
+        } catch {}
+      }, 3000);
+    }
+
+    async function init() {
+      sb = await getSupabaseClient();
+
+      detectMode();
+
+      try {
+        localStorage.removeItem("colspot_selected_case_role");
+      } catch {}
+
+      reportId = getSelectedReportId();
+      if (!reportId) {
+        alert("No report selected.");
+        location.href = getBackUrl();
+        return;
+      }
+
+      if (!currentMode) {
+        location.href = "index.html";
+        return;
+      }
+
+      const backBtn = document.querySelector(".back-btn");
+      if (backBtn) {
+        backBtn.setAttribute("href", getBackUrl());
+      }
+
+      syncSendToggle();
+
+      try {
+        await loadChat(true);
+        startPolling();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to load chat.");
+        location.href = getBackUrl();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  })();
+</script>
+</body>
+</html>
