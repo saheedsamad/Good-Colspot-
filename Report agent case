@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Report Case</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#f4f7ff;
+      --card:#ffffff;
+      --line:#e6ebf5;
+      --text:#111827;
+      --muted:#6b7280;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --purple:#7c3aed;
+      --purple-soft:#f5f3ff;
+      --orange:#ea580c;
+      --orange-soft:#fff7ed;
+      --green:#16a34a;
+      --green-soft:#ecfdf5;
+      --red:#dc2626;
+      --red-soft:#fef2f2;
+      --shadow:0 16px 35px rgba(15,23,42,.08);
+      --radius:22px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:linear-gradient(180deg,#edf3ff 0%, #f8fbff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    .shell{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      padding:
+        calc(env(safe-area-inset-top) + 14px)
+        16px
+        calc(env(safe-area-inset-bottom) + 28px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      color:#1f2937;
+      flex-shrink:0;
+    }
+
+    .back-btn svg{
+      width:22px;
+      height:22px;
+    }
+
+    .title-wrap{
+      min-width:0;
+    }
+
+    .page-title{
+      font-size:17px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      margin-bottom:2px;
+    }
+
+    .page-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:240px;
+    }
+
+    .profile-pill{
+      padding:9px 12px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4338ca;
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .message{
+      display:none;
+      padding:13px 14px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .message.show{
+      display:block;
+    }
+
+    .message.error{
+      background:var(--red-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      background:var(--green-soft);
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-bottom:14px;
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:900;
+      margin:0 0 12px;
+      letter-spacing:-.02em;
+    }
+
+    .report-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:12px;
+    }
+
+    .report-name{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.2;
+      margin-bottom:5px;
+    }
+
+    .report-code{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .status-pill{
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      white-space:nowrap;
+    }
+
+    .status-new{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .status-under_review{
+      background:var(--purple-soft);
+      color:var(--purple);
+    }
+
+    .status-waiting_reply{
+      background:var(--orange-soft);
+      color:var(--orange);
+    }
+
+    .status-resolved{
+      background:var(--green-soft);
+      color:var(--green);
+    }
+
+    .status-escalated{
+      background:var(--red-soft);
+      color:var(--red);
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .meta-box{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .meta-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:5px;
+    }
+
+    .meta-value{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    .complaint-box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#f8fbff;
+      padding:14px;
+      font-size:14px;
+      line-height:1.6;
+      color:#1f2937;
+      white-space:pre-wrap;
+    }
+
+    .thread{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .bubble{
+      max-width:88%;
+      border-radius:18px;
+      padding:12px 13px;
+      line-height:1.5;
+      font-size:13px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+
+    .bubble.student{
+      align-self:flex-start;
+      background:#f8fafc;
+    }
+
+    .bubble.report_agent{
+      align-self:flex-end;
+      background:#e0ecff;
+      border-color:#bfdbfe;
+    }
+
+    .bubble.school_authority{
+      align-self:flex-end;
+      background:#ede9fe;
+      border-color:#ddd6fe;
+    }
+
+    .bubble-meta{
+      font-size:11px;
+      font-weight:800;
+      color:var(--muted);
+      margin-bottom:5px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:#374151;
+      margin-bottom:6px;
+    }
+
+    .textarea,
+    .select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:13px 14px;
+      font-size:14px;
+      color:#111827;
+      outline:none;
+    }
+
+    .textarea{
+      min-height:120px;
+      resize:vertical;
+      line-height:1.5;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-width:120px;
+      border:none;
+      border-radius:999px;
+      padding:13px 14px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+    }
+
+    .btn.secondary{
+      background:#f3f4f6;
+      color:#111827;
+    }
+
+    .btn.orange{
+      background:linear-gradient(135deg,#f59e0b,#ea580c);
+      color:#fff;
+    }
+
+    .btn.green{
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#fff;
+    }
+
+    .btn.red{
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+      color:#fff;
+    }
+
+    .btn.purple{
+      background:linear-gradient(135deg,#8b5cf6,#7c3aed);
+      color:#fff;
+    }
+
+    .btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .empty{
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      padding:14px 6px;
+    }
+
+    @media (max-width:360px){
+      .meta-grid{
+        grid-template-columns:1fr;
+      }
+      .btn-row{
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="top-left">
+        <button class="back-btn" type="button" id="backBtn">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="title-wrap">
+          <div class="page-title">Report case</div>
+          <div class="page-sub" id="pageSub">Loading case...</div>
+        </div>
+      </div>
+
+      <div class="profile-pill" id="rolePill">Agent</div>
+    </div>
+
+    <div class="message" id="pageMessage"></div>
+    <div class="message" id="replyMessage"></div>
+    <div class="message" id="statusMessage"></div>
+    <div class="message" id="assignMessage"></div>
+
+    <section class="card">
+      <div class="report-head">
+        <div>
+          <div class="report-name" id="reportTitle">Report</div>
+          <div class="report-code" id="reportCode">Tracking code</div>
+        </div>
+        <div class="status-pill status-new" id="statusPill">new</div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">Category</div>
+          <div class="meta-value" id="metaCategory">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Urgency</div>
+          <div class="meta-value" id="metaUrgency">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Privacy</div>
+          <div class="meta-value" id="metaPrivacy">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">School</div>
+          <div class="meta-value" id="metaSchool">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Department</div>
+          <div class="meta-value" id="metaDepartment">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Location</div>
+          <div class="meta-value" id="metaLocation">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Person involved</div>
+          <div class="meta-value" id="metaPerson">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Created at</div>
+          <div class="meta-value" id="metaCreatedAt">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Original complaint</h2>
+      <div class="complaint-box" id="originalComplaint">-</div>
+    </section>
+
+    <section class="card" id="assignSection" style="display:none;">
+      <h2 class="section-title">Assign to assistant agent</h2>
+
+      <div class="field">
+        <label for="assistantSelect">Assistant agent</label>
+        <select id="assistantSelect" class="select">
+          <option value="">Select assistant agent</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn purple" id="assignBtn" type="button">Assign case</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Update status</h2>
+
+      <div class="field">
+        <label for="statusSelect">Select status</label>
+        <select id="statusSelect" class="select">
+          <option value="new">New</option>
+          <option value="under_review">Under review</option>
+          <option value="waiting_reply">Waiting reply</option>
+          <option value="resolved">Resolved</option>
+          <option value="escalated">Escalated</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="saveStatusBtn" type="button">Save status</button>
+        <button class="btn orange" type="button" onclick="quickStatus('waiting_reply')">Waiting reply</button>
+        <button class="btn green" type="button" onclick="quickStatus('resolved')">Resolve</button>
+        <button class="btn red" type="button" onclick="quickStatus('escalated')">Escalate</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Conversation</h2>
+      <div class="thread" id="threadWrap">
+        <div class="empty">Loading messages...</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Send reply</h2>
+
+      <div class="field">
+        <label for="replyInput">Reply message</label>
+        <textarea
+          id="replyInput"
+          class="textarea"
+          placeholder="Type your reply to this report..."
+        ></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="sendReplyBtn" type="button">Send reply</button>
+        <button class="btn secondary" id="reloadCaseBtn" type="button">Reload case</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let adminSession = null;
+    let selectedReportId = "";
+    let currentReport = null;
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showMessage(id, text = "", type = "error") {
+      const box = $(id);
+      if (!text) {
+        box.className = "message";
+        box.textContent = "";
+        return;
+      }
+      box.className = `message show ${type}`;
+      box.textContent = text;
+    }
+
+    function getAdminSession() {
+      try {
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function getSelectedReportId() {
+      return localStorage.getItem("colspot_selected_report_id") || "";
+    }
+
+    function requireSessionAndReport() {
+      adminSession = getAdminSession();
+      selectedReportId = getSelectedReportId();
+
+      const role = String(adminSession?.role || "").toLowerCase();
+
+      if (!adminSession || !["report_agent", "assistant_report_agent"].includes(role)) {
+        window.location.href = "index.html";
+        return false;
+      }
+
+      if (!selectedReportId) {
+        window.location.href = role === "assistant_report_agent"
+          ? "assistant_report_agent.html"
+          : "report_agent.html";
+        return false;
+      }
+
+      $("rolePill").textContent = role === "assistant_report_agent" ? "Assistant Agent" : "Report Agent";
+      $("assignSection").style.display = role === "report_agent" ? "block" : "none";
+      return true;
+    }
+
+    async function invokeEdge(name, body = {}) {
+      const { data, error } = await sb.functions.invoke(name, { body });
+
+      if (error) {
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Request failed.");
+      }
+
+      return data;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+
+    function statusClass(status) {
+      return `status-${String(status || "").toLowerCase()}`;
+    }
+
+    function fillReport(report) {
+      currentReport = report || null;
+
+      $("reportTitle").textContent = report.title || report.category || "Report";
+      $("reportCode").textContent = `${report.tracking_code || "-"} • ${report.school_name || "-"}`;
+      $("statusPill").textContent = report.status || "new";
+      $("statusPill").className = `status-pill ${statusClass(report.status)}`;
+      $("pageSub").textContent = report.tracking_code || "Case";
+
+      $("metaCategory").textContent = report.category || "-";
+      $("metaUrgency").textContent = report.urgency || "-";
+      $("metaPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
+      $("metaSchool").textContent = report.school_name || "-";
+      $("metaDepartment").textContent = report.department || "-";
+      $("metaLocation").textContent = report.location_text || "-";
+      $("metaPerson").textContent = report.person_involved || "-";
+      $("metaCreatedAt").textContent = formatDateTime(report.created_at);
+      $("originalComplaint").textContent = report.message || "-";
+      $("statusSelect").value = report.status || "new";
+    }
+
+    function renderMessages(messages = []) {
+      const wrap = $("threadWrap");
+
+      if (!messages.length) {
+        wrap.innerHTML = '<div class="empty">No messages yet.</div>';
+        return;
+      }
+
+      wrap.innerHTML = messages.map((msg) => {
+        const sender = String(msg.sender_type || "").toLowerCase();
+        const cls = sender === "student" ? "student" : (sender === "report_agent" ? "report_agent" : "school_authority");
+        const senderLabel =
+          sender === "student" ? "Student" :
+          sender === "report_agent" ? "Report Agent" :
+          "School Authority";
+
+        return `
+          <div class="bubble ${cls}">
+            <div class="bubble-meta">${escapeHtml(senderLabel)} • ${escapeHtml(formatDateTime(msg.created_at))}</div>
+            <div>${escapeHtml(msg.message || "")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadAssistantsForAssign() {
+      if (String(adminSession.role || "").toLowerCase() !== "report_agent") return;
+
+      try {
+        const data = await invokeEdge("get-report-agent-assistants", {
+          report_agent_id: adminSession.id
+        });
+
+        const assistants = Array.isArray(data.assistants) ? data.assistants : [];
+        $("assistantSelect").innerHTML =
+          `<option value="">Select assistant agent</option>` +
+          assistants.map((assistant) => `
+            <option value="${assistant.id}">
+              ${escapeHtml(assistant.full_name || "")} - ${escapeHtml(assistant.login_id || "")}
+            </option>
+          `).join("");
+      } catch (err) {
+        console.error(err);
+        showMessage("assignMessage", err.message || "Could not load assistant agents.");
+      }
+    }
+
+    async function loadCase() {
+      showMessage("pageMessage", "");
+
+      try {
+        const role = String(adminSession.role || "").toLowerCase();
+        const body =
+          role === "assistant_report_agent"
+            ? { assistant_agent_id: adminSession.id, report_id: selectedReportId }
+            : { report_agent_id: adminSession.id, report_id: selectedReportId };
+
+        const data = await invokeEdge("get-report-details", body);
+
+        fillReport(data.report || {});
+        renderMessages(data.messages || []);
+
+        if (role === "report_agent") {
+          await loadAssistantsForAssign();
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("pageMessage", err.message || "Could not load report case.");
+      }
+    }
+
+    async function sendReply() {
+      showMessage("replyMessage", "");
+
+      const message = $("replyInput").value.trim();
+      if (!message) {
+        showMessage("replyMessage", "Please type a reply first.");
+        return;
+      }
+
+      const btn = $("sendReplyBtn");
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+
+      try {
+        const role = String(adminSession.role || "").toLowerCase();
+        const body =
+          role === "assistant_report_agent"
+            ? { assistant_agent_id: adminSession.id, report_id: selectedReportId, message }
+            : { report_agent_id: adminSession.id, report_id: selectedReportId, message };
+
+        const functionName =
+          role === "assistant_report_agent"
+            ? "reply-to-report"
+            : "reply-to-report";
+
+        const data = await invokeEdge(functionName, body);
+
+        $("replyInput").value = "";
+        showMessage("replyMessage", data.message || "Reply sent successfully.", "success");
+        await loadCase();
+      } catch (err) {
+        console.error(err);
+        showMessage("replyMessage", err.message || "Could not send reply.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Send reply";
+      }
+    }
+
+    async function saveStatus(statusOverride = "") {
+      showMessage("statusMessage", "");
+
+      const status = statusOverride || $("statusSelect").value;
+      if (!status) {
+        showMessage("statusMessage", "Please select a status.");
+        return;
+      }
+
+      const btn = $("saveStatusBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        const role = String(adminSession.role || "").toLowerCase();
+        const body =
+          role === "assistant_report_agent"
+            ? { assistant_agent_id: adminSession.id, report_id: selectedReportId, status }
+            : { report_agent_id: adminSession.id, report_id: selectedReportId, status };
+
+        const data = await invokeEdge("update-report-status", body);
+
+        showMessage("statusMessage", data.message || "Status updated successfully.", "success");
+        await loadCase();
+      } catch (err) {
+        console.error(err);
+        showMessage("statusMessage", err.message || "Could not update status.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save status";
+      }
+    }
+
+    async function assignCase() {
+      showMessage("assignMessage", "");
+
+      const assistantId = $("assistantSelect").value;
+      if (!assistantId) {
+        showMessage("assignMessage", "Please select an assistant agent.");
+        return;
+      }
+
+      const btn = $("assignBtn");
+      btn.disabled = true;
+      btn.textContent = "Assigning...";
+
+      try {
+        const data = await invokeEdge("assign-report-to-assistant-agent", {
+          report_agent_id: adminSession.id,
+          assistant_agent_id: assistantId,
+          report_id: selectedReportId
+        });
+
+        showMessage("assignMessage", data.message || "Case assigned successfully.", "success");
+        await loadCase();
+      } catch (err) {
+        console.error(err);
+        showMessage("assignMessage", err.message || "Could not assign case.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Assign case";
+      }
+    }
+
+    function goBack() {
+      const role = String(adminSession?.role || "").toLowerCase();
+      window.location.href =
+        role === "assistant_report_agent"
+          ? "assistant_report_agent.html"
+          : "report_agent.html";
+    }
+
+    function quickStatus(status) {
+      saveStatus(status);
+    }
+
+    window.quickStatus = quickStatus;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!requireSessionAndReport()) return;
+
+      $("backBtn").addEventListener("click", goBack);
+      $("sendReplyBtn").addEventListener("click", sendReply);
+      $("saveStatusBtn").addEventListener("click", () => saveStatus());
+      $("reloadCaseBtn").addEventListener("click", loadCase);
+
+      if ($("assignBtn")) {
+        $("assignBtn").addEventListener("click", assignCase);
+      }
+
+      await loadCase();
+    });
+  </script>
+</body>
+</html>
