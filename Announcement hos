@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • HOS Announcement</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --blue-soft-2:#f7faff;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --muted:#6b7280;
+      --text:#111827;
+      --success:#16a34a;
+      --success-soft:#ecfdf5;
+      --danger:#dc2626;
+      --danger-soft:#fef2f2;
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 26px rgba(37,99,235,.10);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:420px;
+      min-height:100vh;
+      padding:calc(env(safe-area-inset-top) + 12px) 14px 108px;
+      position:relative;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+      color:#111827;
+      flex-shrink:0;
+    }
+
+    .brand-logo{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-soft);
+      flex-shrink:0;
+    }
+
+    .brand-logo img{
+      width:30px;
+      height:30px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brand-name{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#10224a;
+      white-space:nowrap;
+    }
+
+    .avatar-chip{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
+      color:#fff;
+      font-weight:900;
+      font-size:15px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .hero{
+      margin:4px 2px 16px;
+      padding:22px 18px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 24px 44px rgba(37,99,235,.22);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      right:-34px;
+      top:-26px;
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:rgba(255,255,255,.10);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      bottom:-34px;
+      width:190px;
+      height:96px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      transform:rotate(-18deg);
+    }
+
+    .hero-line{
+      font-size:13px;
+      font-weight:800;
+      opacity:.95;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-title{
+      font-size:30px;
+      line-height:1.05;
+      font-weight:900;
+      letter-spacing:-.04em;
+      margin:0 0 8px;
+      position:relative;
+      z-index:1;
+      max-width:250px;
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.5;
+      opacity:.96;
+      position:relative;
+      z-index:1;
+      max-width:260px;
+    }
+
+    .message{
+      display:none;
+      margin:0 2px 14px;
+      padding:12px 13px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .message.error{
+      display:block;
+      background:var(--danger-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      display:block;
+      background:var(--success-soft);
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:16px;
+      box-shadow:var(--shadow-soft);
+      margin:0 2px 14px;
+    }
+
+    .card-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin:0 0 4px;
+      color:#0f172a;
+    }
+
+    .card-sub{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:#334155;
+      margin-bottom:6px;
+    }
+
+    .input,
+    .textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:15px;
+      padding:13px 14px;
+      background:#fff;
+      font-size:14px;
+      color:var(--text);
+      outline:none;
+      transition:.18s ease;
+    }
+
+    .input:focus,
+    .textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .textarea{
+      min-height:180px;
+      resize:vertical;
+      line-height:1.5;
+    }
+
+    .helper-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .preview-box{
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--blue-soft-2);
+      padding:14px;
+    }
+
+    .preview-label{
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--blue);
+      margin-bottom:8px;
+    }
+
+    .preview-title{
+      font-size:15px;
+      font-weight:900;
+      line-height:1.3;
+      margin-bottom:6px;
+      color:#0f172a;
+      word-break:break-word;
+    }
+
+    .preview-text{
+      font-size:13px;
+      line-height:1.55;
+      color:#475467;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .mini-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:13px 14px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .mini-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 16px 28px rgba(37,99,235,.20);
+    }
+
+    .mini-btn.secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:max(12px, env(safe-area-inset-bottom));
+      width:calc(100% - 28px);
+      max-width:392px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 20px 40px rgba(15,23,42,.12);
+      border-radius:26px;
+      padding:8px 8px 10px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:4px;
+      z-index:30;
+    }
+
+    .nav-btn{
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      text-align:center;
+      font-size:11px;
+      cursor:pointer;
+      padding-top:2px;
+    }
+
+    .nav-btn.active{
+      color:var(--blue);
+      font-weight:800;
+    }
+
+    .nav-inner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
+    }
+
+    .nav-inner svg{
+      width:20px;
+      height:20px;
+      display:block;
+    }
+
+    @media (max-width:360px){
+      .btn-row{
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <header>
+      <div class="brand">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+        </div>
+
+        <div class="brand-name">Announcement</div>
+      </div>
+
+      <button class="avatar-chip" id="avatarChip">H</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-line" id="schoolNameText">School</div>
+        <h1 class="hero-title">Send school announcement</h1>
+        <div class="hero-sub">
+          Share important school updates clearly and professionally with your community.
+        </div>
+      </section>
+
+      <div class="message" id="announcementMessageBox"></div>
+
+      <section class="card">
+        <div class="card-title">Create announcement</div>
+        <div class="card-sub">
+          Write a short title and message, then send it to your school.
+        </div>
+
+        <div class="field">
+          <label for="announcementTitle">Announcement title</label>
+          <input
+            id="announcementTitle"
+            class="input"
+            type="text"
+            placeholder="Enter announcement title"
+            maxlength="120"
+          />
+        </div>
+
+        <div class="field">
+          <label for="announcementBody">Announcement message</label>
+          <textarea
+            id="announcementBody"
+            class="textarea"
+            placeholder="Write your school announcement here..."
+            maxlength="2000"
+          ></textarea>
+
+          <div class="helper-row">
+            <span>Keep it clear and easy to read.</span>
+            <span id="charCount">0 / 2000</span>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div class="preview-label">Live preview</div>
+          <div class="preview-title" id="previewTitle">Your announcement title will appear here</div>
+          <div class="preview-text" id="previewBody">Your announcement message will appear here</div>
+        </div>
+
+        <div class="btn-row">
+          <button class="mini-btn primary" id="sendAnnouncementBtn" type="button">
+            Send announcement
+          </button>
+          <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">
+            Clear
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" type="button" onclick="window.location.href='hos.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Dashboard</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_create_account.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Accounts</span>
+      </span>
+    </button>
+
+    <button class="nav-btn active" type="button" onclick="window.location.href='hos_announcement.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span>Announcement</span>
+      </span>
+    </button>
+
+    <button class="nav-btn" type="button" onclick="window.location.href='hos_history.html'">
+      <span class="nav-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>History</span>
+      </span>
+    </button>
+  </nav>
+
+<script>
+  (() => {
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+
+    const EDGE = {
+      sendAnnouncement: "hos-send-announcement"
+    };
+
+    const HISTORY_KEY = "hos_activity_history";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let adminSession = null;
+    let currentSchoolName = "";
+
+    function $(id){
+      return document.getElementById(id);
+    }
+
+    function getAdminSession(){
+      try{
+        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      }catch{
+        return null;
+      }
+    }
+
+    function showMessage(id, text, type){
+      const box = $(id);
+      if (!text){
+        box.textContent = "";
+        box.className = "message";
+        return;
+      }
+      box.textContent = text;
+      box.className = `message ${type === "success" ? "success" : "error"}`;
+    }
+
+    function requireHosSession(){
+      adminSession = getAdminSession();
+
+      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
+        window.location.href = "index.html";
+        return false;
+      }
+
+      currentSchoolName =
+        adminSession.school_name ||
+        adminSession.school ||
+        adminSession.schoolName ||
+        "";
+
+      $("schoolNameText").textContent = currentSchoolName || "School";
+      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      return true;
+    }
+
+    async function invokeEdge(functionName, body){
+      const { data, error } = await sb.functions.invoke(functionName, {
+        body: body || {}
+      });
+
+      if (error){
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      return data || {};
+    }
+
+    function saveHosHistoryItem(item){
+      try{
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const arr = JSON.parse(raw || "[]");
+        const history = Array.isArray(arr) ? arr : [];
+        history.unshift(item);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+      }catch(err){
+        console.error("Could not save HOS history item:", err);
+      }
+    }
+
+    function updatePreview(){
+      const title = ($("announcementTitle").value || "").trim();
+      const body = ($("announcementBody").value || "").trim();
+
+      $("previewTitle").textContent =
+        title || "Your announcement title will appear here";
+
+      $("previewBody").textContent =
+        body || "Your announcement message will appear here";
+
+      $("charCount").textContent = `${body.length} / 2000`;
+    }
+
+    async function sendAnnouncement(){
+      showMessage("announcementMessageBox", "", "error");
+
+      const title = ($("announcementTitle").value || "").trim();
+      const message = ($("announcementBody").value || "").trim();
+
+      if (!title){
+        showMessage("announcementMessageBox", "Please enter the announcement title.", "error");
+        return;
+      }
+
+      if (!message){
+        showMessage("announcementMessageBox", "Please enter the announcement message.", "error");
+        return;
+      }
+
+      const btn = $("sendAnnouncementBtn");
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+
+      try{
+        const result = await invokeEdge(EDGE.sendAnnouncement, {
+          hos_admin_id: adminSession.id,
+          title,
+          message
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not send announcement.");
+        }
+
+        saveHosHistoryItem({
+          type: "Announcement",
+          title: title,
+          description: "School announcement sent successfully",
+          created_at: new Date().toISOString()
+        });
+
+        $("announcementTitle").value = "";
+        $("announcementBody").value = "";
+        updatePreview();
+
+        showMessage(
+          "announcementMessageBox",
+          result.message || "Announcement sent successfully.",
+          "success"
+        );
+      }catch(err){
+        console.error(err);
+        showMessage(
+          "announcementMessageBox",
+          err.message || "Could not send announcement.",
+          "error"
+        );
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "Send announcement";
+      }
+    }
+
+    function clearAnnouncement(){
+      $("announcementTitle").value = "";
+      $("announcementBody").value = "";
+      updatePreview();
+      showMessage("announcementMessageBox", "", "error");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!requireHosSession()) return;
+
+      $("avatarChip").addEventListener("click", () => {
+        window.location.href = "hos_account.html";
+      });
+
+      $("backBtn").addEventListener("click", () => {
+        window.history.back();
+      });
+
+      $("announcementTitle").addEventListener("input", updatePreview);
+      $("announcementBody").addEventListener("input", updatePreview);
+
+      $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
+      $("clearAnnouncementBtn").addEventListener("click", clearAnnouncement);
+
+      updatePreview();
+    });
+  })();
+</script>
+</body>
+</html>
