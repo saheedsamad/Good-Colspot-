@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Report Details</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#f4f7ff;
+      --card:#ffffff;
+      --line:#e6ebf5;
+      --text:#111827;
+      --muted:#6b7280;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --purple:#7c3aed;
+      --purple-soft:#f5f3ff;
+      --orange:#ea580c;
+      --orange-soft:#fff7ed;
+      --green:#16a34a;
+      --green-soft:#ecfdf5;
+      --red:#dc2626;
+      --red-soft:#fef2f2;
+      --shadow:0 16px 35px rgba(15,23,42,.08);
+      --radius:22px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:linear-gradient(180deg,#edf3ff 0%, #f8fbff 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    .shell{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      padding:
+        calc(env(safe-area-inset-top) + 14px)
+        16px
+        calc(env(safe-area-inset-bottom) + 28px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      color:#1f2937;
+      flex-shrink:0;
+    }
+
+    .back-btn svg{
+      width:22px;
+      height:22px;
+    }
+
+    .title-wrap{
+      min-width:0;
+    }
+
+    .page-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      margin-bottom:2px;
+    }
+
+    .page-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:240px;
+    }
+
+    .status-pill{
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      white-space:nowrap;
+    }
+
+    .status-new{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .status-under_review{
+      background:var(--purple-soft);
+      color:var(--purple);
+    }
+
+    .status-waiting_reply{
+      background:var(--orange-soft);
+      color:var(--orange);
+    }
+
+    .status-resolved{
+      background:var(--green-soft);
+      color:var(--green);
+    }
+
+    .status-escalated{
+      background:var(--red-soft);
+      color:var(--red);
+    }
+
+    .message{
+      display:none;
+      padding:13px 14px;
+      border-radius:16px;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .message.show{
+      display:block;
+    }
+
+    .message.error{
+      background:var(--red-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      background:var(--green-soft);
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-bottom:14px;
+    }
+
+    .hero-title{
+      font-size:22px;
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:-.04em;
+      margin-bottom:8px;
+    }
+
+    .hero-sub{
+      font-size:13px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:900;
+      margin:0 0 12px;
+      letter-spacing:-.02em;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .meta-box{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .meta-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:5px;
+    }
+
+    .meta-value{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    .complaint-box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#f8fbff;
+      padding:14px;
+      font-size:14px;
+      line-height:1.6;
+      color:#1f2937;
+      white-space:pre-wrap;
+    }
+
+    .tag-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .tag{
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:var(--blue);
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-width:120px;
+      border:none;
+      border-radius:999px;
+      padding:14px 14px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+    }
+
+    .btn.secondary{
+      background:#f3f4f6;
+      color:#111827;
+    }
+
+    @media (max-width:360px){
+      .meta-grid{
+        grid-template-columns:1fr;
+      }
+      .btn-row{
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="top-left">
+        <button class="back-btn" type="button" id="backBtn">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="title-wrap">
+          <div class="page-title">Report Details</div>
+          <div class="page-sub" id="pageSub">Loading report...</div>
+        </div>
+      </div>
+
+      <div class="status-pill status-new" id="statusPill">new</div>
+    </div>
+
+    <div class="message" id="pageMessage"></div>
+
+    <section class="card">
+      <div class="hero-title" id="reportTitle">Report</div>
+      <div class="hero-sub" id="reportSub">Tracking code</div>
+
+      <div class="tag-row">
+        <div class="tag" id="tagPrivacy">Anonymous</div>
+        <div class="tag" id="tagCategory">Category</div>
+        <div class="tag" id="tagUrgency">Normal</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Report information</h2>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">Tracking code</div>
+          <div class="meta-value" id="metaTrackingCode">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Status</div>
+          <div class="meta-value" id="metaStatus">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">School</div>
+          <div class="meta-value" id="metaSchool">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Department</div>
+          <div class="meta-value" id="metaDepartment">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Location</div>
+          <div class="meta-value" id="metaLocation">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Person involved</div>
+          <div class="meta-value" id="metaPerson">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Created at</div>
+          <div class="meta-value" id="metaCreatedAt">-</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Replies allowed</div>
+          <div class="meta-value" id="metaReplyAllowed">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Your report</h2>
+      <div class="complaint-box" id="reportMessageText">-</div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Next step</h2>
+      <div class="hero-sub" style="margin-bottom:14px;">
+        Open the report chat room to see updates and continue the conversation with the person handling your case.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="openChatBtn" type="button">Open Chat</button>
+        <button class="btn secondary" id="backHistoryBtn" type="button">Back to History</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let selectedReportId = "";
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showMessage(text = "", type = "error") {
+      const box = $("pageMessage");
+      if (!text) {
+        box.className = "message";
+        box.textContent = "";
+        return;
+      }
+      box.className = `message show ${type}`;
+      box.textContent = text;
+    }
+
+    function getStoredUser() {
+      try {
+        const raw = localStorage.getItem("colspot_last_user");
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+
+    function getSelectedReportId() {
+      return localStorage.getItem("colspot_selected_report_id") || "";
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+
+    function statusClass(status) {
+      return `status-${String(status || "").toLowerCase()}`;
+    }
+
+    async function invokeEdge(name, body = {}) {
+      const { data, error } = await sb.functions.invoke(name, { body });
+
+      if (error) {
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Request failed.");
+      }
+
+      return data;
+    }
+
+    function fillReport(report) {
+      $("reportTitle").textContent = report.title || report.category || "Report";
+      $("reportSub").textContent = report.tracking_code || "Tracking code";
+      $("tagPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
+      $("tagCategory").textContent = report.category || "Category";
+      $("tagUrgency").textContent = report.urgency || "normal";
+
+      $("statusPill").textContent = report.status || "new";
+      $("statusPill").className = `status-pill ${statusClass(report.status)}`;
+
+      $("metaTrackingCode").textContent = report.tracking_code || "-";
+      $("metaStatus").textContent = report.status || "-";
+      $("metaSchool").textContent = report.school_name || "-";
+      $("metaDepartment").textContent = report.department || "-";
+      $("metaLocation").textContent = report.location_text || "-";
+      $("metaPerson").textContent = report.person_involved || "-";
+      $("metaCreatedAt").textContent = formatDateTime(report.created_at);
+      $("metaReplyAllowed").textContent = report.allow_anonymous_reply ? "Yes" : "No";
+      $("reportMessageText").textContent = report.message || "-";
+      $("pageSub").textContent = report.tracking_code || "Report";
+    }
+
+    async function loadReportDetails() {
+      showMessage("");
+
+      try {
+        const data = await invokeEdge("get-my-report-details", {
+          submitted_by_user_id: currentUser.id,
+          report_id: selectedReportId
+        });
+
+        fillReport(data.report || {});
+      } catch (err) {
+        console.error(err);
+        showMessage(err.message || "Could not load report details.");
+      }
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    function goHistory() {
+      window.history.back();
+    }
+
+    function openChatRoom() {
+      try {
+        localStorage.setItem("colspot_selected_report_id", selectedReportId);
+      } catch (e) {
+        console.error("Failed to save selected report id:", e);
+      }
+      window.location.href = "report_chat_room.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      currentUser = getStoredUser();
+      selectedReportId = getSelectedReportId();
+
+      if (!currentUser?.id) {
+        showMessage("We could not find your user session. Please sign in again.");
+        return;
+      }
+
+      if (!selectedReportId) {
+        showMessage("No report selected. Please return to History and choose a report.");
+        return;
+      }
+
+      $("backBtn").addEventListener("click", goBack);
+      $("backHistoryBtn").addEventListener("click", goHistory);
+      $("openChatBtn").addEventListener("click", openChatRoom);
+
+      await loadReportDetails();
+    });
+  </script>
+</body>
+</html>
