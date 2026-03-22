@@ -595,7 +595,6 @@ function switchMode(mode) {
   hideResetPanel();
   hideForgotPanel();
 
-  const indexScreen = document.getElementById("index-screen");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
 
@@ -606,48 +605,26 @@ function switchMode(mode) {
   const subtitle = document.getElementById("card-subtitle");
   const switchText = document.getElementById("switch-text");
   const switchLabel = document.getElementById("switch-link-label");
-  const modeToggle = document.getElementById("mode-toggle");
-  const switchRow = document.getElementById("switch-row");
 
   clearMessages();
 
-  if (indexScreen) indexScreen.classList.add("hidden");
-  if (signinForm) signinForm.classList.add("hidden");
-  if (signupForm) signupForm.classList.add("hidden");
-
-  if (tabSignin) tabSignin.classList.remove("active");
-  if (tabSignup) tabSignup.classList.remove("active");
-
-  if (mode === "index") {
-    if (indexScreen) indexScreen.classList.remove("hidden");
-
-    if (modeToggle) modeToggle.classList.add("hidden");
-    if (switchRow) switchRow.classList.add("hidden");
-
-    if (title) title.textContent = "Welcome";
-    if (subtitle) subtitle.textContent = "Choose how you want to continue";
-    return;
-  }
-
-  if (modeToggle) modeToggle.classList.remove("hidden");
-  if (switchRow) switchRow.classList.remove("hidden");
-
   if (mode === "signin") {
     if (signinForm) signinForm.classList.remove("hidden");
+    if (signupForm) signupForm.classList.add("hidden");
 
     if (tabSignin) tabSignin.classList.add("active");
+    if (tabSignup) tabSignup.classList.remove("active");
 
     if (title) title.textContent = "Welcome back";
     if (subtitle) subtitle.textContent = "Sign in to your Colspot account";
 
     if (switchText) switchText.textContent = "Don’t have an account?";
     if (switchLabel) switchLabel.textContent = "Create one";
-    return;
-  }
-
-  if (mode === "signup") {
+  } else {
+    if (signinForm) signinForm.classList.add("hidden");
     if (signupForm) signupForm.classList.remove("hidden");
 
+    if (tabSignin) tabSignin.classList.remove("active");
     if (tabSignup) tabSignup.classList.add("active");
 
     if (title) title.textContent = "Create your account";
@@ -659,26 +636,18 @@ function switchMode(mode) {
 }
 
 function toggleAuthMode() {
-  if (currentMode === "signin") {
-    switchMode("signup");
-  } else if (currentMode === "signup") {
-    switchMode("signin");
-  } else {
-    switchMode("signin");
-  }
+  switchMode(currentMode === "signin" ? "signup" : "signin");
 }
 
 /* ----------------------------
  * Panels
  * ---------------------------- */
 function hideMainForms() {
-  const indexScreen = document.getElementById("index-screen");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
   const modeToggle = document.getElementById("mode-toggle");
   const switchRow = document.getElementById("switch-row");
 
-  if (indexScreen) indexScreen.classList.add("hidden");
   if (signinForm) signinForm.classList.add("hidden");
   if (signupForm) signupForm.classList.add("hidden");
   if (modeToggle) modeToggle.classList.add("hidden");
@@ -686,29 +655,19 @@ function hideMainForms() {
 }
 
 function showMainForms() {
-  const indexScreen = document.getElementById("index-screen");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
   const modeToggle = document.getElementById("mode-toggle");
   const switchRow = document.getElementById("switch-row");
-
-  if (indexScreen) indexScreen.classList.add("hidden");
-  if (signinForm) signinForm.classList.add("hidden");
-  if (signupForm) signupForm.classList.add("hidden");
-
-  if (currentMode === "index") {
-    if (indexScreen) indexScreen.classList.remove("hidden");
-    if (modeToggle) modeToggle.classList.add("hidden");
-    if (switchRow) switchRow.classList.add("hidden");
-    return;
-  }
 
   if (modeToggle) modeToggle.classList.remove("hidden");
   if (switchRow) switchRow.classList.remove("hidden");
 
   if (currentMode === "signin") {
     if (signinForm) signinForm.classList.remove("hidden");
-  } else if (currentMode === "signup") {
+    if (signupForm) signupForm.classList.add("hidden");
+  } else {
+    if (signinForm) signinForm.classList.add("hidden");
     if (signupForm) signupForm.classList.remove("hidden");
   }
 }
@@ -805,12 +764,9 @@ function hideResetPanel() {
   if (currentMode === "signin") {
     if (title) title.textContent = "Welcome back";
     if (subtitle) subtitle.textContent = "Sign in to your Colspot account";
-  } else if (currentMode === "signup") {
+  } else {
     if (title) title.textContent = "Create your account";
     if (subtitle) subtitle.textContent = "Sign up as a student or lecturer";
-  } else {
-    if (title) title.textContent = "Welcome";
-    if (subtitle) subtitle.textContent = "Choose how you want to continue";
   }
 
   showMainForms();
@@ -1540,7 +1496,7 @@ async function initAuth() {
 
   if (splash) splash.classList.add("hidden");
   if (authShell) authShell.classList.remove("hidden");
-  switchMode("index");
+  switchMode("signin");
   updateOfflineUI();
 }
 
