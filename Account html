@@ -282,6 +282,11 @@
       color: #1d4ed8;
     }
 
+    #screen-account .action-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
     #screen-account .action-btn svg {
       width: 16px;
       height: 16px;
@@ -625,9 +630,10 @@
       </div>
 
       <button
+        id="verifyUploadBtn"
         class="action-btn switch-mode"
         style="width:100%; justify-content:center; margin-top:8px;"
-        onclick="window.location.href='verify_class.html'"
+        onclick="openVerificationPage()"
       >
         Upload clearance form
       </button>
@@ -823,7 +829,6 @@
         email || (accountCurrentUser && accountCurrentUser.email) || "";
       const safeMatric = matric || "";
 
-      // 👇 THIS PART MAKES THE AVATAR LETTER COME FROM THE USER'S NAME
       const initial = safeName.trim()[0]
         ? safeName.trim()[0].toUpperCase()
         : "C";
@@ -832,7 +837,6 @@
       const editAvatarInitial = document.getElementById("editAvatarInitial");
       if (avatarInitial) avatarInitial.textContent = initial;
       if (editAvatarInitial) editAvatarInitial.textContent = initial;
-      // 👆
 
       const vNameDisplay = document.getElementById("viewNameDisplay");
       const vNameValue = document.getElementById("viewNameValue");
@@ -905,6 +909,126 @@
       window.location.href = "learn_auth.html";
     }
 
+    function openVerificationPage() {
+      const btn = document.getElementById("verifyUploadBtn");
+      if (btn && btn.dataset.locked === "true") {
+        return;
+      }
+      window.location.href = "verify_class.html";
+    }
+
+    function setVerificationUiVerified(message = "Your account has already been verified.") {
+      const badge = document.getElementById("verifyBadge");
+      const text = document.getElementById("verifyStatusText");
+      const btn = document.getElementById("verifyUploadBtn");
+
+      if (badge) {
+        badge.textContent = "Verified";
+        badge.style.background = "#ecfdf5";
+        badge.style.borderColor = "#bbf7d0";
+        badge.style.color = "#15803d";
+      }
+
+      if (text) {
+        text.textContent = message;
+        text.classList.remove("error");
+        text.classList.add("success");
+      }
+
+      if (btn) {
+        btn.textContent = "Verified";
+        btn.dataset.locked = "true";
+        btn.disabled = true;
+      }
+    }
+
+    function setVerificationUiPending(message = "Your uploaded clearance form is under review.") {
+      const badge = document.getElementById("verifyBadge");
+      const text = document.getElementById("verifyStatusText");
+      const btn = document.getElementById("verifyUploadBtn");
+
+      if (badge) {
+        badge.textContent = "Pending";
+        badge.style.background = "#fff7ed";
+        badge.style.borderColor = "#fed7aa";
+        badge.style.color = "#c2410c";
+      }
+
+      if (text) {
+        text.textContent = message;
+        text.classList.remove("success");
+        text.classList.remove("error");
+      }
+
+      if (btn) {
+        btn.textContent = "Pending review";
+        btn.dataset.locked = "true";
+        btn.disabled = true;
+      }
+    }
+
+    function setVerificationUiNotVerified(message = "Upload your clearance form to verify your account.") {
+      const badge = document.getElementById("verifyBadge");
+      const text = document.getElementById("verifyStatusText");
+      const btn = document.getElementById("verifyUploadBtn");
+
+      if (badge) {
+        badge.textContent = "Not verified";
+        badge.style.background = "#eff6ff";
+        badge.style.borderColor = "#dbeafe";
+        badge.style.color = "#1d4ed8";
+      }
+
+      if (text) {
+        text.textContent = message;
+        text.classList.remove("success");
+        text.classList.remove("error");
+      }
+
+      if (btn) {
+        btn.textContent = "Upload clearance form";
+        btn.dataset.locked = "false";
+        btn.disabled = false;
+      }
+    }
+
+    async function loadAccountVerification() {
+      if (!accountCurrentUser) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("verification_clearance")
+          .select("status, created_at")
+          .eq("user_id", accountCurrentUser.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error("loadAccountVerification error:", error);
+          setVerificationUiNotVerified("Upload your clearance form to verify your account.");
+          return;
+        }
+
+        const row = Array.isArray(data) && data.length ? data[0] : null;
+        const status = String(row?.status || "").trim().toLowerCase();
+
+        if (status === "successful" || status === "verified") {
+          setVerificationUiVerified("Your clearance form has already been approved.");
+          return;
+        }
+
+        if (status === "pending" || status === "under_review") {
+          setVerificationUiPending("Your uploaded clearance form is under review.");
+          return;
+        }
+
+        setVerificationUiNotVerified();
+      } catch (e) {
+        console.error("loadAccountVerification fatal:", e);
+        setVerificationUiNotVerified("Upload your clearance form to verify your account.");
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       await new Promise((r) => setTimeout(r, 50));
 
@@ -916,7 +1040,6 @@
 
       const { data, error } = await supabase.auth.getUser();
       if (error || !data || !data.user) {
-        // main.js will already handle redirect if needed
         return;
       }
 
@@ -932,6 +1055,7 @@
 
       await loadAccountProfile();
       await loadAccountDevices();
+      await loadAccountVerification();
     });
 
     async function loadAccountProfile() {
@@ -966,7 +1090,6 @@
           return;
         }
 
-        // Fallback: no profile yet
         const name =
           accountCurrentUser.user_metadata?.full_name || "Lecturer";
         const dept = "";
@@ -1005,7 +1128,6 @@
       }
 
       try {
-        // 1) Load existing matric + last_updated for this user
         let existingMatric = "";
         let existingLastUpdated = null;
 
@@ -1024,7 +1146,6 @@
         const changedMatric =
           (existingMatric || "") !== (matric || "");
 
-        // 2) If matric is changing, enforce 30-day cool-down
         if (changedMatric && existingLastUpdated) {
           const last = new Date(existingLastUpdated);
           const now = new Date();
@@ -1050,7 +1171,6 @@
           }
         }
 
-        // 3) Build updates for student_profiles (for both students & lecturers)
         const updates = {
           user_id: accountCurrentUser.id,
           full_name: name,
@@ -1058,7 +1178,6 @@
           matric_number: matric || null
         };
 
-        // Only bump last_updated when matric actually changed
         if (changedMatric) {
           updates.matric_last_updated_at = new Date().toISOString();
         }
@@ -1072,7 +1191,6 @@
           throw upsertError;
         }
 
-        // 4) Also update auth user's full_name
         const { data: updated, error: authError } =
           await supabase.auth.updateUser({
             data: { full_name: name }
@@ -1249,7 +1367,6 @@
       }
     }
 
-    // 🔻 Logout: sign out from Supabase + clear local user cache
     async function accountSignOut() {
       try {
         if (typeof supabase !== "undefined") {
@@ -1259,7 +1376,6 @@
         console.error("Sign out error:", e);
       } finally {
         try {
-          // IMPORTANT: key used by fast door in auth.js & main
           localStorage.removeItem("colspot_local_user");
         } catch (e) {
           console.error("Failed to clear local user cache on logout:", e);
@@ -1273,7 +1389,6 @@
       window.location.href = "contact.html";
     }
 
-    // 🔻 Delete account + all user data (sessions, records, scans, warmups, devices) + local cache
     async function accountDeleteAccount() {
       if (!accountCurrentUser) {
         alert("We could not find your account. Please sign in again.");
@@ -1297,7 +1412,6 @@
 
       try {
         if (typeof supabase !== "undefined") {
-          // 1) Get all session IDs created by this lecturer (for attendance_records cleanup)
           let sessionIds = [];
           try {
             const { data: sessions, error: sessionsError } = await supabase
@@ -1312,10 +1426,8 @@
             console.warn("Could not load lecturer sessions for delete:", e);
           }
 
-          // 2) Build delete promises
           const deletions = [];
 
-          // Delete per-attendee rows for these sessions (history/attendees)
           if (sessionIds.length > 0) {
             deletions.push(
               supabase
@@ -1325,12 +1437,10 @@
             );
           }
 
-          // Devices
           deletions.push(
             supabase.from("user_devices").delete().eq("user_id", userId)
           );
 
-          // Warmup data
           deletions.push(
             supabase
               .from("attendance_warmup_main")
@@ -1344,7 +1454,6 @@
               .eq("lecturer_id", userId)
           );
 
-          // Sessions themselves (used by History page)
           deletions.push(
             supabase
               .from("attendance_sessions")
@@ -1352,19 +1461,16 @@
               .eq("created_by", userId)
           );
 
-          // Scan history (scan_sheets table)
           deletions.push(
             supabase.from("scan_sheets").delete().eq("user_id", userId)
           );
 
-          // Lecturer profile row (if it exists from older versions)
           deletions.push(
             supabase.from("lecturers").delete().eq("id", userId)
           );
 
           await Promise.allSettled(deletions);
 
-          // 3) Edge function to delete auth user completely (email/password)
           try {
             if (supabase.functions && supabase.functions.invoke) {
               await supabase.functions.invoke("delete_my_account", {
@@ -1375,7 +1481,6 @@
             console.warn("delete_my_account function failed:", e);
           }
 
-          // 4) Sign out (just in case)
           try {
             await supabase.auth.signOut();
           } catch (e) {
@@ -1383,7 +1488,6 @@
           }
         }
 
-        // 5) Clear local cache / storage used by Colspot
         try {
           localStorage.removeItem("colspot_local_user");
           localStorage.removeItem("colspot_history_cache");
@@ -1403,13 +1507,13 @@
       }
     }
 
-    // expose for onclick
     window.enterAccountEditMode = enterAccountEditMode;
     window.saveAccountProfile = saveAccountProfile;
     window.accountSignOut = accountSignOut;
     window.accountContactUs = accountContactUs;
     window.accountDeleteAccount = accountDeleteAccount;
     window.switchToLearnEarn = switchToLearnEarn;
+    window.openVerificationPage = openVerificationPage;
   </script>
 </div>
 <!-- 🔹 ACCOUNT SCREEN END -->
