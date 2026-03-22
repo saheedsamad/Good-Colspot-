@@ -626,7 +626,6 @@ function switchMode(mode) {
 
     if (title) title.textContent = "Welcome";
     if (subtitle) subtitle.textContent = "Choose how you want to continue";
-
     return;
   }
 
@@ -668,15 +667,18 @@ function toggleAuthMode() {
     switchMode("signin");
   }
 }
+
 /* ----------------------------
  * Panels
  * ---------------------------- */
 function hideMainForms() {
+  const indexScreen = document.getElementById("index-screen");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
   const modeToggle = document.getElementById("mode-toggle");
   const switchRow = document.getElementById("switch-row");
 
+  if (indexScreen) indexScreen.classList.add("hidden");
   if (signinForm) signinForm.classList.add("hidden");
   if (signupForm) signupForm.classList.add("hidden");
   if (modeToggle) modeToggle.classList.add("hidden");
@@ -684,19 +686,29 @@ function hideMainForms() {
 }
 
 function showMainForms() {
+  const indexScreen = document.getElementById("index-screen");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
   const modeToggle = document.getElementById("mode-toggle");
   const switchRow = document.getElementById("switch-row");
+
+  if (indexScreen) indexScreen.classList.add("hidden");
+  if (signinForm) signinForm.classList.add("hidden");
+  if (signupForm) signupForm.classList.add("hidden");
+
+  if (currentMode === "index") {
+    if (indexScreen) indexScreen.classList.remove("hidden");
+    if (modeToggle) modeToggle.classList.add("hidden");
+    if (switchRow) switchRow.classList.add("hidden");
+    return;
+  }
 
   if (modeToggle) modeToggle.classList.remove("hidden");
   if (switchRow) switchRow.classList.remove("hidden");
 
   if (currentMode === "signin") {
     if (signinForm) signinForm.classList.remove("hidden");
-    if (signupForm) signupForm.classList.add("hidden");
-  } else {
-    if (signinForm) signinForm.classList.add("hidden");
+  } else if (currentMode === "signup") {
     if (signupForm) signupForm.classList.remove("hidden");
   }
 }
@@ -793,9 +805,12 @@ function hideResetPanel() {
   if (currentMode === "signin") {
     if (title) title.textContent = "Welcome back";
     if (subtitle) subtitle.textContent = "Sign in to your Colspot account";
-  } else {
+  } else if (currentMode === "signup") {
     if (title) title.textContent = "Create your account";
     if (subtitle) subtitle.textContent = "Sign up as a student or lecturer";
+  } else {
+    if (title) title.textContent = "Welcome";
+    if (subtitle) subtitle.textContent = "Choose how you want to continue";
   }
 
   showMainForms();
@@ -1525,7 +1540,7 @@ async function initAuth() {
 
   if (splash) splash.classList.add("hidden");
   if (authShell) authShell.classList.remove("hidden");
-  switchMode("signin");
+  switchMode("index");
   updateOfflineUI();
 }
 
