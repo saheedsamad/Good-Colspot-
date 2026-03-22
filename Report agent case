@@ -523,6 +523,13 @@
     </section>
 
     <section class="card">
+      <h2 class="section-title">Chat room</h2>
+      <div class="btn-row">
+        <button class="btn primary" id="openChatBtn" type="button">Open chat room</button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2 class="section-title">Send reply</h2>
 
       <div class="field">
@@ -747,12 +754,7 @@
             ? { assistant_agent_id: adminSession.id, report_id: selectedReportId, message }
             : { report_agent_id: adminSession.id, report_id: selectedReportId, message };
 
-        const functionName =
-          role === "assistant_report_agent"
-            ? "reply-to-report"
-            : "reply-to-report";
-
-        const data = await invokeEdge(functionName, body);
+        const data = await invokeEdge("reply-to-report", body);
 
         $("replyInput").value = "";
         showMessage("replyMessage", data.message || "Reply sent successfully.", "success");
@@ -830,6 +832,17 @@
       }
     }
 
+    function openChatRoom() {
+      try {
+        localStorage.setItem("colspot_selected_report_id", selectedReportId);
+        localStorage.setItem("colspot_selected_case_role", String(adminSession?.role || "").toLowerCase());
+      } catch (e) {
+        console.error("Failed to save chat report id:", e);
+      }
+
+      window.location.href = "report_chat_room.html";
+    }
+
     function goBack() {
       const role = String(adminSession?.role || "").toLowerCase();
       window.location.href =
@@ -848,6 +861,7 @@
       if (!requireSessionAndReport()) return;
 
       $("backBtn").addEventListener("click", goBack);
+      $("openChatBtn").addEventListener("click", openChatRoom);
       $("sendReplyBtn").addEventListener("click", sendReply);
       $("saveStatusBtn").addEventListener("click", () => saveStatus());
       $("reloadCaseBtn").addEventListener("click", loadCase);
