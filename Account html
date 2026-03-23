@@ -1,8 +1,6 @@
 <!-- 🔹 ACCOUNT SCREEN START -->
 <div id="screen-account" class="screen">
   <style>
-    /* Everything scoped to #screen-account so it won’t spoil other screens */
-
     #screen-account {
       padding: 4px 2px 16px;
     }
@@ -244,7 +242,6 @@
       margin-bottom: 4px;
     }
 
-    /* NEW: row just for delete button */
     #screen-account .delete-row {
       margin: 4px 0 10px;
     }
@@ -268,7 +265,6 @@
       justify-content: center;
     }
 
-    /* both logout + delete use the red style */
     #screen-account .action-btn.logout,
     #screen-account .action-btn.danger {
       border-color: #fecaca;
@@ -453,7 +449,6 @@
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
     }
 
-    /* small helper for readonly ID input */
     #screen-account .text-input.readonly {
       background: #f3f4f6;
     }
@@ -491,7 +486,6 @@
     }
   </style>
 
-  <!-- HEADER INSIDE ACCOUNT SCREEN -->
   <div id="accountHeaderView" class="account-header">
     <div class="account-header-left">
       <div>
@@ -516,7 +510,6 @@
     </button>
   </div>
 
-  <!-- VIEW SCREEN -->
   <section id="accountViewScreen">
     <div class="profile-card">
       <div class="profile-top">
@@ -524,7 +517,7 @@
           <span id="avatarInitial">S</span>
         </div>
 
-        <div class="profile-name" id="viewNameDisplay">Lecturer</div>
+        <div class="profile-name" id="viewNameDisplay">Student</div>
 
         <div class="profile-meta-line">
           <svg viewBox="0 0 24 24">
@@ -558,7 +551,7 @@
           </div>
           <div class="detail-text">
             <div class="detail-label">Full name</div>
-            <div class="detail-value" id="viewNameValue">Lecturer</div>
+            <div class="detail-value" id="viewNameValue">Student</div>
           </div>
           <svg class="chevron" viewBox="0 0 24 24">
             <path d="M9 6l6 6-6 6"></path>
@@ -581,7 +574,6 @@
           </svg>
         </div>
 
-        <!-- Matric / staff ID row -->
         <div class="detail-row" id="viewMatricRow" style="display:none;">
           <div class="detail-icon">
             <svg viewBox="0 0 24 24">
@@ -591,7 +583,7 @@
             </svg>
           </div>
           <div class="detail-text">
-            <div class="detail-label">Matric / staff ID</div>
+            <div class="detail-label">Matric number / Staff ID</div>
             <div class="detail-value" id="viewMatricValue"></div>
           </div>
           <svg class="chevron" viewBox="0 0 24 24">
@@ -640,6 +632,7 @@
 
       <p id="verifyStatusText" class="status-text"></p>
     </div>
+
     <div class="actions-row">
       <button class="action-btn switch-mode" onclick="switchToLearnEarn()">
         <svg viewBox="0 0 24 24">
@@ -657,6 +650,7 @@
         Contact us
       </button>
     </div>
+
     <div class="actions-row">
       <button class="action-btn logout" onclick="accountSignOut()">
         <svg viewBox="0 0 24 24">
@@ -667,6 +661,7 @@
         Log out
       </button>
     </div>
+
     <div class="delete-row">
       <button class="action-btn danger" onclick="accountDeleteAccount()">
         <svg viewBox="0 0 24 24">
@@ -697,7 +692,6 @@
     </div>
   </section>
 
-  <!-- EDIT SCREEN -->
   <section id="accountEditScreen" style="display:none;">
     <div class="profile-card">
       <div class="profile-top">
@@ -715,7 +709,7 @@
           Change
         </button>
 
-        <div class="profile-name" id="editNameHeading">Lecturer</div>
+        <div class="profile-name" id="editNameHeading">Student</div>
 
         <div class="profile-meta-line">
           <svg viewBox="0 0 24 24">
@@ -745,15 +739,13 @@
         <input id="editDepartment" class="text-input" type="text" />
       </div>
 
-      <!-- Matric / staff ID editing for everyone -->
       <div class="form-group" id="editMatricGroup">
         <div class="form-label">
           Matric number / Staff ID
           <span
             id="matricHint"
             style="font-size:11px; color:var(--text-muted); display:block;"
-          >
-          </span>
+          ></span>
         </div>
         <input id="editMatricNumber" class="text-input" type="text" />
       </div>
@@ -802,20 +794,16 @@
     function getAccountCurrentProfile() {
       const name =
         (document.getElementById("viewNameValue") &&
-          document.getElementById("viewNameValue").textContent) ||
-        "";
+          document.getElementById("viewNameValue").textContent) || "";
       const dept =
         (document.getElementById("viewDeptValue") &&
-          document.getElementById("viewDeptValue").textContent) ||
-        "";
+          document.getElementById("viewDeptValue").textContent) || "";
       const email =
         (document.getElementById("viewEmailValue") &&
-          document.getElementById("viewEmailValue").textContent) ||
-        "";
+          document.getElementById("viewEmailValue").textContent) || "";
       const matric =
         (document.getElementById("viewMatricValue") &&
-          document.getElementById("viewMatricValue").textContent) ||
-        "";
+          document.getElementById("viewMatricValue").textContent) || "";
       return { name, dept, email, matric };
     }
 
@@ -823,7 +811,7 @@
       const safeName =
         name ||
         (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
-        "Lecturer";
+        "Student";
       const safeDept = dept || "Department";
       const safeEmail =
         email || (accountCurrentUser && accountCurrentUser.email) || "";
@@ -891,6 +879,7 @@
         mInput.readOnly = false;
         mInput.classList.remove("readonly");
       }
+
       if (mHint) {
         mHint.textContent =
           "This can be your matric number or staff ID. We’ll save it so you don’t have to type it again. You can only change it once every 30 days.";
@@ -911,13 +900,11 @@
 
     function openVerificationPage() {
       const btn = document.getElementById("verifyUploadBtn");
-      if (btn && btn.dataset.locked === "true") {
-        return;
-      }
+      if (btn && btn.dataset.locked === "true") return;
       window.location.href = "verify_class.html";
     }
 
-    function setVerificationUiVerified(message = "Your account has already been verified.") {
+    function setVerificationUiVerified(message = "Your clearance form has already been uploaded.") {
       const badge = document.getElementById("verifyBadge");
       const text = document.getElementById("verifyStatusText");
       const btn = document.getElementById("verifyUploadBtn");
@@ -937,31 +924,6 @@
 
       if (btn) {
         btn.textContent = "Verified";
-        btn.dataset.locked = "true";
-        btn.disabled = true;
-      }
-    }
-
-    function setVerificationUiPending(message = "Your uploaded clearance form is under review.") {
-      const badge = document.getElementById("verifyBadge");
-      const text = document.getElementById("verifyStatusText");
-      const btn = document.getElementById("verifyUploadBtn");
-
-      if (badge) {
-        badge.textContent = "Pending";
-        badge.style.background = "#fff7ed";
-        badge.style.borderColor = "#fed7aa";
-        badge.style.color = "#c2410c";
-      }
-
-      if (text) {
-        text.textContent = message;
-        text.classList.remove("success");
-        text.classList.remove("error");
-      }
-
-      if (btn) {
-        btn.textContent = "Pending review";
         btn.dataset.locked = "true";
         btn.disabled = true;
       }
@@ -998,7 +960,7 @@
       try {
         const { data, error } = await supabase
           .from("verification_clearance")
-          .select("status, created_at")
+          .select("id, status, created_at")
           .eq("user_id", accountCurrentUser.id)
           .order("created_at", { ascending: false })
           .limit(1);
@@ -1012,17 +974,12 @@
         const row = Array.isArray(data) && data.length ? data[0] : null;
         const status = String(row?.status || "").trim().toLowerCase();
 
-        if (status === "successful" || status === "verified") {
-          setVerificationUiVerified("Your clearance form has already been approved.");
+        if (row || status === "successful" || status === "verified") {
+          setVerificationUiVerified("Your clearance form has already been uploaded.");
           return;
         }
 
-        if (status === "pending" || status === "under_review") {
-          setVerificationUiPending("Your uploaded clearance form is under review.");
-          return;
-        }
-
-        setVerificationUiNotVerified();
+        setVerificationUiNotVerified("Upload your clearance form to verify your account.");
       } catch (e) {
         console.error("loadAccountVerification fatal:", e);
         setVerificationUiNotVerified("Upload your clearance form to verify your account.");
@@ -1062,14 +1019,14 @@
       if (!accountCurrentUser) return;
 
       try {
-        const { data: profiles, error } = await supabase
-          .from("student_profiles")
-          .select("full_name, department, matric_number")
+        const { data: rows, error } = await supabase
+          .from("student_accounts")
+          .select("full_name, department, matric_number, email")
           .eq("user_id", accountCurrentUser.id)
           .limit(1);
 
-        if (!error && profiles && profiles[0]) {
-          const row = profiles[0];
+        if (!error && rows && rows[0]) {
+          const row = rows[0];
 
           const name =
             row.full_name ||
@@ -1077,31 +1034,21 @@
             "";
           const dept = row.department || "";
           const matric = row.matric_number || "";
-          const email = accountCurrentUser.email || "";
+          const email = row.email || accountCurrentUser.email || "";
 
-          applyAccountDataToView({
-            name,
-            dept,
-            email,
-            matric
-          });
+          applyAccountDataToView({ name, dept, email, matric });
           applyAccountDataToEdit({ name, dept, email, matric });
           lecturerProfileLoaded = true;
           return;
         }
 
         const name =
-          accountCurrentUser.user_metadata?.full_name || "Lecturer";
+          accountCurrentUser.user_metadata?.full_name || "Student";
         const dept = "";
         const email = accountCurrentUser.email || "";
         const matric = "";
 
-        applyAccountDataToView({
-          name,
-          dept,
-          email,
-          matric
-        });
+        applyAccountDataToView({ name, dept, email, matric });
         applyAccountDataToEdit({ name, dept, email, matric });
         lecturerProfileLoaded = true;
       } catch (e) {
@@ -1128,23 +1075,21 @@
       }
 
       try {
-        let existingMatric = "";
-        let existingLastUpdated = null;
+        let existingRow = null;
 
         const { data: existingRows, error: existingError } = await supabase
-          .from("student_profiles")
-          .select("matric_number, matric_last_updated_at")
+          .from("student_accounts")
+          .select("id, matric_number, updated_at")
           .eq("user_id", accountCurrentUser.id)
           .limit(1);
 
         if (!existingError && existingRows && existingRows[0]) {
-          existingMatric = existingRows[0].matric_number || "";
-          existingLastUpdated =
-            existingRows[0].matric_last_updated_at || null;
+          existingRow = existingRows[0];
         }
 
-        const changedMatric =
-          (existingMatric || "") !== (matric || "");
+        const existingMatric = existingRow?.matric_number || "";
+        const existingLastUpdated = existingRow?.updated_at || null;
+        const changedMatric = (existingMatric || "") !== (matric || "");
 
         if (changedMatric && existingLastUpdated) {
           const last = new Date(existingLastUpdated);
@@ -1154,9 +1099,7 @@
 
           if (diffDays < 30) {
             const remainingDays = Math.ceil(30 - diffDays);
-            const nextDate = new Date(
-              last.getTime() + 30 * 24 * 60 * 60 * 1000
-            );
+            const nextDate = new Date(last.getTime() + 30 * 24 * 60 * 60 * 1000);
             const nextDateStr = nextDate.toLocaleDateString(undefined, {
               year: "numeric",
               month: "short",
@@ -1171,24 +1114,36 @@
           }
         }
 
-        const updates = {
-          user_id: accountCurrentUser.id,
-          full_name: name,
-          department: dept || null,
-          matric_number: matric || null
-        };
+        if (existingRow) {
+          const { error: updateError } = await supabase
+            .from("student_accounts")
+            .update({
+              full_name: name,
+              department: dept || null,
+              matric_number: matric || null,
+              email: email || null
+            })
+            .eq("user_id", accountCurrentUser.id);
 
-        if (changedMatric) {
-          updates.matric_last_updated_at = new Date().toISOString();
-        }
+          if (updateError) {
+            console.error(updateError);
+            throw updateError;
+          }
+        } else {
+          const { error: insertError } = await supabase
+            .from("student_accounts")
+            .insert({
+              user_id: accountCurrentUser.id,
+              full_name: name,
+              email: email || null,
+              department: dept || null,
+              matric_number: matric || null
+            });
 
-        const { error: upsertError } = await supabase
-          .from("student_profiles")
-          .upsert(updates, { onConflict: "user_id" });
-
-        if (upsertError) {
-          console.error(upsertError);
-          throw upsertError;
+          if (insertError) {
+            console.error(insertError);
+            throw insertError;
+          }
         }
 
         const { data: updated, error: authError } =
@@ -1200,22 +1155,13 @@
           console.error(authError);
           throw authError;
         }
+
         if (updated && updated.user) {
           accountCurrentUser = updated.user;
         }
 
-        applyAccountDataToView({
-          name,
-          dept,
-          email,
-          matric
-        });
-        applyAccountDataToEdit({
-          name,
-          dept,
-          email,
-          matric
-        });
+        applyAccountDataToView({ name, dept, email, matric });
+        applyAccountDataToEdit({ name, dept, email, matric });
 
         setAccountStatus("Profile saved.", "success");
         lecturerProfileLoaded = true;
@@ -1466,7 +1412,7 @@
           );
 
           deletions.push(
-            supabase.from("lecturers").delete().eq("id", userId)
+            supabase.from("student_accounts").delete().eq("user_id", userId)
           );
 
           await Promise.allSettled(deletions);
