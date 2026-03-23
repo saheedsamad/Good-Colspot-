@@ -328,6 +328,7 @@
       color:var(--muted);
       line-height:1.45;
       margin-top:3px;
+      word-break:break-word;
     }
 
     .history-meta{
@@ -521,9 +522,18 @@
     </button>
   </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   (() => {
-    const HISTORY_KEY = "hos_activity_history";
+    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+
+    const EDGE = {
+      getHistory: "get-hos-history"
+    };
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let adminSession = null;
     let currentSchoolName = "";
@@ -557,16 +567,6 @@
       }
     }
 
-    function getHosHistory(){
-      try{
-        const raw = localStorage.getItem(HISTORY_KEY);
-        const arr = JSON.parse(raw || "[]");
-        return Array.isArray(arr) ? arr : [];
-      }catch{
-        return [];
-      }
-    }
-
     function showMessage(id, text){
       const box = $(id);
       if (!text){
@@ -576,6 +576,18 @@
       }
       box.textContent = text;
       box.className = "message error";
+    }
+
+    async function invokeEdge(functionName, body){
+      const { data, error } = await sb.functions.invoke(functionName, {
+        body: body || {}
+      });
+
+      if (error){
+        throw new Error((data && data.error) || error.message || "Request failed.");
+      }
+
+      return data || {};
     }
 
     function requireHosSession(){
@@ -597,13 +609,26 @@
       return true;
     }
 
-    function loadHistory(){
+    async function loadHistory(){
       showMessage("pageMessage", "");
+      $("historyList").innerHTML = '<div class="empty">Loading history...</div>';
+      $("historyCountText").textContent = "0 items";
 
       try{
-        currentHistory = getHosHistory()
-          .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        const type = $("typeFilter").value || "all";
+        const search = ($("searchInput").value || "").trim();
 
+        const result = await invokeEdge(EDGE.getHistory, {
+          hos_admin_id: adminSession.id,
+          type,
+          search
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not load history.");
+        }
+
+        currentHistory = Array.isArray(result.history) ? result.history : [];
         renderHistory();
       }catch(err){
         console.error(err);
@@ -613,28 +638,9 @@
       }
     }
 
-    function getFilteredHistory(){
-      const search = ($("searchInput").value || "").trim().toLowerCase();
-      const type = $("typeFilter").value || "all";
-
-      return currentHistory.filter((item) => {
-        const matchType = type === "all" ? true : String(item.type || "") === type;
-
-        const haystack = [
-          item.title,
-          item.description,
-          item.type
-        ].join(" ").toLowerCase();
-
-        const matchSearch = !search || haystack.includes(search);
-
-        return matchType && matchSearch;
-      });
-    }
-
     function renderHistory(){
       const wrap = $("historyList");
-      const items = getFilteredHistory();
+      const items = currentHistory || [];
 
       $("historyCountText").textContent = `${items.length} item${items.length === 1 ? "" : "s"}`;
 
@@ -660,7 +666,7 @@
       `).join("");
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       if (!requireHosSession()) return;
 
       $("avatarChip").addEventListener("click", () => {
@@ -671,10 +677,15 @@
         window.history.back();
       });
 
-      $("searchInput").addEventListener("input", renderHistory);
-      $("typeFilter").addEventListener("change", renderHistory);
+      let searchTimer = null;
+      $("searchInput").addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadHistory, 250);
+      });
 
-      loadHistory();
+      $("typeFilter").addEventListener("change", loadHistory);
+
+      await loadHistory();
     });
   })();
 </script>
