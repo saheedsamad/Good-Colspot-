@@ -441,7 +441,6 @@
     }
 
     .student-item,
-    .announcement-item,
     .history-item{
       display:flex;
       align-items:flex-start;
@@ -689,16 +688,6 @@
             <button class="mini-btn secondary" id="clearAnnouncementBtn" type="button">Clear</button>
           </div>
         </section>
-
-        <div class="section-head">
-          <h2 class="section-title">Announcement history</h2>
-        </div>
-
-        <section class="card">
-          <div class="list-wrap" id="announcementList">
-            <div class="empty">Loading announcements...</div>
-          </div>
-        </section>
       </section>
 
       <section class="screen" id="screen-students">
@@ -926,32 +915,6 @@
         return result;
       }
 
-      function renderAnnouncementList(data) {
-        const wrap = $("announcementList");
-
-        if (!data || !data.length) {
-          wrap.innerHTML = '<div class="empty">No announcements yet.</div>';
-          return;
-        }
-
-        wrap.innerHTML = data.map((item) => `
-          <article class="announcement-item">
-            <div class="item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-              </svg>
-            </div>
-
-            <div class="item-content">
-              <h3 class="item-title">${escapeHtml(item.title || "Untitled announcement")}</h3>
-              <p class="item-sub">${escapeHtml(item.message || "")}</p>
-            </div>
-
-            <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
-          </article>
-        `).join("");
-      }
-
       function renderHistoryList() {
         const allHistory = getHistory();
         const recentTwo = allHistory.slice(0, 2);
@@ -1008,25 +971,16 @@
         }
       }
 
-      async function loadAnnouncements() {
-        const wrap = $("announcementList");
-        wrap.innerHTML = '<div class="empty">Loading announcements...</div>';
-
+      async function loadAnnouncementCount() {
         try {
           const result = await invokeEdge(EDGE.getAnnouncements, {
             hod_id: hodSession.id
           });
 
-          const recent = Array.isArray(result.recent_announcements)
-            ? result.recent_announcements
-            : [];
-
           $("announcementCount").textContent = String(result?.totals?.announcements || 0);
-          renderAnnouncementList(recent);
         } catch (err) {
-          console.error("loadAnnouncements error:", err);
+          console.error("loadAnnouncementCount error:", err);
           $("announcementCount").textContent = "0";
-          wrap.innerHTML = '<div class="empty">Could not load announcements.</div>';
         }
       }
 
@@ -1060,7 +1014,6 @@
           $("announcementBody").value = "";
 
           $("announcementCount").textContent = String(result?.totals?.announcements || 0);
-          renderAnnouncementList(result.recent_announcements || []);
 
           saveHistoryItem({
             type: "Announcement",
@@ -1147,7 +1100,6 @@
 
         $("goAnnouncementFromHome").addEventListener("click", async () => {
           setActiveScreen("announcements");
-          await loadAnnouncements();
         });
 
         $("viewAllHistoryBtn").addEventListener("click", () => {
@@ -1177,7 +1129,7 @@
 
         renderHistoryList();
         await loadCounts();
-        await loadAnnouncements();
+        await loadAnnouncementCount();
         await loadStudents("");
         setActiveScreen("home");
       });
