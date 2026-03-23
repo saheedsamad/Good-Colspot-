@@ -11,7 +11,9 @@
   <style>
     :root{
       --blue:#2563eb;
-      --bg:#f3f6ff;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --bg:#f4f7ff;
       --card:#ffffff;
       --text:#0f172a;
       --muted:#6b7280;
@@ -19,23 +21,42 @@
       --danger:#ef4444;
       --ok:#16a34a;
       --warn:#d97706;
-      --shadow:0 10px 26px rgba(15,23,42,.10);
-      --radius:22px;
+      --shadow:0 14px 32px rgba(15,23,42,.10);
+      --shadow-soft:0 10px 24px rgba(37,99,235,.10);
+      --radius:24px;
+      --radius-sm:18px;
     }
 
-    *{box-sizing:border-box}
-    body{
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      background:var(--bg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f7faff 42%, #ffffff 100%);
       color:var(--text);
+      min-height:100%;
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
     }
 
     .phone-shell{
+      width:100%;
       max-width:460px;
-      margin:0 auto;
       min-height:100vh;
-      padding:18px 14px 22px;
+      padding:18px 14px 28px;
     }
 
     .topbar{
@@ -44,15 +65,24 @@
       gap:10px;
       padding:8px 2px 14px;
     }
+
     .back-btn{
-      width:42px;height:42px;border-radius:14px;
+      width:44px;
+      height:44px;
+      border-radius:16px;
       border:1px solid var(--line);
       background:#fff;
-      display:grid;place-items:center;
+      display:grid;
+      place-items:center;
       cursor:pointer;
-      box-shadow:0 6px 16px rgba(15,23,42,.06);
+      box-shadow:0 8px 20px rgba(15,23,42,.06);
+      flex-shrink:0;
     }
-    .back-btn svg{width:18px;height:18px}
+
+    .back-btn svg{
+      width:18px;
+      height:18px;
+    }
 
     .brand{
       display:flex;
@@ -61,21 +91,34 @@
       flex:1;
       min-width:0;
     }
+
     .brand-logo{
-      width:36px;height:36px;border-radius:12px;
+      width:38px;
+      height:38px;
+      border-radius:14px;
       overflow:hidden;
       background:#fff;
       border:1px solid var(--line);
+      flex-shrink:0;
+      box-shadow:var(--shadow-soft);
     }
-    .brand-logo img{width:100%;height:100%;object-fit:cover}
+
+    .brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
     .brand-title{
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      font-size:17px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      color:#10224a;
     }
+
     .brand-sub{
       font-size:12px;
       color:var(--muted);
@@ -86,22 +129,44 @@
     }
 
     .hero{
-      background:linear-gradient(180deg, rgba(37,99,235,.10), rgba(37,99,235,.03));
-      border:1px solid rgba(37,99,235,.14);
+      background:
+        linear-gradient(180deg, rgba(37,99,235,.11), rgba(37,99,235,.04));
+      border:1px solid rgba(37,99,235,.12);
       border-radius:var(--radius);
-      padding:16px 16px;
+      padding:18px 16px;
       box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
     }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-20px;
+      top:-18px;
+      width:110px;
+      height:110px;
+      border-radius:50%;
+      background:rgba(37,99,235,.08);
+    }
+
     .hero h1{
-      margin:0 0 6px;
-      font-size:18px;
-      line-height:1.2;
+      margin:0 0 7px;
+      font-size:22px;
+      line-height:1.15;
+      letter-spacing:-.03em;
+      position:relative;
+      z-index:1;
     }
+
     .hero p{
       margin:0;
       font-size:13px;
       color:var(--muted);
-      line-height:1.45;
+      line-height:1.55;
+      position:relative;
+      z-index:1;
+      max-width:320px;
     }
 
     .card{
@@ -114,26 +179,31 @@
     }
 
     .card-head{
-      padding:14px 14px 10px;
+      padding:16px 16px 12px;
       border-bottom:1px solid var(--line);
     }
+
     .card-head .title{
-      font-weight:800;
-      font-size:14px;
+      font-weight:900;
+      font-size:15px;
       margin:0;
+      letter-spacing:-.02em;
     }
+
     .card-head .sub{
       margin:6px 0 0;
       font-size:12px;
       color:var(--muted);
-      line-height:1.45;
+      line-height:1.5;
     }
 
-    .card-body{padding:14px}
+    .card-body{
+      padding:14px;
+    }
 
     .upload-box{
       border:1.6px dashed #cbd5e1;
-      border-radius:18px;
+      border-radius:20px;
       padding:14px;
       background:#fbfdff;
     }
@@ -149,60 +219,81 @@
       display:inline-flex;
       align-items:center;
       gap:10px;
-      padding:12px 14px;
+      padding:12px 15px;
       border-radius:16px;
       border:1px solid var(--line);
       background:#fff;
       cursor:pointer;
-      font-weight:700;
+      font-weight:800;
       font-size:13px;
+      box-shadow:0 8px 18px rgba(15,23,42,.04);
     }
-    .file-btn svg{width:18px;height:18px;color:var(--blue)}
-    #fileInput{display:none}
+
+    .file-btn svg{
+      width:18px;
+      height:18px;
+      color:var(--blue);
+    }
+
+    #fileInput{
+      display:none;
+    }
 
     .hint{
       margin-top:10px;
       font-size:12px;
       color:var(--muted);
-      line-height:1.45;
+      line-height:1.5;
     }
 
     .preview{
-      margin-top:12px;
+      margin-top:14px;
       display:none;
-      gap:10px;
+      gap:12px;
       align-items:center;
-    }
-    .thumb{
-      width:56px;
-      height:56px;
-      border-radius:16px;
+      padding:12px;
+      border-radius:18px;
       border:1px solid var(--line);
       background:#fff;
+    }
+
+    .thumb{
+      width:58px;
+      height:58px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#f8fbff;
       overflow:hidden;
       display:grid;
       place-items:center;
+      flex-shrink:0;
     }
+
     .thumb .pdf{
       font-weight:900;
       color:var(--blue);
       font-size:12px;
+      letter-spacing:.08em;
     }
+
     .file-meta{
       flex:1;
       min-width:0;
     }
+
     .file-meta .name{
-      font-weight:800;
+      font-weight:900;
       font-size:13px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      color:#0f172a;
     }
+
     .file-meta .size{
       font-size:12px;
       color:var(--muted);
-      margin-top:2px;
+      margin-top:3px;
     }
 
     .btn{
@@ -212,21 +303,27 @@
       padding:14px 14px;
       cursor:pointer;
       font-weight:900;
-      font-size:14px;
+      font-size:15px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:10px;
+      transition:.18s ease;
     }
+
     .btn-primary{
-      background:var(--blue);
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
       color:#fff;
       margin-top:12px;
+      box-shadow:0 14px 26px rgba(37,99,235,.18);
     }
+
     .btn-primary:disabled{
       opacity:.55;
       cursor:not-allowed;
+      box-shadow:none;
     }
+
     .btn-ghost{
       background:#fff;
       color:var(--text);
@@ -237,9 +334,10 @@
     .btn-row{
       display:flex;
       gap:10px;
-      margin-top:12px;
+      margin-top:14px;
       flex-wrap:wrap;
     }
+
     .btn-half{
       flex:1;
       min-width:140px;
@@ -248,16 +346,20 @@
     .loading{
       display:none;
       margin-top:12px;
-      padding:12px;
+      padding:13px 14px;
       border-radius:18px;
       border:1px solid rgba(37,99,235,.18);
       background:rgba(37,99,235,.06);
       color:#1e40af;
       font-size:13px;
       line-height:1.45;
+      font-weight:600;
     }
+
     .spinner{
-      width:16px;height:16px;border-radius:999px;
+      width:16px;
+      height:16px;
+      border-radius:999px;
       border:2px solid rgba(30,64,175,.25);
       border-top-color:#1e40af;
       display:inline-block;
@@ -265,7 +367,10 @@
       vertical-align:-3px;
       margin-right:8px;
     }
-    @keyframes spin{to{transform:rotate(360deg)}}
+
+    @keyframes spin{
+      to{ transform:rotate(360deg) }
+    }
 
     .msg{
       display:none;
@@ -273,87 +378,95 @@
       padding:12px 12px;
       border-radius:18px;
       font-size:13px;
-      line-height:1.45;
+      line-height:1.5;
       border:1px solid var(--line);
       background:#fff;
       white-space:pre-wrap;
       word-break:break-word;
     }
+
     .msg.err{
-      border-color:rgba(239,68,68,.25);
+      border-color:rgba(239,68,68,.22);
       background:rgba(239,68,68,.08);
       color:#7f1d1d;
     }
+
     .msg.ok{
-      border-color:rgba(22,163,74,.25);
+      border-color:rgba(22,163,74,.22);
       background:rgba(22,163,74,.08);
       color:#14532d;
     }
+
     .msg.warn{
       display:block;
-      border-color:rgba(217,119,6,.25);
+      border-color:rgba(217,119,6,.22);
       background:rgba(217,119,6,.08);
       color:#92400e;
     }
 
     .details{
-      margin-top:10px;
+      margin-top:14px;
       display:none;
       border-top:1px solid var(--line);
-      padding-top:12px;
+      padding-top:14px;
     }
+
+    .status-card{
+      margin-bottom:12px;
+      border:1px solid rgba(22,163,74,.18);
+      background:rgba(22,163,74,.07);
+      color:#166534;
+      border-radius:18px;
+      padding:12px 13px;
+      font-size:13px;
+      line-height:1.5;
+      font-weight:700;
+    }
+
     .grid{
       display:grid;
       grid-template-columns:1fr;
       gap:10px;
     }
+
     .field{
       border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
+      border-radius:18px;
+      padding:12px 13px;
       background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,.03);
     }
+
     .label{
       font-size:11px;
       color:var(--muted);
-      margin-bottom:4px;
+      margin-bottom:5px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:800;
     }
+
     .value{
       font-weight:900;
       font-size:14px;
       word-break:break-word;
-    }
-
-    .debug-box{
-      display:none;
-      margin-top:12px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:#fff;
-      padding:12px;
-    }
-    .debug-title{
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:8px;
-      color:#334155;
-    }
-    .debug-pre{
-      margin:0;
-      font-size:11px;
-      line-height:1.45;
-      white-space:pre-wrap;
-      word-break:break-word;
       color:#0f172a;
+      line-height:1.35;
     }
 
     .footer-note{
       margin-top:14px;
       font-size:12px;
       color:var(--muted);
-      line-height:1.45;
+      line-height:1.5;
       text-align:center;
       padding:0 8px;
+    }
+
+    @media (max-width:360px){
+      .btn-row{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
@@ -379,16 +492,16 @@
     </div>
 
     <section class="hero">
-      <h1>Upload your course form PDF</h1>
+      <h1>Verify your student profile</h1>
       <p>
-        We will extract your details first, show them to you, then you can continue or cancel.
+        Upload your course form PDF for verification. We will review the file, show your details to you, then you can continue or cancel.
       </p>
     </section>
 
     <section class="card">
       <div class="card-head">
-        <p class="title">Step 1 • Course form PDF</p>
-        <p class="sub">Upload a clear PDF only. Make sure the text is readable.</p>
+        <p class="title">Step 1 • Upload course form PDF</p>
+        <p class="sub">Upload a clear course form PDF only. Make sure the text is readable before you continue.</p>
       </div>
 
       <div class="card-body">
@@ -406,7 +519,7 @@
           </div>
 
           <div class="hint">
-            Accepted: PDF only. If you upload a random file, it will be rejected.
+            Accepted: PDF only. Upload your official course form so we can verify your profile details.
           </div>
 
           <div id="preview" class="preview">
@@ -419,7 +532,7 @@
 
           <div id="loading" class="loading">
             <span class="spinner"></span>
-            Processing your course form… please wait.
+            Verifying your course form… please wait.
           </div>
 
           <div id="msgErr" class="msg err"></div>
@@ -427,7 +540,7 @@
           <div id="msgWarn" class="msg"></div>
 
           <button id="btnExtract" class="btn btn-primary" disabled>
-            Extract details
+            Verify details
           </button>
 
           <button id="btnReset" class="btn btn-ghost" style="display:none;">
@@ -435,6 +548,10 @@
           </button>
 
           <div id="details" class="details">
+            <div class="status-card">
+              Your course form has been checked. Please review the verified details carefully before you continue.
+            </div>
+
             <div class="grid">
               <div class="field"><div class="label">Full name</div><div class="value" id="vFullName">—</div></div>
               <div class="field"><div class="label">Matric / Staff ID</div><div class="value" id="vMatric">—</div></div>
@@ -458,20 +575,15 @@
             </div>
 
             <div class="footer-note">
-              Review the extracted details carefully before you continue.
+              Review the verified details carefully before you continue.
             </div>
-          </div>
-
-          <div id="debugBox" class="debug-box">
-            <div class="debug-title">Debug</div>
-            <pre id="debugPre" class="debug-pre"></pre>
           </div>
         </div>
       </div>
     </section>
 
     <div class="footer-note">
-      Colspot will only use this for verification. You can delete your account anytime.
+      Colspot will only use this file for verification. You can delete your account anytime.
     </div>
   </div>
 
@@ -483,7 +595,7 @@
     const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
     const VERIFICATION_TABLE = "verification_clearance";
     const ACCOUNT_TABLE = "student_accounts";
-    const DEBUG_MODE = true;
+    const DEBUG_MODE = false;
 
     const el = (id) => document.getElementById(id);
 
@@ -536,17 +648,9 @@
       return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
     }
 
-    function setDebug(data){
-      if (!DEBUG_MODE) return;
-      el("debugBox").style.display = "block";
-      el("debugPre").textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-      console.log("VERIFY DEBUG:", data);
-    }
+    function setDebug(){}
 
-    function clearDebug(){
-      el("debugBox").style.display = DEBUG_MODE ? "block" : "none";
-      el("debugPre").textContent = DEBUG_MODE ? "Waiting..." : "";
-    }
+    function clearDebug(){}
 
     let pickedFile = null;
     let uploadedPath = null;
@@ -675,15 +779,6 @@
       const name = "course_form_" + Date.now() + "_" + Math.random().toString(16).slice(2) + ".pdf";
       const path = `${currentUser.id}/${name}`;
 
-      setDebug({
-        step: "upload_start",
-        bucket: BUCKET,
-        path,
-        file_name: file.name,
-        file_type: file.type,
-        file_size: file.size
-      });
-
       const { data, error } = await sb.storage
         .from(BUCKET)
         .upload(path, file, {
@@ -692,18 +787,7 @@
           contentType: "application/pdf",
         });
 
-      if (error) {
-        setDebug({ step: "upload_error", error });
-        throw error;
-      }
-
-      setDebug({
-        step: "upload_done",
-        bucket: BUCKET,
-        returned_data: data,
-        saved_path: path
-      });
-
+      if (error) throw error;
       return path;
     }
 
@@ -724,12 +808,6 @@
         file_size: file.size || null
       };
 
-      setDebug({
-        step: "extract_request",
-        url: EXTRACT_FN_URL,
-        payload
-      });
-
       const resp = await fetch(EXTRACT_FN_URL, {
         method: "POST",
         headers: {
@@ -747,17 +825,10 @@
         data = null;
       }
 
-      setDebug({
-        step: "extract_response",
-        status: resp.status,
-        ok: resp.ok,
-        data
-      });
-
       if (!resp.ok) {
         const msg =
           (data && (data.error || data.message || data.details)) ||
-          `Extraction failed (${resp.status})`;
+          `Verification failed (${resp.status})`;
         throw new Error(msg);
       }
 
@@ -787,12 +858,6 @@
         status: "successful"
       };
 
-      setDebug({
-        step: "save_verification",
-        table: VERIFICATION_TABLE,
-        payload
-      });
-
       const { data: existing, error: checkError } = await sb
         .from(VERIFICATION_TABLE)
         .select("id, status")
@@ -801,10 +866,7 @@
         .limit(1)
         .maybeSingle();
 
-      if (checkError) {
-        setDebug({ step: "save_verification_check_error", error: checkError });
-        throw checkError;
-      }
+      if (checkError) throw checkError;
 
       if (existing?.id) {
         const { error: updateError } = await sb
@@ -812,12 +874,7 @@
           .update(payload)
           .eq("id", existing.id);
 
-        if (updateError) {
-          setDebug({ step: "save_verification_update_error", error: updateError });
-          throw updateError;
-        }
-
-        setDebug({ step: "save_verification_updated", id: existing.id });
+        if (updateError) throw updateError;
         return;
       }
 
@@ -825,12 +882,7 @@
         .from(VERIFICATION_TABLE)
         .insert(payload);
 
-      if (insertError) {
-        setDebug({ step: "save_verification_insert_error", error: insertError });
-        throw insertError;
-      }
-
-      setDebug({ step: "save_verification_inserted" });
+      if (insertError) throw insertError;
     }
 
     async function saveToStudentAccount(){
@@ -848,22 +900,11 @@
         matric_number: extracted?.matric_no || null
       };
 
-      setDebug({
-        step: "save_student_account",
-        table: ACCOUNT_TABLE,
-        payload
-      });
-
       const { error } = await sb
         .from(ACCOUNT_TABLE)
         .upsert(payload, { onConflict: "user_id" });
 
-      if (error) {
-        setDebug({ step: "save_student_account_error", error });
-        throw error;
-      }
-
-      setDebug({ step: "save_student_account_done" });
+      if (error) throw error;
     }
 
     async function checkExistingSuccessfulVerification(){
@@ -881,11 +922,7 @@
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        setDebug({ step: "existing_verification_error", error });
-        return;
-      }
-
+      if (error) return;
       if (!data) return;
 
       verificationLocked = true;
@@ -916,27 +953,15 @@
           throw new Error("Not signed in.");
         }
 
-        setDebug({
-          step: "user_loaded",
-          user_id: currentUser.id,
-          bucket: BUCKET,
-          extract_url: EXTRACT_FN_URL
-        });
-
         await checkExistingSuccessfulVerification();
       } catch (e) {
         showErr("You need to be signed in to continue.");
         el("btnExtract").disabled = true;
-        setDebug({
-          step: "user_error",
-          error: e?.message || String(e)
-        });
       }
     });
 
     el("fileInput").addEventListener("change", (e) => {
       clearMsgs();
-      clearDebug();
 
       if (verificationLocked) {
         showErr("Verification already completed successfully.");
@@ -965,13 +990,6 @@
       el("btnExtract").disabled = false;
       el("btnReset").style.display = "inline-flex";
       clearExtractedDetails();
-
-      setDebug({
-        step: "file_selected",
-        file_name: file.name,
-        file_type: file.type,
-        file_size: file.size
-      });
     });
 
     el("btnReset").addEventListener("click", () => {
@@ -983,7 +1001,7 @@
       if (verificationLocked) return;
       clearMsgs();
       clearExtractedDetails();
-      showWarn("Extraction cancelled. Upload another PDF if you want to try again.");
+      showWarn("Verification cancelled. Upload another course form PDF if you want to try again.");
     });
 
     el("btnExtract").addEventListener("click", async () => {
@@ -1008,7 +1026,7 @@
         const data = await callExtractFunction(uploadedPath, pickedFile);
 
         if (!data || data.ok !== true) {
-          throw new Error("AI extraction failed. Please try again.");
+          throw new Error("Verification failed. Please try again.");
         }
 
         const result = data.extracted_result || null;
@@ -1044,7 +1062,7 @@
         if (result.is_clearance_form === false) {
           showWarn(result.reason || "We found details, but the document type is uncertain. Please review before continuing.");
         } else {
-          showOk("Details extracted. Please review them and continue.");
+          showOk("Verification details are ready. Please review them and continue.");
         }
       } catch (e) {
         showErr(e && e.message ? e.message : "Something went wrong.");
@@ -1062,7 +1080,7 @@
       }
 
       if (!extracted || !uploadedPath) {
-        showErr("Please extract details first.");
+        showErr("Please verify the course form first.");
         return;
       }
 
