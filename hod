@@ -11,24 +11,24 @@
 
   <style>
     :root{
-      --page-bg:#f5f7fb;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --blue-soft-2:#f8fbff;
       --card:#ffffff;
+      --line:#e7edf5;
       --text:#0f172a;
-      --muted:#707786;
-      --line:#e8edf5;
-      --blue-1:#2f6cff;
-      --blue-2:#2a56df;
-      --green-1:#77b84d;
-      --green-2:#5e9f3a;
-      --orange-1:#ffb13a;
-      --orange-2:#f39212;
-      --nav-text:#9aa3b2;
-      --shadow:0 14px 34px rgba(15,23,42,.08);
-      --soft-shadow:0 12px 24px rgba(47,108,255,.14);
-      --error:#991b1b;
-      --error-bg:#fef2f2;
+      --muted:#6b7280;
       --success:#166534;
       --success-bg:#ecfdf5;
+      --error:#991b1b;
+      --error-bg:#fef2f2;
+      --shadow:0 16px 34px rgba(15,23,42,.08);
+      --shadow-soft:0 12px 28px rgba(37,99,235,.10);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
     }
 
     *{
@@ -40,7 +40,8 @@
       margin:0;
       padding:0;
       min-height:100%;
-      background:#edf2fb;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
       font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
       color:var(--text);
       -webkit-text-size-adjust:100%;
@@ -51,14 +52,19 @@
       justify-content:center;
     }
 
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
     .phone-shell{
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:var(--page-bg);
       padding:
-        calc(env(safe-area-inset-top) + 10px)
-        16px
+        calc(env(safe-area-inset-top) + 12px)
+        14px
         calc(env(safe-area-inset-bottom) + 108px);
       position:relative;
       overflow-x:hidden;
@@ -69,7 +75,7 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:18px;
+      margin-bottom:14px;
     }
 
     .brand{
@@ -80,75 +86,120 @@
     }
 
     .brand-logo{
-      width:38px;
-      height:38px;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow:hidden;
       flex-shrink:0;
     }
 
-    .brand-logo svg{
-      width:38px;
-      height:38px;
+    .brand-logo img{
+      width:32px;
+      height:32px;
+      object-fit:contain;
       display:block;
     }
 
     .brand-name{
-      font-size:17px;
-      font-weight:800;
+      font-size:18px;
+      font-weight:900;
       letter-spacing:-.03em;
-      color:#102043;
+      color:#10224a;
+      white-space:nowrap;
     }
 
     .profile-link{
-      width:50px;
-      height:50px;
+      width:46px;
+      height:46px;
       border-radius:999px;
       display:flex;
       align-items:center;
       justify-content:center;
       text-decoration:none;
       color:#fff;
-      font-size:19px;
-      font-weight:800;
-      background:linear-gradient(135deg,#2f6cff 0%, #18b774 100%);
-      box-shadow:0 16px 28px rgba(47,108,255,.18);
-      flex-shrink:0;
+      font-size:17px;
+      font-weight:900;
+      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
+      box-shadow:0 16px 28px rgba(37,99,235,.18);
       border:none;
       cursor:pointer;
+      flex-shrink:0;
     }
 
     .hero{
-      margin-bottom:18px;
+      margin:4px 2px 16px;
+      padding:22px 18px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,var(--blue),#3b82f6);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 24px 44px rgba(37,99,235,.22);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      right:-34px;
+      top:-26px;
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:rgba(255,255,255,.10);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      bottom:-34px;
+      width:190px;
+      height:96px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      transform:rotate(-18deg);
     }
 
     .hero-line{
       font-size:13px;
-      color:var(--muted);
-      margin-bottom:8px;
-      font-weight:500;
+      font-weight:800;
+      opacity:.95;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
       word-break:break-word;
     }
 
     .hero-title{
       margin:0;
-      font-size:29px;
-      line-height:1.08;
-      letter-spacing:-.055em;
+      font-size:30px;
+      line-height:1.05;
+      letter-spacing:-.05em;
       font-weight:900;
-      color:#111c37;
-      max-width:320px;
+      position:relative;
+      z-index:1;
+      max-width:260px;
     }
 
-    .hero-title .accent{
-      display:block;
-      color:#2f6cff;
+    .hero-sub{
+      margin-top:8px;
+      font-size:13px;
+      line-height:1.5;
+      opacity:.96;
+      position:relative;
+      z-index:1;
+      max-width:260px;
     }
 
     .message{
       display:none;
-      margin:0 0 14px;
+      margin:0 2px 14px;
       padding:12px 13px;
       border-radius:16px;
       font-size:13px;
@@ -180,133 +231,139 @@
       display:block;
     }
 
+    .stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin:0 2px 16px;
+    }
+
+    .stat-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px 14px;
+      box-shadow:var(--shadow-soft);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .stat-card::after{
+      content:"";
+      position:absolute;
+      right:-16px;
+      bottom:-18px;
+      width:74px;
+      height:74px;
+      border-radius:50%;
+      background:var(--blue-soft);
+    }
+
+    .stat-label{
+      position:relative;
+      z-index:1;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .stat-value{
+      position:relative;
+      z-index:1;
+      font-size:30px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.05em;
+      color:#0f172a;
+    }
+
     .section-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin:4px 2px 12px;
+      margin:0 4px 10px;
     }
 
     .section-title{
       margin:0;
-      font-size:15px;
+      font-size:16px;
       font-weight:900;
       letter-spacing:-.02em;
       color:#111c37;
     }
 
-    .overview-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:22px;
-    }
-
-    .overview-card{
-      color:#fff;
-      border-radius:18px;
-      padding:14px 14px 12px;
-      min-height:98px;
-      box-shadow:var(--shadow);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .overview-card.blue{
-      background:linear-gradient(135deg,#2f6cff 0%, #2357df 100%);
-    }
-
-    .overview-card.orange{
-      background:linear-gradient(135deg,#ffb13a 0%, #f39413 100%);
-    }
-
-    .overview-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .overview-icon{
-      width:38px;
-      height:38px;
-      border-radius:14px;
-      background:rgba(255,255,255,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      backdrop-filter:blur(8px);
-      flex-shrink:0;
-    }
-
-    .overview-icon svg{
-      width:21px;
-      height:21px;
-    }
-
-    .overview-value{
-      font-size:30px;
-      line-height:1;
-      font-weight:900;
-      letter-spacing:-.05em;
-      text-align:right;
-      white-space:nowrap;
-    }
-
-    .overview-label{
-      margin-top:12px;
-      font-size:13px;
+    .view-all-btn{
+      border:none;
+      background:var(--blue-soft);
+      color:var(--blue);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:12px;
       font-weight:800;
-      line-height:1.05;
+      cursor:pointer;
     }
 
     .quick-grid{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns:1fr 1fr;
       gap:12px;
-      margin-bottom:22px;
+      margin:0 2px 18px;
     }
 
-    .quick-btn{
-      width:100%;
-      border:none;
-      border-radius:999px;
-      padding:18px 20px;
+    .quick-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px 14px;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+      text-align:left;
+      min-height:120px;
+    }
+
+    .quick-icon{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      background:var(--blue-soft);
       display:flex;
       align-items:center;
-      gap:14px;
-      color:#fff;
+      justify-content:center;
+      color:var(--blue);
+      margin-bottom:12px;
+    }
+
+    .quick-icon svg{
+      width:20px;
+      height:20px;
+    }
+
+    .quick-title{
       font-size:16px;
-      font-weight:800;
+      line-height:1.2;
+      font-weight:900;
       letter-spacing:-.02em;
-      text-decoration:none;
-      box-shadow:var(--soft-shadow);
-      cursor:pointer;
+      color:#0f172a;
+      margin-bottom:4px;
     }
 
-    .quick-btn svg{
-      width:23px;
-      height:23px;
-      flex-shrink:0;
-    }
-
-    .quick-btn.blue{
-      background:linear-gradient(90deg,var(--blue-1) 0%, var(--blue-2) 100%);
-    }
-
-    .quick-btn.green{
-      background:linear-gradient(90deg,var(--green-1) 0%, var(--green-2) 100%);
+    .quick-sub{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
     }
 
     .card{
-      background:var(--card);
+      background:#fff;
       border:1px solid var(--line);
       border-radius:24px;
       box-shadow:var(--shadow);
       padding:14px;
-      margin-bottom:16px;
+      margin:0 2px 16px;
     }
 
     .field{
@@ -316,7 +373,7 @@
     .field label{
       display:block;
       font-size:12px;
-      font-weight:700;
+      font-weight:800;
       color:#334155;
       margin-bottom:6px;
     }
@@ -324,17 +381,24 @@
     .input,.textarea{
       width:100%;
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 13px;
+      border-radius:15px;
+      padding:13px 14px;
       background:#fff;
       font-size:14px;
       color:var(--text);
       outline:none;
+      transition:.18s ease;
+    }
+
+    .input:focus,.textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
     }
 
     .textarea{
-      min-height:110px;
+      min-height:120px;
       resize:vertical;
+      line-height:1.5;
     }
 
     .btn-row{
@@ -347,16 +411,16 @@
       flex:1;
       border:none;
       border-radius:999px;
-      padding:12px 14px;
+      padding:13px 14px;
       font-size:14px;
-      font-weight:800;
+      font-weight:900;
       cursor:pointer;
     }
 
     .mini-btn.primary{
       color:#fff;
-      background:linear-gradient(135deg,var(--blue-1),var(--blue-2));
-      box-shadow:var(--soft-shadow);
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 16px 28px rgba(37,99,235,.20);
     }
 
     .mini-btn.secondary{
@@ -377,7 +441,8 @@
     }
 
     .student-item,
-    .announcement-item{
+    .announcement-item,
+    .history-item{
       display:flex;
       align-items:flex-start;
       gap:12px;
@@ -422,7 +487,7 @@
       margin:4px 0 0;
       font-size:13px;
       color:var(--muted);
-      line-height:1.4;
+      line-height:1.45;
       word-break:break-word;
     }
 
@@ -433,6 +498,21 @@
       font-weight:700;
       white-space:nowrap;
       margin-left:8px;
+    }
+
+    .history-tag{
+      margin-top:8px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      background:#eff6ff;
+      color:var(--blue);
     }
 
     .empty{
@@ -455,14 +535,15 @@
       box-shadow:0 20px 40px rgba(15,23,42,.12);
       padding:10px 8px 12px;
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:2px;
       z-index:50;
       backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
     }
 
     .nav-btn{
-      color:var(--nav-text);
+      color:#9aa3b2;
       text-decoration:none;
       display:flex;
       flex-direction:column;
@@ -496,11 +577,13 @@
 
     @media (max-width:360px){
       .hero-title{
-        font-size:26px;
+        font-size:27px;
       }
-      .quick-btn{
-        font-size:15px;
+
+      .quick-grid{
+        grid-template-columns:1fr;
       }
+
       .btn-row{
         flex-direction:column;
       }
@@ -511,18 +594,8 @@
   <div class="phone-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M32 8 54 18v14c0 13.5-9.2 23.6-22 27C19.2 55.6 10 45.5 10 32V18L32 8Z" fill="url(#g1)"/>
-            <path d="M22 26h20M22 33h15" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            <path d="M20 19h24" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-            <defs>
-              <linearGradient id="g1" x1="10" y1="8" x2="54" y2="59" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#1d4ed8"/>
-                <stop offset="1" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
-          </svg>
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
         </div>
         <div class="brand-name">Colspot</div>
       </div>
@@ -533,10 +606,10 @@
     <main>
       <section class="hero">
         <div class="hero-line" id="departmentNameText">Hello, Department</div>
-        <h1 class="hero-title">
-          What would you like to
-          <span class="accent">do today?</span>
-        </h1>
+        <h1 class="hero-title">HOD Dashboard</h1>
+        <div class="hero-sub">
+          Manage your department overview, announcements, students, and recent activity.
+        </div>
       </section>
 
       <div class="message" id="pageMessageBox"></div>
@@ -544,91 +617,60 @@
       <div class="message" id="studentMessageBox"></div>
 
       <section class="screen active" id="screen-home">
-        <div class="section-head">
-          <h2 class="section-title">Department Overview</h2>
-        </div>
-
-        <section class="overview-grid">
-          <article class="overview-card blue">
-            <div class="overview-top">
-              <div class="overview-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M4 19.5V5.5A1.5 1.5 0 0 1 5.5 4H20"></path>
-                  <path d="M8 7h12v13H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
-                  <path d="M12 11h4M12 15h4"></path>
-                </svg>
-              </div>
-              <div class="overview-value" id="studentCount">0</div>
-            </div>
-            <div class="overview-label">Students</div>
+        <section class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-label">Students</div>
+            <div class="stat-value" id="studentCount">0</div>
           </article>
 
-          <article class="overview-card orange">
-            <div class="overview-top">
-              <div class="overview-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-                </svg>
-              </div>
-              <div class="overview-value" id="announcementCount">0</div>
-            </div>
-            <div class="overview-label">Announcements</div>
+          <article class="stat-card">
+            <div class="stat-label">Announcements</div>
+            <div class="stat-value" id="announcementCount">0</div>
           </article>
         </section>
 
         <div class="section-head">
-          <h2 class="section-title">Quick Actions</h2>
+          <h2 class="section-title">Quick Links</h2>
         </div>
 
         <section class="quick-grid">
-          <button class="quick-btn green" type="button" id="goSearchFromHome">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </svg>
-            <span>Open Search</span>
+          <button class="quick-card" type="button" id="goAnnouncementFromHome">
+            <div class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
+              </svg>
+            </div>
+            <div class="quick-title">Create announcement</div>
+            <div class="quick-sub">Send an update to your department quickly.</div>
           </button>
 
-          <button class="quick-btn blue" type="button" id="goAnnouncementFromHome">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M3 11v2a2 2 0 0 0 2 2h2l4 4v-4h4l5 3V6l-5 3H5a2 2 0 0 0-2 2Z"></path>
-            </svg>
-            <span>Open Announcements</span>
+          <button class="quick-card" type="button" id="goStudentsFromHome">
+            <div class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
+              </svg>
+            </div>
+            <div class="quick-title">View students</div>
+            <div class="quick-sub">Search and view students in your department.</div>
           </button>
-        </section>
-      </section>
-
-      <section class="screen" id="screen-search">
-        <div class="section-head">
-          <h2 class="section-title">Search Student</h2>
-        </div>
-
-        <section class="card">
-          <div class="field">
-            <label for="studentSearchInput">Matric number or student name</label>
-            <input id="studentSearchInput" class="input" placeholder="Enter matric number or full name">
-          </div>
-
-          <div class="btn-row">
-            <button class="mini-btn primary" id="searchStudentBtn" type="button">Search</button>
-            <button class="mini-btn secondary" id="clearStudentBtn" type="button">Clear</button>
-          </div>
         </section>
 
         <div class="section-head">
-          <h2 class="section-title">Students</h2>
+          <h2 class="section-title">Recent history</h2>
+          <button class="view-all-btn" id="viewAllHistoryBtn" type="button">View all</button>
         </div>
 
         <section class="card">
-          <div class="list-wrap" id="studentList">
-            <div class="empty">Loading students...</div>
+          <div class="list-wrap" id="homeHistoryList">
+            <div class="empty">Loading recent history...</div>
           </div>
         </section>
       </section>
 
       <section class="screen" id="screen-announcements">
         <div class="section-head">
-          <h2 class="section-title">Send Announcement</h2>
+          <h2 class="section-title">Create announcement</h2>
         </div>
 
         <section class="card">
@@ -649,12 +691,48 @@
         </section>
 
         <div class="section-head">
-          <h2 class="section-title">Announcement History</h2>
+          <h2 class="section-title">Announcement history</h2>
         </div>
 
         <section class="card">
           <div class="list-wrap" id="announcementList">
             <div class="empty">Loading announcements...</div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="screen-students">
+        <div class="section-head">
+          <h2 class="section-title">Students</h2>
+        </div>
+
+        <section class="card">
+          <div class="field">
+            <label for="studentSearchInput">Matric number or student name</label>
+            <input id="studentSearchInput" class="input" placeholder="Enter matric number or full name">
+          </div>
+
+          <div class="btn-row">
+            <button class="mini-btn primary" id="searchStudentBtn" type="button">Search</button>
+            <button class="mini-btn secondary" id="clearStudentBtn" type="button">Clear</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="list-wrap" id="studentList">
+            <div class="empty">Loading students...</div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="screen-history">
+        <div class="section-head">
+          <h2 class="section-title">All history</h2>
+        </div>
+
+        <section class="card">
+          <div class="list-wrap" id="historyList">
+            <div class="empty">Loading history...</div>
           </div>
         </section>
       </section>
@@ -667,15 +745,7 @@
         <path d="M3 10.5 12 3l9 7.5"></path>
         <path d="M5 9.5V21h14V9.5"></path>
       </svg>
-      <span>Home</span>
-    </button>
-
-    <button class="nav-btn" type="button" id="navSearchBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="m21 21-4.3-4.3"></path>
-      </svg>
-      <span>Search</span>
+      <span>Dashboard</span>
     </button>
 
     <button class="nav-btn" type="button" id="navAnnouncementsBtn">
@@ -684,6 +754,23 @@
       </svg>
       <span>Announcements</span>
     </button>
+
+    <button class="nav-btn" type="button" id="navStudentsBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5"></path>
+      </svg>
+      <span>Students</span>
+    </button>
+
+    <button class="nav-btn" type="button" id="navHistoryBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 6v6l3 3"></path>
+        <path d="M5 12a7 7 0 111.75 4.6"></path>
+        <path d="M5 8v4h4"></path>
+      </svg>
+      <span>History</span>
+    </button>
   </nav>
 
   <script>
@@ -691,14 +778,13 @@
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
       const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_SUPABASE_ANON_KEY_HERE";
       const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
+      const HISTORY_KEY = "hod_activity_history";
 
       const EDGE = {
         hodStudents: "get-hod-students",
         sendAnnouncement: "send-hod-announcement",
         getAnnouncements: "get-hod-announcements"
       };
-
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const $ = (id) => document.getElementById(id);
 
@@ -746,6 +832,26 @@
         }
       }
 
+      function getHistory() {
+        try {
+          const raw = localStorage.getItem(HISTORY_KEY);
+          const arr = JSON.parse(raw || "[]");
+          return Array.isArray(arr) ? arr : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveHistoryItem(item) {
+        try {
+          const history = getHistory();
+          history.unshift(item);
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+        } catch (err) {
+          console.error("saveHistoryItem error:", err);
+        }
+      }
+
       function requireHodSession() {
         hodSession = getAdminSession();
 
@@ -758,8 +864,8 @@
         departmentName = hodSession.department_name || "";
 
         $("departmentNameText").textContent = departmentName
-          ? `Hello, ${departmentName}`
-          : "Hello, Department";
+          ? `${schoolName ? schoolName + " • " : ""}${departmentName}`
+          : "Department";
 
         const initial = (hodSession.full_name || "H").trim().charAt(0).toUpperCase() || "H";
         $("profileLink").textContent = initial;
@@ -770,25 +876,30 @@
       function setActiveScreen(name) {
         const screens = {
           home: $("screen-home"),
-          search: $("screen-search"),
-          announcements: $("screen-announcements")
+          announcements: $("screen-announcements"),
+          students: $("screen-students"),
+          history: $("screen-history")
         };
 
         Object.values(screens).forEach((screen) => screen.classList.remove("active"));
 
         const navButtons = [
           $("navHomeBtn"),
-          $("navSearchBtn"),
-          $("navAnnouncementsBtn")
+          $("navAnnouncementsBtn"),
+          $("navStudentsBtn"),
+          $("navHistoryBtn")
         ];
         navButtons.forEach((btn) => btn.classList.remove("active"));
 
-        if (name === "search") {
-          screens.search.classList.add("active");
-          $("navSearchBtn").classList.add("active");
-        } else if (name === "announcements") {
+        if (name === "announcements") {
           screens.announcements.classList.add("active");
           $("navAnnouncementsBtn").classList.add("active");
+        } else if (name === "students") {
+          screens.students.classList.add("active");
+          $("navStudentsBtn").classList.add("active");
+        } else if (name === "history") {
+          screens.history.classList.add("active");
+          $("navHistoryBtn").classList.add("active");
         } else {
           screens.home.classList.add("active");
           $("navHomeBtn").classList.add("active");
@@ -839,6 +950,43 @@
             <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
           </article>
         `).join("");
+      }
+
+      function renderHistoryList() {
+        const allHistory = getHistory();
+        const recentTwo = allHistory.slice(0, 2);
+
+        const homeWrap = $("homeHistoryList");
+        const fullWrap = $("historyList");
+
+        const makeMarkup = (arr) => {
+          if (!arr.length) {
+            return '<div class="empty">No recent history yet.</div>';
+          }
+
+          return arr.map((item) => `
+            <article class="history-item">
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 6v6l3 3"></path>
+                  <path d="M5 12a7 7 0 111.75 4.6"></path>
+                  <path d="M5 8v4h4"></path>
+                </svg>
+              </div>
+
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(item.title || "Activity")}</h3>
+                <p class="item-sub">${escapeHtml(item.description || "")}</p>
+                <div class="history-tag">${escapeHtml(item.type || "History")}</div>
+              </div>
+
+              <div class="item-time">${escapeHtml(formatDate(item.created_at))}</div>
+            </article>
+          `).join("");
+        };
+
+        homeWrap.innerHTML = makeMarkup(recentTwo);
+        fullWrap.innerHTML = makeMarkup(allHistory);
       }
 
       async function fetchStudentsFromEdge(searchValue = "") {
@@ -914,6 +1062,15 @@
           $("announcementCount").textContent = String(result?.totals?.announcements || 0);
           renderAnnouncementList(result.recent_announcements || []);
 
+          saveHistoryItem({
+            type: "Announcement",
+            title: title,
+            description: `${departmentName || "Department"} announcement created`,
+            created_at: new Date().toISOString()
+          });
+
+          renderHistoryList();
+
           showMessage(
             "announcementMessageBox",
             result.message || "Announcement sent successfully.",
@@ -979,13 +1136,22 @@
         });
 
         $("navHomeBtn").addEventListener("click", () => setActiveScreen("home"));
-        $("navSearchBtn").addEventListener("click", () => setActiveScreen("search"));
         $("navAnnouncementsBtn").addEventListener("click", () => setActiveScreen("announcements"));
+        $("navStudentsBtn").addEventListener("click", () => setActiveScreen("students"));
+        $("navHistoryBtn").addEventListener("click", () => setActiveScreen("history"));
 
-        $("goSearchFromHome").addEventListener("click", () => setActiveScreen("search"));
+        $("goStudentsFromHome").addEventListener("click", async () => {
+          setActiveScreen("students");
+          await loadStudents("");
+        });
+
         $("goAnnouncementFromHome").addEventListener("click", async () => {
           setActiveScreen("announcements");
           await loadAnnouncements();
+        });
+
+        $("viewAllHistoryBtn").addEventListener("click", () => {
+          setActiveScreen("history");
         });
 
         $("sendAnnouncementBtn").addEventListener("click", sendAnnouncement);
@@ -1000,7 +1166,7 @@
           showMessage("studentMessageBox", "", "error");
           const q = ($("studentSearchInput").value || "").trim();
           await loadStudents(q);
-          setActiveScreen("search");
+          setActiveScreen("students");
         });
 
         $("clearStudentBtn").addEventListener("click", async () => {
@@ -1009,6 +1175,7 @@
           await loadStudents("");
         });
 
+        renderHistoryList();
         await loadCounts();
         await loadAnnouncements();
         await loadStudents("");
