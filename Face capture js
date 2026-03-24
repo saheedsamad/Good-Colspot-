@@ -12,9 +12,7 @@ const captureCanvas = document.getElementById("captureCanvas");
 const captureCtx = captureCanvas.getContext("2d");
 const capturePreview = document.getElementById("capturePreview");
 
-const cameraShell = document.getElementById("cameraShell");
 const cameraPlaceholder = document.getElementById("cameraPlaceholder");
-const faceOval = document.getElementById("faceOval");
 const cameraBadge = document.getElementById("cameraBadge");
 
 const statusTitle = document.getElementById("statusTitle");
@@ -32,7 +30,6 @@ const retakeBtn = document.getElementById("retakeBtn");
 const continueBtn = document.getElementById("continueBtn");
 const backBtn = document.getElementById("backBtn");
 
-const defaultActions = document.getElementById("defaultActions");
 const captureActions = document.getElementById("captureActions");
 
 let mediaStream = null;
@@ -89,7 +86,7 @@ function setButtonsForCaptured() {
   captureActions.classList.remove("hidden");
 }
 
-function resetSequenceUI() {
+function updateSequenceUI() {
   [sequenceCenter, sequenceLeft, sequenceRight].forEach((el) => {
     el.classList.remove("active", "done");
   });
@@ -108,11 +105,12 @@ function resetSequenceState() {
   currentStepIndex = 0;
   poseHoldFrames = 0;
   captureLocked = false;
-  resetSequenceUI();
+  updateSequenceUI();
 }
 
 function currentInstruction() {
-  const step = scanSequence[currentStepIndex];
+  const step = scanSequence[currentStepIndex] || "center";
+
   if (step === "center") return "Look straight at the camera";
   if (step === "left") return "Turn your head slightly left";
   if (step === "right") return "Turn your head slightly right";
@@ -246,9 +244,13 @@ function stopTracksOnly() {
     mediaStream.getTracks().forEach((track) => track.stop());
     mediaStream = null;
   }
+
   if (mpCamera && typeof mpCamera.stop === "function") {
-    try { mpCamera.stop(); } catch (_) {}
+    try {
+      mpCamera.stop();
+    } catch (_) {}
   }
+
   mpCamera = null;
   scanningActive = false;
 }
@@ -279,10 +281,12 @@ function buildCaptureMeta() {
 
 async function ensureSession() {
   const { data, error } = await supabaseClient.auth.getSession();
+
   if (error || !data?.session) {
     window.location.href = "index.html";
     return null;
   }
+
   return data.session;
 }
 
@@ -316,8 +320,18 @@ async function initFaceMesh() {
 
     const landmarks = faces[0];
     const centered = isFaceCentered(landmarks);
+    const expectedPose = scanSequence[currentStepIndex] || null;
+
+    if (!expectedPose) {
+      captureLocked = true;
+      scanningActive = false;
+      setCameraBadge("Capturing...");
+      setStatus("Hold still", "We are capturing your face now.");
+      setTimeout(captureFrame, 400);
+      return;
+    }
+
     const pose = computePose(landmarks);
-    const expectedPose = scanSequence[currentStepIndex];
 
     if (!centered) {
       poseHoldFrames = 0;
@@ -331,7 +345,10 @@ async function initFaceMesh() {
     if (pose === expectedPose) {
       poseHoldFrames += 1;
       showError("");
-      setStatus("Good", `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`);
+      setStatus(
+        "Good",
+        `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+      );
     } else {
       poseHoldFrames = 0;
       setStatus("Follow the guide", currentInstruction());
@@ -340,16 +357,18 @@ async function initFaceMesh() {
     if (poseHoldFrames >= 8) {
       currentStepIndex += 1;
       poseHoldFrames = 0;
-      resetSequenceUI();
+      updateSequenceUI();
 
       if (currentStepIndex >= scanSequence.length) {
         captureLocked = true;
+        scanningActive = false;
         setCameraBadge("Capturing...");
         setStatus("Hold still", "We are capturing your face now.");
-        setTimeout(captureFrame, 500);
-      } else {
-        setStatus("Next step", currentInstruction());
+        setTimeout(captureFrame, 400);
+        return;
       }
+
+      setStatus("Next step", currentInstruction());
     }
   });
 }
@@ -388,6 +407,7 @@ function captureFrame() {
 
   if (brightness < 55) {
     captureLocked = false;
+    scanningActive = true;
     showError("Lighting is too low. Move to a brighter place and try again.");
     setStatus("Lighting too low", "Please retake in better light.");
     return;
@@ -395,6 +415,7 @@ function captureFrame() {
 
   if (sharpness < 10) {
     captureLocked = false;
+    scanningActive = true;
     showError("Image is too blurry. Hold your phone steady and try again.");
     setStatus("Image too blurry", "Please retake your face.");
     return;
@@ -450,7 +471,7 @@ async function startCamera() {
     scanningActive = true;
     hidePlaceholder();
     setButtonsForLiveCamera();
-    setCameraBadge("Camera live");
+    setCameraBadge("Detecting center");
     setStatus("Face scan started", "Look straight at the camera first.");
   } catch (err) {
     showError("Camera access failed. Please allow camera permission and try again.");
@@ -522,7 +543,7 @@ function retakeCapture() {
   scanningActive = true;
   resetSequenceState();
   setButtonsForLiveCamera();
-  setCameraBadge("Camera live");
+  setCameraBadge("Detecting center");
   setStatus("Retake started", "Look straight at the camera first.");
 }
 
