@@ -590,515 +590,529 @@
   <script type="module" src="./client_supabase.js"></script>
   <script src="./guard_session.js"></script>
 
-  <script>
-    const BUCKET = "verification_uploads";
-    const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
-    const VERIFICATION_TABLE = "verification_clearance";
-    const ACCOUNT_TABLE = "student_accounts";
-    const DEBUG_MODE = false;
+<script>
+  const BUCKET = "verification_uploads";
+  const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
+  const VERIFICATION_TABLE = "verification_clearance";
+  const ACCOUNT_TABLE = "student_accounts";
+  const FACE_CAPTURE_URL = "face-capture.html";
+  const DEBUG_MODE = false;
 
-    const el = (id) => document.getElementById(id);
+  const el = (id) => document.getElementById(id);
 
-    function showErr(msg){
-      el("msgWarn").style.display = "none";
-      el("msgOk").style.display = "none";
-      el("msgErr").style.display = "block";
-      el("msgErr").textContent = msg;
-    }
+  function showErr(msg){
+    el("msgWarn").style.display = "none";
+    el("msgOk").style.display = "none";
+    el("msgErr").style.display = "block";
+    el("msgErr").textContent = msg;
+  }
 
-    function showOk(msg){
-      el("msgWarn").style.display = "none";
-      el("msgErr").style.display = "none";
-      el("msgOk").style.display = "block";
-      el("msgOk").textContent = msg;
-    }
+  function showOk(msg){
+    el("msgWarn").style.display = "none";
+    el("msgErr").style.display = "none";
+    el("msgOk").style.display = "block";
+    el("msgOk").textContent = msg;
+  }
 
-    function showWarn(msg){
-      el("msgErr").style.display = "none";
-      el("msgOk").style.display = "none";
-      el("msgWarn").style.display = "block";
-      el("msgWarn").className = "msg warn";
-      el("msgWarn").textContent = msg;
-    }
+  function showWarn(msg){
+    el("msgErr").style.display = "none";
+    el("msgOk").style.display = "none";
+    el("msgWarn").style.display = "block";
+    el("msgWarn").className = "msg warn";
+    el("msgWarn").textContent = msg;
+  }
 
-    function clearMsgs(){
-      el("msgErr").style.display = "none";
-      el("msgOk").style.display = "none";
-      el("msgWarn").style.display = "none";
-      el("msgErr").textContent = "";
-      el("msgOk").textContent = "";
-      el("msgWarn").textContent = "";
-      el("msgWarn").className = "msg";
-    }
+  function clearMsgs(){
+    el("msgErr").style.display = "none";
+    el("msgOk").style.display = "none";
+    el("msgWarn").style.display = "none";
+    el("msgErr").textContent = "";
+    el("msgOk").textContent = "";
+    el("msgWarn").textContent = "";
+    el("msgWarn").className = "msg";
+  }
 
-    function setLoading(on){
-      el("loading").style.display = on ? "block" : "none";
-      el("btnExtract").disabled = on || !pickedFile || verificationLocked;
-      el("btnContinue").disabled = on || verificationLocked;
-      el("btnCancel").disabled = on || verificationLocked;
-      el("btnReset").disabled = on || verificationLocked;
-      el("fileInput").disabled = on || verificationLocked;
-    }
+  function setLoading(on){
+    el("loading").style.display = on ? "block" : "none";
+    el("btnExtract").disabled = on || !pickedFile || verificationLocked;
+    el("btnContinue").disabled = on || verificationLocked;
+    el("btnCancel").disabled = on || verificationLocked;
+    el("btnReset").disabled = on || verificationLocked;
+    el("fileInput").disabled = on || verificationLocked;
+  }
 
-    function bytesToSize(bytes){
-      const sizes = ["Bytes","KB","MB","GB"];
-      if (!bytes && bytes !== 0) return "—";
-      if (bytes === 0) return "0 Bytes";
-      const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
-    }
+  function bytesToSize(bytes){
+    const sizes = ["Bytes","KB","MB","GB"];
+    if (!bytes && bytes !== 0) return "—";
+    if (bytes === 0) return "0 Bytes";
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
+  }
 
-    function setDebug(){}
+  function setDebug(){}
 
-    function clearDebug(){}
+  function clearDebug(){}
 
-    let pickedFile = null;
-    let uploadedPath = null;
-    let extracted = null;
-    let currentUser = null;
-    let verificationLocked = false;
+  let pickedFile = null;
+  let uploadedPath = null;
+  let extracted = null;
+  let currentUser = null;
+  let verificationLocked = false;
 
-    async function getUser(){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not loaded. Check client_supabase.js");
+  async function getUser(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not loaded. Check client_supabase.js");
 
-      const { data, error } = await sb.auth.getUser();
-      if (error) throw error;
-      if (data && data.user) return data.user;
+    const { data, error } = await sb.auth.getUser();
+    if (error) throw error;
+    if (data && data.user) return data.user;
 
-      try {
-        const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
-        if (cached && (cached.user_id || cached.id)) {
-          return {
-            id: cached.user_id || cached.id,
-            email: cached.email || null
-          };
-        }
-      } catch {}
-
-      throw new Error("Not signed in.");
-    }
-
-    async function ensureCurrentUser(){
-      if (!currentUser || !currentUser.id) {
-        currentUser = await getUser();
+    try {
+      const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
+      if (cached && (cached.user_id || cached.id)) {
+        return {
+          id: cached.user_id || cached.id,
+          email: cached.email || null
+        };
       }
+    } catch {}
 
-      if (!currentUser || !currentUser.id) {
-        throw new Error("Could not find your account. Please sign in again.");
-      }
+    throw new Error("Not signed in.");
+  }
 
-      return currentUser;
+  async function ensureCurrentUser(){
+    if (!currentUser || !currentUser.id) {
+      currentUser = await getUser();
     }
 
-    function renderPreview(file){
-      el("preview").style.display = "flex";
-      el("fileName").textContent = file.name || "Selected file";
-      el("fileSize").textContent = bytesToSize(file.size);
-
-      const thumb = el("thumb");
-      thumb.innerHTML = "";
-
-      const div = document.createElement("div");
-      div.className = "pdf";
-      div.textContent = "PDF";
-      thumb.appendChild(div);
+    if (!currentUser || !currentUser.id) {
+      throw new Error("Could not find your account. Please sign in again.");
     }
 
-    function paintExtracted(details){
-      el("vFullName").textContent = details?.full_name || "—";
-      el("vMatric").textContent = details?.matric_no || details?.matric || "—";
-      el("vSchool").textContent = details?.school_name || "—";
-      el("vDept").textContent = details?.department || "—";
-      el("vProgramme").textContent = details?.programme || "—";
-      el("vFaculty").textContent = details?.faculty || "—";
-      el("vLevel").textContent = details?.level || "—";
-      el("vSession").textContent = details?.session || "—";
-      el("vSemester").textContent = details?.semester || "—";
-    }
+    return currentUser;
+  }
 
-    function clearExtractedDetails(){
-      extracted = null;
-      uploadedPath = null;
-      el("details").style.display = "none";
-      el("vFullName").textContent = "—";
-      el("vMatric").textContent = "—";
-      el("vSchool").textContent = "—";
-      el("vDept").textContent = "—";
-      el("vProgramme").textContent = "—";
-      el("vFaculty").textContent = "—";
-      el("vLevel").textContent = "—";
-      el("vSession").textContent = "—";
-      el("vSemester").textContent = "—";
-    }
+  function renderPreview(file){
+    el("preview").style.display = "flex";
+    el("fileName").textContent = file.name || "Selected file";
+    el("fileSize").textContent = bytesToSize(file.size);
 
-    function lockVerificationUi(){
-      verificationLocked = true;
-      el("fileInput").disabled = true;
-      el("btnExtract").disabled = true;
-      el("btnReset").disabled = true;
-      el("btnContinue").disabled = true;
-      el("btnCancel").disabled = true;
-      const fileBtn = el("fileBtn");
-      fileBtn.style.pointerEvents = "none";
-      fileBtn.style.opacity = ".55";
-    }
+    const thumb = el("thumb");
+    thumb.innerHTML = "";
 
-    function resetAll(){
-      pickedFile = null;
-      uploadedPath = null;
-      extracted = null;
-      verificationLocked = false;
+    const div = document.createElement("div");
+    div.className = "pdf";
+    div.textContent = "PDF";
+    thumb.appendChild(div);
+  }
 
-      el("fileInput").value = "";
-      el("fileInput").disabled = false;
-      el("preview").style.display = "none";
-      el("btnExtract").disabled = true;
-      el("btnReset").style.display = "none";
-      el("btnReset").disabled = false;
-      el("btnContinue").disabled = false;
-      el("btnCancel").disabled = false;
-      el("details").style.display = "none";
-      clearMsgs();
-      clearDebug();
-      setLoading(false);
+  function paintExtracted(details){
+    el("vFullName").textContent = details?.full_name || "—";
+    el("vMatric").textContent = details?.matric_no || details?.matric || "—";
+    el("vSchool").textContent = details?.school_name || "—";
+    el("vDept").textContent = details?.department || "—";
+    el("vProgramme").textContent = details?.programme || "—";
+    el("vFaculty").textContent = details?.faculty || "—";
+    el("vLevel").textContent = details?.level || "—";
+    el("vSession").textContent = details?.session || "—";
+    el("vSemester").textContent = details?.semester || "—";
+  }
 
-      const fileBtn = el("fileBtn");
-      fileBtn.style.pointerEvents = "auto";
-      fileBtn.style.opacity = "1";
+  function clearExtractedDetails(){
+    extracted = null;
+    uploadedPath = null;
+    el("details").style.display = "none";
+    el("vFullName").textContent = "—";
+    el("vMatric").textContent = "—";
+    el("vSchool").textContent = "—";
+    el("vDept").textContent = "—";
+    el("vProgramme").textContent = "—";
+    el("vFaculty").textContent = "—";
+    el("vLevel").textContent = "—";
+    el("vSession").textContent = "—";
+    el("vSemester").textContent = "—";
+  }
 
-      clearExtractedDetails();
-    }
+  function lockVerificationUi(){
+    verificationLocked = true;
+    el("fileInput").disabled = true;
+    el("btnExtract").disabled = true;
+    el("btnReset").disabled = true;
+    el("btnContinue").disabled = true;
+    el("btnCancel").disabled = true;
+    const fileBtn = el("fileBtn");
+    fileBtn.style.pointerEvents = "none";
+    fileBtn.style.opacity = ".55";
+  }
 
-    async function uploadToStorage(file){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not ready.");
+  function resetAll(){
+    pickedFile = null;
+    uploadedPath = null;
+    extracted = null;
+    verificationLocked = false;
 
-      await ensureCurrentUser();
+    el("fileInput").value = "";
+    el("fileInput").disabled = false;
+    el("preview").style.display = "none";
+    el("btnExtract").disabled = true;
+    el("btnReset").style.display = "none";
+    el("btnReset").disabled = false;
+    el("btnContinue").disabled = false;
+    el("btnCancel").disabled = false;
+    el("details").style.display = "none";
+    clearMsgs();
+    clearDebug();
+    setLoading(false);
 
-      const name = "course_form_" + Date.now() + "_" + Math.random().toString(16).slice(2) + ".pdf";
-      const path = `${currentUser.id}/${name}`;
+    const fileBtn = el("fileBtn");
+    fileBtn.style.pointerEvents = "auto";
+    fileBtn.style.opacity = "1";
 
-      const { data, error } = await sb.storage
-        .from(BUCKET)
-        .upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: "application/pdf",
-        });
+    clearExtractedDetails();
+  }
 
-      if (error) throw error;
-      return path;
-    }
+  async function uploadToStorage(file){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
 
-    async function callExtractFunction(storagePath, file){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not ready.");
+    await ensureCurrentUser();
 
-      const { data: sessData, error: sessErr } = await sb.auth.getSession();
-      if (sessErr) throw sessErr;
+    const name = "course_form_" + Date.now() + "_" + Math.random().toString(16).slice(2) + ".pdf";
+    const path = `${currentUser.id}/${name}`;
 
-      const accessToken = sessData?.session?.access_token || "";
-      if (!accessToken) throw new Error("Missing authorization header. Please sign in again.");
-
-      const payload = {
-        bucket: BUCKET,
-        path: storagePath,
-        mime_type: "application/pdf",
-        file_size: file.size || null
-      };
-
-      const resp = await fetch(EXTRACT_FN_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-          "x-debug": "1"
-        },
-        body: JSON.stringify(payload),
+    const { error } = await sb.storage
+      .from(BUCKET)
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: "application/pdf",
       });
 
-      let data = null;
-      try {
-        data = await resp.json();
-      } catch {
-        data = null;
-      }
+    if (error) throw error;
+    return path;
+  }
 
-      if (!resp.ok) {
-        const msg =
-          (data && (data.error || data.message || data.details)) ||
-          `Verification failed (${resp.status})`;
-        throw new Error(msg);
-      }
+  async function callExtractFunction(storagePath, file){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
 
-      return data;
+    const { data: sessData, error: sessErr } = await sb.auth.getSession();
+    if (sessErr) throw sessErr;
+
+    const accessToken = sessData?.session?.access_token || "";
+    if (!accessToken) throw new Error("Missing authorization header. Please sign in again.");
+
+    const payload = {
+      bucket: BUCKET,
+      path: storagePath,
+      mime_type: "application/pdf",
+      file_size: file.size || null
+    };
+
+    const resp = await fetch(EXTRACT_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+        "x-debug": "1"
+      },
+      body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    try {
+      data = await resp.json();
+    } catch {
+      data = null;
     }
 
-    async function saveToVerificationTable(){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not ready.");
+    if (!resp.ok) {
+      const msg =
+        (data && (data.error || data.message || data.details)) ||
+        `Verification failed (${resp.status})`;
+      throw new Error(msg);
+    }
+
+    return data;
+  }
+
+  async function saveToVerificationTable(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
+
+    await ensureCurrentUser();
+
+    const payload = {
+      user_id: currentUser.id,
+      file_bucket: BUCKET,
+      file_path: uploadedPath,
+      full_name: extracted?.full_name || null,
+      matric_no: extracted?.matric_no || null,
+      school_name: extracted?.school_name || null,
+      department: extracted?.department || null,
+      programme: extracted?.programme || null,
+      faculty: extracted?.faculty || null,
+      level: extracted?.level || null,
+      session: extracted?.session || null,
+      semester: extracted?.semester || null,
+      extracted_json: extracted || null,
+      status: "successful"
+    };
+
+    const { data: existing, error: checkError } = await sb
+      .from(VERIFICATION_TABLE)
+      .select("id, status")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existing?.id) {
+      const { error: updateError } = await sb
+        .from(VERIFICATION_TABLE)
+        .update(payload)
+        .eq("id", existing.id);
+
+      if (updateError) throw updateError;
+      return;
+    }
+
+    const { error: insertError } = await sb
+      .from(VERIFICATION_TABLE)
+      .insert(payload);
+
+    if (insertError) throw insertError;
+  }
+
+  async function saveToStudentAccount(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
+
+    await ensureCurrentUser();
+
+    const payload = {
+      user_id: currentUser.id,
+      full_name: extracted?.full_name || null,
+      school_name: extracted?.school_name || null,
+      department: extracted?.department || null,
+      programme: extracted?.programme || null,
+      matric_number: extracted?.matric_no || null
+    };
+
+    const { error } = await sb
+      .from(ACCOUNT_TABLE)
+      .upsert(payload, { onConflict: "user_id" });
+
+    if (error) throw error;
+  }
+
+  async function checkExistingSuccessfulVerification(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
+
+    await ensureCurrentUser();
+
+    const { data, error } = await sb
+      .from(VERIFICATION_TABLE)
+      .select("id, status, full_name, matric_no, school_name, department, programme, faculty, level, session, semester, extracted_json")
+      .eq("user_id", currentUser.id)
+      .eq("status", "successful")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) return;
+    if (!data) return;
+
+    extracted = data.extracted_json || {
+      full_name: data.full_name,
+      matric_no: data.matric_no,
+      school_name: data.school_name,
+      department: data.department,
+      programme: data.programme,
+      faculty: data.faculty,
+      level: data.level,
+      session: data.session,
+      semester: data.semester
+    };
+
+    try {
+      localStorage.setItem("colspot_face_step_ready", "true");
+      localStorage.setItem("colspot_verification_done", "true");
+    } catch {}
+
+    showOk("Course form already submitted. Redirecting to face capture...");
+
+    setTimeout(() => {
+      window.location.href = FACE_CAPTURE_URL;
+    }, 500);
+  }
+
+  window.addEventListener("load", async () => {
+    try {
+      resetAll();
+      currentUser = await getUser();
+
+      if (!currentUser || !currentUser.id) {
+        throw new Error("Not signed in.");
+      }
+
+      await checkExistingSuccessfulVerification();
+    } catch (e) {
+      showErr("You need to be signed in to continue.");
+      el("btnExtract").disabled = true;
+    }
+  });
+
+  el("fileInput").addEventListener("change", (e) => {
+    clearMsgs();
+
+    if (verificationLocked) {
+      showErr("Verification already completed successfully.");
+      return;
+    }
+
+    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    if (!file) return;
+
+    const isPdf = (file.type || "") === "application/pdf";
+    if (!isPdf) {
+      resetAll();
+      showErr("Please upload PDF only.");
+      return;
+    }
+
+    const maxMb = 8;
+    if (file.size > maxMb * 1024 * 1024) {
+      resetAll();
+      showErr(`File too large. Max is ${maxMb}MB.`);
+      return;
+    }
+
+    pickedFile = file;
+    renderPreview(file);
+    el("btnExtract").disabled = false;
+    el("btnReset").style.display = "inline-flex";
+    clearExtractedDetails();
+  });
+
+  el("btnReset").addEventListener("click", () => {
+    if (verificationLocked) return;
+    resetAll();
+  });
+
+  el("btnCancel").addEventListener("click", () => {
+    if (verificationLocked) return;
+    clearMsgs();
+    clearExtractedDetails();
+    showWarn("Verification cancelled. Upload another course form PDF if you want to try again.");
+  });
+
+  el("btnExtract").addEventListener("click", async () => {
+    clearMsgs();
+
+    if (verificationLocked) {
+      showErr("Verification already completed successfully.");
+      return;
+    }
+
+    if (!pickedFile) {
+      showErr("Pick a file first.");
+      return;
+    }
+
+    try {
+      setLoading(true);
 
       await ensureCurrentUser();
 
-      const payload = {
-        user_id: currentUser.id,
-        file_bucket: BUCKET,
-        file_path: uploadedPath,
-        full_name: extracted?.full_name || null,
-        matric_no: extracted?.matric_no || null,
-        school_name: extracted?.school_name || null,
-        department: extracted?.department || null,
-        programme: extracted?.programme || null,
-        faculty: extracted?.faculty || null,
-        level: extracted?.level || null,
-        session: extracted?.session || null,
-        semester: extracted?.semester || null,
-        extracted_json: extracted || null,
-        status: "successful"
-      };
+      uploadedPath = await uploadToStorage(pickedFile);
+      const data = await callExtractFunction(uploadedPath, pickedFile);
 
-      const { data: existing, error: checkError } = await sb
-        .from(VERIFICATION_TABLE)
-        .select("id, status")
-        .eq("user_id", currentUser.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      if (!data || data.ok !== true) {
+        throw new Error("Verification failed. Please try again.");
+      }
 
-      if (checkError) throw checkError;
+      const result = data.extracted_result || null;
 
-      if (existing?.id) {
-        const { error: updateError } = await sb
-          .from(VERIFICATION_TABLE)
-          .update(payload)
-          .eq("id", existing.id);
+      if (!result) {
+        throw new Error("No details found. Upload a clearer file.");
+      }
 
-        if (updateError) throw updateError;
+      extracted = result.extracted || null;
+
+      const hasUsefulDetails =
+        extracted &&
+        (
+          extracted.full_name ||
+          extracted.matric_no ||
+          extracted.school_name ||
+          extracted.department ||
+          extracted.programme ||
+          extracted.level ||
+          extracted.session ||
+          extracted.semester
+        );
+
+      if (!hasUsefulDetails) {
+        clearExtractedDetails();
+        showErr(result.reason || "No details found. Upload a clearer PDF.");
         return;
       }
-
-      const { error: insertError } = await sb
-        .from(VERIFICATION_TABLE)
-        .insert(payload);
-
-      if (insertError) throw insertError;
-    }
-
-    async function saveToStudentAccount(){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not ready.");
-
-      await ensureCurrentUser();
-
-      const payload = {
-        user_id: currentUser.id,
-        full_name: extracted?.full_name || null,
-        school_name: extracted?.school_name || null,
-        department: extracted?.department || null,
-        programme: extracted?.programme || null,
-        matric_number: extracted?.matric_no || null
-      };
-
-      const { error } = await sb
-        .from(ACCOUNT_TABLE)
-        .upsert(payload, { onConflict: "user_id" });
-
-      if (error) throw error;
-    }
-
-    async function checkExistingSuccessfulVerification(){
-      const sb = window.supabase;
-      if (!sb) throw new Error("Supabase not ready.");
-
-      await ensureCurrentUser();
-
-      const { data, error } = await sb
-        .from(VERIFICATION_TABLE)
-        .select("id, status, full_name, matric_no, school_name, department, programme, faculty, level, session, semester, extracted_json")
-        .eq("user_id", currentUser.id)
-        .eq("status", "successful")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) return;
-      if (!data) return;
-
-      verificationLocked = true;
-      extracted = data.extracted_json || {
-        full_name: data.full_name,
-        matric_no: data.matric_no,
-        school_name: data.school_name,
-        department: data.department,
-        programme: data.programme,
-        faculty: data.faculty,
-        level: data.level,
-        session: data.session,
-        semester: data.semester
-      };
 
       paintExtracted(extracted);
       el("details").style.display = "block";
-      showOk("Verification already completed successfully.");
-      lockVerificationUi();
+
+      if (result.is_clearance_form === false) {
+        showWarn(result.reason || "We found details, but the document type is uncertain. Please review before continuing.");
+      } else {
+        showOk("Verification details are ready. Please review them and continue.");
+      }
+    } catch (e) {
+      showErr(e && e.message ? e.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  el("btnContinue").addEventListener("click", async () => {
+    clearMsgs();
+
+    if (verificationLocked) {
+      showErr("Verification already completed successfully.");
+      return;
     }
 
-    window.addEventListener("load", async () => {
-      try {
-        resetAll();
-        currentUser = await getUser();
+    if (!extracted || !uploadedPath) {
+      showErr("Please verify the course form first.");
+      return;
+    }
 
-        if (!currentUser || !currentUser.id) {
-          throw new Error("Not signed in.");
-        }
+    try {
+      setLoading(true);
 
-        await checkExistingSuccessfulVerification();
-      } catch (e) {
-        showErr("You need to be signed in to continue.");
-        el("btnExtract").disabled = true;
-      }
-    });
-
-    el("fileInput").addEventListener("change", (e) => {
-      clearMsgs();
-
-      if (verificationLocked) {
-        showErr("Verification already completed successfully.");
-        return;
-      }
-
-      const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-      if (!file) return;
-
-      const isPdf = (file.type || "") === "application/pdf";
-      if (!isPdf) {
-        resetAll();
-        showErr("Please upload PDF only.");
-        return;
-      }
-
-      const maxMb = 8;
-      if (file.size > maxMb * 1024 * 1024) {
-        resetAll();
-        showErr(`File too large. Max is ${maxMb}MB.`);
-        return;
-      }
-
-      pickedFile = file;
-      renderPreview(file);
-      el("btnExtract").disabled = false;
-      el("btnReset").style.display = "inline-flex";
-      clearExtractedDetails();
-    });
-
-    el("btnReset").addEventListener("click", () => {
-      if (verificationLocked) return;
-      resetAll();
-    });
-
-    el("btnCancel").addEventListener("click", () => {
-      if (verificationLocked) return;
-      clearMsgs();
-      clearExtractedDetails();
-      showWarn("Verification cancelled. Upload another course form PDF if you want to try again.");
-    });
-
-    el("btnExtract").addEventListener("click", async () => {
-      clearMsgs();
-
-      if (verificationLocked) {
-        showErr("Verification already completed successfully.");
-        return;
-      }
-
-      if (!pickedFile) {
-        showErr("Pick a file first.");
-        return;
-      }
+      await ensureCurrentUser();
+      await saveToVerificationTable();
+      await saveToStudentAccount();
 
       try {
-        setLoading(true);
+        localStorage.setItem("colspot_face_step_ready", "true");
+        localStorage.setItem("colspot_verification_done", "true");
+      } catch {}
 
-        await ensureCurrentUser();
+      showOk("Verification successful. Redirecting to face capture...");
 
-        uploadedPath = await uploadToStorage(pickedFile);
-        const data = await callExtractFunction(uploadedPath, pickedFile);
-
-        if (!data || data.ok !== true) {
-          throw new Error("Verification failed. Please try again.");
-        }
-
-        const result = data.extracted_result || null;
-
-        if (!result) {
-          throw new Error("No details found. Upload a clearer file.");
-        }
-
-        extracted = result.extracted || null;
-
-        const hasUsefulDetails =
-          extracted &&
-          (
-            extracted.full_name ||
-            extracted.matric_no ||
-            extracted.school_name ||
-            extracted.department ||
-            extracted.programme ||
-            extracted.level ||
-            extracted.session ||
-            extracted.semester
-          );
-
-        if (!hasUsefulDetails) {
-          clearExtractedDetails();
-          showErr(result.reason || "No details found. Upload a clearer PDF.");
-          return;
-        }
-
-        paintExtracted(extracted);
-        el("details").style.display = "block";
-
-        if (result.is_clearance_form === false) {
-          showWarn(result.reason || "We found details, but the document type is uncertain. Please review before continuing.");
-        } else {
-          showOk("Verification details are ready. Please review them and continue.");
-        }
-      } catch (e) {
-        showErr(e && e.message ? e.message : "Something went wrong.");
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    el("btnContinue").addEventListener("click", async () => {
-      clearMsgs();
-
-      if (verificationLocked) {
-        showErr("Verification already completed successfully.");
-        return;
-      }
-
-      if (!extracted || !uploadedPath) {
-        showErr("Please verify the course form first.");
-        return;
-      }
-
-      try {
-        setLoading(true);
-
-        await ensureCurrentUser();
-        await saveToVerificationTable();
-        await saveToStudentAccount();
-
-        showOk("Verification successful. Your details have been saved.");
-        lockVerificationUi();
-      } catch (e) {
-        showErr(e && e.message ? e.message : "Failed to save.");
-      } finally {
-        setLoading(false);
-      }
-    });
-  </script>
+      setTimeout(() => {
+        window.location.href = FACE_CAPTURE_URL;
+      }, 700);
+    } catch (e) {
+      showErr(e && e.message ? e.message : "Failed to save.");
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
 </body>
 </html>
