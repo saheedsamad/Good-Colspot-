@@ -1,42 +1,158 @@
-lockdown-install.js:1 SES Removing unpermitted intrinsics
-console.log("window.supabase =", window.supabase);
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-VM167:1 window.supabase = {AuthAdminApi: ƒ, AuthApiError: ƒ, AuthClient: ƒ, AuthError: ƒ, AuthImplicitGrantRedirectError: ƒ, …}
-undefined
-console.log("Supabase URL =", window.SUPABASE_URL || window.supabaseUrl || "not exposed");
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
-VM171:1 Supabase URL = not exposed
-undefined
-(async () => {
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+function mustEnv(name: string) {
+  const value = Deno.env.get(name);
+  if (!value) throw new Error(`Missing env: ${name}`);
+  return value;
+}
+
+function cleanText(value: unknown) {
+  return String(value || "").trim();
+}
+
+function normalizeSchoolName(value: unknown) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase()
+    .replace(/,\s*ADO-EKITI$/i, "");
+}
+
+serve(async (req) => {
   try {
-    const sb = window.supabase;
-    if (!sb) {
-      console.log("Supabase client is missing on this page");
-      return;
+    if (req.method === "OPTIONS") {
+      return json({ ok: true });
     }
 
-    const { data, error } = await sb
-      .from("schools")
-      .select("id, name, short_code, is_active")
-      .order("name", { ascending: true });
+    if (req.method !== "POST") {
+      return json({ ok: false, error: "POST only" }, 405);
+    }
 
-    console.log("schools data:", data);
-    console.log("schools error:", error);
+    const sb = createClient(
+      mustEnv("SUPABASE_URL"),
+      mustEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { persistSession: false } }
+    );
+
+    const body = await req.json().catch(() => ({}));
+    const hosAdminId = cleanText(body.hos_admin_id || body.hos_id);
+    const search = cleanText(body.search).toLowerCase();
+    const type = cleanText(body.type).toUpperCase();
+
+    if (!hosAdminId) {
+      return json({ ok: false, error: "hos_admin_id is required" }, 400);
+    }
+
+    const { data: hos, error: hosError } = await sb
+      .from("hos_accounts")
+      .select("id, full_name, school_name, login_id, is_active")
+      .eq("id", hosAdminId)
+      .maybeSingle();
+
+    if (hosError) {
+      return json({ ok: false, error: hosError.message }, 500);
+    }
+
+    if (!hos) {
+      return json({ ok: false, error: "HOS account not found." }, 404);
+    }
+
+    if (!hos.is_active) {
+      return json({ ok: false, error: "This HOS account is disabled." }, 403);
+    }
+
+    const normalizedHosSchool = normalizeSchoolName(hos.school_name);
+    if (!normalizedHosSchool) {
+      return json({ ok: false, error: "HOS school name is missing." }, 400);
+    }
+
+    const { data: announcementRows, error: announcementError } = await sb
+      .from("school_announcements")
+      .select(`
+        id,
+        school_name,
+        title,
+        message,
+        created_by_hos,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (announcementError) {
+      return json({ ok: false, error: announcementError.message }, 500);
+    }
+
+    let history = (announcementRows || [])
+      .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
+      .map((row) => ({
+        id: row.id,
+        action_type: "ANNOUNCEMENT_SENT",
+        type: "Announcement",
+        title: row.title || "-",
+        description: row.message || "-",
+        entity_type: "announcement",
+        entity_id: row.id,
+        payload: {
+          announcement_id: row.id,
+          school_name: row.school_name || "",
+          created_by_hos: row.created_by_hos || null,
+        },
+        created_at: row.created_at || null,
+      }));
+
+    if (type && type !== "ALL" && type !== "ANNOUNCEMENT") {
+      history = [];
+    }
+
+    if (search) {
+      history = history.filter((item) => {
+        const haystack = [
+          item.title,
+          item.description,
+          item.type,
+          item.action_type,
+          item.entity_type,
+          JSON.stringify(item.payload || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(search);
+      });
+    }
+
+    return json({
+      ok: true,
+      hos: {
+        id: hos.id,
+        full_name: hos.full_name,
+        school_name: normalizedHosSchool,
+        login_id: hos.login_id,
+      },
+      totals: {
+        history: history.length,
+      },
+      history,
+    });
   } catch (e) {
-    console.error("schools query crashed:", e);
+    console.error("get-hos-history error:", e);
+    return json({ ok: false, error: String(e) }, 500);
   }
-})();
-VM175:17 schools query crashed: TypeError: sb.from is not a function
-    at <anonymous>:10:8
-    at <anonymous>:19:3
-(anonymous) @ VM175:17
-(anonymous) @ VM175:19
-Promise {<fulfilled>: undefined}
-console.log(document.getElementById("hosSchoolName"));
-VM179:1 <select id=​"hosSchoolName" class=​"select">​…​</select>​
-undefined
-const sel = document.getElementById("hosSchoolName");
-if (sel) {
-  sel.innerHTML = '<option value="">Choose school</option><option value="Ekiti State University">Ekiti State University</option>';
-}
-'<option value="">Choose school</option><option value="Ekiti State University">Ekiti State University</option>'
+});
