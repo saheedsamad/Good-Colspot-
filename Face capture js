@@ -182,41 +182,6 @@ function drawResults(results) {
   );
 }
 
-function computeBrightness(imageData) {
-  const data = imageData.data;
-  let total = 0;
-  const pixels = data.length / 4;
-
-  for (let i = 0; i < data.length; i += 4) {
-    total += (data[i] + data[i + 1] + data[i + 2]) / 3;
-  }
-
-  return pixels ? total / pixels : 0;
-}
-
-function computeSharpness(imageData) {
-  const { data, width, height } = imageData;
-  let totalDiff = 0;
-  let samples = 0;
-
-  for (let y = 0; y < height - 1; y += 2) {
-    for (let x = 0; x < width - 1; x += 2) {
-      const i = (y * width + x) * 4;
-      const j = (y * width + (x + 1)) * 4;
-      const k = (((y + 1) * width) + x) * 4;
-
-      const a = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      const b = (data[j] + data[j + 1] + data[j + 2]) / 3;
-      const c = (data[k] + data[k + 1] + data[k + 2]) / 3;
-
-      totalDiff += Math.abs(a - b) + Math.abs(a - c);
-      samples += 2;
-    }
-  }
-
-  return samples ? totalDiff / samples : 0;
-}
-
 function hidePlaceholder() {
   cameraPlaceholder.classList.add("hidden");
 }
@@ -379,6 +344,7 @@ function captureFrame() {
 
   if (!width || !height) {
     captureLocked = false;
+    scanningActive = true;
     showError("Camera is not ready yet. Please try again.");
     return;
   }
@@ -392,35 +358,6 @@ function captureFrame() {
   captureCtx.drawImage(video, 0, 0, width, height);
   captureCtx.restore();
 
-  const sampleCanvas = document.createElement("canvas");
-  const sampleCtx = sampleCanvas.getContext("2d");
-  const sampleWidth = 220;
-  const sampleHeight = Math.round((height / width) * sampleWidth);
-
-  sampleCanvas.width = sampleWidth;
-  sampleCanvas.height = sampleHeight;
-  sampleCtx.drawImage(captureCanvas, 0, 0, sampleWidth, sampleHeight);
-
-  const imageData = sampleCtx.getImageData(0, 0, sampleWidth, sampleHeight);
-  const brightness = computeBrightness(imageData);
-  const sharpness = computeSharpness(imageData);
-
-  if (brightness < 55) {
-    captureLocked = false;
-    scanningActive = true;
-    showError("Lighting is too low. Move to a brighter place and try again.");
-    setStatus("Lighting too low", "Please retake in better light.");
-    return;
-  }
-
-  if (sharpness < 10) {
-    captureLocked = false;
-    scanningActive = true;
-    showError("Image is too blurry. Hold your phone steady and try again.");
-    setStatus("Image too blurry", "Please retake your face.");
-    return;
-  }
-
   finalBase64 = captureCanvas.toDataURL(finalMimeType, 0.95);
   showCapturedPreview(finalBase64);
 
@@ -428,7 +365,7 @@ function captureFrame() {
   setButtonsForCaptured();
   setCameraBadge("Capture ready");
   showSuccess("Face captured successfully.");
-  setStatus("Review your capture", "Retake if you want a clearer image, or continue to save.");
+  setStatus("Review your capture", "Retake if you want another image, or continue to save.");
 }
 
 async function startCamera() {
