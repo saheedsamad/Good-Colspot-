@@ -584,10 +584,10 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
 
     const EDGE = {
-      studentSummary: "hos-student-summary"
+      studentSummary: "hos-student-summary",
+      history: "get-hos-history"
     };
 
-    const HISTORY_KEY = "hos_activity_history";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let adminSession = null;
@@ -618,16 +618,6 @@
         return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
       }catch{
         return null;
-      }
-    }
-
-    function getHosHistory(){
-      try{
-        const raw = localStorage.getItem(HISTORY_KEY);
-        const arr = JSON.parse(raw || "[]");
-        return Array.isArray(arr) ? arr : [];
-      }catch{
-        return [];
       }
     }
 
@@ -677,23 +667,32 @@
       showMessage("pageErrorBox", "");
 
       try{
-        const result = await invokeEdge(EDGE.studentSummary, {
-          hos_admin_id: adminSession.id
-        });
+        const [summaryResult, historyResult] = await Promise.all([
+          invokeEdge(EDGE.studentSummary, {
+            hos_admin_id: adminSession.id
+          }),
+          invokeEdge(EDGE.history, {
+            hos_admin_id: adminSession.id,
+            type: "ALL",
+            search: ""
+          })
+        ]);
 
-        if (!result.ok){
-          throw new Error(result.error || "Could not load dashboard summary.");
+        if (!summaryResult.ok){
+          throw new Error(summaryResult.error || "Could not load dashboard summary.");
         }
 
-        const totals = result.totals || {};
+        if (!historyResult.ok){
+          throw new Error(historyResult.error || "Could not load history.");
+        }
+
+        const totals = summaryResult.totals || {};
+        const history = Array.isArray(historyResult.history) ? historyResult.history.slice(0, 2) : [];
+
         $("totalStudentCount").textContent = String(totals.students || 0);
         $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
 
-        renderHistory(
-          getHosHistory()
-            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-            .slice(0, 2)
-        );
+        renderHistory(history);
       }catch(err){
         console.error(err);
         $("totalStudentCount").textContent = "0";
