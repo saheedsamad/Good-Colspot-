@@ -1,0 +1,231 @@
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+function mustEnv(name: string) {
+  const value = Deno.env.get(name);
+  if (!value) throw new Error(`Missing env: ${name}`);
+  return value;
+}
+
+function cleanText(value: unknown) {
+  return String(value || "").trim();
+}
+
+function normalizeSchoolName(value: unknown) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase()
+    .replace(/,\s*ADO-EKITI$/i, "");
+}
+
+serve(async (req) => {
+  try {
+    if (req.method === "OPTIONS") return json({ ok: true });
+    if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405);
+
+    const sb = createClient(
+      mustEnv("SUPABASE_URL"),
+      mustEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { persistSession: false } },
+    );
+
+    const body = await req.json().catch(() => ({}));
+    const hosAdminId = cleanText(body.hos_admin_id || body.hos_id);
+    const search = cleanText(body.search).toLowerCase();
+    const type = cleanText(body.type).toUpperCase();
+
+    if (!hosAdminId) {
+      return json({ ok: false, error: "hos_admin_id is required" }, 400);
+    }
+
+    const { data: hos, error: hosError } = await sb
+      .from("hos_accounts")
+      .select("id, full_name, school_name, login_id, is_active")
+      .eq("id", hosAdminId)
+      .maybeSingle();
+
+    if (hosError) {
+      return json({ ok: false, error: hosError.message }, 500);
+    }
+
+    if (!hos) {
+      return json({ ok: false, error: "HOS account not found." }, 404);
+    }
+
+    if (!hos.is_active) {
+      return json({ ok: false, error: "This HOS account is disabled." }, 403);
+    }
+
+    const normalizedHosSchool = normalizeSchoolName(hos.school_name);
+    if (!normalizedHosSchool) {
+      return json({ ok: false, error: "HOS school name is missing." }, 400);
+    }
+
+    let history: Array<{
+      id: string | number;
+      action_type: string;
+      type: string;
+      title: string;
+      description: string;
+      entity_type: string;
+      entity_id: string | number | null;
+      payload: Record<string, unknown>;
+      created_at: string | null;
+    }> = [];
+
+    if (!type || type === "ALL" || type === "HOD" || type === "AGENT") {
+      const { data: activityRows, error: activityError } = await sb
+        .from("hos_activity_history")
+        .select(`
+          id,
+          hos_admin_id,
+          school_name,
+          action_type,
+          title,
+          description,
+          entity_type,
+          entity_id,
+          payload,
+          created_at
+        `)
+        .eq("school_name", normalizedHosSchool)
+        .order("created_at", { ascending: false });
+
+      if (activityError) {
+        return json({ ok: false, error: activityError.message }, 500);
+      }
+
+      const mappedActivity = (activityRows || [])
+        .map((row) => {
+          let uiType = "Item";
+
+          if (row.action_type === "HOD_CREATED") uiType = "HOD";
+          else if (row.action_type === "REPORT_AGENT_CREATED") uiType = "Agent";
+          else return null;
+
+          return {
+            id: row.id,
+            action_type: row.action_type,
+            type: uiType,
+            title: row.title || "-",
+            description: row.description || "-",
+            entity_type: row.entity_type || "",
+            entity_id: row.entity_id || null,
+            payload: row.payload || {},
+            created_at: row.created_at || null,
+          };
+        })
+        .filter(Boolean) as Array<{
+          id: string | number;
+          action_type: string;
+          type: string;
+          title: string;
+          description: string;
+          entity_type: string;
+          entity_id: string | number | null;
+          payload: Record<string, unknown>;
+          created_at: string | null;
+        }>;
+
+      history.push(...mappedActivity);
+    }
+
+    if (!type || type === "ALL" || type === "ANNOUNCEMENT") {
+      const { data: announcementRows, error: announcementError } = await sb
+        .from("school_announcements")
+        .select(`
+          id,
+          school_name,
+          title,
+          message,
+          created_by_hos,
+          created_at
+        `)
+        .eq("school_name", normalizedHosSchool)
+        .order("created_at", { ascending: false });
+
+      if (announcementError) {
+        return json({ ok: false, error: announcementError.message }, 500);
+      }
+
+      const mappedAnnouncements = (announcementRows || []).map((row) => ({
+        id: row.id,
+        action_type: "ANNOUNCEMENT_SENT",
+        type: "Announcement",
+        title: row.title || "-",
+        description: row.message || "-",
+        entity_type: "announcement",
+        entity_id: row.id,
+        payload: {
+          announcement_id: row.id,
+          school_name: row.school_name || "",
+          created_by_hos: row.created_by_hos || null,
+        },
+        created_at: row.created_at || null,
+      }));
+
+      history.push(...mappedAnnouncements);
+    }
+
+    if (type && type !== "ALL") {
+      history = history.filter((item) => String(item.type).toUpperCase() === type);
+    }
+
+    if (search) {
+      history = history.filter((item) => {
+        const haystack = [
+          item.title,
+          item.description,
+          item.type,
+          item.action_type,
+          item.entity_type,
+          JSON.stringify(item.payload || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(search);
+      });
+    }
+
+    history.sort((a, b) => {
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    return json({
+      ok: true,
+      hos: {
+        id: hos.id,
+        full_name: hos.full_name,
+        school_name: normalizedHosSchool,
+        login_id: hos.login_id,
+      },
+      totals: {
+        history: history.length,
+      },
+      history,
+    });
+  } catch (e) {
+    console.error("get-hos-history error:", e);
+    return json({ ok: false, error: String(e) }, 500);
+  }
+});
