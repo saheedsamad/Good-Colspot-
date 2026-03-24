@@ -83,42 +83,142 @@ serve(async (req) => {
       return json({ ok: false, error: "HOS school name is missing." }, 400);
     }
 
-    const { data: announcementRows, error: announcementError } = await sb
-      .from("school_announcements")
-      .select(`
-        id,
-        school_name,
-        title,
-        message,
-        created_by_hos,
-        created_at
-      `)
-      .order("created_at", { ascending: false });
+    let history: Array<{
+      id: string | number;
+      action_type: string;
+      type: string;
+      title: string;
+      description: string;
+      entity_type: string;
+      entity_id: string | number | null;
+      payload: Record<string, unknown>;
+      created_at: string | null;
+    }> = [];
 
-    if (announcementError) {
-      return json({ ok: false, error: announcementError.message }, 500);
+    if (!type || type === "ALL" || type === "ANNOUNCEMENT") {
+      const { data: announcementRows, error: announcementError } = await sb
+        .from("school_announcements")
+        .select(`
+          id,
+          school_name,
+          title,
+          message,
+          created_by_hos,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (announcementError) {
+        return json({ ok: false, error: announcementError.message }, 500);
+      }
+
+      const mappedAnnouncements = (announcementRows || [])
+        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
+        .map((row) => ({
+          id: row.id,
+          action_type: "ANNOUNCEMENT_SENT",
+          type: "Announcement",
+          title: row.title || "-",
+          description: row.message || "-",
+          entity_type: "announcement",
+          entity_id: row.id,
+          payload: {
+            announcement_id: row.id,
+            school_name: row.school_name || "",
+            created_by_hos: row.created_by_hos || null,
+          },
+          created_at: row.created_at || null,
+        }));
+
+      history.push(...mappedAnnouncements);
     }
 
-    let history = (announcementRows || [])
-      .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
-      .map((row) => ({
-        id: row.id,
-        action_type: "ANNOUNCEMENT_SENT",
-        type: "Announcement",
-        title: row.title || "-",
-        description: row.message || "-",
-        entity_type: "announcement",
-        entity_id: row.id,
-        payload: {
-          announcement_id: row.id,
-          school_name: row.school_name || "",
-          created_by_hos: row.created_by_hos || null,
-        },
-        created_at: row.created_at || null,
-      }));
+    if (!type || type === "ALL" || type === "HOD") {
+      const { data: hodRows, error: hodError } = await sb
+        .from("hod_accounts")
+        .select(`
+          id,
+          full_name,
+          school_name,
+          department,
+          login_id,
+          linked_email,
+          is_active,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
 
-    if (type && type !== "ALL" && type !== "ANNOUNCEMENT") {
-      history = [];
+      if (hodError) {
+        return json({ ok: false, error: hodError.message }, 500);
+      }
+
+      const mappedHods = (hodRows || [])
+        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
+        .map((row) => ({
+          id: row.id,
+          action_type: "HOD_CREATED",
+          type: "HOD",
+          title: row.full_name || "HOD account created",
+          description: `${row.department || "No department"} • ${row.login_id || "-"}`,
+          entity_type: "hod_account",
+          entity_id: row.id,
+          payload: {
+            full_name: row.full_name || "",
+            school_name: row.school_name || "",
+            department: row.department || "",
+            login_id: row.login_id || "",
+            linked_email: row.linked_email || "",
+            is_active: !!row.is_active,
+          },
+          created_at: row.created_at || null,
+        }));
+
+      history.push(...mappedHods);
+    }
+
+    if (!type || type === "ALL" || type === "AGENT") {
+      const { data: agentRows, error: agentError } = await sb
+        .from("report_agent_accounts")
+        .select(`
+          id,
+          full_name,
+          school_name,
+          login_id,
+          linked_email,
+          is_active,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (agentError) {
+        return json({ ok: false, error: agentError.message }, 500);
+      }
+
+      const mappedAgents = (agentRows || [])
+        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
+        .map((row) => ({
+          id: row.id,
+          action_type: "REPORT_AGENT_CREATED",
+          type: "Agent",
+          title: row.full_name || "Agent account created",
+          description: `${row.login_id || "-"}${row.linked_email ? " • " + row.linked_email : ""}`,
+          entity_type: "report_agent_account",
+          entity_id: row.id,
+          payload: {
+            full_name: row.full_name || "",
+            school_name: row.school_name || "",
+            login_id: row.login_id || "",
+            linked_email: row.linked_email || "",
+            is_active: !!row.is_active,
+          },
+          created_at: row.created_at || null,
+        }));
+
+      history.push(...mappedAgents);
+    }
+
+    if (type && type !== "ALL") {
+      history = history.filter((item) => String(item.type).toUpperCase() === type);
     }
 
     if (search) {
@@ -137,6 +237,12 @@ serve(async (req) => {
         return haystack.includes(search);
       });
     }
+
+    history.sort((a, b) => {
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bTime - aTime;
+    });
 
     return json({
       ok: true,
