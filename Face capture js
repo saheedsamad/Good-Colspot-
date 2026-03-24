@@ -1,0 +1,557 @@
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-enroll`;
+const SUCCESS_REDIRECT_URL = "main.html";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const video = document.getElementById("cameraVideo");
+const overlayCanvas = document.getElementById("overlayCanvas");
+const overlayCtx = overlayCanvas.getContext("2d");
+const captureCanvas = document.getElementById("captureCanvas");
+const captureCtx = captureCanvas.getContext("2d");
+const capturePreview = document.getElementById("capturePreview");
+
+const cameraShell = document.getElementById("cameraShell");
+const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+const faceOval = document.getElementById("faceOval");
+const cameraBadge = document.getElementById("cameraBadge");
+
+const statusTitle = document.getElementById("statusTitle");
+const statusSub = document.getElementById("statusSub");
+const errorMsg = document.getElementById("errorMsg");
+const successMsg = document.getElementById("successMsg");
+
+const sequenceCenter = document.getElementById("sequenceCenter");
+const sequenceLeft = document.getElementById("sequenceLeft");
+const sequenceRight = document.getElementById("sequenceRight");
+
+const startCameraBtn = document.getElementById("startCameraBtn");
+const stopCameraBtn = document.getElementById("stopCameraBtn");
+const retakeBtn = document.getElementById("retakeBtn");
+const continueBtn = document.getElementById("continueBtn");
+const backBtn = document.getElementById("backBtn");
+
+const defaultActions = document.getElementById("defaultActions");
+const captureActions = document.getElementById("captureActions");
+
+let mediaStream = null;
+let mpCamera = null;
+let faceMesh = null;
+let scanningActive = false;
+let captureLocked = false;
+let finalBase64 = null;
+let finalMimeType = "image/jpeg";
+
+let poseHoldFrames = 0;
+let currentStepIndex = 0;
+const scanSequence = ["center", "left", "right"];
+
+function showError(message) {
+  errorMsg.textContent = message || "";
+  errorMsg.classList.toggle("hidden", !message);
+}
+
+function showSuccess(message) {
+  successMsg.textContent = message || "";
+  successMsg.classList.toggle("hidden", !message);
+}
+
+function clearFlashMessages() {
+  showError("");
+  showSuccess("");
+}
+
+function setStatus(title, sub = "") {
+  statusTitle.textContent = title || "";
+  statusSub.textContent = sub || "";
+}
+
+function setCameraBadge(text) {
+  cameraBadge.textContent = text || "";
+}
+
+function setButtonsForIdle() {
+  startCameraBtn.classList.remove("hidden");
+  stopCameraBtn.classList.add("hidden");
+  captureActions.classList.add("hidden");
+}
+
+function setButtonsForLiveCamera() {
+  startCameraBtn.classList.add("hidden");
+  stopCameraBtn.classList.remove("hidden");
+  captureActions.classList.add("hidden");
+}
+
+function setButtonsForCaptured() {
+  startCameraBtn.classList.add("hidden");
+  stopCameraBtn.classList.add("hidden");
+  captureActions.classList.remove("hidden");
+}
+
+function resetSequenceUI() {
+  [sequenceCenter, sequenceLeft, sequenceRight].forEach((el) => {
+    el.classList.remove("active", "done");
+  });
+
+  if (currentStepIndex <= 0) sequenceCenter.classList.add("active");
+  if (currentStepIndex > 0) sequenceCenter.classList.add("done");
+
+  if (currentStepIndex === 1) sequenceLeft.classList.add("active");
+  if (currentStepIndex > 1) sequenceLeft.classList.add("done");
+
+  if (currentStepIndex === 2) sequenceRight.classList.add("active");
+  if (currentStepIndex > 2) sequenceRight.classList.add("done");
+}
+
+function resetSequenceState() {
+  currentStepIndex = 0;
+  poseHoldFrames = 0;
+  captureLocked = false;
+  resetSequenceUI();
+}
+
+function currentInstruction() {
+  const step = scanSequence[currentStepIndex];
+  if (step === "center") return "Look straight at the camera";
+  if (step === "left") return "Turn your head slightly left";
+  if (step === "right") return "Turn your head slightly right";
+  return "Hold still";
+}
+
+function clearOverlay() {
+  overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+}
+
+function resizeOverlayToVideo() {
+  const width = video.videoWidth || 720;
+  const height = video.videoHeight || 960;
+  overlayCanvas.width = width;
+  overlayCanvas.height = height;
+}
+
+function ratioBetween(leftX, rightX, targetX) {
+  const width = rightX - leftX;
+  if (!width || Math.abs(width) < 0.00001) return 0.5;
+  return (targetX - leftX) / width;
+}
+
+function computePose(landmarks) {
+  const leftEyeOuter = landmarks[33];
+  const rightEyeOuter = landmarks[263];
+  const noseTip = landmarks[1];
+
+  const ratio = ratioBetween(leftEyeOuter.x, rightEyeOuter.x, noseTip.x);
+
+  if (ratio >= 0.45 && ratio <= 0.55) return "center";
+  if (ratio < 0.43) return "left";
+  if (ratio > 0.57) return "right";
+  return "unknown";
+}
+
+function isFaceCentered(landmarks) {
+  const leftCheek = landmarks[234];
+  const rightCheek = landmarks[454];
+  const forehead = landmarks[10];
+  const chin = landmarks[152];
+
+  const centerX = (leftCheek.x + rightCheek.x) / 2;
+  const centerY = (forehead.y + chin.y) / 2;
+
+  return centerX >= 0.35 && centerX <= 0.65 && centerY >= 0.30 && centerY <= 0.66;
+}
+
+function drawResults(results) {
+  resizeOverlayToVideo();
+  clearOverlay();
+
+  if (!results || !results.multiFaceLandmarks || !results.multiFaceLandmarks.length) return;
+
+  const landmarks = results.multiFaceLandmarks[0];
+
+  drawConnectors(
+    overlayCtx,
+    landmarks,
+    FACEMESH_TESSELATION,
+    { color: "rgba(255,255,255,0.07)", lineWidth: 1 }
+  );
+
+  drawConnectors(
+    overlayCtx,
+    landmarks,
+    FACEMESH_FACE_OVAL,
+    { color: "rgba(59,130,246,0.95)", lineWidth: 2 }
+  );
+}
+
+function computeBrightness(imageData) {
+  const data = imageData.data;
+  let total = 0;
+  const pixels = data.length / 4;
+
+  for (let i = 0; i < data.length; i += 4) {
+    total += (data[i] + data[i + 1] + data[i + 2]) / 3;
+  }
+
+  return pixels ? total / pixels : 0;
+}
+
+function computeSharpness(imageData) {
+  const { data, width, height } = imageData;
+  let totalDiff = 0;
+  let samples = 0;
+
+  for (let y = 0; y < height - 1; y += 2) {
+    for (let x = 0; x < width - 1; x += 2) {
+      const i = (y * width + x) * 4;
+      const j = (y * width + (x + 1)) * 4;
+      const k = (((y + 1) * width) + x) * 4;
+
+      const a = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      const b = (data[j] + data[j + 1] + data[j + 2]) / 3;
+      const c = (data[k] + data[k + 1] + data[k + 2]) / 3;
+
+      totalDiff += Math.abs(a - b) + Math.abs(a - c);
+      samples += 2;
+    }
+  }
+
+  return samples ? totalDiff / samples : 0;
+}
+
+function hidePlaceholder() {
+  cameraPlaceholder.classList.add("hidden");
+}
+
+function showPlaceholder() {
+  cameraPlaceholder.classList.remove("hidden");
+}
+
+function showCapturedPreview(base64) {
+  capturePreview.src = base64;
+  capturePreview.style.display = "block";
+  capturePreview.classList.remove("hidden");
+  video.classList.add("hidden");
+}
+
+function hideCapturedPreview() {
+  capturePreview.src = "";
+  capturePreview.style.display = "none";
+  capturePreview.classList.add("hidden");
+  video.classList.remove("hidden");
+}
+
+function stopTracksOnly() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
+  }
+  if (mpCamera && typeof mpCamera.stop === "function") {
+    try { mpCamera.stop(); } catch (_) {}
+  }
+  mpCamera = null;
+  scanningActive = false;
+}
+
+function fullResetToIdle() {
+  stopTracksOnly();
+  clearOverlay();
+  finalBase64 = null;
+  hideCapturedPreview();
+  showPlaceholder();
+  setButtonsForIdle();
+  resetSequenceState();
+  clearFlashMessages();
+  setCameraBadge("Camera not started");
+  setStatus("Start camera to begin", "We will guide you step by step before capturing your face.");
+}
+
+function buildCaptureMeta() {
+  return {
+    source: "camera",
+    stepSequence: scanSequence,
+    deviceId:
+      localStorage.getItem("colspot_device_id") ||
+      localStorage.getItem("device_id") ||
+      null
+  };
+}
+
+async function ensureSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error || !data?.session) {
+    window.location.href = "index.html";
+    return null;
+  }
+  return data.session;
+}
+
+async function initFaceMesh() {
+  if (faceMesh) return;
+
+  faceMesh = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+  });
+
+  faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6
+  });
+
+  faceMesh.onResults((results) => {
+    drawResults(results);
+
+    if (!scanningActive || captureLocked) return;
+
+    const faces = results.multiFaceLandmarks || [];
+
+    if (!faces.length) {
+      poseHoldFrames = 0;
+      setCameraBadge("No face detected");
+      setStatus("Position your face inside the oval", currentInstruction());
+      return;
+    }
+
+    const landmarks = faces[0];
+    const centered = isFaceCentered(landmarks);
+    const pose = computePose(landmarks);
+    const expectedPose = scanSequence[currentStepIndex];
+
+    if (!centered) {
+      poseHoldFrames = 0;
+      setCameraBadge("Move into frame");
+      setStatus("Center your face", "Move your face into the oval and keep only one face visible.");
+      return;
+    }
+
+    setCameraBadge(`Detecting ${expectedPose}`);
+
+    if (pose === expectedPose) {
+      poseHoldFrames += 1;
+      showError("");
+      setStatus("Good", `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`);
+    } else {
+      poseHoldFrames = 0;
+      setStatus("Follow the guide", currentInstruction());
+    }
+
+    if (poseHoldFrames >= 8) {
+      currentStepIndex += 1;
+      poseHoldFrames = 0;
+      resetSequenceUI();
+
+      if (currentStepIndex >= scanSequence.length) {
+        captureLocked = true;
+        setCameraBadge("Capturing...");
+        setStatus("Hold still", "We are capturing your face now.");
+        setTimeout(captureFrame, 500);
+      } else {
+        setStatus("Next step", currentInstruction());
+      }
+    }
+  });
+}
+
+function captureFrame() {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+
+  if (!width || !height) {
+    captureLocked = false;
+    showError("Camera is not ready yet. Please try again.");
+    return;
+  }
+
+  captureCanvas.width = width;
+  captureCanvas.height = height;
+
+  captureCtx.save();
+  captureCtx.translate(width, 0);
+  captureCtx.scale(-1, 1);
+  captureCtx.drawImage(video, 0, 0, width, height);
+  captureCtx.restore();
+
+  const sampleCanvas = document.createElement("canvas");
+  const sampleCtx = sampleCanvas.getContext("2d");
+  const sampleWidth = 220;
+  const sampleHeight = Math.round((height / width) * sampleWidth);
+
+  sampleCanvas.width = sampleWidth;
+  sampleCanvas.height = sampleHeight;
+  sampleCtx.drawImage(captureCanvas, 0, 0, sampleWidth, sampleHeight);
+
+  const imageData = sampleCtx.getImageData(0, 0, sampleWidth, sampleHeight);
+  const brightness = computeBrightness(imageData);
+  const sharpness = computeSharpness(imageData);
+
+  if (brightness < 55) {
+    captureLocked = false;
+    showError("Lighting is too low. Move to a brighter place and try again.");
+    setStatus("Lighting too low", "Please retake in better light.");
+    return;
+  }
+
+  if (sharpness < 10) {
+    captureLocked = false;
+    showError("Image is too blurry. Hold your phone steady and try again.");
+    setStatus("Image too blurry", "Please retake your face.");
+    return;
+  }
+
+  finalBase64 = captureCanvas.toDataURL(finalMimeType, 0.95);
+  showCapturedPreview(finalBase64);
+
+  scanningActive = false;
+  setButtonsForCaptured();
+  setCameraBadge("Capture ready");
+  showSuccess("Face captured successfully.");
+  setStatus("Review your capture", "Retake if you want a clearer image, or continue to save.");
+}
+
+async function startCamera() {
+  clearFlashMessages();
+  await ensureSession();
+
+  try {
+    stopTracksOnly();
+    hideCapturedPreview();
+    showPlaceholder();
+    resetSequenceState();
+    finalBase64 = null;
+
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width: { ideal: 720 },
+        height: { ideal: 960 }
+      },
+      audio: false
+    });
+
+    video.srcObject = mediaStream;
+    await video.play();
+
+    await initFaceMesh();
+
+    mpCamera = new Camera(video, {
+      onFrame: async () => {
+        if (faceMesh) {
+          await faceMesh.send({ image: video });
+        }
+      },
+      width: 720,
+      height: 960
+    });
+
+    await mpCamera.start();
+
+    scanningActive = true;
+    hidePlaceholder();
+    setButtonsForLiveCamera();
+    setCameraBadge("Camera live");
+    setStatus("Face scan started", "Look straight at the camera first.");
+  } catch (err) {
+    showError("Camera access failed. Please allow camera permission and try again.");
+    setStatus("Camera access failed", "Permission is required to continue.");
+    fullResetToIdle();
+  }
+}
+
+async function uploadToEdge() {
+  clearFlashMessages();
+
+  const session = await ensureSession();
+  if (!session) return;
+
+  if (!finalBase64) {
+    showError("No captured image found. Please retake your face.");
+    return;
+  }
+
+  continueBtn.disabled = true;
+  retakeBtn.disabled = true;
+  setStatus("Saving your face...", "Please wait while we upload your face image and create your embedding.");
+  setCameraBadge("Uploading...");
+
+  try {
+    const res = await fetch(EDGE_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        imageBase64: finalBase64,
+        mimeType: finalMimeType,
+        captureMeta: buildCaptureMeta()
+      })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || "Failed to save face.");
+    }
+
+    localStorage.setItem("colspot_face_enrolled", "true");
+    localStorage.removeItem("colspot_face_step_ready");
+
+    showSuccess("Face verification completed successfully.");
+    setStatus("Face saved", "Your face image and embedding have been saved.");
+    setCameraBadge("Done");
+
+    setTimeout(() => {
+      window.location.href = SUCCESS_REDIRECT_URL;
+    }, 1200);
+  } catch (err) {
+    continueBtn.disabled = false;
+    retakeBtn.disabled = false;
+    showError(err?.message || "Could not save your face. Please try again.");
+    setStatus("Upload failed", "Please check your connection and try again.");
+    setCameraBadge("Capture ready");
+  }
+}
+
+function retakeCapture() {
+  clearFlashMessages();
+  hideCapturedPreview();
+  finalBase64 = null;
+  captureLocked = false;
+  scanningActive = true;
+  resetSequenceState();
+  setButtonsForLiveCamera();
+  setCameraBadge("Camera live");
+  setStatus("Retake started", "Look straight at the camera first.");
+}
+
+backBtn.addEventListener("click", () => {
+  window.history.back();
+});
+
+startCameraBtn.addEventListener("click", startCamera);
+
+stopCameraBtn.addEventListener("click", () => {
+  fullResetToIdle();
+});
+
+retakeBtn.addEventListener("click", retakeCapture);
+
+continueBtn.addEventListener("click", uploadToEdge);
+
+window.addEventListener("beforeunload", () => {
+  stopTracksOnly();
+});
+
+(async function boot() {
+  const session = await ensureSession();
+  if (!session) return;
+
+  const ready = localStorage.getItem("colspot_face_step_ready");
+  if (!ready) {
+    setStatus("Face verification", "Complete this step to finish your student verification.");
+  }
+
+  fullResetToIdle();
+})();
