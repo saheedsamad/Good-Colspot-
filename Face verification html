@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Face Verification</title>
+  <link rel="stylesheet" href="face_verification.css" />
+</head>
+<body>
+  <div class="phone-shell">
+    <main class="page">
+      <section class="hero">
+        <div class="hero-top">
+          <button type="button" class="icon-back-btn" id="faceBackBtn" aria-label="Back">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6"></path>
+            </svg>
+          </button>
+
+          <div class="hero-copy">
+            <div class="hero-line-1">Face verification</div>
+            <h1 class="hero-title">
+              Verify your<span> attendance</span>
+            </h1>
+            <p class="hero-subtitle">
+              Take a clear live face photo so Colspot can confirm it is really you before joining attendance.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="top-message-card">
+        <div class="top-message-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s-6-5.1-6-10a6 6 0 1 1 12 0c0 4.9-6 10-6 10z"></path>
+            <circle cx="12" cy="11" r="2.5"></circle>
+          </svg>
+        </div>
+        <div id="faceTopMessageText" class="top-message-text">
+          Colspot will capture and verify your face before attendance is submitted.
+        </div>
+      </div>
+
+      <div class="verify-step-card">
+        <div class="verify-step-pill active">
+          <span class="verify-step-number">1</span>
+          <span class="verify-step-text">Open camera</span>
+        </div>
+        <div class="verify-step-pill">
+          <span class="verify-step-number">2</span>
+          <span class="verify-step-text">Capture face</span>
+        </div>
+        <div class="verify-step-pill">
+          <span class="verify-step-number">3</span>
+          <span class="verify-step-text">Verify</span>
+        </div>
+      </div>
+
+      <section class="camera-card">
+        <div class="camera-card-head">
+          <div>
+            <div class="camera-card-title">Live camera</div>
+            <div id="faceStatusText" class="camera-card-subtitle">
+              Camera is not started yet.
+            </div>
+          </div>
+
+          <div class="camera-badge" id="faceCameraBadge">Ready</div>
+        </div>
+
+        <div class="camera-stage" id="cameraStage">
+          <video
+            id="faceVideo"
+            class="camera-video"
+            autoplay
+            muted
+            playsinline
+          ></video>
+
+          <canvas id="faceCanvas" class="camera-canvas"></canvas>
+
+          <div id="faceGuideOverlay" class="face-guide-overlay">
+            <div class="face-frame"></div>
+            <div class="face-guide-text">
+              Keep your face inside the frame
+            </div>
+          </div>
+
+          <div id="facePreviewWrap" class="face-preview-wrap hidden">
+            <img id="facePreviewImage" class="face-preview-image" alt="Captured face preview" />
+          </div>
+        </div>
+
+        <div class="camera-action-row">
+          <button type="button" class="action-btn secondary" id="startCameraBtn">
+            Start camera
+          </button>
+          <button type="button" class="action-btn secondary" id="retakeFaceBtn" disabled>
+            Retake
+          </button>
+        </div>
+
+        <button type="button" class="primary-action-btn" id="captureFaceBtn" disabled>
+          Capture face
+        </button>
+      </section>
+
+      <section class="tips-card">
+        <div class="tips-card-head">
+          <div class="tips-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+              <path d="M12 2a7 7 0 0 0-4 12.8c.7.5 1.1 1.1 1.3 1.7h5.4c.2-.6.6-1.2 1.3-1.7A7 7 0 0 0 12 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="tips-title">Before you continue</div>
+            <div class="tips-subtitle">
+              Follow these simple tips for better face verification.
+            </div>
+          </div>
+        </div>
+
+        <ul class="tips-list">
+          <li>Use your live front camera only. Do not use another phone or screen.</li>
+          <li>Stay in good light and keep only your face inside the frame.</li>
+          <li>Remove cap or anything blocking your face if possible.</li>
+          <li>Hold your phone steady and look straight into the camera.</li>
+        </ul>
+      </section>
+
+      <section class="verify-result-card">
+        <div class="verify-result-head">
+          <div class="verify-result-title">Verification result</div>
+          <div id="faceResultPill" class="verify-result-pill neutral">Waiting</div>
+        </div>
+
+        <p id="faceResultText" class="verify-result-text">
+          Capture your face to continue.
+        </p>
+
+        <div id="faceErrorBox" class="message-box error hidden"></div>
+        <div id="faceSuccessBox" class="message-box success hidden"></div>
+      </section>
+
+      <div class="bottom-action-stack">
+        <button type="button" class="primary-action-btn verify-btn" id="verifyFaceBtn" disabled>
+          Verify and continue
+        </button>
+
+        <button type="button" class="ghost-btn" id="cancelFaceBtn">
+          Cancel
+        </button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
