@@ -579,13 +579,13 @@
 
 <script>
   (() => {
-    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
     const EDGE = {
       studentSummary: "hos-student-summary",
-      history: "get-hos-history"
+      sendAnnouncement: "hos-send-announcement",
+      createHod: "create-hod-account"
     };
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -621,15 +621,18 @@
       }
     }
 
-    function showMessage(id, text){
+    function showMessage(id, text, type){
       const box = $(id);
+      if (!box) return;
+
       if (!text){
         box.textContent = "";
         box.className = "message";
         return;
       }
+
       box.textContent = text;
-      box.className = "message error";
+      box.className = `message ${type === "success" ? "success" : "error"}`;
     }
 
     function requireHosSession(){
@@ -646,8 +649,19 @@
         adminSession.schoolName ||
         "";
 
-      $("schoolNameText").textContent = currentSchoolName || "School";
-      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      if ($("schoolNameText")) {
+        $("schoolNameText").textContent = currentSchoolName || "School not found";
+      }
+
+      const initial = (adminSession.full_name || "H")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "H";
+
+      if ($("avatarChip")) {
+        $("avatarChip").textContent = initial;
+      }
+
       return true;
     }
 
@@ -663,91 +677,255 @@
       return data || {};
     }
 
-    async function loadDashboardData(){
-      showMessage("pageErrorBox", "");
+    function renderStudentList(rows){
+      const wrap = $("studentList");
+      if (!wrap) return;
 
-      try{
-        const [summaryResult, historyResult] = await Promise.all([
-          invokeEdge(EDGE.studentSummary, {
-            hos_admin_id: adminSession.id
-          }),
-          invokeEdge(EDGE.history, {
-            hos_admin_id: adminSession.id,
-            type: "ALL",
-            search: ""
-          })
-        ]);
-
-        if (!summaryResult.ok){
-          throw new Error(summaryResult.error || "Could not load dashboard summary.");
-        }
-
-        if (!historyResult.ok){
-          throw new Error(historyResult.error || "Could not load history.");
-        }
-
-        const totals = summaryResult.totals || {};
-        const history = Array.isArray(historyResult.history) ? historyResult.history.slice(0, 2) : [];
-
-        $("totalStudentCount").textContent = String(totals.students || 0);
-        $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
-
-        renderHistory(history);
-      }catch(err){
-        console.error(err);
-        $("totalStudentCount").textContent = "0";
-        $("totalAnnouncementCount").textContent = "0";
-        renderHistory([]);
-        showMessage("pageErrorBox", err.message || "Could not load dashboard data.");
-      }
-    }
-
-    function renderHistory(items){
-      const wrap = $("historyList");
-
-      if (!items || !items.length){
-        wrap.innerHTML = '<div class="empty">No recent history yet.</div>';
+      if (!rows || !rows.length){
+        wrap.innerHTML = '<div class="empty">No students found for this school.</div>';
         return;
       }
 
-      wrap.innerHTML = items.map((item) => `
+      wrap.innerHTML = rows.map((item) => `
         <div class="history-card">
           <div class="history-top">
             <div>
-              <div class="history-title">${escapeHtml(item.title || "-")}</div>
-              <div class="history-sub">${escapeHtml(item.description || "-")}</div>
+              <div class="history-title">${escapeHtml(item.full_name || "No name")}</div>
+              <div class="history-sub">${escapeHtml(item.matric_number || "No matric number")}</div>
             </div>
-            <div class="pill">${escapeHtml(item.type || "Item")}</div>
+            <div class="pill">Student</div>
+          </div>
+          <div class="history-sub">Faculty: ${escapeHtml(item.faculty || "-")}</div>
+          <div class="history-sub">Department: ${escapeHtml(item.department || "-")}</div>
+          <div class="history-sub">Programme: ${escapeHtml(item.programme || "-")}</div>
+          <div class="history-sub">Level: ${escapeHtml(item.level || "-")}</div>
+          <div class="history-sub">School: ${escapeHtml(item.school_name || "-")}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderAnnouncementList(rows){
+      const wrap = $("announcementList");
+      if (!wrap) return;
+
+      if (!rows || !rows.length){
+        wrap.innerHTML = '<div class="empty">No announcements yet for this school.</div>';
+        return;
+      }
+
+      wrap.innerHTML = rows.map((item) => `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-title">${escapeHtml(item.title || "Untitled announcement")}</div>
+              <div class="history-sub">${escapeHtml((item.message || "").slice(0, 160) || "-")}</div>
+            </div>
+            <div class="pill">School</div>
           </div>
           <div class="history-sub">Created: ${escapeHtml(formatDate(item.created_at))}</div>
         </div>
       `).join("");
     }
 
+    async function loadStudentData(){
+      if ($("totalStudentCount")) $("totalStudentCount").textContent = "--";
+      if ($("totalStudentShown")) $("totalStudentShown").textContent = "--";
+      showMessage("pageErrorBox", "", "error");
+
+      try{
+        const result = await invokeEdge(EDGE.studentSummary, {
+          hos_admin_id: adminSession.id
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not load dashboard summary.");
+        }
+
+        const totals = result.totals || {};
+        const students = Array.isArray(result.students) ? result.students : [];
+        const recentAnnouncements = Array.isArray(result.recent_announcements)
+          ? result.recent_announcements
+          : [];
+
+        if ($("totalStudentCount")) $("totalStudentCount").textContent = String(totals.students || 0);
+        if ($("totalStudentShown")) $("totalStudentShown").textContent = String(students.length || 0);
+        if ($("totalAnnouncementCount")) $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+        if ($("totalAnnouncementShown")) $("totalAnnouncementShown").textContent = String(recentAnnouncements.length || 0);
+
+        renderStudentList(students);
+        renderAnnouncementList(recentAnnouncements);
+      }catch(err){
+        console.error(err);
+        if ($("totalStudentCount")) $("totalStudentCount").textContent = "0";
+        if ($("totalStudentShown")) $("totalStudentShown").textContent = "0";
+        if ($("totalAnnouncementCount")) $("totalAnnouncementCount").textContent = "0";
+        if ($("totalAnnouncementShown")) $("totalAnnouncementShown").textContent = "0";
+        renderStudentList([]);
+        renderAnnouncementList([]);
+        showMessage("pageErrorBox", err.message || "Could not load dashboard data.", "error");
+      }
+    }
+
+    async function createHodAccount(){
+      showMessage("hodMessageBox", "", "error");
+      if ($("hodResultCard")) $("hodResultCard").classList.remove("show");
+
+      const fullName = ($("hodFullName")?.value || "").trim();
+      const departmentName = ($("hodDepartment")?.value || "").trim();
+
+      if (!fullName){
+        showMessage("hodMessageBox", "Please enter the full name.", "error");
+        return;
+      }
+
+      if (!departmentName){
+        showMessage("hodMessageBox", "Please enter the department.", "error");
+        return;
+      }
+
+      const btn = $("createHodBtn");
+      if (btn) btn.disabled = true;
+
+      try{
+        const result = await invokeEdge(EDGE.createHod, {
+          hos_admin_id: adminSession.id,
+          full_name: fullName,
+          department_name: departmentName
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not create HOD account.");
+        }
+
+        const account = result.hod_account || {};
+
+        if ($("resultHodName")) $("resultHodName").textContent = account.full_name || fullName;
+        if ($("resultHodDepartment")) $("resultHodDepartment").textContent = account.department_name || departmentName;
+        if ($("resultHodLoginId")) $("resultHodLoginId").textContent = account.login_id || "-";
+        if ($("resultHodPassword")) $("resultHodPassword").textContent = result.temporary_password || "-";
+
+        if ($("hodResultCard")) $("hodResultCard").classList.add("show");
+        if ($("hodFullName")) $("hodFullName").value = "";
+        if ($("hodDepartment")) $("hodDepartment").value = "";
+
+        showMessage("hodMessageBox", result.message || "HOD account created successfully.", "success");
+      }catch(err){
+        console.error(err);
+        showMessage("hodMessageBox", err.message || "Could not create HOD account.", "error");
+      }finally{
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function clearHodForm(){
+      if ($("hodFullName")) $("hodFullName").value = "";
+      if ($("hodDepartment")) $("hodDepartment").value = "";
+      if ($("hodResultCard")) $("hodResultCard").classList.remove("show");
+      showMessage("hodMessageBox", "", "error");
+    }
+
+    async function sendAnnouncement(){
+      showMessage("announcementMessageBox", "", "error");
+
+      const title = ($("announcementTitle")?.value || "").trim();
+      const message = ($("announcementBody")?.value || "").trim();
+
+      if (!title){
+        showMessage("announcementMessageBox", "Please enter the title.", "error");
+        return;
+      }
+
+      if (!message){
+        showMessage("announcementMessageBox", "Please enter the message.", "error");
+        return;
+      }
+
+      const btn = $("sendAnnouncementBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+      }
+
+      try{
+        const result = await invokeEdge(EDGE.sendAnnouncement, {
+          hos_admin_id: adminSession.id,
+          title,
+          message
+        });
+
+        if (!result.ok){
+          throw new Error(result.error || "Could not send announcement.");
+        }
+
+        if ($("announcementTitle")) $("announcementTitle").value = "";
+        if ($("announcementBody")) $("announcementBody").value = "";
+
+        const totals = result.totals || {};
+        const recentAnnouncements = Array.isArray(result.recent_announcements)
+          ? result.recent_announcements
+          : [];
+
+        if ($("totalAnnouncementCount")) {
+          $("totalAnnouncementCount").textContent = String(totals.announcements || 0);
+        }
+        if ($("totalAnnouncementShown")) {
+          $("totalAnnouncementShown").textContent = String(recentAnnouncements.length || 0);
+        }
+
+        renderAnnouncementList(recentAnnouncements);
+
+        const push = result.push || {};
+        const successCount = Number(push.success_count || 0);
+        const activeTokens = Number(push.active_tokens || 0);
+
+        let successText = result.message || "Announcement sent successfully.";
+        if (activeTokens > 0) {
+          successText += ` Push sent to ${successCount} device${successCount === 1 ? "" : "s"}.`;
+        } else {
+          successText += " No active phone tokens were found.";
+        }
+
+        showMessage("announcementMessageBox", successText, "success");
+      }catch(err){
+        console.error(err);
+        showMessage("announcementMessageBox", err.message || "Could not send announcement.", "error");
+      }finally{
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Send announcement";
+        }
+      }
+    }
+
+    function clearAnnouncementForm(){
+      if ($("announcementTitle")) $("announcementTitle").value = "";
+      if ($("announcementBody")) $("announcementBody").value = "";
+      showMessage("announcementMessageBox", "", "error");
+    }
+
+    async function refreshAnnouncementHistoryOnly(){
+      showMessage("announcementMessageBox", "", "error");
+      await loadStudentData();
+    }
+
+    function logoutAdmin(){
+      localStorage.removeItem("colspot_admin_session");
+      localStorage.removeItem("colspot_pending_admin");
+      window.location.href = "index.html";
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       if (!requireHosSession()) return;
 
-      $("avatarChip").addEventListener("click", () => {
-        window.location.href = "hos_account.html";
-      });
+      $("refreshStudentsBtn")?.addEventListener("click", loadStudentData);
+      $("refreshAnnouncementsBtn")?.addEventListener("click", refreshAnnouncementHistoryOnly);
+      $("createHodBtn")?.addEventListener("click", createHodAccount);
+      $("clearHodBtn")?.addEventListener("click", clearHodForm);
+      $("sendAnnouncementBtn")?.addEventListener("click", sendAnnouncement);
+      $("clearAnnouncementBtn")?.addEventListener("click", clearAnnouncementForm);
+      $("logoutBtn")?.addEventListener("click", logoutAdmin);
 
-      $("goAccountsBtn").addEventListener("click", () => {
-        window.location.href = "hos_create_account.html";
-      });
-
-      $("goAnnouncementBtn").addEventListener("click", () => {
-        window.location.href = "hos_announcement.html";
-      });
-
-      $("goHistoryBtn").addEventListener("click", () => {
-        window.location.href = "hos_history.html";
-      });
-
-      $("viewHistoryBtn").addEventListener("click", () => {
-        window.location.href = "hos_history.html";
-      });
-
-      await loadDashboardData();
+      await loadStudentData();
     });
   })();
 </script>
