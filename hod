@@ -767,12 +767,12 @@
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
       const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_SUPABASE_ANON_KEY_HERE";
       const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
-      const HISTORY_KEY = "hod_activity_history";
 
       const EDGE = {
         hodStudents: "get-hod-students",
         sendAnnouncement: "send-hod-announcement",
-        getAnnouncements: "get-hod-announcements"
+        getAnnouncements: "get-hod-announcements",
+        getHistory: "get-hod-history"
       };
 
       const $ = (id) => document.getElementById(id);
@@ -818,26 +818,6 @@
           return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
         } catch {
           return null;
-        }
-      }
-
-      function getHistory() {
-        try {
-          const raw = localStorage.getItem(HISTORY_KEY);
-          const arr = JSON.parse(raw || "[]");
-          return Array.isArray(arr) ? arr : [];
-        } catch {
-          return [];
-        }
-      }
-
-      function saveHistoryItem(item) {
-        try {
-          const history = getHistory();
-          history.unshift(item);
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
-        } catch (err) {
-          console.error("saveHistoryItem error:", err);
         }
       }
 
@@ -915,10 +895,7 @@
         return result;
       }
 
-      function renderHistoryList() {
-        const allHistory = getHistory();
-        const recentTwo = allHistory.slice(0, 2);
-
+      function renderHistorySection(homeItems, allItems) {
         const homeWrap = $("homeHistoryList");
         const fullWrap = $("historyList");
 
@@ -948,8 +925,25 @@
           `).join("");
         };
 
-        homeWrap.innerHTML = makeMarkup(recentTwo);
-        fullWrap.innerHTML = makeMarkup(allHistory);
+        homeWrap.innerHTML = makeMarkup(homeItems);
+        fullWrap.innerHTML = makeMarkup(allItems);
+      }
+
+      async function loadHistory() {
+        try {
+          const result = await invokeEdge(EDGE.getHistory, {
+            hod_id: hodSession.id,
+            search: ""
+          });
+
+          const allHistory = Array.isArray(result.history) ? result.history : [];
+          const recentTwo = allHistory.slice(0, 2);
+
+          renderHistorySection(recentTwo, allHistory);
+        } catch (err) {
+          console.error("loadHistory error:", err);
+          renderHistorySection([], []);
+        }
       }
 
       async function fetchStudentsFromEdge(searchValue = "") {
@@ -1014,15 +1008,7 @@
           $("announcementBody").value = "";
 
           $("announcementCount").textContent = String(result?.totals?.announcements || 0);
-
-          saveHistoryItem({
-            type: "Announcement",
-            title: title,
-            description: `${departmentName || "Department"} announcement created`,
-            created_at: new Date().toISOString()
-          });
-
-          renderHistoryList();
+          await loadHistory();
 
           showMessage(
             "announcementMessageBox",
@@ -1127,9 +1113,9 @@
           await loadStudents("");
         });
 
-        renderHistoryList();
         await loadCounts();
         await loadAnnouncementCount();
+        await loadHistory();
         await loadStudents("");
         setActiveScreen("home");
       });
