@@ -1,0 +1,400 @@
+const SUPABASE_URL = window.SUPABASE_URL || "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+const FACE_VERIFY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-verify-attendance`;
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let mediaStream = null;
+let capturedDataUrl = "";
+let isVerifying = false;
+
+const faceVideo = document.getElementById("faceVideo");
+const faceCanvas = document.getElementById("faceCanvas");
+const faceGuideOverlay = document.getElementById("faceGuideOverlay");
+const facePreviewWrap = document.getElementById("facePreviewWrap");
+const facePreviewImage = document.getElementById("facePreviewImage");
+
+const faceStatusText = document.getElementById("faceStatusText");
+const faceCameraBadge = document.getElementById("faceCameraBadge");
+const faceResultText = document.getElementById("faceResultText");
+const faceResultPill = document.getElementById("faceResultPill");
+const faceTopMessageText = document.getElementById("faceTopMessageText");
+
+const faceErrorBox = document.getElementById("faceErrorBox");
+const faceSuccessBox = document.getElementById("faceSuccessBox");
+
+const startCameraBtn = document.getElementById("startCameraBtn");
+const captureFaceBtn = document.getElementById("captureFaceBtn");
+const retakeFaceBtn = document.getElementById("retakeFaceBtn");
+const verifyFaceBtn = document.getElementById("verifyFaceBtn");
+const cancelFaceBtn = document.getElementById("cancelFaceBtn");
+const faceBackBtn = document.getElementById("faceBackBtn");
+
+function parseParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    returnTo: params.get("returnTo") || "near_attendance.html",
+    sessionId: params.get("sessionId") || "",
+    courseCode: params.get("courseCode") || "",
+    threshold: Number(params.get("threshold") || 0.7),
+  };
+}
+
+const pageParams = parseParams();
+
+function setTopMessage(text) {
+  if (faceTopMessageText) faceTopMessageText.textContent = text || "";
+}
+
+function setStatus(text) {
+  if (faceStatusText) faceStatusText.textContent = text || "";
+}
+
+function setCameraBadge(text) {
+  if (faceCameraBadge) faceCameraBadge.textContent = text || "";
+}
+
+function setResultPill(mode, text) {
+  if (!faceResultPill) return;
+  faceResultPill.className = "verify-result-pill";
+  if (mode === "success") {
+    faceResultPill.classList.add("success");
+  } else if (mode === "error") {
+    faceResultPill.classList.add("error");
+  } else {
+    faceResultPill.classList.add("neutral");
+  }
+  faceResultPill.textContent = text || "Waiting";
+}
+
+function setResultText(text) {
+  if (faceResultText) faceResultText.textContent = text || "";
+}
+
+function showError(text) {
+  if (!faceErrorBox) return;
+  faceErrorBox.textContent = text || "";
+  faceErrorBox.classList.remove("hidden");
+}
+
+function hideError() {
+  if (!faceErrorBox) return;
+  faceErrorBox.textContent = "";
+  faceErrorBox.classList.add("hidden");
+}
+
+function showSuccess(text) {
+  if (!faceSuccessBox) return;
+  faceSuccessBox.textContent = text || "";
+  faceSuccessBox.classList.remove("hidden");
+}
+
+function hideSuccess() {
+  if (!faceSuccessBox) return;
+  faceSuccessBox.textContent = "";
+  faceSuccessBox.classList.add("hidden");
+}
+
+function resetResultUi() {
+  hideError();
+  hideSuccess();
+  setResultPill("neutral", "Waiting");
+  setResultText("Capture your face to continue.");
+}
+
+function setButtonState() {
+  const hasStream = !!mediaStream;
+  const hasCapture = !!capturedDataUrl;
+
+  if (startCameraBtn) startCameraBtn.disabled = hasStream || isVerifying;
+  if (captureFaceBtn) captureFaceBtn.disabled = !hasStream || isVerifying;
+  if (retakeFaceBtn) retakeFaceBtn.disabled = !hasCapture || isVerifying;
+  if (verifyFaceBtn) verifyFaceBtn.disabled = !hasCapture || isVerifying;
+  if (cancelFaceBtn) cancelFaceBtn.disabled = isVerifying;
+  if (faceBackBtn) faceBackBtn.disabled = isVerifying;
+}
+
+function showPreview(dataUrl) {
+  if (facePreviewImage) facePreviewImage.src = dataUrl;
+  if (facePreviewWrap) facePreviewWrap.classList.remove("hidden");
+  if (faceGuideOverlay) faceGuideOverlay.classList.add("hidden");
+}
+
+function hidePreview() {
+  if (facePreviewImage) facePreviewImage.removeAttribute("src");
+  if (facePreviewWrap) facePreviewWrap.classList.add("hidden");
+  if (mediaStream && faceGuideOverlay) faceGuideOverlay.classList.remove("hidden");
+}
+
+function stopCameraTracks() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach((track) => track.stop());
+  }
+  mediaStream = null;
+
+  if (faceVideo) {
+    try {
+      faceVideo.pause();
+    } catch (_) {}
+    faceVideo.srcObject = null;
+  }
+
+  setButtonState();
+}
+
+async function ensureSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error || !data?.session) {
+    window.location.href = "index.html";
+    return null;
+  }
+
+  return data.session;
+}
+
+function buildReturnUrl(extra = {}) {
+  const url = new URL(pageParams.returnTo, window.location.href);
+
+  if (pageParams.sessionId) {
+    url.searchParams.set("verifiedSessionId", pageParams.sessionId);
+  }
+
+  if (pageParams.courseCode) {
+    url.searchParams.set("verifiedCourseCode", pageParams.courseCode);
+  }
+
+  Object.entries(extra).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === "") return;
+    url.searchParams.set(key, String(value));
+  });
+
+  return url.toString();
+}
+
+function goBackCancelled() {
+  window.location.href = buildReturnUrl({
+    faceVerified: 0,
+  });
+}
+
+async function startCamera() {
+  hideError();
+  hideSuccess();
+  capturedDataUrl = "";
+  hidePreview();
+  resetResultUi();
+
+  try {
+    await ensureSession();
+
+    stopCameraTracks();
+
+    setStatus("Requesting front camera...");
+    setCameraBadge("Opening");
+
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: "user",
+        width: { ideal: 720 },
+        height: { ideal: 960 },
+      },
+    });
+
+    faceVideo.srcObject = mediaStream;
+    await faceVideo.play();
+
+    if (faceGuideOverlay) faceGuideOverlay.classList.remove("hidden");
+
+    setStatus("Camera is live. Keep your face inside the frame.");
+    setCameraBadge("Live");
+    setTopMessage("Position your face well, then capture.");
+    setResultPill("neutral", "Ready");
+    setResultText("When your face is centered well, tap Capture face.");
+
+    setButtonState();
+  } catch (err) {
+    stopCameraTracks();
+    setStatus("Could not open camera.");
+    setCameraBadge("Blocked");
+    setResultPill("error", "Camera error");
+    setResultText("Camera access is required for attendance face verification.");
+    showError(err?.message || "Unable to start camera.");
+  }
+}
+
+function captureFace() {
+  hideError();
+  hideSuccess();
+
+  try {
+    if (!mediaStream || !faceVideo.videoWidth || !faceVideo.videoHeight) {
+      throw new Error("Camera is not ready yet.");
+    }
+
+    const width = faceVideo.videoWidth;
+    const height = faceVideo.videoHeight;
+
+    faceCanvas.width = width;
+    faceCanvas.height = height;
+
+    const ctx = faceCanvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas is not available.");
+
+    ctx.drawImage(faceVideo, 0, 0, width, height);
+    capturedDataUrl = faceCanvas.toDataURL("image/jpeg", 0.92);
+
+    showPreview(capturedDataUrl);
+
+    setStatus("Face captured successfully.");
+    setCameraBadge("Captured");
+    setResultPill("neutral", "Captured");
+    setResultText("Your face photo is ready. Tap Verify and continue.");
+    setTopMessage("Captured. You can verify now or retake if needed.");
+
+    setButtonState();
+  } catch (err) {
+    setResultPill("error", "Capture failed");
+    setResultText("Please try to capture your face again.");
+    showError(err?.message || "Could not capture face.");
+  }
+}
+
+function retakeFace() {
+  capturedDataUrl = "";
+  hidePreview();
+  hideError();
+  hideSuccess();
+
+  setStatus("Camera is live. Capture a fresh face photo.");
+  setCameraBadge(mediaStream ? "Live" : "Ready");
+  setResultPill("neutral", "Waiting");
+  setResultText("Retake your face and continue.");
+  setTopMessage("Retake your face photo for attendance verification.");
+
+  setButtonState();
+}
+
+async function verifyFaceAndContinue() {
+  if (isVerifying) return;
+
+  hideError();
+  hideSuccess();
+
+  try {
+    if (!capturedDataUrl) {
+      throw new Error("Capture your face first.");
+    }
+
+    const session = await ensureSession();
+    if (!session) return;
+
+    isVerifying = true;
+    setButtonState();
+
+    setStatus("Verifying your face...");
+    setCameraBadge("Checking");
+    setResultPill("neutral", "Verifying");
+    setResultText("Please hold on while Colspot verifies your face.");
+    setTopMessage("Verifying your face for attendance...");
+
+    const res = await fetch(FACE_VERIFY_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        imageBase64: capturedDataUrl,
+        mimeType: "image/jpeg",
+        threshold: pageParams.threshold || 0.7,
+        session_id: pageParams.sessionId || null,
+      }),
+    });
+
+    const result = await res.json().catch(() => ({}));
+
+    if (!res.ok || !result?.face_match) {
+      setStatus("Verification failed.");
+      setCameraBadge("Failed");
+      setResultPill("error", "Failed");
+      setResultText("Your face could not be verified for attendance.");
+      showError(result?.error || "Face verification failed. Please retake and try again.");
+      return;
+    }
+
+    setStatus("Face verified successfully.");
+    setCameraBadge("Verified");
+    setResultPill("success", "Verified");
+    setResultText(
+      `Verification passed${result?.similarity ? ` • Similarity ${Number(result.similarity).toFixed(2)}` : ""}. Returning to attendance...`
+    );
+    showSuccess("Face verified successfully. Returning to attendance...");
+    setTopMessage("Verification successful. Returning to attendance...");
+
+    setTimeout(() => {
+      window.location.href = buildReturnUrl({
+        faceVerified: 1,
+        similarity: result?.similarity ?? "",
+        threshold: result?.threshold ?? pageParams.threshold ?? 0.7,
+      });
+    }, 900);
+  } catch (err) {
+    setStatus("Verification failed.");
+    setCameraBadge("Failed");
+    setResultPill("error", "Error");
+    setResultText("Something went wrong during face verification.");
+    showError(err?.message || "Unable to verify face right now.");
+  } finally {
+    isVerifying = false;
+    setButtonState();
+  }
+}
+
+function bindEvents() {
+  if (startCameraBtn) startCameraBtn.addEventListener("click", startCamera);
+  if (captureFaceBtn) captureFaceBtn.addEventListener("click", captureFace);
+  if (retakeFaceBtn) retakeFaceBtn.addEventListener("click", retakeFace);
+  if (verifyFaceBtn) verifyFaceBtn.addEventListener("click", verifyFaceAndContinue);
+  if (cancelFaceBtn) cancelFaceBtn.addEventListener("click", goBackCancelled);
+  if (faceBackBtn) faceBackBtn.addEventListener("click", goBackCancelled);
+
+  window.addEventListener("beforeunload", stopCameraTracks);
+}
+
+async function init() {
+  try {
+    setTopMessage("Colspot will capture and verify your face before attendance is submitted.");
+    setStatus("Camera is not started yet.");
+    setCameraBadge("Ready");
+    resetResultUi();
+    setButtonState();
+
+    if (!window.supabase?.createClient) {
+      throw new Error("Supabase library is not loaded.");
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error("Missing Supabase URL or anon key.");
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error("This device does not support camera access.");
+    }
+
+    await ensureSession();
+  } catch (err) {
+    setResultPill("error", "Unavailable");
+    setResultText("Face verification cannot start on this device.");
+    showError(err?.message || "Face verification is unavailable.");
+
+    if (startCameraBtn) startCameraBtn.disabled = true;
+    if (captureFaceBtn) captureFaceBtn.disabled = true;
+    if (verifyFaceBtn) verifyFaceBtn.disabled = true;
+    if (retakeFaceBtn) retakeFaceBtn.disabled = true;
+  }
+}
+
+bindEvents();
+init();
