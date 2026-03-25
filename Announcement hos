@@ -210,6 +210,7 @@
       border-radius:16px;
       font-size:13px;
       line-height:1.45;
+      white-space:pre-line;
     }
 
     .message.error{
@@ -551,7 +552,6 @@
       sendAnnouncement: "hos-send-announcement"
     };
 
-    const HISTORY_KEY = "hos_activity_history";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let adminSession = null;
@@ -571,11 +571,14 @@
 
     function showMessage(id, text, type){
       const box = $(id);
+      if (!box) return;
+
       if (!text){
         box.textContent = "";
         box.className = "message";
         return;
       }
+
       box.textContent = text;
       box.className = `message ${type === "success" ? "success" : "error"}`;
     }
@@ -595,7 +598,9 @@
         "";
 
       $("schoolNameText").textContent = currentSchoolName || "School";
-      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+      $("avatarChip").textContent =
+        ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
+
       return true;
     }
 
@@ -609,18 +614,6 @@
       }
 
       return data || {};
-    }
-
-    function saveHosHistoryItem(item){
-      try{
-        const raw = localStorage.getItem(HISTORY_KEY);
-        const arr = JSON.parse(raw || "[]");
-        const history = Array.isArray(arr) ? arr : [];
-        history.unshift(item);
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
-      }catch(err){
-        console.error("Could not save HOS history item:", err);
-      }
     }
 
     function updatePreview(){
@@ -667,22 +660,23 @@
           throw new Error(result.error || "Could not send announcement.");
         }
 
-        saveHosHistoryItem({
-          type: "Announcement",
-          title: title,
-          description: "School announcement sent successfully",
-          created_at: new Date().toISOString()
-        });
-
         $("announcementTitle").value = "";
         $("announcementBody").value = "";
         updatePreview();
 
-        showMessage(
-          "announcementMessageBox",
-          result.message || "Announcement sent successfully.",
-          "success"
-        );
+        const push = result.push || {};
+        const recipientUsers = Number(push.recipient_users || 0);
+        const activeTokens = Number(push.active_tokens || 0);
+        const successCount = Number(push.success_count || 0);
+        const failCount = Number(push.fail_count || 0);
+
+        let successText = result.message || "Announcement sent successfully.";
+        successText += `\nRecipients: ${recipientUsers}`;
+        successText += `\nActive phones: ${activeTokens}`;
+        successText += `\nPush success: ${successCount}`;
+        successText += `\nPush failed: ${failCount}`;
+
+        showMessage("announcementMessageBox", successText, "success");
       }catch(err){
         console.error(err);
         showMessage(
