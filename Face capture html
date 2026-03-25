@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot • Face Verification</title>
+  <title>Colspot • Face Capture</title>
   <link rel="stylesheet" href="face-capture.css" />
 </head>
 <body>
@@ -18,170 +18,95 @@
         </svg>
       </button>
 
-      <div class="fc-header-text">
-        <h1>Face Verification</h1>
-        <p>Take a live selfie to complete your verification</p>
-      </div>
+      <div class="fc-header-title">Face capture</div>
     </header>
 
-    <section class="fc-card fc-steps-card">
-      <div class="fc-steps-top">
-        <span class="fc-step-kicker">Step 2 of 2</span>
-        <span class="fc-step-note">Course form completed</span>
-      </div>
+    <section class="fc-main-card">
+      <section class="fc-camera-card">
+        <div class="fc-camera-shell" id="cameraShell">
+          <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
+          <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
+          <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
+          <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
 
-      <div class="fc-steps-track">
-        <div class="fc-step-pill fc-step-done">
-          <span class="fc-step-number">1</span>
-          <span class="fc-step-label">Course Form</span>
-        </div>
-
-        <div class="fc-step-pill fc-step-active">
-          <span class="fc-step-number">2</span>
-          <span class="fc-step-label">Face Capture</span>
-        </div>
-
-        <div class="fc-step-pill">
-          <span class="fc-step-number">3</span>
-          <span class="fc-step-label">Finish</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="fc-card fc-camera-card">
-      <div class="fc-camera-shell" id="cameraShell">
-        <!-- Live video goes here later -->
-        <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
-
-        <!-- Canvas overlay for guide / landmarks later -->
-        <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
-
-        <!-- Hidden capture canvas for JS later -->
-        <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
-
-        <!-- Captured preview image -->
-        <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
-
-        <div class="fc-camera-mask"></div>
-        <div class="fc-face-oval" id="faceOval"></div>
-
-        <div class="fc-camera-badge" id="cameraBadge">
-          Camera not started
-        </div>
-
-        <div class="fc-camera-placeholder" id="cameraPlaceholder">
-          <div class="fc-camera-placeholder-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 8.5V7.8A4.8 4.8 0 0 1 11.8 3h.4A4.8 4.8 0 0 1 17 7.8v.7M5.5 21h13A2.5 2.5 0 0 0 21 18.5v-7A2.5 2.5 0 0 0 18.5 9h-13A2.5 2.5 0 0 0 3 11.5v7A2.5 2.5 0 0 0 5.5 21Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="14.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            </svg>
+          <div class="fc-camera-overlay">
+            <div class="fc-frame">
+              <div class="fc-corner tl"></div>
+              <div class="fc-corner tr"></div>
+              <div class="fc-corner bl"></div>
+              <div class="fc-corner br"></div>
+            </div>
           </div>
-          <h2>Live face capture</h2>
-          <p>Start your camera and follow the guide to look center, left, and right.</p>
-        </div>
-      </div>
 
-      <div class="fc-status-wrap">
-        <h2 class="fc-status-title" id="statusTitle">Start camera to begin</h2>
+          <div class="fc-camera-placeholder" id="cameraPlaceholder">
+            <div class="fc-camera-placeholder-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 8.5V7.8A4.8 4.8 0 0 1 11.8 3h.4A4.8 4.8 0 0 1 17 7.8v.7M5.5 21h13A2.5 2.5 0 0 0 21 18.5v-7A2.5 2.5 0 0 0 18.5 9h-13A2.5 2.5 0 0 0 3 11.5v7A2.5 2.5 0 0 0 5.5 21Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="14.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="fc-live-pill" id="cameraBadge">
+            Look straight, turn left, turn right
+          </div>
+        </div>
+
+        <div class="fc-step-track-wrap">
+          <div class="fc-step-track">
+            <div class="fc-step-line done"></div>
+            <div class="fc-step-circle done">✓</div>
+            <div class="fc-step-line done"></div>
+            <div class="fc-step-circle active">2</div>
+            <div class="fc-step-line"></div>
+            <div class="fc-step-circle">3</div>
+            <div class="fc-step-line"></div>
+          </div>
+
+          <div class="fc-step-chip" id="statusTitle">Turn left</div>
+        </div>
+
         <p class="fc-status-sub" id="statusSub">
-          We will guide you step by step before capturing your face.
+          Start your camera and follow the movement guide.
         </p>
 
         <div class="fc-status-message fc-status-message-error hidden" id="errorMsg"></div>
         <div class="fc-status-message fc-status-message-success hidden" id="successMsg"></div>
+      </section>
 
-        <div class="fc-sequence-row">
-          <div class="fc-sequence-item active" id="sequenceCenter">
-            <span class="fc-sequence-icon">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
-            </span>
-            <span class="fc-sequence-text">Center</span>
-          </div>
-
-          <div class="fc-sequence-item" id="sequenceLeft">
-            <span class="fc-sequence-icon">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M15 6.5L9 12l6 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="fc-sequence-text">Left</span>
-          </div>
-
-          <div class="fc-sequence-item" id="sequenceRight">
-            <span class="fc-sequence-icon">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 6.5L15 12l-6 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="fc-sequence-text">Right</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="fc-card fc-guidance-card">
-      <div class="fc-guidance-head">
-        <div class="fc-guidance-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3.8a6.2 6.2 0 0 0-3.7 11.2v1.3c0 .5.4.9.9.9h5.6c.5 0 .9-.4.9-.9V15A6.2 6.2 0 0 0 12 3.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M9.5 20.2h5M10.5 17.2h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <h3>Before you continue</h3>
-          <p>Follow these simple tips for a better face capture.</p>
-        </div>
-      </div>
-
-      <div class="fc-tips-list">
-        <div class="fc-tip-item">
-          <span class="fc-tip-dot"></span>
-          <span>Use your live front camera only. Do not use another phone or screen.</span>
-        </div>
-
-        <div class="fc-tip-item">
-          <span class="fc-tip-dot"></span>
-          <span>Stay in good light and keep only your face inside the frame.</span>
-        </div>
-
-        <div class="fc-tip-item">
-          <span class="fc-tip-dot"></span>
-          <span>Remove cap or anything blocking your face if possible.</span>
-        </div>
-
-        <div class="fc-tip-item">
-          <span class="fc-tip-dot"></span>
-          <span>Hold your phone steady when the system is about to capture.</span>
-        </div>
-      </div>
-    </section>
-
-        <section class="fc-card fc-actions-card">
-      <div class="fc-action-stack" id="defaultActions">
-        <button class="fc-btn fc-btn-primary" id="startCameraBtn" type="button">
-          Start Camera
+      <section class="fc-actions-card">
+        <button class="fc-btn fc-btn-white" id="startCameraBtn" type="button">
+          Start camera
         </button>
 
-        <button class="fc-btn fc-btn-secondary hidden" id="stopCameraBtn" type="button">
-          Stop Camera
-        </button>
-      </div>
+        <div class="fc-action-row hidden" id="captureActions">
+          <button class="fc-btn fc-btn-secondary" id="retakeBtn" type="button">
+            Retake
+          </button>
 
-      <div class="fc-action-row hidden" id="captureActions">
-        <button class="fc-btn fc-btn-secondary" id="retakeBtn" type="button">
-          Retake
+          <button class="fc-btn fc-btn-primary" id="continueBtn" type="button">
+            Verify and continue
+          </button>
+        </div>
+
+        <button class="fc-btn fc-btn-primary hidden" id="stopCameraBtn" type="button">
+          Stop camera
         </button>
 
-        <button class="fc-btn fc-btn-primary" id="continueBtn" type="button">
-          Continue
-        </button>
-      </div>
+        <div class="fc-bottom-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span class="active"></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
 
-      <p class="fc-bottom-note">
-        After a successful capture, your face image and embedding will be saved securely.
-      </p>
+        <button class="fc-help-link" id="whyBtn" type="button">
+          Why am I doing this?
+        </button>
+      </section>
     </section>
   </div>
 
@@ -190,5 +115,19 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
   <script src="face-capture.js"></script>
+
+  <script>
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.addEventListener("click", () => history.back());
+    }
+
+    const whyBtn = document.getElementById("whyBtn");
+    if (whyBtn) {
+      whyBtn.addEventListener("click", () => {
+        alert("This helps Colspot confirm that a real live student is completing verification.");
+      });
+    }
+  </script>
 </body>
 </html>
