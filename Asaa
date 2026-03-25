@@ -52,174 +52,71 @@ serve(async (req) => {
     );
 
     const body = await req.json().catch(() => ({}));
-    const hosAdminId = cleanText(body.hos_admin_id || body.hos_id);
+    const hodId = cleanText(body.hod_id);
     const search = cleanText(body.search).toLowerCase();
-    const type = cleanText(body.type).toUpperCase();
 
-    if (!hosAdminId) {
-      return json({ ok: false, error: "hos_admin_id is required" }, 400);
+    if (!hodId) {
+      return json({ ok: false, error: "hod_id is required" }, 400);
     }
 
-    const { data: hos, error: hosError } = await sb
-      .from("hos_accounts")
-      .select("id, full_name, school_name, login_id, is_active")
-      .eq("id", hosAdminId)
+    const { data: hod, error: hodError } = await sb
+      .from("hod_accounts")
+      .select("id, full_name, school_name, department_name, login_id, is_active")
+      .eq("id", hodId)
       .maybeSingle();
 
-    if (hosError) {
-      return json({ ok: false, error: hosError.message }, 500);
+    if (hodError) {
+      return json({ ok: false, error: hodError.message }, 500);
     }
 
-    if (!hos) {
-      return json({ ok: false, error: "HOS account not found." }, 404);
+    if (!hod) {
+      return json({ ok: false, error: "HOD account not found." }, 404);
     }
 
-    if (!hos.is_active) {
-      return json({ ok: false, error: "This HOS account is disabled." }, 403);
+    if (!hod.is_active) {
+      return json({ ok: false, error: "This HOD account is disabled." }, 403);
     }
 
-    const normalizedHosSchool = normalizeSchoolName(hos.school_name);
-    if (!normalizedHosSchool) {
-      return json({ ok: false, error: "HOS school name is missing." }, 400);
+    const normalizedHodSchool = normalizeSchoolName(hod.school_name);
+    if (!normalizedHodSchool) {
+      return json({ ok: false, error: "HOD school name is missing." }, 400);
     }
 
-    let history: Array<{
-      id: string | number;
-      action_type: string;
-      type: string;
-      title: string;
-      description: string;
-      entity_type: string;
-      entity_id: string | number | null;
-      payload: Record<string, unknown>;
-      created_at: string | null;
-    }> = [];
+    const { data: announcementRows, error: announcementError } = await sb
+      .from("school_announcements")
+      .select(`
+        id,
+        school_name,
+        title,
+        message,
+        created_by_hod,
+        created_at
+      `)
+      .eq("created_by_hod", hod.id)
+      .order("created_at", { ascending: false });
 
-    if (!type || type === "ALL" || type === "ANNOUNCEMENT") {
-      const { data: announcementRows, error: announcementError } = await sb
-        .from("school_announcements")
-        .select(`
-          id,
-          school_name,
-          title,
-          message,
-          created_by_hos,
-          created_at
-        `)
-        .order("created_at", { ascending: false });
-
-      if (announcementError) {
-        return json({ ok: false, error: announcementError.message }, 500);
-      }
-
-      const mappedAnnouncements = (announcementRows || [])
-        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
-        .map((row) => ({
-          id: row.id,
-          action_type: "ANNOUNCEMENT_SENT",
-          type: "Announcement",
-          title: row.title || "-",
-          description: row.message || "-",
-          entity_type: "announcement",
-          entity_id: row.id,
-          payload: {
-            announcement_id: row.id,
-            school_name: row.school_name || "",
-            created_by_hos: row.created_by_hos || null,
-          },
-          created_at: row.created_at || null,
-        }));
-
-      history.push(...mappedAnnouncements);
+    if (announcementError) {
+      return json({ ok: false, error: announcementError.message }, 500);
     }
 
-    if (!type || type === "ALL" || type === "HOD") {
-      const { data: hodRows, error: hodError } = await sb
-        .from("hod_accounts")
-        .select(`
-          id,
-          full_name,
-          school_name,
-          department_name,
-          login_id,
-          linked_email,
-          is_active,
-          created_at
-        `)
-        .order("created_at", { ascending: false });
-
-      if (hodError) {
-        return json({ ok: false, error: hodError.message }, 500);
-      }
-
-      const mappedHods = (hodRows || [])
-        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
-        .map((row) => ({
-          id: row.id,
-          action_type: "HOD_CREATED",
-          type: "HOD",
-          title: row.full_name || "HOD account created",
-          description: `${row.department_name || "No department"} • ${row.login_id || "-"}`,
-          entity_type: "hod_account",
-          entity_id: row.id,
-          payload: {
-            full_name: row.full_name || "",
-            school_name: row.school_name || "",
-            department_name: row.department_name || "",
-            login_id: row.login_id || "",
-            linked_email: row.linked_email || "",
-            is_active: !!row.is_active,
-          },
-          created_at: row.created_at || null,
-        }));
-
-      history.push(...mappedHods);
-    }
-
-    if (!type || type === "ALL" || type === "AGENT") {
-      const { data: agentRows, error: agentError } = await sb
-        .from("report_agent_accounts")
-        .select(`
-          id,
-          full_name,
-          school_name,
-          login_id,
-          linked_email,
-          is_active,
-          created_at
-        `)
-        .order("created_at", { ascending: false });
-
-      if (agentError) {
-        return json({ ok: false, error: agentError.message }, 500);
-      }
-
-      const mappedAgents = (agentRows || [])
-        .filter((row) => normalizeSchoolName(row.school_name) === normalizedHosSchool)
-        .map((row) => ({
-          id: row.id,
-          action_type: "REPORT_AGENT_CREATED",
-          type: "Agent",
-          title: row.full_name || "Agent account created",
-          description: `${row.login_id || "-"}${row.linked_email ? " • " + row.linked_email : ""}`,
-          entity_type: "report_agent_account",
-          entity_id: row.id,
-          payload: {
-            full_name: row.full_name || "",
-            school_name: row.school_name || "",
-            login_id: row.login_id || "",
-            linked_email: row.linked_email || "",
-            is_active: !!row.is_active,
-          },
-          created_at: row.created_at || null,
-        }));
-
-      history.push(...mappedAgents);
-    }
-
-    if (type && type !== "ALL") {
-      history = history.filter((item) => String(item.type).toUpperCase() === type);
-    }
+    let history = (announcementRows || [])
+      .filter((row) => normalizeSchoolName(row.school_name) === normalizedHodSchool)
+      .map((row) => ({
+        id: row.id,
+        action_type: "ANNOUNCEMENT_SENT",
+        type: "Announcement",
+        title: row.title || "-",
+        description: row.message || "-",
+        entity_type: "announcement",
+        entity_id: row.id,
+        payload: {
+          announcement_id: row.id,
+          school_name: row.school_name || "",
+          created_by_hod: row.created_by_hod || null,
+          department_name: hod.department_name || "",
+        },
+        created_at: row.created_at || null,
+      }));
 
     if (search) {
       history = history.filter((item) => {
@@ -238,19 +135,14 @@ serve(async (req) => {
       });
     }
 
-    history.sort((a, b) => {
-      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return bTime - aTime;
-    });
-
     return json({
       ok: true,
-      hos: {
-        id: hos.id,
-        full_name: hos.full_name,
-        school_name: normalizedHosSchool,
-        login_id: hos.login_id,
+      hod: {
+        id: hod.id,
+        full_name: hod.full_name,
+        school_name: normalizedHodSchool,
+        department_name: hod.department_name || "",
+        login_id: hod.login_id,
       },
       totals: {
         history: history.length,
@@ -258,7 +150,7 @@ serve(async (req) => {
       history,
     });
   } catch (e) {
-    console.error("get-hos-history error:", e);
+    console.error("get-hod-history error:", e);
     return json({ ok: false, error: String(e) }, 500);
   }
 });
