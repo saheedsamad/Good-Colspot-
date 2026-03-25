@@ -7,7 +7,438 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
   <title>Colspot • Face Capture</title>
-  <link rel="stylesheet" href="face-capture.css" />
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --green:#16a34a;
+      --red:#dc2626;
+      --shadow:0 18px 40px rgba(15,23,42,.10);
+      --radius:24px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .face-page{
+      width:min(100%, 460px);
+      margin:0 auto;
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 18px)
+        16px
+        calc(env(safe-area-inset-bottom, 0px) + 28px);
+    }
+
+    .fc-header{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .fc-back-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:999px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .fc-back-btn svg{
+      width:18px;
+      height:18px;
+      color:#111827;
+    }
+
+    .fc-header-text h1{
+      margin:2px 0 4px;
+      font-size:23px;
+      line-height:1.15;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .fc-header-text p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .fc-card{
+      background:var(--card);
+      border:1px solid #edf2ff;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .fc-steps-card{
+      padding:16px 14px;
+      margin-bottom:14px;
+    }
+
+    .fc-steps-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .fc-step-kicker{
+      font-size:12px;
+      font-weight:700;
+      color:var(--blue-dark);
+      background:#eaf1ff;
+      border:1px solid #d8e4ff;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+
+    .fc-step-note{
+      font-size:12px;
+      color:#166534;
+      background:#ecfdf5;
+      border:1px solid #bbf7d0;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:600;
+    }
+
+    .fc-sequence-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:nowrap;
+      overflow:hidden;
+    }
+
+    .fc-step{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+
+    .fc-step-circle{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1.5px solid #d1d5db;
+      background:#fff;
+      color:#6b7280;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      font-weight:800;
+      flex-shrink:0;
+      transition:.2s ease;
+    }
+
+    .fc-step-circle.active{
+      background:var(--blue);
+      border-color:var(--blue);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(37,99,235,.28);
+    }
+
+    .fc-step-circle.done{
+      background:#16a34a;
+      border-color:#16a34a;
+      color:#fff;
+      box-shadow:0 10px 24px rgba(22,163,74,.22);
+    }
+
+    .fc-step-label{
+      font-size:12px;
+      color:#475569;
+      font-weight:600;
+      white-space:nowrap;
+    }
+
+    .fc-step-line{
+      width:20px;
+      height:2px;
+      border-radius:999px;
+      background:#dbeafe;
+      flex-shrink:0;
+      transition:.2s ease;
+    }
+
+    .fc-step-line.done{
+      background:#16a34a;
+    }
+
+    .fc-camera-card{
+      padding:14px;
+      overflow:hidden;
+    }
+
+    .fc-camera-shell{
+      position:relative;
+      width:100%;
+      aspect-ratio: 3 / 4;
+      border-radius:24px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top, rgba(96,165,250,.22), transparent 38%),
+        linear-gradient(180deg, #dfeaff 0%, #cbdcff 100%);
+      border:1px solid #dbeafe;
+      margin-bottom:14px;
+    }
+
+    .fc-camera-video,
+    .fc-overlay-canvas,
+    .fc-capture-preview{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transform:scaleX(-1);
+    }
+
+    .fc-capture-canvas{
+      display:none;
+    }
+
+    .fc-camera-mask{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(to bottom, rgba(15,23,42,.26), rgba(15,23,42,.02) 28%, rgba(15,23,42,.02) 72%, rgba(15,23,42,.24));
+      pointer-events:none;
+    }
+
+    .fc-face-oval{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:58%;
+      height:66%;
+      transform:translate(-50%,-50%);
+      border:2.5px solid rgba(255,255,255,.92);
+      border-radius:46% 46% 44% 44% / 40% 40% 56% 56%;
+      box-shadow:
+        0 0 0 999px rgba(15,23,42,.18),
+        inset 0 0 0 1px rgba(255,255,255,.2);
+      pointer-events:none;
+    }
+
+    .fc-camera-badge{
+      position:absolute;
+      left:12px;
+      right:12px;
+      bottom:12px;
+      border-radius:999px;
+      padding:10px 14px;
+      background:rgba(255,255,255,.94);
+      color:#111827;
+      font-size:12px;
+      font-weight:700;
+      text-align:center;
+      box-shadow:0 10px 26px rgba(15,23,42,.12);
+      backdrop-filter:blur(10px);
+    }
+
+    .fc-camera-placeholder{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:20px;
+      z-index:2;
+      color:#1e3a8a;
+    }
+
+    .fc-placeholder-icon{
+      width:70px;
+      height:70px;
+      border-radius:999px;
+      background:rgba(255,255,255,.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:12px;
+      box-shadow:0 12px 28px rgba(37,99,235,.15);
+    }
+
+    .fc-placeholder-icon svg{
+      width:32px;
+      height:32px;
+      stroke:var(--blue);
+      stroke-width:1.8;
+      fill:none;
+    }
+
+    .fc-placeholder-title{
+      font-size:16px;
+      font-weight:800;
+      color:#0f172a;
+      margin-bottom:4px;
+    }
+
+    .fc-placeholder-sub{
+      font-size:13px;
+      color:#475569;
+      line-height:1.45;
+      max-width:250px;
+    }
+
+    .fc-status{
+      text-align:center;
+      margin-bottom:12px;
+    }
+
+    .fc-status-title{
+      font-size:18px;
+      font-weight:800;
+      margin:0 0 4px;
+      color:#0f172a;
+    }
+
+    .fc-status-sub{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+      margin:0;
+    }
+
+    .fc-flash{
+      margin-bottom:12px;
+    }
+
+    .fc-msg{
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:12px;
+      line-height:1.45;
+      margin-bottom:8px;
+      border:1px solid transparent;
+    }
+
+    .fc-msg.error{
+      background:#fef2f2;
+      border-color:#fecaca;
+      color:#b91c1c;
+    }
+
+    .fc-msg.success{
+      background:#ecfdf5;
+      border-color:#bbf7d0;
+      color:#15803d;
+    }
+
+    .fc-actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .fc-btn{
+      width:100%;
+      min-height:48px;
+      border:none;
+      border-radius:999px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 16px;
+      transition:transform .08s ease, box-shadow .12s ease, opacity .15s ease;
+    }
+
+    .fc-btn:active{
+      transform:scale(.985);
+    }
+
+    .fc-btn.primary{
+      color:#fff;
+      background:linear-gradient(180deg, #3772ff 0%, #1d4ed8 100%);
+      box-shadow:0 14px 30px rgba(37,99,235,.35);
+    }
+
+    .fc-btn.secondary{
+      color:#111827;
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+    }
+
+    .fc-btn.ghost{
+      color:#475569;
+      background:#fff;
+      border:1px solid #e5e7eb;
+    }
+
+    .fc-btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .fc-bottom-note{
+      text-align:center;
+      font-size:12px;
+      color:#64748b;
+      margin-top:12px;
+      line-height:1.45;
+    }
+
+    @media (max-width:380px){
+      .face-page{
+        padding-left:12px;
+        padding-right:12px;
+      }
+
+      .fc-step-label{
+        font-size:11px;
+      }
+
+      .fc-step-line{
+        width:14px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="face-page">
@@ -18,95 +449,100 @@
         </svg>
       </button>
 
-      <div class="fc-header-title">Face capture</div>
+      <div class="fc-header-text">
+        <h1>Face Capture</h1>
+        <p>Follow the movement guide and capture a live selfie for Colspot verification.</p>
+      </div>
     </header>
 
-    <section class="fc-main-card">
-      <section class="fc-camera-card">
-        <div class="fc-camera-shell" id="cameraShell">
-          <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
-          <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
-          <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
-          <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
+    <section class="fc-card fc-steps-card">
+      <div class="fc-steps-top">
+        <span class="fc-step-kicker">Step 2 of 2</span>
+        <span class="fc-step-note">Course form completed</span>
+      </div>
 
-          <div class="fc-camera-overlay">
-            <div class="fc-frame">
-              <div class="fc-corner tl"></div>
-              <div class="fc-corner tr"></div>
-              <div class="fc-corner bl"></div>
-              <div class="fc-corner br"></div>
-            </div>
+      <div class="fc-sequence-wrap">
+        <div class="fc-step">
+          <div class="fc-step-circle active">1</div>
+          <div class="fc-step-label">Straight</div>
+        </div>
+
+        <div class="fc-step-line"></div>
+
+        <div class="fc-step">
+          <div class="fc-step-circle">2</div>
+          <div class="fc-step-label">Left</div>
+        </div>
+
+        <div class="fc-step-line"></div>
+
+        <div class="fc-step">
+          <div class="fc-step-circle">3</div>
+          <div class="fc-step-label">Right</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="fc-card fc-camera-card">
+      <div class="fc-camera-shell" id="cameraShell">
+        <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
+        <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
+        <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
+        <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
+
+        <div class="fc-camera-mask"></div>
+        <div class="fc-face-oval" id="faceOval"></div>
+
+        <div id="cameraPlaceholder" class="fc-camera-placeholder">
+          <div class="fc-placeholder-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 7l1.4-2h5.2L16 7h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2z"></path>
+              <circle cx="12" cy="12.5" r="3.3"></circle>
+            </svg>
           </div>
-
-          <div class="fc-camera-placeholder" id="cameraPlaceholder">
-            <div class="fc-camera-placeholder-icon">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 8.5V7.8A4.8 4.8 0 0 1 11.8 3h.4A4.8 4.8 0 0 1 17 7.8v.7M5.5 21h13A2.5 2.5 0 0 0 21 18.5v-7A2.5 2.5 0 0 0 18.5 9h-13A2.5 2.5 0 0 0 3 11.5v7A2.5 2.5 0 0 0 5.5 21Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="12" cy="14.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
-            </div>
-          </div>
-
-          <div class="fc-live-pill" id="cameraBadge">
-            Look straight, turn left, turn right
+          <div class="fc-placeholder-title">Camera not started</div>
+          <div class="fc-placeholder-sub">
+            Tap the button below, allow camera access, then look straight, turn left, and turn right.
           </div>
         </div>
 
-        <div class="fc-step-track-wrap">
-          <div class="fc-step-track">
-            <div class="fc-step-line done"></div>
-            <div class="fc-step-circle done">✓</div>
-            <div class="fc-step-line done"></div>
-            <div class="fc-step-circle active">2</div>
-            <div class="fc-step-line"></div>
-            <div class="fc-step-circle">3</div>
-            <div class="fc-step-line"></div>
-          </div>
+        <div class="fc-camera-badge" id="cameraBadge">Look straight, turn left, turn right</div>
+      </div>
 
-          <div class="fc-step-chip" id="statusTitle">Turn left</div>
-        </div>
-
+      <div class="fc-status">
+        <h2 class="fc-status-title" id="statusTitle">Turn left</h2>
         <p class="fc-status-sub" id="statusSub">
           Start your camera and follow the movement guide.
         </p>
+      </div>
 
-        <div class="fc-status-message fc-status-message-error hidden" id="errorMsg"></div>
-        <div class="fc-status-message fc-status-message-success hidden" id="successMsg"></div>
-      </section>
+      <div class="fc-flash">
+        <div id="errorMsg" class="fc-msg error hidden"></div>
+        <div id="successMsg" class="fc-msg success hidden"></div>
+      </div>
 
-      <section class="fc-actions-card">
-        <button class="fc-btn fc-btn-white" id="startCameraBtn" type="button">
+      <div class="fc-actions">
+        <button id="startCameraBtn" class="fc-btn primary" type="button">
           Start camera
         </button>
 
-        <div class="fc-action-row hidden" id="captureActions">
-          <button class="fc-btn fc-btn-secondary" id="retakeBtn" type="button">
-            Retake
-          </button>
-
-          <button class="fc-btn fc-btn-primary" id="continueBtn" type="button">
-            Verify and continue
-          </button>
-        </div>
-
-        <button class="fc-btn fc-btn-primary hidden" id="stopCameraBtn" type="button">
+        <button id="stopCameraBtn" class="fc-btn secondary hidden" type="button">
           Stop camera
         </button>
 
-        <div class="fc-bottom-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span class="active"></span>
-          <span></span>
-          <span></span>
-          <span></span>
+        <div id="captureActions" class="hidden">
+          <button id="retakeBtn" class="fc-btn secondary" type="button">
+            Retake
+          </button>
+          <button id="continueBtn" class="fc-btn primary" type="button" style="margin-top:10px;">
+            Continue
+          </button>
         </div>
+      </div>
 
-        <button class="fc-help-link" id="whyBtn" type="button">
-          Why am I doing this?
-        </button>
-      </section>
+      <div class="fc-bottom-note">
+        Make sure only your face is visible and stay in a bright place.
+      </div>
     </section>
   </div>
 
@@ -115,19 +551,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
   <script src="face-capture.js"></script>
-
-  <script>
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-      backBtn.addEventListener("click", () => history.back());
-    }
-
-    const whyBtn = document.getElementById("whyBtn");
-    if (whyBtn) {
-      whyBtn.addEventListener("click", () => {
-        alert("This helps Colspot confirm that a real live student is completing verification.");
-      });
-    }
-  </script>
 </body>
 </html>
