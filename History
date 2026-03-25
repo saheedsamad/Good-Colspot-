@@ -495,6 +495,7 @@
 
   let studentHistoryEntries = [];
   let fullHistoryClasses = [];
+  let attendanceSessionHistoryItems = [];
   let scanHistoryItems = [];
   let schoolAnnouncementItems = [];
   let reportHistoryItems = [];
@@ -704,6 +705,59 @@
     }
   }
 
+  async function loadAttendanceSessionsForHistory(user) {
+    if (typeof supabase === "undefined" || !user?.id) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from("attendance_sessions")
+        .select(`
+          id,
+          course_code,
+          course_title,
+          lecturer_name,
+          pin_code,
+          starts_at,
+          expires_at,
+          created_at,
+          is_active,
+          use_location
+        `)
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error("Attendance session history load error:", error);
+        return [];
+      }
+
+      if (!data || !data.length) return [];
+
+      const sessionIds = data.map((row) => row.id);
+
+      let countMap = {};
+      const { data: attendanceRows, error: countError } = await supabase
+        .from("attendance_records")
+        .select("session_id")
+        .in("session_id", sessionIds);
+
+      if (!countError && attendanceRows) {
+        attendanceRows.forEach((row) => {
+          countMap[row.session_id] = (countMap[row.session_id] || 0) + 1;
+        });
+      }
+
+      return data.map((row) => ({
+        ...row,
+        joined_count: countMap[row.id] || 0
+      }));
+    } catch (e) {
+      console.error("loadAttendanceSessionsForHistory error:", e);
+      return [];
+    }
+  }
+
   function rebuildCombinedHistory() {
     combinedHistoryItems = [];
 
@@ -721,6 +775,14 @@
         created_at: item.course.created_at || null,
         course: item.course,
         memberCount: item.memberCount,
+      });
+    });
+
+    attendanceSessionHistoryItems.forEach((session) => {
+      combinedHistoryItems.push({
+        type: "attendance_session",
+        created_at: session.created_at || session.starts_at || null,
+        session
       });
     });
 
@@ -926,6 +988,8 @@
         fullHistoryClasses = [];
       }
 
+      attendanceSessionHistoryItems = await loadAttendanceSessionsForHistory(user);
+
       try {
         const { data: scans, error: scansError } = await supabase
           .from("scan_sheets")
@@ -954,6 +1018,7 @@
       const emptyElVisible = !combinedHistoryFiltered.length;
       if (emptyElVisible) {
         emptyEl.style.display = "block";
+        listEl.innerHTML = "";
       } else {
         emptyEl.style.display = "none";
         renderFullHistoryList();
@@ -969,10 +1034,12 @@
   function updateFullHistoryStatsSummary() {
     const totalItems = combinedHistoryItems.length;
     const totalClasses = fullHistoryClasses.length;
+    const totalSessions = attendanceSessionHistoryItems.length;
     const totalAnnouncements = schoolAnnouncementItems.length;
     const totalReports = reportHistoryItems.length;
+
     setFullHistoryStats(
-      `${totalItems} items • ${totalClasses} classes • ${totalAnnouncements} announcements • ${totalReports} reports`
+      `${totalItems} items • ${totalClasses} classes • ${totalSessions} attendance • ${totalAnnouncements} announcements • ${totalReports} reports`
     );
   }
 
@@ -1004,6 +1071,18 @@
           title.includes(query) ||
           invite.includes(query) ||
           creator.includes(query)
+        );
+      } else if (item.type === "attendance_session") {
+        const s = item.session;
+        const code = (s.course_code || "").toLowerCase();
+        const title = (s.course_title || "").toLowerCase();
+        const lecturer = (s.lecturer_name || "").toLowerCase();
+        const pin = (s.pin_code || "").toLowerCase();
+        return (
+          code.includes(query) ||
+          title.includes(query) ||
+          lecturer.includes(query) ||
+          pin.includes(query)
         );
       } else if (item.type === "announcement") {
         const ann = item.announcement;
@@ -1191,6 +1270,77 @@
 
         card.addEventListener("click", () => {
           window.location.href = `class-live.html?course_id=${course.id}`;
+        });
+
+        listEl.appendChild(card);
+      } else if (item.type === "attendance_session") {
+        const session = item.session;
+
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const left = document.createElement("div");
+        left.className = "history-left";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8"></circle>
+            <path d="M12 8v5l3 2"></path>
+          </svg>
+        `;
+
+        const texts = document.createElement("div");
+        texts.className = "history-texts";
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = session.course_code || "Attendance session";
+
+        const sub = document.createElement("div");
+        sub.className = "history-sub";
+        sub.textContent =
+          session.course_title ||
+          session.lecturer_name ||
+          "Attendance session created";
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta-row";
+        const createdDate = formatHistoryDateShort(session.created_at || session.starts_at);
+        const createdTime = formatHistoryTimeShort(session.created_at || session.starts_at);
+        const pinText = session.pin_code ? `PIN: ${session.pin_code}` : "PIN: —";
+        meta.textContent =
+          createdDate && createdTime
+            ? `${createdDate} · ${createdTime} · ${pinText}`
+            : pinText;
+
+        texts.appendChild(title);
+        texts.appendChild(sub);
+        texts.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(texts);
+
+        const right = document.createElement("div");
+        right.className = "history-right";
+
+        const status = document.createElement("div");
+        status.className = "status-chip class";
+        status.textContent = session.is_active ? "Attendance" : "Ended";
+
+        const countText = document.createElement("div");
+        countText.className = "count-text";
+        countText.textContent = `${session.joined_count || 0} joined`;
+
+        right.appendChild(status);
+        right.appendChild(countText);
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        card.addEventListener("click", () => {
+          window.location.href = `session-live.html?session_id=${session.id}`;
         });
 
         listEl.appendChild(card);
@@ -1429,6 +1579,17 @@
         ].map(esc).join(",");
       }
 
+      if (item.type === "attendance_session") {
+        const s = item.session;
+        return [
+          "Attendance session",
+          s.course_code || "",
+          s.course_title || s.lecturer_name || "",
+          s.created_at || s.starts_at || "",
+          s.pin_code || ""
+        ].map(esc).join(",");
+      }
+
       if (item.type === "announcement") {
         const a = item.announcement;
         return [
@@ -1539,4 +1700,3 @@
     }
   });
 </script>
-<!-- 🔹 HISTORY SCREEN END -->
