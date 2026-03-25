@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -20,6 +20,8 @@
       --blue-soft: #dbeafe;
       --green: #16a34a;
       --green-soft: #dcfce7;
+      --amber: #d97706;
+      --amber-soft: #ffedd5;
       --red: #dc2626;
       --red-soft: #fee2e2;
       --shadow-soft: 0 12px 30px rgba(148, 163, 184, 0.22);
@@ -58,6 +60,10 @@
 
     button {
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .phone-shell {
@@ -181,66 +187,111 @@
       line-height: 1.35;
     }
 
-    .verify-step-card {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+    .challenge-card {
+      border-radius: 18px;
+      background: linear-gradient(180deg, #eff6ff 0%, #e8f0ff 100%);
+      border: 1px solid #c7dbff;
+      padding: 12px;
+      box-shadow: var(--shadow-soft);
       margin-bottom: 14px;
     }
 
-    .verify-step-pill {
-      border-radius: 18px;
+    .challenge-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .challenge-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--blue-dark);
+    }
+
+    .challenge-badge {
+      border-radius: 999px;
       background: #ffffff;
-      border: 1px solid var(--line);
-      min-height: 74px;
-      padding: 10px 8px;
+      border: 1px solid #bfdbfe;
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+
+    .challenge-text {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+
+    .pose-pill-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .pose-pill {
+      min-height: 66px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #dbeafe;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      box-shadow: var(--shadow-soft);
+      padding: 8px 6px;
+      box-shadow: 0 10px 24px rgba(148, 163, 184, 0.16);
     }
 
-    .verify-step-pill.active {
-      background: linear-gradient(180deg, #eef5ff 0%, #e4efff 100%);
-      border-color: #bfdbfe;
+    .pose-pill.active {
+      background: #dbeafe;
+      border-color: #93c5fd;
     }
 
-    .verify-step-number {
-      width: 26px;
-      height: 26px;
+    .pose-pill.done {
+      background: var(--green-soft);
+      border-color: #bbf7d0;
+    }
+
+    .pose-dot {
+      width: 24px;
+      height: 24px;
       border-radius: 999px;
       background: #e5e7eb;
       color: #4b5563;
-      font-size: 12px;
-      font-weight: 700;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
     }
 
-    .verify-step-pill.active .verify-step-number {
+    .pose-pill.active .pose-dot {
       background: var(--blue);
       color: #ffffff;
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
     }
 
-    .verify-step-text {
+    .pose-pill.done .pose-dot {
+      background: var(--green);
+      color: #ffffff;
+    }
+
+    .pose-label {
       font-size: 12px;
       font-weight: 700;
-      color: #4b5563;
+      color: #475569;
       text-align: center;
-      line-height: 1.2;
-    }
-
-    .verify-step-pill.active .verify-step-text {
-      color: var(--blue-dark);
     }
 
     .camera-card,
     .tips-card,
-    .verify-result-card {
+    .verify-result-card,
+    .warning-card {
       border-radius: var(--radius-lg);
       background: var(--card);
       border: 1px solid var(--line);
@@ -251,7 +302,8 @@
 
     .camera-card-head,
     .verify-result-head,
-    .tips-card-head {
+    .tips-card-head,
+    .warning-card-head {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -260,14 +312,16 @@
 
     .camera-card-title,
     .verify-result-title,
-    .tips-title {
+    .tips-title,
+    .warning-title {
       font-size: 15px;
       font-weight: 800;
       color: var(--text-main);
     }
 
     .camera-card-subtitle,
-    .tips-subtitle {
+    .tips-subtitle,
+    .warning-subtitle {
       margin-top: 4px;
       font-size: 12px;
       line-height: 1.4;
@@ -293,7 +347,7 @@
       background:
         radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), rgba(255,255,255,0) 30%),
         linear-gradient(180deg, #dbe7ff 0%, #b8cbfb 100%);
-      min-height: 360px;
+      min-height: 380px;
       aspect-ratio: 3 / 4;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
     }
@@ -316,11 +370,6 @@
       pointer-events: none;
     }
 
-    .face-preview-wrap.hidden,
-    .hidden {
-      display: none !important;
-    }
-
     .face-preview-image {
       width: 100%;
       height: 100%;
@@ -337,9 +386,9 @@
     }
 
     .face-frame {
-      width: 66%;
+      width: 68%;
       aspect-ratio: 0.8 / 1;
-      border-radius: 38px;
+      border-radius: 40px;
       border: 3px solid rgba(219, 234, 254, 0.95);
       box-shadow:
         0 0 0 999px rgba(15, 23, 42, 0.18),
@@ -372,19 +421,36 @@
       border-top: none;
     }
 
-    .face-guide-text {
+    .face-guide-bottom {
       position: absolute;
       left: 50%;
       bottom: 18px;
       transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .face-guide-text {
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.66);
+      background: rgba(15, 23, 42, 0.7);
       color: #ffffff;
       padding: 8px 12px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
       backdrop-filter: blur(8px);
+    }
+
+    .face-live-chip {
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      color: #0f172a;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
     }
 
     .camera-action-row {
@@ -438,15 +504,23 @@
       box-shadow: none;
     }
 
-    .tips-icon {
+    .tips-icon,
+    .warning-icon {
       width: 34px;
       height: 34px;
       border-radius: 999px;
-      background: #fff7ed;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+    }
+
+    .tips-icon {
+      background: #fff7ed;
+    }
+
+    .warning-icon {
+      background: var(--amber-soft);
     }
 
     .tips-icon svg {
@@ -459,13 +533,25 @@
       stroke-linejoin: round;
     }
 
-    .tips-list {
+    .warning-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--amber);
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .tips-list,
+    .warning-list {
       margin: 14px 0 0;
       padding-left: 18px;
       color: var(--text-muted);
     }
 
-    .tips-list li {
+    .tips-list li,
+    .warning-list li {
       margin-bottom: 10px;
       font-size: 13px;
       line-height: 1.5;
@@ -555,14 +641,15 @@
       }
 
       .camera-stage {
-        min-height: 320px;
+        min-height: 330px;
       }
 
       .verify-step-pill {
         min-height: 70px;
       }
 
-      .verify-step-text {
+      .verify-step-text,
+      .pose-label {
         font-size: 11px;
       }
     }
@@ -582,10 +669,10 @@
           <div class="hero-copy">
             <div class="hero-line-1">Face verification</div>
             <h1 class="hero-title">
-              Verify your<span> attendance</span>
+              Prove it is<span> really you</span>
             </h1>
             <p class="hero-subtitle">
-              Take a clear live face photo so Colspot can confirm it is really you before joining attendance.
+              Look at the camera, then follow the movement challenge below before attendance is approved.
             </p>
           </div>
         </div>
@@ -599,24 +686,37 @@
           </svg>
         </div>
         <div id="faceTopMessageText" class="top-message-text">
-          Colspot will capture and verify your face before attendance is submitted.
+          Colspot will ask you to face center, turn left, then turn right before attendance continues.
         </div>
       </div>
 
-      <div class="verify-step-card">
-        <div class="verify-step-pill active">
-          <span class="verify-step-number">1</span>
-          <span class="verify-step-text">Open camera</span>
+      <section class="challenge-card">
+        <div class="challenge-head">
+          <div class="challenge-title">Live movement challenge</div>
+          <div id="faceChallengeBadge" class="challenge-badge">Step 1 of 3</div>
         </div>
-        <div class="verify-step-pill">
-          <span class="verify-step-number">2</span>
-          <span class="verify-step-text">Capture face</span>
+
+        <div id="faceChallengeText" class="challenge-text">
+          Start the camera, then look straight at the screen first.
         </div>
-        <div class="verify-step-pill">
-          <span class="verify-step-number">3</span>
-          <span class="verify-step-text">Verify</span>
+
+        <div class="pose-pill-row">
+          <div class="pose-pill active" id="poseCenterPill">
+            <div class="pose-dot">1</div>
+            <div class="pose-label">Center</div>
+          </div>
+
+          <div class="pose-pill" id="poseLeftPill">
+            <div class="pose-dot">2</div>
+            <div class="pose-label">Turn left</div>
+          </div>
+
+          <div class="pose-pill" id="poseRightPill">
+            <div class="pose-dot">3</div>
+            <div class="pose-label">Turn right</div>
+          </div>
         </div>
-      </div>
+      </section>
 
       <section class="camera-card">
         <div class="camera-card-head">
@@ -643,8 +743,14 @@
 
           <div id="faceGuideOverlay" class="face-guide-overlay">
             <div class="face-frame"></div>
-            <div class="face-guide-text">
-              Keep your face inside the frame
+
+            <div class="face-guide-bottom">
+              <div id="faceGuideText" class="face-guide-text">
+                Place your face inside the frame
+              </div>
+              <div id="faceLiveChip" class="face-live-chip">
+                Waiting to start
+              </div>
             </div>
           </div>
 
@@ -654,10 +760,10 @@
         </div>
 
         <div class="camera-action-row">
-          <button type="button" class="action-btn secondary" id="startCameraBtn">
+          <button type="button" class="action-btn" id="startCameraBtn">
             Start camera
           </button>
-          <button type="button" class="action-btn secondary" id="retakeFaceBtn" disabled>
+          <button type="button" class="action-btn" id="retakeFaceBtn" disabled>
             Retake
           </button>
         </div>
@@ -665,6 +771,30 @@
         <button type="button" class="primary-action-btn" id="captureFaceBtn" disabled>
           Capture face
         </button>
+      </section>
+
+      <section class="warning-card">
+        <div class="warning-card-head">
+          <div class="warning-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 9v4"></path>
+              <path d="M12 17h.01"></path>
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="warning-title">Anti-spoof check</div>
+            <div class="warning-subtitle">
+              Colspot is checking for a real live face, not a still photo on another screen.
+            </div>
+          </div>
+        </div>
+
+        <ul class="warning-list">
+          <li>Do not point the camera at another phone, tablet, laptop, or printed photo.</li>
+          <li>Keep only one face in the frame during the verification challenge.</li>
+          <li>Follow the movement prompts exactly before verification is sent.</li>
+        </ul>
       </section>
 
       <section class="tips-card">
@@ -677,18 +807,18 @@
             </svg>
           </div>
           <div>
-            <div class="tips-title">Before you continue</div>
+            <div class="tips-title">For better verification</div>
             <div class="tips-subtitle">
-              Follow these simple tips for better face verification.
+              These tips help Colspot verify you faster.
             </div>
           </div>
         </div>
 
         <ul class="tips-list">
-          <li>Use your live front camera only. Do not use another phone or screen.</li>
-          <li>Stay in good light and keep only your face inside the frame.</li>
+          <li>Use your live front camera only.</li>
+          <li>Stay in good light and keep your whole face visible.</li>
           <li>Remove cap or anything blocking your face if possible.</li>
-          <li>Hold your phone steady and look straight into the camera.</li>
+          <li>Hold your phone steady while following the pose challenge.</li>
         </ul>
       </section>
 
@@ -699,7 +829,7 @@
         </div>
 
         <p id="faceResultText" class="verify-result-text">
-          Capture your face to continue.
+          Start the camera and complete the face movement challenge.
         </p>
 
         <div id="faceErrorBox" class="message-box error hidden"></div>
@@ -722,7 +852,9 @@
     window.SUPABASE_URL = "YOUR_SUPABASE_URL";
     window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   </script>
-
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="face_verification.js"></script>
 </body>
