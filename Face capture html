@@ -10,17 +10,22 @@
 
   <style>
     :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --bg:#f5f8ff;
+      --bg:#edf3ff;
+      --panel:#f4f7ff;
       --card:#ffffff;
-      --line:#e5e7eb;
-      --text:#0f172a;
-      --muted:#6b7280;
-      --green:#16a34a;
+      --text:#182033;
+      --muted:#7a8499;
+      --line:#dfe7f6;
+      --blue:#4c83f6;
+      --blue-dark:#316df0;
+      --green:#22c55e;
+      --green-soft:#dcfce7;
       --red:#dc2626;
-      --shadow:0 18px 40px rgba(15,23,42,.10);
-      --radius:24px;
+      --red-soft:#fee2e2;
+      --shadow:0 18px 40px rgba(76,131,246,.12);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
     }
 
     *{
@@ -28,414 +33,428 @@
       -webkit-tap-highlight-color:transparent;
     }
 
-    html,body{
+    html, body{
       margin:0;
       padding:0;
-      background:var(--bg);
+      min-height:100%;
+      background:#e9eef7;
       color:var(--text);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body{
-      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
-    .hidden{
-      display:none !important;
+    button,
+    input,
+    select,
+    textarea{
+      font:inherit;
     }
 
     .face-page{
-      width:min(100%, 460px);
-      margin:0 auto;
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      background:var(--bg);
       padding:
-        calc(env(safe-area-inset-top, 0px) + 18px)
-        16px
-        calc(env(safe-area-inset-bottom, 0px) + 28px);
+        calc(10px + var(--safe-top))
+        14px
+        calc(18px + var(--safe-bottom));
     }
 
     .fc-header{
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       gap:12px;
-      margin-bottom:16px;
+      margin-bottom:14px;
     }
 
     .fc-back-btn{
       width:42px;
       height:42px;
       border:none;
-      border-radius:999px;
-      background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      border-radius:14px;
+      background:#f1f4fb;
+      box-shadow:inset 0 0 0 1px rgba(24,32,51,.04);
       display:flex;
       align-items:center;
       justify-content:center;
-      cursor:pointer;
       flex-shrink:0;
+      cursor:pointer;
     }
 
     .fc-back-btn svg{
-      width:18px;
-      height:18px;
-      color:#111827;
+      width:20px;
+      height:20px;
+      color:#3b455c;
     }
 
-    .fc-header-text h1{
-      margin:2px 0 4px;
-      font-size:23px;
-      line-height:1.15;
+    .fc-header-title{
+      font-size:17px;
       font-weight:800;
       letter-spacing:-.02em;
+      color:#20283a;
     }
 
-    .fc-header-text p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .fc-card{
-      background:var(--card);
-      border:1px solid #edf2ff;
-      border-radius:var(--radius);
+    .fc-main-card{
+      background:var(--panel);
+      border-radius:34px;
+      padding:18px 16px 16px;
       box-shadow:var(--shadow);
-    }
-
-    .fc-steps-card{
-      padding:16px 14px;
-      margin-bottom:14px;
-    }
-
-    .fc-steps-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
-    }
-
-    .fc-step-kicker{
-      font-size:12px;
-      font-weight:700;
-      color:var(--blue-dark);
-      background:#eaf1ff;
-      border:1px solid #d8e4ff;
-      padding:6px 10px;
-      border-radius:999px;
-    }
-
-    .fc-step-note{
-      font-size:12px;
-      color:#166534;
-      background:#ecfdf5;
-      border:1px solid #bbf7d0;
-      padding:6px 10px;
-      border-radius:999px;
-      font-weight:600;
-    }
-
-    .fc-sequence-wrap{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      flex-wrap:nowrap;
-      overflow:hidden;
-    }
-
-    .fc-step{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-    }
-
-    .fc-step-circle{
-      width:34px;
-      height:34px;
-      border-radius:999px;
-      border:1.5px solid #d1d5db;
-      background:#fff;
-      color:#6b7280;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:13px;
-      font-weight:800;
-      flex-shrink:0;
-      transition:.2s ease;
-    }
-
-    .fc-step-circle.active{
-      background:var(--blue);
-      border-color:var(--blue);
-      color:#fff;
-      box-shadow:0 10px 24px rgba(37,99,235,.28);
-    }
-
-    .fc-step-circle.done{
-      background:#16a34a;
-      border-color:#16a34a;
-      color:#fff;
-      box-shadow:0 10px 24px rgba(22,163,74,.22);
-    }
-
-    .fc-step-label{
-      font-size:12px;
-      color:#475569;
-      font-weight:600;
-      white-space:nowrap;
-    }
-
-    .fc-step-line{
-      width:20px;
-      height:2px;
-      border-radius:999px;
-      background:#dbeafe;
-      flex-shrink:0;
-      transition:.2s ease;
-    }
-
-    .fc-step-line.done{
-      background:#16a34a;
+      border:1px solid rgba(255,255,255,.55);
     }
 
     .fc-camera-card{
-      padding:14px;
-      overflow:hidden;
+      margin:0;
+      padding:0;
+      background:transparent;
+      border:none;
+      box-shadow:none;
     }
 
     .fc-camera-shell{
       position:relative;
       width:100%;
-      aspect-ratio: 3 / 4;
-      border-radius:24px;
+      aspect-ratio:1/1.08;
+      min-height:320px;
+      border-radius:28px;
       overflow:hidden;
       background:
-        radial-gradient(circle at top, rgba(96,165,250,.22), transparent 38%),
-        linear-gradient(180deg, #dfeaff 0%, #cbdcff 100%);
-      border:1px solid #dbeafe;
-      margin-bottom:14px;
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.65), rgba(255,255,255,0) 24%),
+        linear-gradient(180deg,#dcecff 0%, #c8dcf9 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);
     }
 
     .fc-camera-video,
     .fc-overlay-canvas,
+    .fc-capture-canvas,
     .fc-capture-preview{
       position:absolute;
       inset:0;
       width:100%;
       height:100%;
       object-fit:cover;
+    }
+
+    .fc-camera-video{
+      display:block;
+      background:transparent;
       transform:scaleX(-1);
+      z-index:1;
+    }
+
+    .fc-overlay-canvas{
+      z-index:3;
+      pointer-events:none;
     }
 
     .fc-capture-canvas{
       display:none;
     }
 
-    .fc-camera-mask{
+    .fc-capture-preview{
+      z-index:4;
+      display:block;
+      background:transparent;
+    }
+
+    .fc-capture-preview.hidden{
+      display:none !important;
+    }
+
+    .fc-camera-overlay{
       position:absolute;
       inset:0;
-      background:
-        linear-gradient(to bottom, rgba(15,23,42,.26), rgba(15,23,42,.02) 28%, rgba(15,23,42,.02) 72%, rgba(15,23,42,.24));
+      z-index:5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       pointer-events:none;
     }
 
-    .fc-face-oval{
-      position:absolute;
-      left:50%;
-      top:50%;
-      width:58%;
-      height:66%;
-      transform:translate(-50%,-50%);
-      border:2.5px solid rgba(255,255,255,.92);
-      border-radius:46% 46% 44% 44% / 40% 40% 56% 56%;
-      box-shadow:
-        0 0 0 999px rgba(15,23,42,.18),
-        inset 0 0 0 1px rgba(255,255,255,.2);
-      pointer-events:none;
+    .fc-frame{
+      width:78%;
+      height:78%;
+      border-radius:30px;
+      border:2px dashed rgba(123,170,239,.55);
+      position:relative;
+      box-shadow:inset 0 0 0 999px rgba(255,255,255,.04);
     }
 
-    .fc-camera-badge{
+    .fc-corner{
       position:absolute;
-      left:12px;
-      right:12px;
-      bottom:12px;
-      border-radius:999px;
-      padding:10px 14px;
-      background:rgba(255,255,255,.94);
-      color:#111827;
-      font-size:12px;
-      font-weight:700;
-      text-align:center;
-      box-shadow:0 10px 26px rgba(15,23,42,.12);
-      backdrop-filter:blur(10px);
+      width:42px;
+      height:42px;
+      border:5px solid rgba(255,255,255,.92);
+      border-radius:14px;
+    }
+
+    .fc-corner.tl{
+      top:-2px;
+      left:-2px;
+      border-right:none;
+      border-bottom:none;
+    }
+
+    .fc-corner.tr{
+      top:-2px;
+      right:-2px;
+      border-left:none;
+      border-bottom:none;
+    }
+
+    .fc-corner.bl{
+      bottom:-2px;
+      left:-2px;
+      border-right:none;
+      border-top:none;
+    }
+
+    .fc-corner.br{
+      right:-2px;
+      bottom:-2px;
+      border-left:none;
+      border-top:none;
     }
 
     .fc-camera-placeholder{
       position:absolute;
       inset:0;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding:20px;
       z-index:2;
-      color:#1e3a8a;
-    }
-
-    .fc-placeholder-icon{
-      width:70px;
-      height:70px;
-      border-radius:999px;
-      background:rgba(255,255,255,.9);
       display:flex;
       align-items:center;
       justify-content:center;
-      margin-bottom:12px;
-      box-shadow:0 12px 28px rgba(37,99,235,.15);
     }
 
-    .fc-placeholder-icon svg{
-      width:32px;
-      height:32px;
-      stroke:var(--blue);
-      stroke-width:1.8;
-      fill:none;
+    .fc-camera-placeholder-icon{
+      width:84px;
+      height:84px;
+      border-radius:22px;
+      background:rgba(255,255,255,.20);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#7da7dd;
+      backdrop-filter:blur(8px);
     }
 
-    .fc-placeholder-title{
-      font-size:16px;
-      font-weight:800;
-      color:#0f172a;
-      margin-bottom:4px;
+    .fc-camera-placeholder-icon svg{
+      width:34px;
+      height:34px;
     }
 
-    .fc-placeholder-sub{
+    .fc-live-pill{
+      position:absolute;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      z-index:6;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
       font-size:13px;
-      color:#475569;
-      line-height:1.45;
-      max-width:250px;
+      font-weight:700;
+      box-shadow:0 10px 26px rgba(76,131,246,.28);
+      text-align:center;
+      max-width:92%;
     }
 
-    .fc-status{
-      text-align:center;
+    .fc-step-track-wrap{
+      margin:14px 2px 12px;
+    }
+
+    .fc-step-track{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
       margin-bottom:12px;
     }
 
-    .fc-status-title{
-      font-size:18px;
+    .fc-step-line{
+      flex:1;
+      max-width:58px;
+      height:4px;
+      border-radius:999px;
+      background:#d7dfef;
+      margin:0 6px;
+    }
+
+    .fc-step-line.done{
+      background:#a9dcff;
+    }
+
+    .fc-step-circle{
+      width:24px;
+      height:24px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
       font-weight:800;
-      margin:0 0 4px;
-      color:#0f172a;
+      background:#d9e0ee;
+      color:#8b96aa;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);
+    }
+
+    .fc-step-circle.active{
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .fc-step-circle.done{
+      background:#59c5dd;
+      color:#fff;
+    }
+
+    .fc-step-chip{
+      width:max-content;
+      max-width:100%;
+      margin:0 auto;
+      padding:10px 16px;
+      border-radius:999px;
+      background:#ffffff;
+      box-shadow:var(--shadow-soft);
+      color:#1f2a3d;
+      font-weight:700;
+      font-size:13px;
+      text-align:center;
+      border:1px solid rgba(76,131,246,.08);
     }
 
     .fc-status-sub{
-      font-size:13px;
+      margin:0 auto 12px;
+      max-width:310px;
+      text-align:center;
       color:var(--muted);
+      font-size:.93rem;
+      line-height:1.48;
+    }
+
+    .fc-status-message{
+      margin:10px 0 0;
+      padding:12px 14px;
+      border-radius:16px;
+      font-size:.90rem;
       line-height:1.45;
-      margin:0;
+      font-weight:700;
     }
 
-    .fc-flash{
-      margin-bottom:12px;
+    .fc-status-message-error{
+      background:var(--red-soft);
+      color:var(--red);
+      border:1px solid rgba(220,38,38,.12);
     }
 
-    .fc-msg{
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:12px;
-      line-height:1.45;
-      margin-bottom:8px;
-      border:1px solid transparent;
+    .fc-status-message-success{
+      background:var(--green-soft);
+      color:var(--green);
+      border:1px solid rgba(22,163,74,.12);
     }
 
-    .fc-msg.error{
-      background:#fef2f2;
-      border-color:#fecaca;
-      color:#b91c1c;
-    }
-
-    .fc-msg.success{
-      background:#ecfdf5;
-      border-color:#bbf7d0;
-      color:#15803d;
-    }
-
-    .fc-actions{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+    .fc-actions-card{
+      margin-top:10px;
     }
 
     .fc-btn{
+      min-height:60px;
       width:100%;
-      min-height:48px;
       border:none;
-      border-radius:999px;
-      font-size:14px;
+      border-radius:18px;
+      font-size:16px;
       font-weight:700;
       cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .fc-btn:disabled{
+      opacity:.56;
+      cursor:not-allowed;
+    }
+
+    .fc-btn-white{
+      background:#ffffff;
+      color:#20283a;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .fc-btn-primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      box-shadow:0 12px 28px rgba(76,131,246,.28);
+    }
+
+    .fc-btn-secondary{
+      background:#fff;
+      color:#2b3447;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .fc-action-row{
+      display:grid;
+      grid-template-columns:1fr 1.2fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .fc-bottom-dots{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:8px;
-      padding:0 16px;
-      transition:transform .08s ease, box-shadow .12s ease, opacity .15s ease;
+      margin:14px 0 8px;
     }
 
-    .fc-btn:active{
-      transform:scale(.985);
+    .fc-bottom-dots span{
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:#d8dfef;
     }
 
-    .fc-btn.primary{
-      color:#fff;
-      background:linear-gradient(180deg, #3772ff 0%, #1d4ed8 100%);
-      box-shadow:0 14px 30px rgba(37,99,235,.35);
+    .fc-bottom-dots span.active{
+      width:26px;
+      background:var(--blue);
     }
 
-    .fc-btn.secondary{
-      color:#111827;
-      background:#f8fafc;
-      border:1px solid #e5e7eb;
-    }
-
-    .fc-btn.ghost{
-      color:#475569;
-      background:#fff;
-      border:1px solid #e5e7eb;
-    }
-
-    .fc-btn:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-      transform:none;
-      box-shadow:none;
-    }
-
-    .fc-bottom-note{
+    .fc-help-link{
+      display:block;
+      width:100%;
+      background:transparent;
+      border:none;
       text-align:center;
-      font-size:12px;
-      color:#64748b;
-      margin-top:12px;
-      line-height:1.45;
+      color:#7c8cab;
+      font-size:14px;
+      cursor:pointer;
+      margin-top:6px;
+    }
+
+    .hidden{
+      display:none !important;
     }
 
     @media (max-width:380px){
-      .face-page{
-        padding-left:12px;
-        padding-right:12px;
+      .fc-camera-shell{
+        min-height:290px;
       }
 
-      .fc-step-label{
-        font-size:11px;
+      .fc-action-row{
+        grid-template-columns:1fr;
       }
 
-      .fc-step-line{
-        width:14px;
+      .fc-header-title{
+        font-size:16px;
       }
     }
   </style>
@@ -449,107 +468,680 @@
         </svg>
       </button>
 
-      <div class="fc-header-text">
-        <h1>Face Capture</h1>
-        <p>Follow the movement guide and capture a live selfie for Colspot verification.</p>
-      </div>
+      <div class="fc-header-title">Face capture</div>
     </header>
 
-    <section class="fc-card fc-steps-card">
-      <div class="fc-steps-top">
-        <span class="fc-step-kicker">Step 2 of 2</span>
-        <span class="fc-step-note">Course form completed</span>
-      </div>
+    <section class="fc-main-card">
+      <section class="fc-camera-card">
+        <div class="fc-camera-shell" id="cameraShell">
+          <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
+          <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
+          <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
+          <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
 
-      <div class="fc-sequence-wrap">
-        <div class="fc-step">
-          <div class="fc-step-circle active">1</div>
-          <div class="fc-step-label">Straight</div>
-        </div>
-
-        <div class="fc-step-line"></div>
-
-        <div class="fc-step">
-          <div class="fc-step-circle">2</div>
-          <div class="fc-step-label">Left</div>
-        </div>
-
-        <div class="fc-step-line"></div>
-
-        <div class="fc-step">
-          <div class="fc-step-circle">3</div>
-          <div class="fc-step-label">Right</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="fc-card fc-camera-card">
-      <div class="fc-camera-shell" id="cameraShell">
-        <video id="cameraVideo" class="fc-camera-video" playsinline autoplay muted></video>
-        <canvas id="overlayCanvas" class="fc-overlay-canvas"></canvas>
-        <canvas id="captureCanvas" class="fc-capture-canvas"></canvas>
-        <img id="capturePreview" class="fc-capture-preview hidden" alt="Captured face preview" />
-
-        <div class="fc-camera-mask"></div>
-        <div class="fc-face-oval" id="faceOval"></div>
-
-        <div id="cameraPlaceholder" class="fc-camera-placeholder">
-          <div class="fc-placeholder-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 7l1.4-2h5.2L16 7h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2z"></path>
-              <circle cx="12" cy="12.5" r="3.3"></circle>
-            </svg>
+          <div class="fc-camera-overlay">
+            <div class="fc-frame">
+              <div class="fc-corner tl"></div>
+              <div class="fc-corner tr"></div>
+              <div class="fc-corner bl"></div>
+              <div class="fc-corner br"></div>
+            </div>
           </div>
-          <div class="fc-placeholder-title">Camera not started</div>
-          <div class="fc-placeholder-sub">
-            Tap the button below, allow camera access, then look straight, turn left, and turn right.
+
+          <div class="fc-camera-placeholder" id="cameraPlaceholder">
+            <div class="fc-camera-placeholder-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 8.5V7.8A4.8 4.8 0 0 1 11.8 3h.4A4.8 4.8 0 0 1 17 7.8v.7M5.5 21h13A2.5 2.5 0 0 0 21 18.5v-7A2.5 2.5 0 0 0 18.5 9h-13A2.5 2.5 0 0 0 3 11.5v7A2.5 2.5 0 0 0 5.5 21Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="14.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="fc-live-pill" id="cameraBadge">
+            Look straight, turn left, turn right
           </div>
         </div>
 
-        <div class="fc-camera-badge" id="cameraBadge">Look straight, turn left, turn right</div>
-      </div>
+        <div class="fc-step-track-wrap">
+          <div class="fc-step-track">
+            <div class="fc-step-line done"></div>
+            <div class="fc-step-circle done">✓</div>
+            <div class="fc-step-line done"></div>
+            <div class="fc-step-circle active">2</div>
+            <div class="fc-step-line"></div>
+            <div class="fc-step-circle">3</div>
+            <div class="fc-step-line"></div>
+          </div>
 
-      <div class="fc-status">
-        <h2 class="fc-status-title" id="statusTitle">Turn left</h2>
+          <div class="fc-step-chip" id="statusTitle">Turn left</div>
+        </div>
+
         <p class="fc-status-sub" id="statusSub">
           Start your camera and follow the movement guide.
         </p>
-      </div>
 
-      <div class="fc-flash">
-        <div id="errorMsg" class="fc-msg error hidden"></div>
-        <div id="successMsg" class="fc-msg success hidden"></div>
-      </div>
+        <div class="fc-status-message fc-status-message-error hidden" id="errorMsg"></div>
+        <div class="fc-status-message fc-status-message-success hidden" id="successMsg"></div>
+      </section>
 
-      <div class="fc-actions">
-        <button id="startCameraBtn" class="fc-btn primary" type="button">
+      <section class="fc-actions-card">
+        <button class="fc-btn fc-btn-white" id="startCameraBtn" type="button">
           Start camera
         </button>
 
-        <button id="stopCameraBtn" class="fc-btn secondary hidden" type="button">
+        <div class="fc-action-row hidden" id="captureActions">
+          <button class="fc-btn fc-btn-secondary" id="retakeBtn" type="button">
+            Retake
+          </button>
+
+          <button class="fc-btn fc-btn-primary" id="continueBtn" type="button">
+            Verify and continue
+          </button>
+        </div>
+
+        <button class="fc-btn fc-btn-primary hidden" id="stopCameraBtn" type="button">
           Stop camera
         </button>
 
-        <div id="captureActions" class="hidden">
-          <button id="retakeBtn" class="fc-btn secondary" type="button">
-            Retake
-          </button>
-          <button id="continueBtn" class="fc-btn primary" type="button" style="margin-top:10px;">
-            Continue
-          </button>
+        <div class="fc-bottom-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span class="active"></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-      </div>
 
-      <div class="fc-bottom-note">
-        Make sure only your face is visible and stay in a bright place.
-      </div>
+        <button class="fc-help-link" id="whyBtn" type="button">
+          Why am I doing this?
+        </button>
+      </section>
     </section>
   </div>
+
+  <script>
+    window.SUPABASE_URL = "YOUR_SUPABASE_URL";
+    window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-  <script src="face-capture.js"></script>
+
+  <script>
+    const FACE_ENROLL_FUNCTION_URL = `${window.SUPABASE_URL}/functions/v1/face-enroll`;
+    const SUCCESS_REDIRECT_URL = "main.html";
+
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    const video = document.getElementById("cameraVideo");
+    const overlayCanvas = document.getElementById("overlayCanvas");
+    const overlayCtx = overlayCanvas.getContext("2d");
+    const captureCanvas = document.getElementById("captureCanvas");
+    const captureCtx = captureCanvas.getContext("2d");
+    const capturePreview = document.getElementById("capturePreview");
+
+    const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+    const cameraBadge = document.getElementById("cameraBadge");
+
+    const statusTitle = document.getElementById("statusTitle");
+    const statusSub = document.getElementById("statusSub");
+    const errorMsg = document.getElementById("errorMsg");
+    const successMsg = document.getElementById("successMsg");
+
+    const startCameraBtn = document.getElementById("startCameraBtn");
+    const stopCameraBtn = document.getElementById("stopCameraBtn");
+    const retakeBtn = document.getElementById("retakeBtn");
+    const continueBtn = document.getElementById("continueBtn");
+    const backBtn = document.getElementById("backBtn");
+    const whyBtn = document.getElementById("whyBtn");
+    const captureActions = document.getElementById("captureActions");
+
+    let mediaStream = null;
+    let mpCamera = null;
+    let faceMesh = null;
+    let scanningActive = false;
+    let captureLocked = false;
+    let finalBase64 = null;
+    let finalMimeType = "image/jpeg";
+
+    let poseHoldFrames = 0;
+    let currentStepIndex = 0;
+    const scanSequence = ["center", "left", "right"];
+    const POSE_HOLD_TARGET = 8;
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showError(message) {
+      if (!errorMsg) return;
+      errorMsg.textContent = message || "";
+      errorMsg.classList.toggle("hidden", !message);
+    }
+
+    function showSuccess(message) {
+      if (!successMsg) return;
+      successMsg.textContent = message || "";
+      successMsg.classList.toggle("hidden", !message);
+    }
+
+    function clearFlashMessages() {
+      showError("");
+      showSuccess("");
+    }
+
+    function setStatus(title, sub = "") {
+      if (statusTitle) statusTitle.textContent = title || "";
+      if (statusSub) statusSub.textContent = sub || "";
+    }
+
+    function setCameraBadge(text) {
+      if (cameraBadge) cameraBadge.textContent = text || "";
+    }
+
+    function setButtonsForIdle() {
+      if (startCameraBtn) startCameraBtn.classList.remove("hidden");
+      if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
+      if (captureActions) captureActions.classList.add("hidden");
+    }
+
+    function setButtonsForLiveCamera() {
+      if (startCameraBtn) startCameraBtn.classList.add("hidden");
+      if (stopCameraBtn) stopCameraBtn.classList.remove("hidden");
+      if (captureActions) captureActions.classList.add("hidden");
+    }
+
+    function setButtonsForCaptured() {
+      if (startCameraBtn) startCameraBtn.classList.add("hidden");
+      if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
+      if (captureActions) captureActions.classList.remove("hidden");
+    }
+
+    function updateSequenceUI() {
+      const step2 = document.getElementById("statusTitle");
+      const circles = document.querySelectorAll(".fc-step-circle");
+      const lines = document.querySelectorAll(".fc-step-line");
+
+      circles.forEach((el, index) => {
+        el.classList.remove("active", "done");
+        el.textContent = String(index + 1);
+      });
+
+      lines.forEach((el) => el.classList.remove("done"));
+
+      if (circles[0]) {
+        if (currentStepIndex <= 0) {
+          circles[0].classList.add("active");
+          circles[0].textContent = "1";
+        } else {
+          circles[0].classList.add("done");
+          circles[0].textContent = "✓";
+        }
+      }
+
+      if (circles[1]) {
+        if (currentStepIndex === 1) {
+          circles[1].classList.add("active");
+          circles[1].textContent = "2";
+        } else if (currentStepIndex > 1) {
+          circles[1].classList.add("done");
+          circles[1].textContent = "✓";
+        }
+      }
+
+      if (circles[2]) {
+        if (currentStepIndex === 2) {
+          circles[2].classList.add("active");
+          circles[2].textContent = "3";
+        } else if (currentStepIndex > 2) {
+          circles[2].classList.add("done");
+          circles[2].textContent = "✓";
+        }
+      }
+
+      if (lines[0] && currentStepIndex > 0) lines[0].classList.add("done");
+      if (lines[1] && currentStepIndex > 0) lines[1].classList.add("done");
+      if (lines[2] && currentStepIndex > 1) lines[2].classList.add("done");
+      if (lines[3] && currentStepIndex > 2) lines[3].classList.add("done");
+
+      if (step2) {
+        step2.textContent = currentInstruction();
+      }
+    }
+
+    function resetSequenceState() {
+      currentStepIndex = 0;
+      poseHoldFrames = 0;
+      captureLocked = false;
+      updateSequenceUI();
+    }
+
+    function currentInstruction() {
+      const step = scanSequence[currentStepIndex] || "center";
+      if (step === "center") return "Look straight";
+      if (step === "left") return "Turn left";
+      if (step === "right") return "Turn right";
+      return "Hold still";
+    }
+
+    function clearOverlay() {
+      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+
+    function resizeOverlayToVideo() {
+      const width = video.videoWidth || 720;
+      const height = video.videoHeight || 960;
+      overlayCanvas.width = width;
+      overlayCanvas.height = height;
+    }
+
+    function ratioBetween(leftX, rightX, targetX) {
+      const width = rightX - leftX;
+      if (!width || Math.abs(width) < 0.00001) return 0.5;
+      return (targetX - leftX) / width;
+    }
+
+    function computePose(landmarks) {
+      const leftEyeOuter = landmarks[33];
+      const rightEyeOuter = landmarks[263];
+      const noseTip = landmarks[1];
+
+      const ratio = ratioBetween(leftEyeOuter.x, rightEyeOuter.x, noseTip.x);
+
+      if (ratio >= 0.45 && ratio <= 0.55) return "center";
+      if (ratio < 0.43) return "left";
+      if (ratio > 0.57) return "right";
+      return "unknown";
+    }
+
+    function isFaceCentered(landmarks) {
+      const leftCheek = landmarks[234];
+      const rightCheek = landmarks[454];
+      const forehead = landmarks[10];
+      const chin = landmarks[152];
+
+      const centerX = (leftCheek.x + rightCheek.x) / 2;
+      const centerY = (forehead.y + chin.y) / 2;
+
+      return centerX >= 0.35 && centerX <= 0.65 && centerY >= 0.30 && centerY <= 0.66;
+    }
+
+    function drawResults(results) {
+      resizeOverlayToVideo();
+      clearOverlay();
+
+      if (!results || !results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+        return;
+      }
+
+      const landmarks = results.multiFaceLandmarks[0];
+
+      drawConnectors(
+        overlayCtx,
+        landmarks,
+        FACEMESH_TESSELATION,
+        { color: "rgba(255,255,255,0.07)", lineWidth: 1 }
+      );
+
+      drawConnectors(
+        overlayCtx,
+        landmarks,
+        FACEMESH_FACE_OVAL,
+        { color: "rgba(59,130,246,0.95)", lineWidth: 2 }
+      );
+    }
+
+    function hidePlaceholder() {
+      if (cameraPlaceholder) cameraPlaceholder.classList.add("hidden");
+    }
+
+    function showPlaceholder() {
+      if (cameraPlaceholder) cameraPlaceholder.classList.remove("hidden");
+    }
+
+    function showCapturedPreview(base64) {
+      if (capturePreview) {
+        capturePreview.src = base64;
+        capturePreview.classList.remove("hidden");
+      }
+      if (video) video.classList.add("hidden");
+    }
+
+    function hideCapturedPreview() {
+      if (capturePreview) {
+        capturePreview.src = "";
+        capturePreview.classList.add("hidden");
+      }
+      if (video) video.classList.remove("hidden");
+    }
+
+    function stopTracksOnly() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        mediaStream = null;
+      }
+
+      if (mpCamera && typeof mpCamera.stop === "function") {
+        try {
+          mpCamera.stop();
+        } catch (_) {}
+      }
+
+      mpCamera = null;
+      scanningActive = false;
+    }
+
+    function fullResetToIdle() {
+      stopTracksOnly();
+      clearOverlay();
+      finalBase64 = null;
+      hideCapturedPreview();
+      showPlaceholder();
+      setButtonsForIdle();
+      resetSequenceState();
+      clearFlashMessages();
+      setCameraBadge("Look straight, turn left, turn right");
+      setStatus("Turn left", "Start your camera and follow the movement guide.");
+    }
+
+    function buildCaptureMeta() {
+      return {
+        source: "camera",
+        stepSequence: scanSequence,
+        deviceId:
+          localStorage.getItem("colspot_device_id") ||
+          localStorage.getItem("device_id") ||
+          null
+      };
+    }
+
+    async function ensureSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data?.session) {
+        window.location.href = "index.html";
+        return null;
+      }
+
+      return data.session;
+    }
+
+    async function initFaceMesh() {
+      if (faceMesh) return;
+
+      faceMesh = new FaceMesh({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      });
+
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6
+      });
+
+      faceMesh.onResults((results) => {
+        drawResults(results);
+
+        if (!scanningActive || captureLocked) return;
+
+        const faces = results.multiFaceLandmarks || [];
+
+        if (!faces.length) {
+          poseHoldFrames = 0;
+          setCameraBadge("No face detected");
+          setStatus("Look straight", "Position your face inside the frame.");
+          return;
+        }
+
+        const landmarks = faces[0];
+        const centered = isFaceCentered(landmarks);
+        const expectedPose = scanSequence[currentStepIndex] || null;
+
+        if (!expectedPose) {
+          captureLocked = true;
+          scanningActive = false;
+          setCameraBadge("Capturing...");
+          setStatus("Hold still", "We are capturing your face now.");
+          setTimeout(captureFrame, 400);
+          return;
+        }
+
+        const pose = computePose(landmarks);
+
+        if (!centered) {
+          poseHoldFrames = 0;
+          setCameraBadge("Move into frame");
+          setStatus("Center your face", "Move your face into the frame and keep only one face visible.");
+          return;
+        }
+
+        setCameraBadge(`Expected: ${expectedPose}`);
+
+        if (pose === expectedPose) {
+          poseHoldFrames += 1;
+          clearFlashMessages();
+          setStatus(
+            currentInstruction(),
+            `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+          );
+        } else {
+          poseHoldFrames = 0;
+          setStatus(currentInstruction(), "Follow the movement guide.");
+        }
+
+        if (poseHoldFrames >= POSE_HOLD_TARGET) {
+          currentStepIndex += 1;
+          poseHoldFrames = 0;
+          updateSequenceUI();
+
+          if (currentStepIndex >= scanSequence.length) {
+            captureLocked = true;
+            scanningActive = false;
+            setCameraBadge("Capturing...");
+            setStatus("Hold still", "We are capturing your face now.");
+            setTimeout(captureFrame, 400);
+            return;
+          }
+
+          setStatus(currentInstruction(), "Good. Move to the next step.");
+        }
+      });
+    }
+
+    function captureFrame() {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+
+      if (!width || !height) {
+        captureLocked = false;
+        scanningActive = true;
+        showError("Camera is not ready yet. Please try again.");
+        return;
+      }
+
+      captureCanvas.width = width;
+      captureCanvas.height = height;
+
+      captureCtx.save();
+      captureCtx.translate(width, 0);
+      captureCtx.scale(-1, 1);
+      captureCtx.drawImage(video, 0, 0, width, height);
+      captureCtx.restore();
+
+      finalBase64 = captureCanvas.toDataURL(finalMimeType, 0.95);
+      showCapturedPreview(finalBase64);
+
+      scanningActive = false;
+      setButtonsForCaptured();
+      setCameraBadge("Capture ready");
+      showSuccess("Face captured successfully.");
+      setStatus("Turn right", "Review your capture or continue.");
+    }
+
+    async function startCamera() {
+      clearFlashMessages();
+      await ensureSession();
+
+      try {
+        stopTracksOnly();
+        hideCapturedPreview();
+        showPlaceholder();
+        resetSequenceState();
+        finalBase64 = null;
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 720 },
+            height: { ideal: 960 }
+          },
+          audio: false
+        });
+
+        video.srcObject = mediaStream;
+        await video.play();
+
+        await initFaceMesh();
+
+        mpCamera = new Camera(video, {
+          onFrame: async () => {
+            if (faceMesh) {
+              await faceMesh.send({ image: video });
+            }
+          },
+          width: 720,
+          height: 960
+        });
+
+        await mpCamera.start();
+
+        scanningActive = true;
+        hidePlaceholder();
+        setButtonsForLiveCamera();
+        setCameraBadge("Expected: center");
+        setStatus("Look straight", "Start by looking straight at the camera.");
+      } catch (err) {
+        console.error(err);
+        showError("Camera access failed. Please allow camera permission and try again.");
+        setStatus("Camera access failed", "Permission is required to continue.");
+        fullResetToIdle();
+      }
+    }
+
+    async function uploadToEdge() {
+      clearFlashMessages();
+
+      const session = await ensureSession();
+      if (!session) return;
+
+      if (!finalBase64) {
+        showError("No captured image found. Please retake your face.");
+        return;
+      }
+
+      continueBtn.disabled = true;
+      retakeBtn.disabled = true;
+      setStatus("Saving your face...", "Please wait while we upload your face image.");
+      setCameraBadge("Uploading...");
+
+      try {
+        const res = await fetch(FACE_ENROLL_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            imageBase64: finalBase64,
+            mimeType: finalMimeType,
+            captureMeta: buildCaptureMeta()
+          })
+        });
+
+        const result = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(result.error || "Failed to save face.");
+        }
+
+        localStorage.setItem("colspot_face_enrolled", "true");
+        localStorage.removeItem("colspot_face_step_ready");
+
+        showSuccess("Face capture completed successfully.");
+        setStatus("Face saved", "Your face image has been saved.");
+        setCameraBadge("Done");
+
+        setTimeout(() => {
+          window.location.href = SUCCESS_REDIRECT_URL;
+        }, 1200);
+      } catch (err) {
+        console.error(err);
+        continueBtn.disabled = false;
+        retakeBtn.disabled = false;
+        showError(err?.message || "Could not save your face. Please try again.");
+        setStatus("Upload failed", "Please check your connection and try again.");
+        setCameraBadge("Capture ready");
+      }
+    }
+
+    function retakeCapture() {
+      clearFlashMessages();
+      hideCapturedPreview();
+      finalBase64 = null;
+      captureLocked = false;
+      scanningActive = true;
+      resetSequenceState();
+      setButtonsForLiveCamera();
+      setCameraBadge("Expected: center");
+      setStatus("Look straight", "Start again by looking straight at the camera.");
+    }
+
+    if (backBtn) {
+      backBtn.addEventListener("click", () => {
+        window.history.back();
+      });
+    }
+
+    if (whyBtn) {
+      whyBtn.addEventListener("click", () => {
+        alert("This helps Colspot confirm that a real live student is completing verification.");
+      });
+    }
+
+    if (startCameraBtn) {
+      startCameraBtn.addEventListener("click", startCamera);
+    }
+
+    if (stopCameraBtn) {
+      stopCameraBtn.addEventListener("click", () => {
+        fullResetToIdle();
+      });
+    }
+
+    if (retakeBtn) {
+      retakeBtn.addEventListener("click", retakeCapture);
+    }
+
+    if (continueBtn) {
+      continueBtn.addEventListener("click", uploadToEdge);
+    }
+
+    window.addEventListener("beforeunload", () => {
+      stopTracksOnly();
+    });
+
+    (async function boot() {
+      const session = await ensureSession();
+      if (!session) return;
+      fullResetToIdle();
+    })();
+  </script>
 </body>
 </html>
