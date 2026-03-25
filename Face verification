@@ -4,9 +4,11 @@ const FACE_VERIFY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-verify-atten
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let mediaStream = null;
-let capturedDataUrl = "";
-let isVerifying = false;
+const pageParams = new URLSearchParams(window.location.search);
+const RETURN_TO = pageParams.get("returnTo") || "near_attendance.html";
+const SESSION_ID = pageParams.get("sessionId") || "";
+const COURSE_CODE = pageParams.get("courseCode") || "";
+const VERIFY_THRESHOLD = Number(pageParams.get("threshold") || 0.7);
 
 const faceVideo = document.getElementById("faceVideo");
 const faceCanvas = document.getElementById("faceCanvas");
@@ -20,6 +22,15 @@ const faceResultText = document.getElementById("faceResultText");
 const faceResultPill = document.getElementById("faceResultPill");
 const faceTopMessageText = document.getElementById("faceTopMessageText");
 
+const faceChallengeBadge = document.getElementById("faceChallengeBadge");
+const faceChallengeText = document.getElementById("faceChallengeText");
+const faceGuideText = document.getElementById("faceGuideText");
+const faceLiveChip = document.getElementById("faceLiveChip");
+
+const poseCenterPill = document.getElementById("poseCenterPill");
+const poseLeftPill = document.getElementById("poseLeftPill");
+const poseRightPill = document.getElementById("poseRightPill");
+
 const faceErrorBox = document.getElementById("faceErrorBox");
 const faceSuccessBox = document.getElementById("faceSuccessBox");
 
@@ -30,20 +41,37 @@ const verifyFaceBtn = document.getElementById("verifyFaceBtn");
 const cancelFaceBtn = document.getElementById("cancelFaceBtn");
 const faceBackBtn = document.getElementById("faceBackBtn");
 
-function parseParams() {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    returnTo: params.get("returnTo") || "near_attendance.html",
-    sessionId: params.get("sessionId") || "",
-    courseCode: params.get("courseCode") || "",
-    threshold: Number(params.get("threshold") || 0.7),
-  };
+const overlayCtx = faceCanvas.getContext("2d");
+const captureCanvas = document.createElement("canvas");
+const captureCtx = captureCanvas.getContext("2d");
+
+let mediaStream = null;
+let faceMesh = null;
+let scanLoopActive = false;
+let captureLocked = false;
+let capturedDataUrl = "";
+let isVerifying = false;
+
+let poseHoldFrames = 0;
+let currentStepIndex = 0;
+const scanSequence = ["center", "left", "right"];
+const POSE_HOLD_TARGET = 8;
+
+function showError(message) {
+  if (!faceErrorBox) return;
+  faceErrorBox.textContent = message || "";
+  faceErrorBox.classList.toggle("hidden", !message);
 }
 
-const pageParams = parseParams();
+function showSuccess(message) {
+  if (!faceSuccessBox) return;
+  faceSuccessBox.textContent = message || "";
+  faceSuccessBox.classList.toggle("hidden", !message);
+}
 
-function setTopMessage(text) {
-  if (faceTopMessageText) faceTopMessageText.textContent = text || "";
+function clearFlashMessages() {
+  showError("");
+  showSuccess("");
 }
 
 function setStatus(text) {
@@ -54,16 +82,24 @@ function setCameraBadge(text) {
   if (faceCameraBadge) faceCameraBadge.textContent = text || "";
 }
 
+function setTopMessage(text) {
+  if (faceTopMessageText) faceTopMessageText.textContent = text || "";
+}
+
+function setGuideText(text) {
+  if (faceGuideText) faceGuideText.textContent = text || "";
+}
+
+function setLiveChip(text) {
+  if (faceLiveChip) faceLiveChip.textContent = text || "";
+}
+
 function setResultPill(mode, text) {
   if (!faceResultPill) return;
   faceResultPill.className = "verify-result-pill";
-  if (mode === "success") {
-    faceResultPill.classList.add("success");
-  } else if (mode === "error") {
-    faceResultPill.classList.add("error");
-  } else {
-    faceResultPill.classList.add("neutral");
-  }
+  if (mode === "success") faceResultPill.classList.add("success");
+  else if (mode === "error") faceResultPill.classList.add("error");
+  else faceResultPill.classList.add("neutral");
   faceResultPill.textContent = text || "Waiting";
 }
 
@@ -71,98 +107,186 @@ function setResultText(text) {
   if (faceResultText) faceResultText.textContent = text || "";
 }
 
-function showError(text) {
-  if (!faceErrorBox) return;
-  faceErrorBox.textContent = text || "";
-  faceErrorBox.classList.remove("hidden");
-}
-
-function hideError() {
-  if (!faceErrorBox) return;
-  faceErrorBox.textContent = "";
-  faceErrorBox.classList.add("hidden");
-}
-
-function showSuccess(text) {
-  if (!faceSuccessBox) return;
-  faceSuccessBox.textContent = text || "";
-  faceSuccessBox.classList.remove("hidden");
-}
-
-function hideSuccess() {
-  if (!faceSuccessBox) return;
-  faceSuccessBox.textContent = "";
-  faceSuccessBox.classList.add("hidden");
-}
-
-function resetResultUi() {
-  hideError();
-  hideSuccess();
-  setResultPill("neutral", "Waiting");
-  setResultText("Capture your face to continue.");
-}
-
 function setButtonState() {
   const hasStream = !!mediaStream;
   const hasCapture = !!capturedDataUrl;
 
   if (startCameraBtn) startCameraBtn.disabled = hasStream || isVerifying;
-  if (captureFaceBtn) captureFaceBtn.disabled = !hasStream || isVerifying;
+  if (captureFaceBtn) captureFaceBtn.disabled = !hasCapture || isVerifying;
   if (retakeFaceBtn) retakeFaceBtn.disabled = !hasCapture || isVerifying;
   if (verifyFaceBtn) verifyFaceBtn.disabled = !hasCapture || isVerifying;
   if (cancelFaceBtn) cancelFaceBtn.disabled = isVerifying;
   if (faceBackBtn) faceBackBtn.disabled = isVerifying;
 }
 
-function showPreview(dataUrl) {
-  if (facePreviewImage) facePreviewImage.src = dataUrl;
+function resetResultUi() {
+  clearFlashMessages();
+  setResultPill("neutral", "Waiting");
+  setResultText("Start the camera and complete the face movement challenge.");
+}
+
+function updateSequenceUI() {
+  [poseCenterPill, poseLeftPill, poseRightPill].forEach((el) => {
+    if (!el) return;
+    el.classList.remove("active", "done");
+  });
+
+  if (currentStepIndex <= 0 && poseCenterPill) poseCenterPill.classList.add("active");
+  if (currentStepIndex > 0 && poseCenterPill) poseCenterPill.classList.add("done");
+
+  if (currentStepIndex === 1 && poseLeftPill) poseLeftPill.classList.add("active");
+  if (currentStepIndex > 1 && poseLeftPill) poseLeftPill.classList.add("done");
+
+  if (currentStepIndex === 2 && poseRightPill) poseRightPill.classList.add("active");
+  if (currentStepIndex > 2 && poseRightPill) poseRightPill.classList.add("done");
+
+  const stepNo = Math.min(currentStepIndex + 1, scanSequence.length);
+  if (faceChallengeBadge) {
+    if (currentStepIndex >= scanSequence.length) {
+      faceChallengeBadge.textContent = "Challenge complete";
+    } else {
+      faceChallengeBadge.textContent = `Step ${stepNo} of ${scanSequence.length}`;
+    }
+  }
+}
+
+function resetSequenceState() {
+  currentStepIndex = 0;
+  poseHoldFrames = 0;
+  captureLocked = false;
+  updateSequenceUI();
+}
+
+function currentInstruction() {
+  const step = scanSequence[currentStepIndex] || "center";
+  if (step === "center") return "Look straight at the camera";
+  if (step === "left") return "Turn your head slightly left";
+  if (step === "right") return "Turn your head slightly right";
+  return "Hold still";
+}
+
+function updateChallengeInstruction(text) {
+  if (faceChallengeText) faceChallengeText.textContent = text || "";
+  setGuideText(text || "");
+}
+
+function clearOverlay() {
+  if (!overlayCtx) return;
+  overlayCtx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+}
+
+function resizeOverlayToVideo() {
+  const width = faceVideo.videoWidth || 720;
+  const height = faceVideo.videoHeight || 960;
+  faceCanvas.width = width;
+  faceCanvas.height = height;
+}
+
+function ratioBetween(leftX, rightX, targetX) {
+  const width = rightX - leftX;
+  if (!width || Math.abs(width) < 0.00001) return 0.5;
+  return (targetX - leftX) / width;
+}
+
+function computePose(landmarks) {
+  const leftEyeOuter = landmarks[33];
+  const rightEyeOuter = landmarks[263];
+  const noseTip = landmarks[1];
+
+  const ratio = ratioBetween(leftEyeOuter.x, rightEyeOuter.x, noseTip.x);
+
+  if (ratio >= 0.45 && ratio <= 0.55) return "center";
+  if (ratio < 0.43) return "left";
+  if (ratio > 0.57) return "right";
+  return "unknown";
+}
+
+function isFaceCentered(landmarks) {
+  const leftCheek = landmarks[234];
+  const rightCheek = landmarks[454];
+  const forehead = landmarks[10];
+  const chin = landmarks[152];
+
+  const centerX = (leftCheek.x + rightCheek.x) / 2;
+  const centerY = (forehead.y + chin.y) / 2;
+
+  return centerX >= 0.35 && centerX <= 0.65 && centerY >= 0.30 && centerY <= 0.66;
+}
+
+function drawResults(results) {
+  resizeOverlayToVideo();
+  clearOverlay();
+
+  if (
+    !results ||
+    !results.multiFaceLandmarks ||
+    !results.multiFaceLandmarks.length ||
+    typeof drawConnectors !== "function"
+  ) {
+    return;
+  }
+
+  const landmarks = results.multiFaceLandmarks[0];
+
+  drawConnectors(
+    overlayCtx,
+    landmarks,
+    FACEMESH_TESSELATION,
+    { color: "rgba(255,255,255,0.07)", lineWidth: 1 }
+  );
+
+  drawConnectors(
+    overlayCtx,
+    landmarks,
+    FACEMESH_FACE_OVAL,
+    { color: "rgba(59,130,246,0.95)", lineWidth: 2 }
+  );
+}
+
+function showCapturedPreview(base64) {
+  if (facePreviewImage) facePreviewImage.src = base64;
   if (facePreviewWrap) facePreviewWrap.classList.remove("hidden");
+  if (faceVideo) faceVideo.classList.add("hidden");
   if (faceGuideOverlay) faceGuideOverlay.classList.add("hidden");
 }
 
-function hidePreview() {
-  if (facePreviewImage) facePreviewImage.removeAttribute("src");
+function hideCapturedPreview() {
+  if (facePreviewImage) facePreviewImage.src = "";
   if (facePreviewWrap) facePreviewWrap.classList.add("hidden");
+  if (faceVideo) faceVideo.classList.remove("hidden");
   if (mediaStream && faceGuideOverlay) faceGuideOverlay.classList.remove("hidden");
 }
 
-function stopCameraTracks() {
+function stopTracksOnly() {
   if (mediaStream) {
     mediaStream.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
   }
-  mediaStream = null;
-
-  if (faceVideo) {
-    try {
-      faceVideo.pause();
-    } catch (_) {}
-    faceVideo.srcObject = null;
-  }
-
-  setButtonState();
+  scanLoopActive = false;
 }
 
-async function ensureSession() {
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error || !data?.session) {
-    window.location.href = "index.html";
-    return null;
-  }
-
-  return data.session;
+function fullResetToIdle() {
+  stopTracksOnly();
+  clearOverlay();
+  capturedDataUrl = "";
+  hideCapturedPreview();
+  resetSequenceState();
+  clearFlashMessages();
+  setCameraBadge("Ready");
+  setStatus("Camera is not started yet.");
+  setTopMessage("Colspot will ask you to face center, turn left, then turn right before attendance continues.");
+  updateChallengeInstruction("Start the camera, then look straight at the screen first.");
+  setLiveChip("Waiting to start");
+  resetResultUi();
+  setButtonState();
+  if (faceVideo) faceVideo.srcObject = null;
 }
 
 function buildReturnUrl(extra = {}) {
-  const url = new URL(pageParams.returnTo, window.location.href);
+  const url = new URL(RETURN_TO, window.location.href);
 
-  if (pageParams.sessionId) {
-    url.searchParams.set("verifiedSessionId", pageParams.sessionId);
-  }
-
-  if (pageParams.courseCode) {
-    url.searchParams.set("verifiedCourseCode", pageParams.courseCode);
-  }
+  if (SESSION_ID) url.searchParams.set("verifiedSessionId", SESSION_ID);
+  if (COURSE_CODE) url.searchParams.set("verifiedCourseCode", COURSE_CODE);
 
   Object.entries(extra).forEach(([key, value]) => {
     if (value === null || value === undefined || value === "") return;
@@ -173,25 +297,157 @@ function buildReturnUrl(extra = {}) {
 }
 
 function goBackCancelled() {
-  window.location.href = buildReturnUrl({
-    faceVerified: 0,
+  window.location.href = buildReturnUrl({ faceVerified: 0 });
+}
+
+async function ensureSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error || !data?.session) {
+    window.location.href = "index.html";
+    return null;
+  }
+  return data.session;
+}
+
+async function initFaceMesh() {
+  if (faceMesh) return;
+
+  if (typeof FaceMesh !== "function") {
+    throw new Error("MediaPipe FaceMesh is not loaded.");
+  }
+
+  faceMesh = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+  });
+
+  faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6,
+  });
+
+  faceMesh.onResults((results) => {
+    drawResults(results);
+
+    if (!scanLoopActive || captureLocked) return;
+
+    const faces = results.multiFaceLandmarks || [];
+
+    if (!faces.length) {
+      poseHoldFrames = 0;
+      setCameraBadge("No face detected");
+      setStatus("No face detected.");
+      updateChallengeInstruction("Position your face inside the frame.");
+      setLiveChip("Face not found");
+      return;
+    }
+
+    if (faces.length > 1) {
+      poseHoldFrames = 0;
+      setCameraBadge("Multiple faces");
+      setStatus("Only one face should be visible.");
+      updateChallengeInstruction("Remove extra faces from the frame.");
+      setLiveChip("More than one face");
+      return;
+    }
+
+    const landmarks = faces[0];
+    const centered = isFaceCentered(landmarks);
+    const expectedPose = scanSequence[currentStepIndex] || null;
+
+    if (!expectedPose) {
+      captureLocked = true;
+      scanLoopActive = false;
+      setCameraBadge("Capturing...");
+      setStatus("Challenge complete. Capturing face...");
+      updateChallengeInstruction("Hold still. We are capturing your face now.");
+      setLiveChip("Capturing");
+      setTimeout(captureFrame, 400);
+      return;
+    }
+
+    const pose = computePose(landmarks);
+
+    if (!centered) {
+      poseHoldFrames = 0;
+      setCameraBadge("Move into frame");
+      setStatus("Center your face in the frame.");
+      updateChallengeInstruction("Move your face into the frame and keep only one face visible.");
+      setLiveChip("Adjust position");
+      return;
+    }
+
+    setCameraBadge(`Detecting ${expectedPose}`);
+    setLiveChip(`Expected: ${expectedPose}`);
+
+    if (pose === expectedPose) {
+      poseHoldFrames += 1;
+      setStatus(`${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected.`);
+      updateChallengeInstruction(
+        `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+      );
+    } else {
+      poseHoldFrames = 0;
+      setStatus("Follow the guide.");
+      updateChallengeInstruction(currentInstruction());
+    }
+
+    if (poseHoldFrames >= POSE_HOLD_TARGET) {
+      currentStepIndex += 1;
+      poseHoldFrames = 0;
+      updateSequenceUI();
+
+      if (currentStepIndex >= scanSequence.length) {
+        captureLocked = true;
+        scanLoopActive = false;
+        setCameraBadge("Capturing...");
+        setStatus("Challenge complete. Capturing face...");
+        updateChallengeInstruction("Hold still. We are capturing your face now.");
+        setLiveChip("Capturing");
+        setTimeout(captureFrame, 400);
+        return;
+      }
+
+      setStatus("Next step.");
+      updateChallengeInstruction(currentInstruction());
+      setLiveChip("Step passed");
+    }
   });
 }
 
-async function startCamera() {
-  hideError();
-  hideSuccess();
-  capturedDataUrl = "";
-  hidePreview();
-  resetResultUi();
+async function processVideoFrame() {
+  if (!scanLoopActive || !faceMesh || !faceVideo || faceVideo.readyState < 2) {
+    if (scanLoopActive) requestAnimationFrame(processVideoFrame);
+    return;
+  }
 
   try {
-    await ensureSession();
+    await faceMesh.send({ image: faceVideo });
+  } catch (err) {
+    console.error("FaceMesh frame processing error:", err);
+  }
 
-    stopCameraTracks();
+  if (scanLoopActive) requestAnimationFrame(processVideoFrame);
+}
+
+async function startCamera() {
+  try {
+    clearFlashMessages();
+    capturedDataUrl = "";
+    hideCapturedPreview();
+    resetResultUi();
+    resetSequenceState();
+
+    await ensureSession();
+    await initFaceMesh();
+
+    stopTracksOnly();
 
     setStatus("Requesting front camera...");
     setCameraBadge("Opening");
+    updateChallengeInstruction("Start by looking straight at the camera.");
+    setLiveChip("Opening camera");
 
     mediaStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
@@ -205,86 +461,96 @@ async function startCamera() {
     faceVideo.srcObject = mediaStream;
     await faceVideo.play();
 
-    if (faceGuideOverlay) faceGuideOverlay.classList.remove("hidden");
+    scanLoopActive = true;
+    captureLocked = false;
 
-    setStatus("Camera is live. Keep your face inside the frame.");
+    setStatus("Camera is live. Follow the movement challenge.");
     setCameraBadge("Live");
-    setTopMessage("Position your face well, then capture.");
-    setResultPill("neutral", "Ready");
-    setResultText("When your face is centered well, tap Capture face.");
+    setTopMessage("Follow the steps: center, left, right.");
+    updateChallengeInstruction(currentInstruction());
+    setLiveChip("Live challenge started");
 
     setButtonState();
+    requestAnimationFrame(processVideoFrame);
   } catch (err) {
-    stopCameraTracks();
+    console.error(err);
+    stopTracksOnly();
     setStatus("Could not open camera.");
     setCameraBadge("Blocked");
     setResultPill("error", "Camera error");
     setResultText("Camera access is required for attendance face verification.");
     showError(err?.message || "Unable to start camera.");
+    setButtonState();
   }
 }
 
-function captureFace() {
-  hideError();
-  hideSuccess();
+function captureFrame() {
+  const width = faceVideo.videoWidth;
+  const height = faceVideo.videoHeight;
 
-  try {
-    if (!mediaStream || !faceVideo.videoWidth || !faceVideo.videoHeight) {
-      throw new Error("Camera is not ready yet.");
-    }
-
-    const width = faceVideo.videoWidth;
-    const height = faceVideo.videoHeight;
-
-    faceCanvas.width = width;
-    faceCanvas.height = height;
-
-    const ctx = faceCanvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas is not available.");
-
-    ctx.drawImage(faceVideo, 0, 0, width, height);
-    capturedDataUrl = faceCanvas.toDataURL("image/jpeg", 0.92);
-
-    showPreview(capturedDataUrl);
-
-    setStatus("Face captured successfully.");
-    setCameraBadge("Captured");
-    setResultPill("neutral", "Captured");
-    setResultText("Your face photo is ready. Tap Verify and continue.");
-    setTopMessage("Captured. You can verify now or retake if needed.");
-
+  if (!width || !height) {
+    captureLocked = false;
+    scanLoopActive = true;
+    showError("Camera is not ready yet. Please try again.");
     setButtonState();
-  } catch (err) {
-    setResultPill("error", "Capture failed");
-    setResultText("Please try to capture your face again.");
-    showError(err?.message || "Could not capture face.");
+    return;
   }
+
+  captureCanvas.width = width;
+  captureCanvas.height = height;
+
+  captureCtx.save();
+  captureCtx.translate(width, 0);
+  captureCtx.scale(-1, 1);
+  captureCtx.drawImage(faceVideo, 0, 0, width, height);
+  captureCtx.restore();
+
+  capturedDataUrl = captureCanvas.toDataURL("image/jpeg", 0.95);
+
+  showCapturedPreview(capturedDataUrl);
+  setCameraBadge("Captured");
+  setStatus("Face captured successfully.");
+  updateChallengeInstruction("Challenge complete. Your face is ready for verification.");
+  setLiveChip("Ready to verify");
+  setResultPill("neutral", "Captured");
+  setResultText("Your live face capture is ready. Tap Verify and continue.");
+  showSuccess("Liveness challenge completed successfully.");
+  setButtonState();
 }
 
 function retakeFace() {
+  clearFlashMessages();
   capturedDataUrl = "";
-  hidePreview();
-  hideError();
-  hideSuccess();
+  hideCapturedPreview();
+  resetSequenceState();
 
-  setStatus("Camera is live. Capture a fresh face photo.");
-  setCameraBadge(mediaStream ? "Live" : "Ready");
-  setResultPill("neutral", "Waiting");
-  setResultText("Retake your face and continue.");
-  setTopMessage("Retake your face photo for attendance verification.");
+  if (mediaStream && faceVideo.srcObject) {
+    scanLoopActive = true;
+    captureLocked = false;
+    setCameraBadge("Live");
+    setStatus("Camera is live. Follow the movement challenge.");
+    updateChallengeInstruction(currentInstruction());
+    setLiveChip("Restarted challenge");
+    requestAnimationFrame(processVideoFrame);
+  } else {
+    setCameraBadge("Ready");
+    setStatus("Camera is not started yet.");
+    updateChallengeInstruction("Start the camera, then look straight at the screen first.");
+    setLiveChip("Waiting to start");
+  }
 
+  resetResultUi();
   setButtonState();
 }
 
 async function verifyFaceAndContinue() {
   if (isVerifying) return;
 
-  hideError();
-  hideSuccess();
-
   try {
+    clearFlashMessages();
+
     if (!capturedDataUrl) {
-      throw new Error("Capture your face first.");
+      throw new Error("Complete the movement challenge first.");
     }
 
     const session = await ensureSession();
@@ -297,19 +563,20 @@ async function verifyFaceAndContinue() {
     setCameraBadge("Checking");
     setResultPill("neutral", "Verifying");
     setResultText("Please hold on while Colspot verifies your face.");
-    setTopMessage("Verifying your face for attendance...");
+    setTopMessage("Verifying your live face for attendance...");
+    setLiveChip("Sending for verification");
 
     const res = await fetch(FACE_VERIFY_FUNCTION_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         imageBase64: capturedDataUrl,
         mimeType: "image/jpeg",
-        threshold: pageParams.threshold || 0.7,
-        session_id: pageParams.sessionId || null,
+        threshold: VERIFY_THRESHOLD,
+        session_id: SESSION_ID || null,
       }),
     });
 
@@ -320,6 +587,8 @@ async function verifyFaceAndContinue() {
       setCameraBadge("Failed");
       setResultPill("error", "Failed");
       setResultText("Your face could not be verified for attendance.");
+      setTopMessage("Verification failed. Please retake and try again.");
+      setLiveChip("Verification failed");
       showError(result?.error || "Face verification failed. Please retake and try again.");
       return;
     }
@@ -330,21 +599,25 @@ async function verifyFaceAndContinue() {
     setResultText(
       `Verification passed${result?.similarity ? ` • Similarity ${Number(result.similarity).toFixed(2)}` : ""}. Returning to attendance...`
     );
-    showSuccess("Face verified successfully. Returning to attendance...");
     setTopMessage("Verification successful. Returning to attendance...");
+    setLiveChip("Verified");
+    showSuccess("Face verified successfully. Returning to attendance...");
 
     setTimeout(() => {
       window.location.href = buildReturnUrl({
         faceVerified: 1,
         similarity: result?.similarity ?? "",
-        threshold: result?.threshold ?? pageParams.threshold ?? 0.7,
+        threshold: result?.threshold ?? VERIFY_THRESHOLD,
       });
     }, 900);
   } catch (err) {
+    console.error(err);
     setStatus("Verification failed.");
     setCameraBadge("Failed");
     setResultPill("error", "Error");
     setResultText("Something went wrong during face verification.");
+    setTopMessage("Verification failed. Please try again.");
+    setLiveChip("Error");
     showError(err?.message || "Unable to verify face right now.");
   } finally {
     isVerifying = false;
@@ -353,26 +626,37 @@ async function verifyFaceAndContinue() {
 }
 
 function bindEvents() {
-  if (startCameraBtn) startCameraBtn.addEventListener("click", startCamera);
-  if (captureFaceBtn) captureFaceBtn.addEventListener("click", captureFace);
-  if (retakeFaceBtn) retakeFaceBtn.addEventListener("click", retakeFace);
-  if (verifyFaceBtn) verifyFaceBtn.addEventListener("click", verifyFaceAndContinue);
-  if (cancelFaceBtn) cancelFaceBtn.addEventListener("click", goBackCancelled);
-  if (faceBackBtn) faceBackBtn.addEventListener("click", goBackCancelled);
-
-  window.addEventListener("beforeunload", stopCameraTracks);
+  startCameraBtn?.addEventListener("click", startCamera);
+  captureFaceBtn?.addEventListener("click", verifyFaceAndContinue);
+  retakeFaceBtn?.addEventListener("click", retakeFace);
+  verifyFaceBtn?.addEventListener("click", verifyFaceAndContinue);
+  cancelFaceBtn?.addEventListener("click", goBackCancelled);
+  faceBackBtn?.addEventListener("click", goBackCancelled);
+  window.addEventListener("beforeunload", stopTracksOnly);
 }
 
 async function init() {
   try {
-    setTopMessage("Colspot will capture and verify your face before attendance is submitted.");
+    setTopMessage("Colspot will ask you to face center, turn left, then turn right before attendance continues.");
     setStatus("Camera is not started yet.");
     setCameraBadge("Ready");
+    updateChallengeInstruction("Start the camera, then look straight at the screen first.");
+    setLiveChip("Waiting to start");
+    resetSequenceState();
     resetResultUi();
     setButtonState();
 
     if (!window.supabase?.createClient) {
       throw new Error("Supabase library is not loaded.");
+    }
+
+    if (
+      typeof FaceMesh !== "function" ||
+      typeof drawConnectors !== "function" ||
+      typeof FACEMESH_TESSELATION === "undefined" ||
+      typeof FACEMESH_FACE_OVAL === "undefined"
+    ) {
+      throw new Error("MediaPipe scripts are not loaded.");
     }
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -385,6 +669,7 @@ async function init() {
 
     await ensureSession();
   } catch (err) {
+    console.error(err);
     setResultPill("error", "Unavailable");
     setResultText("Face verification cannot start on this device.");
     showError(err?.message || "Face verification is unavailable.");
