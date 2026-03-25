@@ -9,648 +9,521 @@
   <title>Colspot • Face Verification</title>
 
   <style>
-    :root {
-      --bg: #eef4ff;
-      --card: #ffffff;
-      --line: #e5e7eb;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --blue: #2563eb;
-      --blue-dark: #1d4ed8;
-      --blue-soft: #dbeafe;
-      --green: #16a34a;
-      --green-soft: #dcfce7;
-      --amber: #d97706;
-      --amber-soft: #ffedd5;
-      --red: #dc2626;
-      --red-soft: #fee2e2;
-      --shadow-soft: 0 12px 30px rgba(148, 163, 184, 0.22);
-      --shadow-card: 0 16px 38px rgba(15, 23, 42, 0.12);
-      --radius-xl: 24px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --radius-pill: 999px;
+    :root{
+      --bg:#edf3ff;
+      --panel:#f4f7ff;
+      --card:#ffffff;
+      --text:#182033;
+      --muted:#7a8499;
+      --line:#dfe7f6;
+      --blue:#4c83f6;
+      --blue-dark:#316df0;
+      --blue-soft:#dbeafe;
+      --blue-soft-2:#eef5ff;
+      --green:#22c55e;
+      --green-soft:#dcfce7;
+      --shadow:0 18px 40px rgba(76,131,246,.12);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --radius-xl:30px;
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-pill:999px;
     }
 
-    * {
-      box-sizing: border-box;
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(180deg, #f5f8ff 0%, #edf4ff 100%);
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text-main);
-      min-height: 100%;
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:#e9eef7;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      color:var(--text);
     }
 
-    body {
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
+    body{
+      display:flex;
+      justify-content:center;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
-    button,
-    input,
-    video,
-    canvas {
-      font: inherit;
+    .hidden{
+      display:none !important;
     }
 
-    button {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .phone-shell {
-      width: 100%;
-      min-height: 100vh;
+    .phone-shell{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      background:var(--bg);
       padding:
-        calc(env(safe-area-inset-top) + 14px)
+        calc(env(safe-area-inset-top) + 10px)
         14px
         calc(env(safe-area-inset-bottom) + 18px);
     }
 
-    .page {
-      max-width: 460px;
-      margin: 0 auto;
+    .page{
+      width:100%;
     }
 
-    .hero {
-      margin-bottom: 14px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
     }
 
-    .hero-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+    .icon-back-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:14px;
+      background:#f1f4fb;
+      box-shadow:inset 0 0 0 1px rgba(24,32,51,.04);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      cursor:pointer;
     }
 
-    .icon-back-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #ffffff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      box-shadow: var(--shadow-soft);
-      cursor: pointer;
+    .icon-back-btn svg{
+      width:20px;
+      height:20px;
+      stroke:#3b455c;
+      stroke-width:2;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
     }
 
-    .icon-back-btn svg {
-      width: 18px;
-      height: 18px;
-      stroke: #4b5563;
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .page-title{
+      font-size:17px;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#20283a;
     }
 
-    .hero-copy {
-      flex: 1;
-      min-width: 0;
+    .main-card{
+      background:var(--panel);
+      border-radius:34px;
+      padding:18px 16px 16px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.55);
     }
 
-    .hero-line-1 {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--blue-dark);
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .hero-title {
-      margin: 0;
-      font-size: 29px;
-      line-height: 1.08;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--text-main);
-    }
-
-    .hero-title span {
-      color: var(--blue-dark);
-    }
-
-    .hero-subtitle {
-      margin: 10px 2px 0;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text-muted);
-    }
-
-    .top-message-card {
-      border-radius: 18px;
-      background: #ffffff;
-      border: 1px solid var(--line);
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: var(--shadow-soft);
-      margin-bottom: 14px;
-    }
-
-    .top-message-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: #e0e7ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .top-message-icon svg {
-      width: 15px;
-      height: 15px;
-      stroke: #4338ca;
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .top-message-text {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    .challenge-card {
-      border-radius: 18px;
-      background: linear-gradient(180deg, #eff6ff 0%, #e8f0ff 100%);
-      border: 1px solid #c7dbff;
-      padding: 12px;
-      box-shadow: var(--shadow-soft);
-      margin-bottom: 14px;
-    }
-
-    .challenge-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .challenge-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--blue-dark);
-    }
-
-    .challenge-badge {
-      border-radius: 999px;
-      background: #ffffff;
-      border: 1px solid #bfdbfe;
-      color: var(--blue-dark);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 6px 10px;
-      white-space: nowrap;
-    }
-
-    .challenge-text {
-      font-size: 13px;
-      line-height: 1.45;
-      color: #334155;
-      margin-bottom: 12px;
-    }
-
-    .pose-pill-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .pose-pill {
-      min-height: 66px;
-      border-radius: 16px;
-      background: #ffffff;
-      border: 1px solid #dbeafe;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px 6px;
-      box-shadow: 0 10px 24px rgba(148, 163, 184, 0.16);
-    }
-
-    .pose-pill.active {
-      background: #dbeafe;
-      border-color: #93c5fd;
-    }
-
-    .pose-pill.done {
-      background: var(--green-soft);
-      border-color: #bbf7d0;
-    }
-
-    .pose-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      color: #4b5563;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .pose-pill.active .pose-dot {
-      background: var(--blue);
-      color: #ffffff;
-    }
-
-    .pose-pill.done .pose-dot {
-      background: var(--green);
-      color: #ffffff;
-    }
-
-    .pose-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #475569;
-      text-align: center;
-    }
-
-    .camera-card,
-    .tips-card,
-    .verify-result-card,
-    .warning-card {
-      border-radius: var(--radius-lg);
-      background: var(--card);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow-card);
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .camera-card-head,
-    .verify-result-head,
-    .tips-card-head,
-    .warning-card-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .camera-card-title,
-    .verify-result-title,
-    .tips-title,
-    .warning-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-
-    .camera-card-subtitle,
-    .tips-subtitle,
-    .warning-subtitle {
-      margin-top: 4px;
-      font-size: 12px;
-      line-height: 1.4;
-      color: var(--text-muted);
-    }
-
-    .camera-badge {
-      border-radius: 999px;
-      border: 1px solid #dbeafe;
-      background: #eff6ff;
-      color: var(--blue-dark);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 6px 10px;
-      white-space: nowrap;
-    }
-
-    .camera-stage {
-      position: relative;
-      margin-top: 14px;
-      border-radius: 24px;
-      overflow: hidden;
+    .camera-stage{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1.08;
+      min-height:320px;
+      border-radius:28px;
+      overflow:hidden;
       background:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), rgba(255,255,255,0) 30%),
-        linear-gradient(180deg, #dbe7ff 0%, #b8cbfb 100%);
-      min-height: 380px;
-      aspect-ratio: 3 / 4;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.65), rgba(255,255,255,0) 24%),
+        linear-gradient(180deg,#dcecff 0%, #c8dcf9 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);
     }
 
     .camera-video,
     .camera-canvas,
-    .face-preview-wrap {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+    .face-preview-wrap{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
     }
 
-    .camera-video,
-    .face-preview-image {
-      object-fit: cover;
+    .camera-video{
+      object-fit:cover;
+      background:transparent;
     }
 
-    .camera-canvas {
-      pointer-events: none;
+    .camera-canvas{
+      pointer-events:none;
     }
 
-    .face-preview-image {
-      width: 100%;
-      height: 100%;
-      display: block;
+    .face-preview-wrap{
+      overflow:hidden;
+      border-radius:28px;
     }
 
-    .face-guide-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
+    .face-preview-image{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
-    .face-frame {
-      width: 68%;
-      aspect-ratio: 0.8 / 1;
-      border-radius: 40px;
-      border: 3px solid rgba(219, 234, 254, 0.95);
-      box-shadow:
-        0 0 0 999px rgba(15, 23, 42, 0.18),
-        inset 0 0 0 1px rgba(255,255,255,0.55),
-        0 0 30px rgba(191, 219, 254, 0.55);
-      position: relative;
+    .face-guide-overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
     }
 
-    .face-frame::before,
-    .face-frame::after {
-      content: "";
-      position: absolute;
-      width: 34px;
-      height: 34px;
-      border: 5px solid #bfdbfe;
-      border-radius: 12px;
+    .face-frame{
+      width:78%;
+      height:78%;
+      border-radius:30px;
+      border:2px dashed rgba(123,170,239,.55);
+      position:relative;
+      box-shadow:inset 0 0 0 999px rgba(255,255,255,.04);
     }
 
-    .face-frame::before {
-      top: -3px;
-      left: -3px;
-      border-right: none;
-      border-bottom: none;
+    .frame-corner{
+      position:absolute;
+      width:42px;
+      height:42px;
+      border:5px solid rgba(255,255,255,.92);
+      border-radius:14px;
     }
 
-    .face-frame::after {
-      right: -3px;
-      bottom: -3px;
-      border-left: none;
-      border-top: none;
+    .frame-corner.tl{
+      top:-2px;
+      left:-2px;
+      border-right:none;
+      border-bottom:none;
     }
 
-    .face-guide-bottom {
-      position: absolute;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+    .frame-corner.tr{
+      top:-2px;
+      right:-2px;
+      border-left:none;
+      border-bottom:none;
     }
 
-    .face-guide-text {
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.7);
-      color: #ffffff;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
+    .frame-corner.bl{
+      bottom:-2px;
+      left:-2px;
+      border-right:none;
+      border-top:none;
     }
 
-    .face-live-chip {
-      border-radius: 999px;
-      background: rgba(255,255,255,0.92);
-      color: #0f172a;
-      padding: 7px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    .frame-corner.br{
+      right:-2px;
+      bottom:-2px;
+      border-left:none;
+      border-top:none;
     }
 
-    .camera-action-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
+    .face-guide-bottom{
+      position:absolute;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      width:100%;
+      padding:0 14px;
+    }
+
+    .face-guide-text{
+      display:none;
+    }
+
+    .instruction-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:0 10px 26px rgba(76,131,246,.28);
+      text-align:center;
+      max-width:92%;
+    }
+
+    .instruction-pill svg{
+      width:16px;
+      height:16px;
+      stroke:#fff;
+      stroke-width:2;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      flex-shrink:0;
+    }
+
+    .step-track-wrap{
+      margin:14px 2px 12px;
+    }
+
+    .step-track{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
+      margin-bottom:12px;
+    }
+
+    .step-line{
+      flex:1;
+      max-width:58px;
+      height:4px;
+      border-radius:999px;
+      background:#d7dfef;
+      margin:0 6px;
+    }
+
+    .step-line.done{
+      background:#a9dcff;
+    }
+
+    .step-circle{
+      width:24px;
+      height:24px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      background:#d9e0ee;
+      color:#8b96aa;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);
+    }
+
+    .step-circle.active{
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .step-circle.done{
+      background:#59c5dd;
+      color:#fff;
+    }
+
+    .mini-instruction{
+      width:max-content;
+      max-width:100%;
+      margin:0 auto;
+      padding:10px 16px;
+      border-radius:999px;
+      background:#ffffff;
+      box-shadow:var(--shadow-soft);
+      color:#1f2a3d;
+      font-weight:700;
+      font-size:13px;
+      text-align:center;
+      border:1px solid rgba(76,131,246,.08);
+    }
+
+    .action-grid{
+      display:grid;
+      grid-template-columns:1fr 1.2fr;
+      gap:12px;
+      margin-top:12px;
     }
 
     .action-btn,
     .primary-action-btn,
-    .ghost-btn {
-      border: none;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
+    .ghost-btn{
+      border:none;
+      cursor:pointer;
+      transition:transform .08s ease, opacity .15s ease, box-shadow .15s ease;
     }
 
     .action-btn:active,
     .primary-action-btn:active,
-    .ghost-btn:active {
-      transform: translateY(1px) scale(0.985);
+    .ghost-btn:active{
+      transform:scale(.985);
     }
 
-    .action-btn {
-      flex: 1;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--line);
-      background: #f9fafb;
-      color: #374151;
-      min-height: 44px;
-      font-size: 13px;
-      font-weight: 700;
-      box-shadow: 0 10px 24px rgba(148, 163, 184, 0.22);
+    .action-btn{
+      min-height:60px;
+      border-radius:18px;
+      background:#fff;
+      color:#2b3447;
+      font-size:16px;
+      font-weight:700;
+      box-shadow:var(--shadow-soft);
     }
 
-    .primary-action-btn {
-      width: 100%;
-      border-radius: var(--radius-pill);
-      min-height: 48px;
-      background: var(--blue);
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 800;
-      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.35);
-      margin-top: 12px;
+    .primary-action-btn{
+      min-height:60px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      box-shadow:0 12px 28px rgba(76,131,246,.28);
+    }
+
+    .start-camera-btn{
+      width:100%;
+      min-height:76px;
+      border-radius:26px;
+      margin-top:14px;
+      background:#ffffff;
+      color:#20283a;
+      font-size:17px;
+      font-weight:800;
+      box-shadow:var(--shadow-soft);
     }
 
     .primary-action-btn:disabled,
-    .action-btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.58;
-      box-shadow: none;
+    .action-btn:disabled,
+    .start-camera-btn:disabled,
+    .ghost-btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      box-shadow:none;
     }
 
-    .tips-icon,
-    .warning-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    .bottom-dots{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      margin:14px 0 8px;
     }
 
-    .tips-icon {
-      background: #fff7ed;
+    .bottom-dots span{
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:#d8dfef;
     }
 
-    .warning-icon {
-      background: var(--amber-soft);
+    .bottom-dots span.active{
+      width:26px;
+      background:var(--blue);
     }
 
-    .tips-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: #f59e0b;
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .help-link{
+      display:block;
+      text-align:center;
+      color:#7c8cab;
+      font-size:14px;
+      text-decoration:none;
+      margin-top:6px;
     }
 
-    .warning-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: var(--amber);
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .result-box{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+      border:1px solid rgba(76,131,246,.08);
     }
 
-    .tips-list,
-    .warning-list {
-      margin: 14px 0 0;
-      padding-left: 18px;
-      color: var(--text-muted);
+    .verify-result-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
     }
 
-    .tips-list li,
-    .warning-list li {
-      margin-bottom: 10px;
-      font-size: 13px;
-      line-height: 1.5;
+    .verify-result-title{
+      font-size:14px;
+      font-weight:800;
+      color:#1f2937;
     }
 
-    .verify-result-pill {
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 6px 10px;
-      border: 1px solid transparent;
-      white-space: nowrap;
+    .verify-result-pill{
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:800;
+      white-space:nowrap;
     }
 
-    .verify-result-pill.neutral {
-      background: #f3f4f6;
-      color: #4b5563;
-      border-color: #e5e7eb;
+    .verify-result-pill.neutral{
+      background:#eef2f7;
+      color:#64748b;
     }
 
-    .verify-result-pill.success {
-      background: var(--green-soft);
-      color: var(--green);
-      border-color: #bbf7d0;
+    .verify-result-pill.success{
+      background:#dcfce7;
+      color:#15803d;
     }
 
-    .verify-result-pill.error {
-      background: var(--red-soft);
-      color: var(--red);
-      border-color: #fecaca;
+    .verify-result-pill.error{
+      background:#fee2e2;
+      color:#b91c1c;
     }
 
-    .verify-result-text {
-      margin: 12px 0 0;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text-muted);
+    .verify-result-text{
+      margin:0;
+      font-size:13px;
+      line-height:1.5;
+      color:#6b7280;
     }
 
-    .message-box {
-      margin-top: 12px;
-      border-radius: 16px;
-      padding: 12px 13px;
-      font-size: 13px;
-      line-height: 1.45;
-      font-weight: 600;
+    .message-box{
+      margin-top:10px;
+      padding:11px 12px;
+      border-radius:16px;
+      font-size:13px;
+      font-weight:600;
+      line-height:1.45;
     }
 
-    .message-box.error {
-      background: var(--red-soft);
-      color: #b91c1c;
-      border: 1px solid #fecaca;
+    .message-box.error{
+      background:#fee2e2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
     }
 
-    .message-box.success {
-      background: var(--green-soft);
-      color: #15803d;
-      border: 1px solid #bbf7d0;
+    .message-box.success{
+      background:#dcfce7;
+      color:#15803d;
+      border:1px solid #bbf7d0;
     }
 
-    .bottom-action-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-bottom: 8px;
+    .extra-actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
     }
 
-    .verify-btn {
-      margin-top: 0;
+    .ghost-btn{
+      width:100%;
+      min-height:48px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:#556074;
+      font-size:14px;
+      font-weight:700;
+      box-shadow:var(--shadow-soft);
     }
 
-    .ghost-btn {
-      width: 100%;
-      min-height: 46px;
-      border-radius: var(--radius-pill);
-      background: #ffffff;
-      border: 1px solid var(--line);
-      color: #4b5563;
-      font-size: 14px;
-      font-weight: 700;
-      box-shadow: var(--shadow-soft);
+    .top-message-card,
+    .challenge-card,
+    .tips-card,
+    .warning-card{
+      display:none;
     }
 
-    @media (max-width: 420px) {
-      .hero-title {
-        font-size: 26px;
+    @media (max-width:380px){
+      .camera-stage{
+        min-height:290px;
       }
 
-      .camera-stage {
-        min-height: 330px;
+      .page-title{
+        font-size:16px;
       }
 
-      .verify-step-pill {
-        min-height: 70px;
-      }
-
-      .verify-step-text,
-      .pose-label {
-        font-size: 11px;
+      .action-grid{
+        grid-template-columns:1fr;
       }
     }
   </style>
@@ -658,193 +531,114 @@
 <body>
   <div class="phone-shell">
     <main class="page">
-      <section class="hero">
-        <div class="hero-top">
-          <button type="button" class="icon-back-btn" id="faceBackBtn" aria-label="Back">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 6l-6 6 6 6"></path>
-            </svg>
-          </button>
-
-          <div class="hero-copy">
-            <div class="hero-line-1">Face verification</div>
-            <h1 class="hero-title">
-              Prove it is<span> really you</span>
-            </h1>
-            <p class="hero-subtitle">
-              Look at the camera, then follow the movement challenge below before attendance is approved.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div class="top-message-card">
-        <div class="top-message-icon">
+      <div class="topbar">
+        <button type="button" class="icon-back-btn" id="faceBackBtn" aria-label="Back">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 21s-6-5.1-6-10a6 6 0 1 1 12 0c0 4.9-6 10-6 10z"></path>
-            <circle cx="12" cy="11" r="2.5"></circle>
+            <path d="M15 6l-6 6 6 6"></path>
           </svg>
-        </div>
-        <div id="faceTopMessageText" class="top-message-text">
-          Colspot will ask you to face center, turn left, then turn right before attendance continues.
-        </div>
+        </button>
+        <div class="page-title">Face verification</div>
       </div>
 
-      <section class="challenge-card">
-        <div class="challenge-head">
-          <div class="challenge-title">Live movement challenge</div>
-          <div id="faceChallengeBadge" class="challenge-badge">Step 1 of 3</div>
-        </div>
+      <section class="main-card">
+        <section class="camera-card" style="display:block; margin:0; padding:0; background:transparent; border:none; box-shadow:none;">
+          <div class="camera-stage" id="cameraStage">
+            <video
+              id="faceVideo"
+              class="camera-video"
+              autoplay
+              muted
+              playsinline
+            ></video>
 
-        <div id="faceChallengeText" class="challenge-text">
-          Start the camera, then look straight at the screen first.
-        </div>
+            <canvas id="faceCanvas" class="camera-canvas"></canvas>
 
-        <div class="pose-pill-row">
-          <div class="pose-pill active" id="poseCenterPill">
-            <div class="pose-dot">1</div>
-            <div class="pose-label">Center</div>
-          </div>
+            <div id="faceGuideOverlay" class="face-guide-overlay">
+              <div class="face-frame">
+                <div class="frame-corner tl"></div>
+                <div class="frame-corner tr"></div>
+                <div class="frame-corner bl"></div>
+                <div class="frame-corner br"></div>
+              </div>
 
-          <div class="pose-pill" id="poseLeftPill">
-            <div class="pose-dot">2</div>
-            <div class="pose-label">Turn left</div>
-          </div>
+              <div class="face-guide-bottom">
+                <div class="instruction-pill">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v4"></path>
+                    <path d="M8.5 8.5A5 5 0 1 0 17 12"></path>
+                    <path d="M6 13l2.5-1.5L10 14"></path>
+                  </svg>
+                  <span id="faceLiveChip">Look straight, turn left, turn right</span>
+                </div>
 
-          <div class="pose-pill" id="poseRightPill">
-            <div class="pose-dot">3</div>
-            <div class="pose-label">Turn right</div>
-          </div>
-        </div>
-      </section>
+                <div id="faceGuideText" class="face-guide-text">
+                  Place your face inside the frame
+                </div>
+              </div>
+            </div>
 
-      <section class="camera-card">
-        <div class="camera-card-head">
-          <div>
-            <div class="camera-card-title">Live camera</div>
-            <div id="faceStatusText" class="camera-card-subtitle">
-              Camera is not started yet.
+            <div id="facePreviewWrap" class="face-preview-wrap hidden">
+              <img id="facePreviewImage" class="face-preview-image" alt="Captured face preview" />
             </div>
           </div>
 
-          <div class="camera-badge" id="faceCameraBadge">Ready</div>
-        </div>
-
-        <div class="camera-stage" id="cameraStage">
-          <video
-            id="faceVideo"
-            class="camera-video"
-            autoplay
-            muted
-            playsinline
-          ></video>
-
-          <canvas id="faceCanvas" class="camera-canvas"></canvas>
-
-          <div id="faceGuideOverlay" class="face-guide-overlay">
-            <div class="face-frame"></div>
-
-            <div class="face-guide-bottom">
-              <div id="faceGuideText" class="face-guide-text">
-                Place your face inside the frame
-              </div>
-              <div id="faceLiveChip" class="face-live-chip">
-                Waiting to start
-              </div>
+          <div class="step-track-wrap">
+            <div class="step-track">
+              <div id="stepCircle1" class="step-circle done">✓</div>
+              <div id="stepLine1" class="step-line done"></div>
+              <div id="stepCircle2" class="step-circle active">2</div>
+              <div id="stepLine2" class="step-line"></div>
+              <div id="stepCircle3" class="step-circle">3</div>
             </div>
+
+            <div id="faceChallengeText" class="mini-instruction">Turn left</div>
           </div>
 
-          <div id="facePreviewWrap" class="face-preview-wrap hidden">
-            <img id="facePreviewImage" class="face-preview-image" alt="Captured face preview" />
-          </div>
-        </div>
-
-        <div class="camera-action-row">
-          <button type="button" class="action-btn" id="startCameraBtn">
+          <button type="button" class="action-btn start-camera-btn" id="startCameraBtn">
             Start camera
           </button>
-          <button type="button" class="action-btn" id="retakeFaceBtn" disabled>
-            Retake
+
+          <div class="action-grid">
+            <button type="button" class="action-btn" id="retakeFaceBtn" disabled>
+              Retake
+            </button>
+
+            <button type="button" class="primary-action-btn" id="verifyFaceBtn" disabled>
+              Verify and continue
+            </button>
+          </div>
+
+          <button type="button" class="primary-action-btn hidden" id="captureFaceBtn" disabled>
+            Capture face
           </button>
-        </div>
 
-        <button type="button" class="primary-action-btn" id="captureFaceBtn" disabled>
-          Capture face
-        </button>
-      </section>
-
-      <section class="warning-card">
-        <div class="warning-card-head">
-          <div class="warning-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 9v4"></path>
-              <path d="M12 17h.01"></path>
-              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            </svg>
+          <div class="bottom-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span class="active"></span>
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-          <div>
-            <div class="warning-title">Anti-spoof check</div>
-            <div class="warning-subtitle">
-              Colspot is checking for a real live face, not a still photo on another screen.
-            </div>
+
+          <a href="javascript:void(0)" class="help-link" id="cancelFaceBtn">Why am I doing this?</a>
+        </section>
+
+        <section class="verify-result-card result-box" style="display:block;">
+          <div class="verify-result-head">
+            <div class="verify-result-title">Verification result</div>
+            <div id="faceResultPill" class="verify-result-pill neutral">Waiting</div>
           </div>
-        </div>
 
-        <ul class="warning-list">
-          <li>Do not point the camera at another phone, tablet, laptop, or printed photo.</li>
-          <li>Keep only one face in the frame during the verification challenge.</li>
-          <li>Follow the movement prompts exactly before verification is sent.</li>
-        </ul>
+          <p id="faceResultText" class="verify-result-text">
+            Start the camera and complete the movement challenge.
+          </p>
+
+          <div id="faceErrorBox" class="message-box error hidden"></div>
+          <div id="faceSuccessBox" class="message-box success hidden"></div>
+        </section>
       </section>
-
-      <section class="tips-card">
-        <div class="tips-card-head">
-          <div class="tips-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 18h6"></path>
-              <path d="M10 22h4"></path>
-              <path d="M12 2a7 7 0 0 0-4 12.8c.7.5 1.1 1.1 1.3 1.7h5.4c.2-.6.6-1.2 1.3-1.7A7 7 0 0 0 12 2z"></path>
-            </svg>
-          </div>
-          <div>
-            <div class="tips-title">For better verification</div>
-            <div class="tips-subtitle">
-              These tips help Colspot verify you faster.
-            </div>
-          </div>
-        </div>
-
-        <ul class="tips-list">
-          <li>Use your live front camera only.</li>
-          <li>Stay in good light and keep your whole face visible.</li>
-          <li>Remove cap or anything blocking your face if possible.</li>
-          <li>Hold your phone steady while following the pose challenge.</li>
-        </ul>
-      </section>
-
-      <section class="verify-result-card">
-        <div class="verify-result-head">
-          <div class="verify-result-title">Verification result</div>
-          <div id="faceResultPill" class="verify-result-pill neutral">Waiting</div>
-        </div>
-
-        <p id="faceResultText" class="verify-result-text">
-          Start the camera and complete the face movement challenge.
-        </p>
-
-        <div id="faceErrorBox" class="message-box error hidden"></div>
-        <div id="faceSuccessBox" class="message-box success hidden"></div>
-      </section>
-
-      <div class="bottom-action-stack">
-        <button type="button" class="primary-action-btn verify-btn" id="verifyFaceBtn" disabled>
-          Verify and continue
-        </button>
-
-        <button type="button" class="ghost-btn" id="cancelFaceBtn">
-          Cancel
-        </button>
-      </div>
     </main>
   </div>
 
@@ -852,10 +646,24 @@
     window.SUPABASE_URL = "YOUR_SUPABASE_URL";
     window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   </script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="face_verification.js"></script>
+
+  <script>
+    const backBtn = document.getElementById("faceBackBtn");
+    if (backBtn) {
+      backBtn.addEventListener("click", () => history.back());
+    }
+
+    const whyBtn = document.getElementById("cancelFaceBtn");
+    if (whyBtn) {
+      whyBtn.addEventListener("click", () => {
+        alert("This helps Colspot confirm that a real live student is the one joining attendance.");
+      });
+    }
+  </script>
 </body>
 </html>
