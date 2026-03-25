@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,134 +23,193 @@ function mustEnv(name: string) {
   return value;
 }
 
-function cleanText(value: unknown) {
-  return String(value || "").trim();
+function stripDataUrlPrefix(input: string) {
+  const value = String(input || "").trim();
+  if (value.startsWith("data:")) {
+    const comma = value.indexOf(",");
+    return comma >= 0 ? value.slice(comma + 1) : value;
+  }
+  return value;
 }
 
-function normalizeSchoolName(value: unknown) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toUpperCase()
-    .replace(/,\s*ADO-EKITI$/i, "");
+function inferMimeType(input?: string | null) {
+  const value = String(input || "").toLowerCase().trim();
+  if (value.startsWith("image/png")) return "image/png";
+  if (value.startsWith("image/webp")) return "image/webp";
+  return "image/jpeg";
+}
+
+function extensionFromMime(mimeType: string) {
+  if (mimeType === "image/png") return "png";
+  if (mimeType === "image/webp") return "webp";
+  return "jpg";
+}
+
+function decodeBase64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function publicErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  return String(err);
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return json({ error: "Method not allowed" }, 405);
+  }
+
   try {
-    if (req.method === "OPTIONS") {
-      return json({ ok: true });
+    const supabaseUrl = mustEnv("SUPABASE_URL");
+    const supabaseAnonKey = mustEnv("SUPABASE_ANON_KEY");
+    const supabaseServiceRoleKey = mustEnv("SUPABASE_SERVICE_ROLE_KEY");
+    const embeddingServiceUrl = mustEnv("EMBEDDING_SERVICE_URL");
+    const embeddingServiceToken = mustEnv("EMBEDDING_SERVICE_TOKEN");
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return json({ error: "Missing Authorization header" }, 401);
     }
 
-    if (req.method !== "POST") {
-      return json({ ok: false, error: "POST only" }, 405);
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseUser.auth.getUser();
+
+    if (userError || !user) {
+      return json({ error: "Unauthorized" }, 401);
     }
 
-    const sb = createClient(
-      mustEnv("SUPABASE_URL"),
-      mustEnv("SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } }
-    );
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-    const body = await req.json().catch(() => ({}));
-    const hodId = cleanText(body.hod_id);
-    const search = cleanText(body.search).toLowerCase();
+    const body = await req.json().catch(() => null);
+    const imageBase64Raw = body?.imageBase64;
+    const mimeType = inferMimeType(body?.mimeType);
+    const mode = "enroll";
 
-    if (!hodId) {
-      return json({ ok: false, error: "hod_id is required" }, 400);
+    if (!imageBase64Raw || typeof imageBase64Raw !== "string") {
+      return json({ error: "Missing imageBase64" }, 400);
     }
 
-    const { data: hod, error: hodError } = await sb
-      .from("hod_accounts")
-      .select("id, full_name, school_name, department_name, login_id, is_active")
-      .eq("id", hodId)
-      .maybeSingle();
-
-    if (hodError) {
-      return json({ ok: false, error: hodError.message }, 500);
+    const imageBase64 = stripDataUrlPrefix(imageBase64Raw);
+    if (!imageBase64) {
+      return json({ error: "Invalid imageBase64" }, 400);
     }
 
-    if (!hod) {
-      return json({ ok: false, error: "HOD account not found." }, 404);
-    }
+    const fileBytes = decodeBase64ToBytes(imageBase64);
+    const ext = extensionFromMime(mimeType);
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `${user.id}/${fileName}`;
 
-    if (!hod.is_active) {
-      return json({ ok: false, error: "This HOD account is disabled." }, 403);
-    }
-
-    const normalizedHodSchool = normalizeSchoolName(hod.school_name);
-    if (!normalizedHodSchool) {
-      return json({ ok: false, error: "HOD school name is missing." }, 400);
-    }
-
-    const { data: announcementRows, error: announcementError } = await sb
-      .from("school_announcements")
-      .select(`
-        id,
-        school_name,
-        title,
-        message,
-        created_by_hod,
-        created_at
-      `)
-      .eq("created_by_hod", hod.id)
-      .order("created_at", { ascending: false });
-
-    if (announcementError) {
-      return json({ ok: false, error: announcementError.message }, 500);
-    }
-
-    let history = (announcementRows || [])
-      .filter((row) => normalizeSchoolName(row.school_name) === normalizedHodSchool)
-      .map((row) => ({
-        id: row.id,
-        action_type: "ANNOUNCEMENT_SENT",
-        type: "Announcement",
-        title: row.title || "-",
-        description: row.message || "-",
-        entity_type: "announcement",
-        entity_id: row.id,
-        payload: {
-          announcement_id: row.id,
-          school_name: row.school_name || "",
-          created_by_hod: row.created_by_hod || null,
-          department_name: hod.department_name || "",
-        },
-        created_at: row.created_at || null,
-      }));
-
-    if (search) {
-      history = history.filter((item) => {
-        const haystack = [
-          item.title,
-          item.description,
-          item.type,
-          item.action_type,
-          item.entity_type,
-          JSON.stringify(item.payload || {}),
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return haystack.includes(search);
+    const uploadResult = await supabaseAdmin.storage
+      .from("face-private")
+      .upload(filePath, fileBytes, {
+        contentType: mimeType,
+        upsert: false,
       });
+
+    if (uploadResult.error) {
+      return json({ error: `Failed to upload face image: ${uploadResult.error.message}` }, 500);
+    }
+
+    const embedResponse = await fetch(embeddingServiceUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${embeddingServiceToken}`,
+      },
+      body: JSON.stringify({
+        imageBase64,
+        mimeType,
+        mode,
+      }),
+    });
+
+    const embedText = await embedResponse.text();
+    let embedData: any = null;
+
+    try {
+      embedData = embedText ? JSON.parse(embedText) : null;
+    } catch {
+      embedData = { raw: embedText };
+    }
+
+    if (!embedResponse.ok) {
+      return json({
+        error: "Embedding service failed",
+        status: embedResponse.status,
+        details: embedData,
+      }, 502);
+    }
+
+    if (!embedData?.face_detected) {
+      return json({
+        error: "No face detected. Please capture a clearer face image.",
+        details: embedData,
+      }, 400);
+    }
+
+    if (embedData?.face_count !== 1) {
+      return json({
+        error: "Exactly one face is required.",
+        details: embedData,
+      }, 400);
+    }
+
+    if (!Array.isArray(embedData?.embedding) || embedData.embedding.length === 0) {
+      return json({
+        error: "No embedding returned from embedding service.",
+        details: embedData,
+      }, 502);
+    }
+
+    const savePayload = {
+      user_id: user.id,
+      face_image_path: filePath,
+      embedding: embedData.embedding,
+      capture_status: "verified",
+      face_verified: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    const upsertResult = await supabaseAdmin
+      .from("face_profiles")
+      .upsert(savePayload, {
+        onConflict: "user_id",
+      })
+      .select("user_id, face_image_path, capture_status, face_verified, updated_at")
+      .single();
+
+    if (upsertResult.error) {
+      return json({ error: `Failed to save face profile: ${upsertResult.error.message}` }, 500);
     }
 
     return json({
       ok: true,
-      hod: {
-        id: hod.id,
-        full_name: hod.full_name,
-        school_name: normalizedHodSchool,
-        department_name: hod.department_name || "",
-        login_id: hod.login_id,
-      },
-      totals: {
-        history: history.length,
-      },
-      history,
+      message: "Face enrolled successfully",
+      profile: upsertResult.data,
+      embedding_length: embedData.embedding.length,
+      quality_score: embedData.quality_score ?? null,
+      face_count: embedData.face_count ?? 1,
+      service_device: embedData.device ?? null,
     });
-  } catch (e) {
-    console.error("get-hod-history error:", e);
-    return json({ ok: false, error: String(e) }, 500);
+  } catch (err) {
+    return json({
+      error: publicErrorMessage(err),
+    }, 500);
   }
 });
