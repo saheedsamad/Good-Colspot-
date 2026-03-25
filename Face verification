@@ -16,20 +16,18 @@ const faceGuideOverlay = document.getElementById("faceGuideOverlay");
 const facePreviewWrap = document.getElementById("facePreviewWrap");
 const facePreviewImage = document.getElementById("facePreviewImage");
 
-const faceStatusText = document.getElementById("faceStatusText");
-const faceCameraBadge = document.getElementById("faceCameraBadge");
 const faceResultText = document.getElementById("faceResultText");
 const faceResultPill = document.getElementById("faceResultPill");
-const faceTopMessageText = document.getElementById("faceTopMessageText");
 
-const faceChallengeBadge = document.getElementById("faceChallengeBadge");
 const faceChallengeText = document.getElementById("faceChallengeText");
 const faceGuideText = document.getElementById("faceGuideText");
 const faceLiveChip = document.getElementById("faceLiveChip");
 
-const poseCenterPill = document.getElementById("poseCenterPill");
-const poseLeftPill = document.getElementById("poseLeftPill");
-const poseRightPill = document.getElementById("poseRightPill");
+const stepCircle1 = document.getElementById("stepCircle1");
+const stepCircle2 = document.getElementById("stepCircle2");
+const stepCircle3 = document.getElementById("stepCircle3");
+const stepLine1 = document.getElementById("stepLine1");
+const stepLine2 = document.getElementById("stepLine2");
 
 const faceErrorBox = document.getElementById("faceErrorBox");
 const faceSuccessBox = document.getElementById("faceSuccessBox");
@@ -74,24 +72,17 @@ function clearFlashMessages() {
   showSuccess("");
 }
 
-function setStatus(text) {
-  if (faceStatusText) faceStatusText.textContent = text || "";
-}
-
-function setCameraBadge(text) {
-  if (faceCameraBadge) faceCameraBadge.textContent = text || "";
-}
-
-function setTopMessage(text) {
-  if (faceTopMessageText) faceTopMessageText.textContent = text || "";
-}
-
 function setGuideText(text) {
   if (faceGuideText) faceGuideText.textContent = text || "";
 }
 
 function setLiveChip(text) {
   if (faceLiveChip) faceLiveChip.textContent = text || "";
+}
+
+function setChallengeText(text) {
+  if (faceChallengeText) faceChallengeText.textContent = text || "";
+  setGuideText(text || "");
 }
 
 function setResultPill(mode, text) {
@@ -122,32 +113,31 @@ function setButtonState() {
 function resetResultUi() {
   clearFlashMessages();
   setResultPill("neutral", "Waiting");
-  setResultText("Start the camera and complete the face movement challenge.");
+  setResultText("Start the camera and complete the movement challenge.");
 }
 
 function updateSequenceUI() {
-  [poseCenterPill, poseLeftPill, poseRightPill].forEach((el) => {
+  [stepCircle1, stepCircle2, stepCircle3].forEach((el) => {
     if (!el) return;
     el.classList.remove("active", "done");
   });
 
-  if (currentStepIndex <= 0 && poseCenterPill) poseCenterPill.classList.add("active");
-  if (currentStepIndex > 0 && poseCenterPill) poseCenterPill.classList.add("done");
+  [stepLine1, stepLine2].forEach((el) => {
+    if (!el) return;
+    el.classList.remove("done");
+  });
 
-  if (currentStepIndex === 1 && poseLeftPill) poseLeftPill.classList.add("active");
-  if (currentStepIndex > 1 && poseLeftPill) poseLeftPill.classList.add("done");
+  if (currentStepIndex <= 0 && stepCircle1) stepCircle1.classList.add("active");
+  if (currentStepIndex > 0 && stepCircle1) stepCircle1.classList.add("done");
 
-  if (currentStepIndex === 2 && poseRightPill) poseRightPill.classList.add("active");
-  if (currentStepIndex > 2 && poseRightPill) poseRightPill.classList.add("done");
+  if (currentStepIndex === 1 && stepCircle2) stepCircle2.classList.add("active");
+  if (currentStepIndex > 1 && stepCircle2) stepCircle2.classList.add("done");
 
-  const stepNo = Math.min(currentStepIndex + 1, scanSequence.length);
-  if (faceChallengeBadge) {
-    if (currentStepIndex >= scanSequence.length) {
-      faceChallengeBadge.textContent = "Challenge complete";
-    } else {
-      faceChallengeBadge.textContent = `Step ${stepNo} of ${scanSequence.length}`;
-    }
-  }
+  if (currentStepIndex === 2 && stepCircle3) stepCircle3.classList.add("active");
+  if (currentStepIndex > 2 && stepCircle3) stepCircle3.classList.add("done");
+
+  if (currentStepIndex > 0 && stepLine1) stepLine1.classList.add("done");
+  if (currentStepIndex > 1 && stepLine2) stepLine2.classList.add("done");
 }
 
 function resetSequenceState() {
@@ -159,15 +149,10 @@ function resetSequenceState() {
 
 function currentInstruction() {
   const step = scanSequence[currentStepIndex] || "center";
-  if (step === "center") return "Look straight at the camera";
-  if (step === "left") return "Turn your head slightly left";
-  if (step === "right") return "Turn your head slightly right";
+  if (step === "center") return "Look straight";
+  if (step === "left") return "Turn left";
+  if (step === "right") return "Turn right";
   return "Hold still";
-}
-
-function updateChallengeInstruction(text) {
-  if (faceChallengeText) faceChallengeText.textContent = text || "";
-  setGuideText(text || "");
 }
 
 function clearOverlay() {
@@ -272,11 +257,8 @@ function fullResetToIdle() {
   hideCapturedPreview();
   resetSequenceState();
   clearFlashMessages();
-  setCameraBadge("Ready");
-  setStatus("Camera is not started yet.");
-  setTopMessage("Colspot will ask you to face center, turn left, then turn right before attendance continues.");
-  updateChallengeInstruction("Start the camera, then look straight at the screen first.");
-  setLiveChip("Waiting to start");
+  setChallengeText("Start the camera, then look straight first.");
+  setLiveChip("Look straight, turn left, turn right");
   resetResultUi();
   setButtonState();
   if (faceVideo) faceVideo.srcObject = null;
@@ -336,18 +318,14 @@ async function initFaceMesh() {
 
     if (!faces.length) {
       poseHoldFrames = 0;
-      setCameraBadge("No face detected");
-      setStatus("No face detected.");
-      updateChallengeInstruction("Position your face inside the frame.");
+      setChallengeText("Position your face inside the frame.");
       setLiveChip("Face not found");
       return;
     }
 
     if (faces.length > 1) {
       poseHoldFrames = 0;
-      setCameraBadge("Multiple faces");
-      setStatus("Only one face should be visible.");
-      updateChallengeInstruction("Remove extra faces from the frame.");
+      setChallengeText("Only one face should be visible.");
       setLiveChip("More than one face");
       return;
     }
@@ -359,9 +337,7 @@ async function initFaceMesh() {
     if (!expectedPose) {
       captureLocked = true;
       scanLoopActive = false;
-      setCameraBadge("Capturing...");
-      setStatus("Challenge complete. Capturing face...");
-      updateChallengeInstruction("Hold still. We are capturing your face now.");
+      setChallengeText("Hold still. We are capturing your face now.");
       setLiveChip("Capturing");
       setTimeout(captureFrame, 400);
       return;
@@ -371,26 +347,21 @@ async function initFaceMesh() {
 
     if (!centered) {
       poseHoldFrames = 0;
-      setCameraBadge("Move into frame");
-      setStatus("Center your face in the frame.");
-      updateChallengeInstruction("Move your face into the frame and keep only one face visible.");
+      setChallengeText("Move your face into the frame.");
       setLiveChip("Adjust position");
       return;
     }
 
-    setCameraBadge(`Detecting ${expectedPose}`);
     setLiveChip(`Expected: ${expectedPose}`);
 
     if (pose === expectedPose) {
       poseHoldFrames += 1;
-      setStatus(`${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected.`);
-      updateChallengeInstruction(
+      setChallengeText(
         `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
       );
     } else {
       poseHoldFrames = 0;
-      setStatus("Follow the guide.");
-      updateChallengeInstruction(currentInstruction());
+      setChallengeText(currentInstruction());
     }
 
     if (poseHoldFrames >= POSE_HOLD_TARGET) {
@@ -401,16 +372,13 @@ async function initFaceMesh() {
       if (currentStepIndex >= scanSequence.length) {
         captureLocked = true;
         scanLoopActive = false;
-        setCameraBadge("Capturing...");
-        setStatus("Challenge complete. Capturing face...");
-        updateChallengeInstruction("Hold still. We are capturing your face now.");
+        setChallengeText("Hold still. We are capturing your face now.");
         setLiveChip("Capturing");
         setTimeout(captureFrame, 400);
         return;
       }
 
-      setStatus("Next step.");
-      updateChallengeInstruction(currentInstruction());
+      setChallengeText(currentInstruction());
       setLiveChip("Step passed");
     }
   });
@@ -444,9 +412,7 @@ async function startCamera() {
 
     stopTracksOnly();
 
-    setStatus("Requesting front camera...");
-    setCameraBadge("Opening");
-    updateChallengeInstruction("Start by looking straight at the camera.");
+    setChallengeText("Start by looking straight at the camera.");
     setLiveChip("Opening camera");
 
     mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -464,10 +430,7 @@ async function startCamera() {
     scanLoopActive = true;
     captureLocked = false;
 
-    setStatus("Camera is live. Follow the movement challenge.");
-    setCameraBadge("Live");
-    setTopMessage("Follow the steps: center, left, right.");
-    updateChallengeInstruction(currentInstruction());
+    setChallengeText(currentInstruction());
     setLiveChip("Live challenge started");
 
     setButtonState();
@@ -475,8 +438,6 @@ async function startCamera() {
   } catch (err) {
     console.error(err);
     stopTracksOnly();
-    setStatus("Could not open camera.");
-    setCameraBadge("Blocked");
     setResultPill("error", "Camera error");
     setResultText("Camera access is required for attendance face verification.");
     showError(err?.message || "Unable to start camera.");
@@ -508,9 +469,7 @@ function captureFrame() {
   capturedDataUrl = captureCanvas.toDataURL("image/jpeg", 0.95);
 
   showCapturedPreview(capturedDataUrl);
-  setCameraBadge("Captured");
-  setStatus("Face captured successfully.");
-  updateChallengeInstruction("Challenge complete. Your face is ready for verification.");
+  setChallengeText("Challenge complete. Your face is ready for verification.");
   setLiveChip("Ready to verify");
   setResultPill("neutral", "Captured");
   setResultText("Your live face capture is ready. Tap Verify and continue.");
@@ -527,16 +486,12 @@ function retakeFace() {
   if (mediaStream && faceVideo.srcObject) {
     scanLoopActive = true;
     captureLocked = false;
-    setCameraBadge("Live");
-    setStatus("Camera is live. Follow the movement challenge.");
-    updateChallengeInstruction(currentInstruction());
+    setChallengeText(currentInstruction());
     setLiveChip("Restarted challenge");
     requestAnimationFrame(processVideoFrame);
   } else {
-    setCameraBadge("Ready");
-    setStatus("Camera is not started yet.");
-    updateChallengeInstruction("Start the camera, then look straight at the screen first.");
-    setLiveChip("Waiting to start");
+    setChallengeText("Start the camera, then look straight first.");
+    setLiveChip("Look straight, turn left, turn right");
   }
 
   resetResultUi();
@@ -559,11 +514,8 @@ async function verifyFaceAndContinue() {
     isVerifying = true;
     setButtonState();
 
-    setStatus("Verifying your face...");
-    setCameraBadge("Checking");
     setResultPill("neutral", "Verifying");
     setResultText("Please hold on while Colspot verifies your face.");
-    setTopMessage("Verifying your live face for attendance...");
     setLiveChip("Sending for verification");
 
     const res = await fetch(FACE_VERIFY_FUNCTION_URL, {
@@ -583,23 +535,17 @@ async function verifyFaceAndContinue() {
     const result = await res.json().catch(() => ({}));
 
     if (!res.ok || !result?.face_match) {
-      setStatus("Verification failed.");
-      setCameraBadge("Failed");
       setResultPill("error", "Failed");
       setResultText("Your face could not be verified for attendance.");
-      setTopMessage("Verification failed. Please retake and try again.");
       setLiveChip("Verification failed");
       showError(result?.error || "Face verification failed. Please retake and try again.");
       return;
     }
 
-    setStatus("Face verified successfully.");
-    setCameraBadge("Verified");
     setResultPill("success", "Verified");
     setResultText(
       `Verification passed${result?.similarity ? ` • Similarity ${Number(result.similarity).toFixed(2)}` : ""}. Returning to attendance...`
     );
-    setTopMessage("Verification successful. Returning to attendance...");
     setLiveChip("Verified");
     showSuccess("Face verified successfully. Returning to attendance...");
 
@@ -612,11 +558,8 @@ async function verifyFaceAndContinue() {
     }, 900);
   } catch (err) {
     console.error(err);
-    setStatus("Verification failed.");
-    setCameraBadge("Failed");
     setResultPill("error", "Error");
     setResultText("Something went wrong during face verification.");
-    setTopMessage("Verification failed. Please try again.");
     setLiveChip("Error");
     showError(err?.message || "Unable to verify face right now.");
   } finally {
@@ -630,18 +573,17 @@ function bindEvents() {
   captureFaceBtn?.addEventListener("click", verifyFaceAndContinue);
   retakeFaceBtn?.addEventListener("click", retakeFace);
   verifyFaceBtn?.addEventListener("click", verifyFaceAndContinue);
-  cancelFaceBtn?.addEventListener("click", goBackCancelled);
+  cancelFaceBtn?.addEventListener("click", () => {
+    alert("This helps Colspot confirm that a real live student is the one joining attendance.");
+  });
   faceBackBtn?.addEventListener("click", goBackCancelled);
   window.addEventListener("beforeunload", stopTracksOnly);
 }
 
 async function init() {
   try {
-    setTopMessage("Colspot will ask you to face center, turn left, then turn right before attendance continues.");
-    setStatus("Camera is not started yet.");
-    setCameraBadge("Ready");
-    updateChallengeInstruction("Start the camera, then look straight at the screen first.");
-    setLiveChip("Waiting to start");
+    setChallengeText("Start the camera, then look straight first.");
+    setLiveChip("Look straight, turn left, turn right");
     resetSequenceState();
     resetResultUi();
     setButtonState();
