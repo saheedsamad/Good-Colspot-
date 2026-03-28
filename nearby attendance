@@ -842,7 +842,7 @@
   const FACE_VERIFY_PAGE_URL = "face_verification.html";
 
   // detection action pages
-  const COURSE_FORM_PAGE_URL = "face_verification.html";
+  const COURSE_FORM_PAGE_URL = "verify_class.html";
   const BIOMETRIC_PAGE_URL = "face-capture.html";
 
   let pendingNearbyJoinContext = null;
@@ -1105,7 +1105,6 @@
     const formBtn = document.getElementById("nearVerifyCourseFormBtn");
     const bioBtn = document.getElementById("nearVerifyBiometricBtn");
 
-    // keep hidden while checking
     if (nearbyVerificationState.loading) {
       wrap.classList.add("near-hidden");
       return;
@@ -1127,13 +1126,11 @@
       bioStatus.textContent = biometricOk ? "Verified" : "Not verified";
     }
 
-    // hide completely if all good
     if (courseFormOk && biometricOk) {
       wrap.classList.add("near-hidden");
       return;
     }
 
-    // only show when something is missing
     wrap.classList.remove("near-hidden");
 
     if (badge) badge.textContent = "Action needed";
@@ -1194,7 +1191,6 @@
       return nearbyVerificationState;
     }
 
-    // do not show card during checking
     nearbyVerificationState = {
       loading: true,
       hasUser: true,
@@ -1268,6 +1264,53 @@
     }
 
     return { ok: true };
+  }
+
+  async function ensureStudentIsClassMember(userId, sessionRow) {
+    if (!sessionRow) {
+      return {
+        ok: false,
+        message: "Session information is missing. Please refresh and try again.",
+      };
+    }
+
+    if (!sessionRow.course_id) {
+      return {
+        ok: false,
+        message: "This attendance session is not linked to a class yet. Please contact your lecturer.",
+      };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("course_memberships")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("course_id", sessionRow.course_id)
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        return {
+          ok: false,
+          message: "We could not verify your class membership right now. Please try again.",
+        };
+      }
+
+      if (!data) {
+        return {
+          ok: false,
+          message: "You are not a member of this class. Join the class first before taking attendance.",
+        };
+      }
+
+      return { ok: true };
+    } catch (e) {
+      return {
+        ok: false,
+        message: "We could not verify your class membership right now. Please try again.",
+      };
+    }
   }
 
   async function getCurrentPositionOnce() {
@@ -1587,6 +1630,12 @@
       return;
     }
 
+    const membershipCheck = await ensureStudentIsClassMember(user.id, selectedNearbySession);
+    if (!membershipCheck.ok) {
+      showNearbyJoinError(membershipCheck.message);
+      return;
+    }
+
     let profile = null;
     try {
       const { data, error } = await supabase
@@ -1692,6 +1741,13 @@
         showNearbyJoinError(
           "We couldn't save your details. Please check your internet and try again."
         );
+        return;
+      }
+
+      const membershipCheck = await ensureStudentIsClassMember(user.id, selectedNearbySession);
+      if (!membershipCheck.ok) {
+        showStudentDetailsForm(false);
+        showNearbyJoinError(membershipCheck.message);
         return;
       }
 
@@ -1817,6 +1873,13 @@
         return;
       }
 
+      const membershipCheck = await ensureStudentIsClassMember(user.id, selectedNearbySession);
+      if (!membershipCheck.ok) {
+        showNearSubscreen("join");
+        showNearbyJoinError(membershipCheck.message);
+        return;
+      }
+
       startFaceVerificationFlow();
     } catch (e) {
       showNearSubscreen("join");
@@ -1880,6 +1943,24 @@
         showNearSubscreen("join");
         showNearbyGlobalBanner("");
         showNearbyJoinError("Session expired. Please sign in again.");
+        return;
+      }
+
+      const verificationCheck = await ensureTopVerificationBeforeJoin();
+      if (!verificationCheck.ok) {
+        clearPendingNearbyJoinContext();
+        showNearSubscreen("join");
+        showNearbyGlobalBanner("");
+        showNearbyJoinError(verificationCheck.message);
+        return;
+      }
+
+      const membershipCheck = await ensureStudentIsClassMember(user.id, selectedNearbySession);
+      if (!membershipCheck.ok) {
+        clearPendingNearbyJoinContext();
+        showNearSubscreen("join");
+        showNearbyGlobalBanner("");
+        showNearbyJoinError(membershipCheck.message);
         return;
       }
 
@@ -2131,7 +2212,7 @@
         const nowIso = new Date().toISOString();
         const { data, error } = await supabase
           .from("attendance_sessions")
-          .select("id, course_code, course_title, lecturer_name, expires_at, pin_code, use_location")
+          .select("id, course_id, course_code, course_title, lecturer_name, expires_at, pin_code, use_location")
           .gte("expires_at", nowIso)
           .eq("use_location", false)
           .order("expires_at", { ascending: true });
@@ -2228,7 +2309,7 @@
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("attendance_sessions")
-        .select("id, course_code, course_title, lecturer_name, expires_at, latitude, longitude, pin_code, use_location")
+        .select("id, course_id, course_code, course_title, lecturer_name, expires_at, latitude, longitude, pin_code, use_location")
         .gte("expires_at", nowIso)
         .eq("use_location", true);
 
