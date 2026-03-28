@@ -1033,21 +1033,27 @@
         $("resultPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
         $("resultSchool").textContent = report.school_name || "-";
 
-        $("resultCard").classList.add("show");
+      $("resultCard").classList.add("show");
 
-        $("reportTitle").value = "";
-        $("reportMessageInput").value = "";
-        $("reportLocation").value = "";
-        $("reportPerson").value = "";
-        $("reportUrgency").value = "normal";
-        $("allowReplySelect").value = "true";
+$("reportTitle").value = "";
+$("reportMessageInput").value = "";
+$("reportLocation").value = "";
+$("reportPerson").value = "";
+$("reportUrgency").value = "normal";
+$("allowReplySelect").value = "true";
 
-        setCategory("bullying");
-        setPrivacyMode(true);
-        updateUrgencyNote();
+setCategory("bullying");
+setPrivacyMode(true);
+updateUrgencyNote();
 
-        showMessage(data.message || "Report submitted successfully.", "success");
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+showMessage(data.message || "Report submitted successfully.", "success");
+
+setTimeout(() => {
+  $("resultCard")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}, 150);
       } catch (err) {
         console.error(err);
         showMessage(err.message || "Could not submit report.");
