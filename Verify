@@ -595,7 +595,9 @@
   const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
   const VERIFICATION_TABLE = "verification_clearance";
   const ACCOUNT_TABLE = "student_accounts";
+  const FACE_TABLE = "face_profiles";
   const FACE_CAPTURE_URL = "face-capture.html";
+  const MAIN_URL = "main.html";
   const DEBUG_MODE = false;
 
   const el = (id) => document.getElementById(id);
@@ -635,8 +637,8 @@
   function setLoading(on){
     el("loading").style.display = on ? "block" : "none";
     el("btnExtract").disabled = on || !pickedFile || verificationLocked;
-    el("btnContinue").disabled = on || verificationLocked;
-    el("btnCancel").disabled = on || verificationLocked;
+    if (el("btnContinue")) el("btnContinue").disabled = on || verificationLocked;
+    if (el("btnCancel")) el("btnCancel").disabled = on || verificationLocked;
     el("btnReset").disabled = on || verificationLocked;
     el("fileInput").disabled = on || verificationLocked;
   }
@@ -650,8 +652,11 @@
   }
 
   function setDebug(){}
-
   function clearDebug(){}
+
+  function normalizeText(value){
+    return String(value || "").trim();
+  }
 
   let pickedFile = null;
   let uploadedPath = null;
@@ -757,8 +762,8 @@
     el("btnExtract").disabled = true;
     el("btnReset").style.display = "inline-flex";
     el("btnReset").disabled = false;
-    el("btnContinue").disabled = false;
-    el("btnCancel").disabled = false;
+    if (el("btnContinue")) el("btnContinue").disabled = false;
+    if (el("btnCancel")) el("btnCancel").disabled = false;
     el("details").style.display = "none";
     clearMsgs();
     clearDebug();
@@ -898,7 +903,8 @@
       school_name: extracted?.school_name || null,
       department: extracted?.department || null,
       programme: extracted?.programme || null,
-      matric_number: extracted?.matric_no || null
+      matric_number: extracted?.matric_no || null,
+      level: extracted?.level || null
     };
 
     const { error } = await sb
@@ -906,6 +912,78 @@
       .upsert(payload, { onConflict: "user_id" });
 
     if (error) throw error;
+  }
+
+  async function checkDuplicateMatricInSchool(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
+
+    await ensureCurrentUser();
+
+    const schoolName = normalizeText(extracted?.school_name);
+    const matricNumber = normalizeText(extracted?.matric_no || extracted?.matric);
+
+    if (!schoolName) {
+      throw new Error("School name is missing from the verified course form.");
+    }
+
+    if (!matricNumber) {
+      throw new Error("Matric number is missing from the verified course form.");
+    }
+
+    const { data, error } = await sb
+      .from(ACCOUNT_TABLE)
+      .select("user_id, school_name, matric_number")
+      .eq("school_name", schoolName)
+      .eq("matric_number", matricNumber)
+      .neq("user_id", currentUser.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return !!data;
+  }
+
+  async function hasVerifiedFaceAlready(){
+    const sb = window.supabase;
+    if (!sb) throw new Error("Supabase not ready.");
+
+    await ensureCurrentUser();
+
+    const { data, error } = await sb
+      .from(FACE_TABLE)
+      .select("user_id, face_verified, capture_status")
+      .eq("user_id", currentUser.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return false;
+
+    const status = String(data.capture_status || "").toLowerCase().trim();
+    return data.face_verified === true || status === "approved" || status === "verified";
+  }
+
+  async function routeAfterVerification(){
+    const alreadyHasFace = await hasVerifiedFaceAlready();
+
+    try {
+      localStorage.setItem("colspot_face_step_ready", "true");
+      localStorage.setItem("colspot_verification_done", "true");
+    } catch {}
+
+    if (alreadyHasFace) {
+      showOk("Verification successful. Face already captured before. Redirecting to main...");
+      setTimeout(() => {
+        window.location.href = MAIN_URL;
+      }, 700);
+      return;
+    }
+
+    showOk("Verification successful. Redirecting to face capture...");
+    setTimeout(() => {
+      window.location.href = FACE_CAPTURE_URL;
+    }, 700);
   }
 
   async function checkExistingSuccessfulVerification(){
@@ -938,16 +1016,7 @@
       semester: data.semester
     };
 
-    try {
-      localStorage.setItem("colspot_face_step_ready", "true");
-      localStorage.setItem("colspot_verification_done", "true");
-    } catch {}
-
-    showOk("Course form already submitted. Redirecting to face capture...");
-
-    setTimeout(() => {
-      window.location.href = FACE_CAPTURE_URL;
-    }, 500);
+    await routeAfterVerification();
   }
 
   window.addEventListener("load", async () => {
@@ -1092,21 +1161,18 @@
 
     try {
       setLoading(true);
-
       await ensureCurrentUser();
+
+      const duplicateExists = await checkDuplicateMatricInSchool();
+      if (duplicateExists) {
+        showErr("This matric number is already linked to another account in this school.");
+        return;
+      }
+
       await saveToVerificationTable();
       await saveToStudentAccount();
-
-      try {
-        localStorage.setItem("colspot_face_step_ready", "true");
-        localStorage.setItem("colspot_verification_done", "true");
-      } catch {}
-
-      showOk("Verification successful. Redirecting to face capture...");
-
-      setTimeout(() => {
-        window.location.href = FACE_CAPTURE_URL;
-      }, 700);
+      lockVerificationUi();
+      await routeAfterVerification();
     } catch (e) {
       showErr(e && e.message ? e.message : "Failed to save.");
     } finally {
