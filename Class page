@@ -1,905 +1,693 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-  />
-  <title>Colspot • My Classes</title>
-
+<!-- 🔹 CLASSES SCREEN START -->
+<div id="screen-classes" class="screen">
   <style>
-    :root{
-      --blue:#2563eb;
-      --blue2:#3b82f6;
-      --blue-soft:#eef4ff;
-      --bg:#f4f7ff;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --shadow:0 14px 34px rgba(15,23,42,.08);
-      --shadow-soft:0 10px 24px rgba(37,99,235,.10);
-      --radius:26px;
-      --safe-top:env(safe-area-inset-top, 0px);
-      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    #screen-classes {
+      padding: 8px 6px 90px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
+    #screen-classes .hero {
+      padding: 4px 4px 6px;
+      margin-bottom: 6px;
     }
 
-    html,body{
-      margin:0;
-      min-height:100%;
-      background:var(--bg);
-      color:var(--text);
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    #screen-classes .hero-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
     }
 
-    body{
-      display:flex;
-      justify-content:center;
+    #screen-classes .hero-line-1 {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 3px;
     }
 
-    body::-webkit-scrollbar{
-      width:0;
-      height:0;
-      display:none;
+    #screen-classes .hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text-main);
+      margin: 0;
     }
 
-    button,input{
-      font:inherit;
+    #screen-classes .hero-title span {
+      color: var(--blue);
+      font-weight: 600;
     }
 
-    .app{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      padding:
-        calc(16px + var(--safe-top))
-        14px
-        calc(110px + var(--safe-bottom));
-      background:
-        radial-gradient(circle at top, #fafdff 0%, #f4f7ff 45%, #eef4ff 100%);
+    #screen-classes .hero-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 6px 0 0;
+      line-height: 1.45;
     }
 
-    .top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
+    #screen-classes .create-btn {
+      flex-shrink: 0;
+      border: none;
+      border-radius: 999px;
+      padding: 11px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.32);
     }
 
-    .top-left h1{
-      margin:0;
-      font-size:28px;
-      line-height:1.05;
-      letter-spacing:-.03em;
-      font-weight:900;
-      color:#0f172a;
+    #screen-classes .create-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
-    .top-left p{
-      margin:10px 0 0;
-      font-size:15px;
-      color:var(--muted);
-      line-height:1.5;
-      max-width:250px;
+    #screen-classes .create-btn:active {
+      transform: scale(0.98);
     }
 
-    .create-btn{
-      border:none;
-      background:linear-gradient(135deg,var(--blue2),var(--blue));
-      color:#fff;
-      min-height:54px;
-      padding:0 18px;
-      border-radius:999px;
-      font-size:16px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      box-shadow:0 14px 28px rgba(37,99,235,.22);
-      cursor:pointer;
-      white-space:nowrap;
-      flex-shrink:0;
+    #screen-classes .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0 14px;
     }
 
-    .create-btn svg{
-      width:18px;
-      height:18px;
-      flex-shrink:0;
+    #screen-classes .stat-card {
+      border-radius: 18px;
+      padding: 12px 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 84px;
     }
 
-    .stats{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:14px;
+    #screen-classes .stat-card.blue {
+      background: #f3f8ff;
     }
 
-    .stat-card{
-      background:var(--card);
-      border:1px solid #edf2fb;
-      border-radius:24px;
-      padding:14px 14px 16px;
-      box-shadow:var(--shadow-soft);
-      min-height:118px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
+    #screen-classes .stat-card.green {
+      background: #f4fbf7;
     }
 
-    .stat-top{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:#475569;
-      font-size:14px;
-      font-weight:700;
+    #screen-classes .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
-    .stat-icon{
-      width:34px;
-      height:34px;
-      border-radius:12px;
-      background:#edf4ff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--blue);
-      flex-shrink:0;
+    #screen-classes .stat-icon.blue {
+      background: #e8f1ff;
+      color: #2563eb;
     }
 
-    .stat-icon.green{
-      background:#ecfdf3;
-      color:#16a34a;
+    #screen-classes .stat-icon.green {
+      background: #e9f8ef;
+      color: #16a34a;
     }
 
-    .stat-icon svg{
-      width:18px;
-      height:18px;
+    #screen-classes .stat-icon svg {
+      width: 20px;
+      height: 20px;
     }
 
-    .stat-value{
-      font-size:24px;
-      font-weight:900;
-      color:#0f172a;
-      padding-left:2px;
+    #screen-classes .stat-meta {
+      min-width: 0;
     }
 
-    .search-wrap{
-      position:relative;
-      margin-bottom:16px;
+    #screen-classes .stat-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
     }
 
-    .search-wrap svg{
-      position:absolute;
-      left:16px;
-      top:50%;
-      transform:translateY(-50%);
-      width:22px;
-      height:22px;
-      color:#64748b;
-      pointer-events:none;
+    #screen-classes .stat-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
     }
 
-    .search-input{
-      width:100%;
-      height:58px;
-      border-radius:999px;
-      border:1px solid #e6edf9;
-      background:#fff;
-      padding:0 18px 0 52px;
-      font-size:16px;
-      color:#0f172a;
-      outline:none;
-      box-shadow:0 8px 20px rgba(15,23,42,.04);
+    #screen-classes .search-wrap {
+      margin-bottom: 12px;
     }
 
-    .search-input::placeholder{
-      color:#94a3b8;
+    #screen-classes .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 0 14px;
+      height: 52px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
     }
 
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
+    #screen-classes .search-box svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      flex-shrink: 0;
     }
 
-    .section-head h2{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#111827;
+    #screen-classes .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      margin: 0;
+      padding: 0;
+      color: var(--text-main);
     }
 
-    .small-note{
-      font-size:13px;
-      color:#64748b;
-      font-weight:700;
+    #screen-classes .search-box input::placeholder {
+      color: #94a3b8;
     }
 
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    #screen-classes .classes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    .class-card{
-      background:var(--card);
-      border:1px solid #e9edf7;
-      border-radius:30px;
-      padding:16px;
-      box-shadow:var(--shadow);
+    #screen-classes .class-card {
+      background: #ffffff;
+      border-radius: 22px;
+      border: 1px solid #e5e7eb;
+      padding: 14px 14px 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
     }
 
-    .class-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:8px;
+    #screen-classes .class-top {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
     }
 
-    .course-chip{
-      min-width:60px;
-      height:48px;
-      border-radius:16px;
-      background:#e8f0ff;
-      color:#2563eb;
-      font-size:16px;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:0 12px;
-      letter-spacing:.02em;
-      flex-shrink:0;
+    #screen-classes .class-badge {
+      min-width: 62px;
+      height: 48px;
+      border-radius: 16px;
+      background: #eaf2ff;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
     }
 
-    .course-main{
-      flex:1;
-      min-width:0;
+    #screen-classes .class-main {
+      flex: 1;
+      min-width: 0;
     }
 
-    .course-code{
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#0f172a;
-      margin:0;
+    #screen-classes .class-code {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 4px;
     }
 
-    .course-title{
-      margin:6px 0 0;
-      font-size:16px;
-      line-height:1.35;
-      font-weight:800;
-      color:#0f172a;
+    #screen-classes .class-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+      margin-bottom: 8px;
     }
 
-    .course-session{
-      margin:10px 0 0;
-      color:#6b7280;
-      font-size:14px;
-      font-weight:700;
+    #screen-classes .class-session {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
     }
 
-    .members{
-      flex-shrink:0;
-      align-self:center;
-      font-size:15px;
-      font-weight:900;
-      color:#111827;
-      white-space:nowrap;
-      margin-top:8px;
+    #screen-classes .class-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
     }
 
-    .course-meta{
-      margin-top:12px;
-      color:#4b5563;
-      font-size:14px;
-      line-height:1.45;
-      font-weight:700;
+    #screen-classes .class-meta-left {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      flex: 1;
+      min-width: 0;
     }
 
-    .pill-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
+    #screen-classes .class-meta-right {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
     }
 
-    .pill{
-      min-height:38px;
-      border-radius:999px;
-      background:#f4f7ff;
-      color:#64748b;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:0 14px;
-      font-size:13px;
-      font-weight:800;
-      border:1px solid #edf2fb;
-      max-width:100%;
+    #screen-classes .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .pill svg{
-      width:15px;
-      height:15px;
-      flex-shrink:0;
+    #screen-classes .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f4f7fd;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      max-width: 100%;
     }
 
-    .pill span{
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    #screen-classes .pill svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
     }
 
-    .action-row{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns:1fr 1fr 1.1fr auto;
-      gap:10px;
+    #screen-classes .actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 52px;
+      gap: 8px;
     }
 
-    .action-btn{
-      min-height:48px;
-      border:none;
-      border-radius:999px;
-      font-size:15px;
-      font-weight:800;
-      cursor:pointer;
-      background:#edf4ff;
-      color:#1f3b8a;
+    #screen-classes .action-btn {
+      height: 42px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .action-btn.primary{
-      background:linear-gradient(135deg,var(--blue2),var(--blue));
-      color:#fff;
-      box-shadow:0 10px 24px rgba(37,99,235,.22);
+    #screen-classes .action-btn.primary {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.25);
     }
 
-    .action-btn.more{
-      width:54px;
-      padding:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#edf4ff;
-      color:#64748b;
+    #screen-classes .action-btn.soft {
+      color: var(--text-main);
+      background: #eef4ff;
     }
 
-    .action-btn.more svg{
-      width:20px;
-      height:20px;
+    #screen-classes .action-btn.icon {
+      background: #eef4ff;
+      color: #64748b;
     }
 
-    .empty{
-      background:#fff;
-      border:1px solid #e9edf7;
-      border-radius:30px;
-      padding:28px 18px;
-      text-align:center;
-      box-shadow:var(--shadow);
+    #screen-classes .action-btn svg {
+      width: 18px;
+      height: 18px;
     }
 
-    .empty h3{
-      margin:0;
-      font-size:20px;
-      font-weight:900;
-      color:#0f172a;
+    #screen-classes .action-btn:active {
+      transform: scale(0.98);
     }
 
-    .empty p{
-      margin:10px auto 0;
-      max-width:280px;
-      line-height:1.55;
-      color:#6b7280;
-      font-size:14px;
-      font-weight:600;
+    #screen-classes .empty-box {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 16px 12px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
     }
 
-    .empty .create-btn{
-      margin-top:16px;
+    #screen-classes .classes-message {
+      margin-top: 8px;
+      font-size: 12px;
+      text-align: center;
+      white-space: pre-line;
     }
 
-    .loading,
-    .error-box{
-      background:#fff;
-      border-radius:24px;
-      padding:16px;
-      border:1px solid #e9edf7;
-      box-shadow:var(--shadow-soft);
-      font-size:14px;
-      line-height:1.55;
-      font-weight:700;
+    #screen-classes .classes-message.error {
+      color: var(--error);
     }
 
-    .error-box{
-      color:#b91c1c;
-      background:#fff5f5;
-      border-color:#fecaca;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:calc(14px + var(--safe-bottom));
-      width:min(402px, calc(100% - 20px));
-      background:rgba(255,255,255,.95);
-      backdrop-filter:blur(14px);
-      border:1px solid rgba(226,232,240,.9);
-      border-radius:28px;
-      box-shadow:0 18px 40px rgba(15,23,42,.12);
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      padding:10px 8px;
-      z-index:100;
-    }
-
-    .nav-item{
-      border:none;
-      background:transparent;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:#9ca3af;
-      font-size:12px;
-      font-weight:700;
-      padding:8px 4px;
-      border-radius:18px;
-      cursor:pointer;
-    }
-
-    .nav-item svg{
-      width:22px;
-      height:22px;
-    }
-
-    .nav-item.active{
-      color:var(--blue);
-    }
-
-    @media (max-width:390px){
-      .top{
-        flex-direction:column;
-        align-items:stretch;
+    @media (max-width: 380px) {
+      #screen-classes .hero-top-row {
+        flex-direction: column;
       }
 
-      .create-btn{
-        width:100%;
-        justify-content:center;
+      #screen-classes .create-btn {
+        width: 100%;
+        justify-content: center;
       }
 
-      .action-row{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .action-btn.more{
-        width:100%;
-      }
-
-      .members{
-        font-size:14px;
+      #screen-classes .actions-row {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
-</head>
-<body>
-  <div class="app">
-    <div class="top">
-      <div class="top-left">
-        <h1>My Classes</h1>
-        <p>Manage your classes, members, and attendance</p>
+
+  <section class="hero">
+    <div class="hero-top-row">
+      <div>
+        <div class="hero-line-1">My Classes</div>
+        <h1 class="hero-title">
+          Manage your <span>classes</span>
+        </h1>
+        <p class="hero-sub">Manage your classes, members, and attendance</p>
       </div>
 
-      <button class="create-btn" id="createClassBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <button class="create-btn" type="button" onclick="openCreateClass()">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path
+            d="M10 4v12M4 10h12"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
         </svg>
-        Create class
+        <span>Create class</span>
       </button>
     </div>
+  </section>
 
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 7h8M8 11h8M8 15h5M7 3h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <span>Total classes</span>
-        </div>
-        <div class="stat-value" id="totalClasses">0</div>
+  <section class="stats-grid">
+    <article class="stat-card blue">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 20 20" fill="none">
+          <rect x="4.5" y="3.5" width="11" height="13" rx="1.4" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
       </div>
-
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon green">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M23 11h-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <span>Total students</span>
-        </div>
-        <div class="stat-value" id="totalStudents">0</div>
+      <div class="stat-meta">
+        <div class="stat-title">Total classes</div>
+        <div class="stat-value" id="classesTotalValue">0</div>
       </div>
-    </div>
+    </article>
 
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M21 21l-4.35-4.35M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <article class="stat-card green">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M13.5 16v-1.2a2.8 2.8 0 00-2.8-2.8H6.8A2.8 2.8 0 004 14.8V16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="8.8" cy="7" r="2.7" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M15.2 7.2v4.2M17.3 9.3h-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="stat-meta">
+        <div class="stat-title">Total students</div>
+        <div class="stat-value" id="classesStudentsValue">0</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="9" cy="9" r="5.7" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M13.4 13.4L16.8 16.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
       <input
-        id="searchInput"
-        class="search-input"
+        id="classesSearchInput"
         type="text"
         placeholder="Search by course code or title"
       />
     </div>
+  </section>
 
-    <div class="section-head">
-      <h2>Your classes</h2>
-      <div class="small-note" id="classCountLabel">0 classes</div>
+  <section>
+    <div id="lecturerClassesList" class="classes-list">
+      <div class="empty-box">Loading your classes...</div>
     </div>
+    <div id="classesMessage" class="classes-message error" style="display:none;"></div>
+  </section>
+</div>
 
-    <div id="loadingBox" class="loading">Loading your classes...</div>
-    <div id="errorBox" class="error-box" style="display:none;"></div>
-    <div id="emptyState" class="empty" style="display:none;">
-      <h3>No classes yet</h3>
-      <p>Create your first class to start managing attendance and students.</p>
-      <button class="create-btn" id="emptyCreateBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        </svg>
-        Create class
-      </button>
-    </div>
+<script>
+  let lecturerClassesCache = [];
 
-    <div id="classList" class="list" style="display:none;"></div>
-  </div>
+  function showClassesError(msg) {
+    const el = document.getElementById("classesMessage");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = "block";
+  }
 
-  <nav class="bottom-nav">
-    <button class="nav-item" onclick="window.location.href='main.html'">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      <span>Home</span>
-    </button>
+  function clearClassesError() {
+    const el = document.getElementById("classesMessage");
+    if (!el) return;
+    el.style.display = "none";
+    el.textContent = "";
+  }
 
-    <button class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13.5A2.5 2.5 0 0 0 17.5 15H4V6.5ZM4 15v2.5A2.5 2.5 0 0 0 6.5 20H20" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      <span>Classes</span>
-    </button>
+  function escapeClassesHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    <button class="nav-item" onclick="window.location.href='history.html'">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M3 12a9 9 0 1 0 3-6.708M3 4v5h5M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>History</span>
-    </button>
+  function openCreateClass() {
+    window.location.href = "create_class.html";
+  }
 
-    <button class="nav-item" onclick="window.location.href='report.html'">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M4 19h16M7 16V9M12 16V5M17 16v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span>Reports</span>
-    </button>
-  </nav>
+  function openLecturerClass(classId) {
+    if (!classId) return;
+    window.location.href = "class_details.html?class_id=" + encodeURIComponent(classId);
+  }
 
-  <script type="module" src="./client_supabase.js"></script>
+  function editLecturerClass(classId) {
+    if (!classId) return;
+    window.location.href = "create_class.html?edit=" + encodeURIComponent(classId);
+  }
 
-  <script>
-    const classListEl = document.getElementById("classList");
-    const loadingBox = document.getElementById("loadingBox");
-    const errorBox = document.getElementById("errorBox");
-    const emptyState = document.getElementById("emptyState");
-    const totalClassesEl = document.getElementById("totalClasses");
-    const totalStudentsEl = document.getElementById("totalStudents");
-    const classCountLabel = document.getElementById("classCountLabel");
-    const searchInput = document.getElementById("searchInput");
-    const createClassBtn = document.getElementById("createClassBtn");
-    const emptyCreateBtn = document.getElementById("emptyCreateBtn");
+  function openClassAttendance(classId) {
+    if (!classId) return;
+    window.location.href = "attendance.html?class_id=" + encodeURIComponent(classId);
+  }
 
-    let allClasses = [];
-    let membershipCountMap = {};
+  function openClassMenu(classId) {
+    if (!classId) return;
+    alert("More actions for this class will open here.");
+  }
 
-    function norm(value){
-      return String(value || "").trim();
+  function renderLecturerClasses(list = []) {
+    const wrap = document.getElementById("lecturerClassesList");
+    const totalEl = document.getElementById("classesTotalValue");
+    const studentsEl = document.getElementById("classesStudentsValue");
+    if (!wrap) return;
+
+    if (totalEl) totalEl.textContent = String(list.length);
+
+    const totalStudents = list.reduce((sum, item) => sum + Number(item.member_count || 0), 0);
+    if (studentsEl) studentsEl.textContent = String(totalStudents);
+
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty-box">No class created yet.</div>`;
+      return;
     }
 
-    function escapeHtml(value){
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    wrap.innerHTML = list.map((item) => {
+      const badge = String(item.short_code || item.course_code || "CLS").slice(0, 3).toUpperCase();
+      const courseCode = escapeClassesHtml(item.course_code || "Untitled class");
+      const courseTitle = escapeClassesHtml(item.course_title || "No class title");
+      const sessionName = escapeClassesHtml(item.academic_session || item.session_name || "Session not set");
+      const deptName = escapeClassesHtml(item.department_name || "Department not set");
+      const levelLabel = escapeClassesHtml(item.level_label || "");
+      const memberCount = Number(item.member_count || 0);
+      const inviteCode = escapeClassesHtml(item.invite_code || "—");
+      const classId = String(item.id || "");
+
+      return `
+        <article class="class-card">
+          <div class="class-top">
+            <div class="class-badge">${badge}</div>
+
+            <div class="class-main">
+              <div class="class-code">${courseCode}</div>
+              <div class="class-title">${courseTitle}</div>
+              <div class="class-session">${sessionName}</div>
+
+              <div class="class-meta-row">
+                <div class="class-meta-left">
+                  ${deptName}${levelLabel ? " | " + levelLabel : ""}
+                </div>
+                <div class="class-meta-right">${memberCount} members</div>
+              </div>
+
+              <div class="pill-row">
+                <div class="pill">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M6.8 8.2a2.3 2.3 0 100-4.6 2.3 2.3 0 000 4.6zM13.4 9.3a1.9 1.9 0 100-3.8 1.9 1.9 0 000 3.8zM3.5 14.9c0-2 1.8-3.6 4-3.6s4 1.6 4 3.6M11.1 14.9c.2-1.4 1.5-2.4 3.1-2.4 1.5 0 2.8 1 3 2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                  <span>Invite code: ${inviteCode}</span>
+                </div>
+
+                <div class="pill">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <rect x="5" y="4" width="10" height="12" rx="1.6" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M7.5 8h5M7.5 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                  <span>${inviteCode}</span>
+                </div>
+              </div>
+
+              <div class="actions-row">
+                <button class="action-btn primary" type="button" onclick="openLecturerClass('${classId}')">Open</button>
+                <button class="action-btn soft" type="button" onclick="editLecturerClass('${classId}')">Edit</button>
+                <button class="action-btn soft" type="button" onclick="openClassAttendance('${classId}')">Attendance</button>
+                <button class="action-btn icon" type="button" onclick="openClassMenu('${classId}')">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <circle cx="4" cy="10" r="1.4" fill="currentColor"/>
+                    <circle cx="10" cy="10" r="1.4" fill="currentColor"/>
+                    <circle cx="16" cy="10" r="1.4" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function filterLecturerClasses(query = "") {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) {
+      renderLecturerClasses(lecturerClassesCache);
+      return;
     }
 
-    function shortCode(value){
-      const txt = norm(value).toUpperCase();
-      if (!txt) return "CLS";
-      const first = txt.split(/\s+/)[0] || txt;
-      return first.slice(0, 3);
+    const filtered = lecturerClassesCache.filter((item) => {
+      return [
+        item.course_code,
+        item.course_title,
+        item.department_name,
+        item.academic_session,
+        item.session_name,
+        item.invite_code
+      ]
+        .map(v => String(v || "").toLowerCase())
+        .some(v => v.includes(q));
+    });
+
+    renderLecturerClasses(filtered);
+  }
+
+  async function loadLecturerClasses() {
+    clearClassesError();
+
+    const wrap = document.getElementById("lecturerClassesList");
+    if (wrap) {
+      wrap.innerHTML = `<div class="empty-box">Loading your classes...</div>`;
     }
 
-    function formatPrograms(course){
-      const programs = Array.isArray(course.allowed_programs) ? course.allowed_programs : [];
-      if (!programs.length) return "All programmes";
-      return programs.join(", ");
-    }
-
-    function extractLevelsFromProgramLevels(input){
-      if (!Array.isArray(input)) return [];
-      const set = new Set();
-
-      for (const item of input) {
-        const levels = Array.isArray(item?.levels) ? item.levels : [];
-        levels.forEach((lv) => {
-          const n = Number(lv);
-          if (Number.isFinite(n)) set.add(n);
-        });
-      }
-
-      return [...set].sort((a, b) => a - b);
-    }
-
-    function formatLevels(course){
-      let levels = [];
-
-      if (Array.isArray(course.allowed_levels) && course.allowed_levels.length) {
-        levels = course.allowed_levels
-          .map((v) => Number(v))
-          .filter((v) => Number.isFinite(v))
-          .sort((a, b) => a - b);
-      } else if (Array.isArray(course.allowed_program_levels) && course.allowed_program_levels.length) {
-        levels = extractLevelsFromProgramLevels(course.allowed_program_levels);
-      }
-
-      if (!levels.length) return "All levels";
-      return levels.join(", ");
-    }
-
-    function getMemberCount(courseId){
-      return Number(membershipCountMap[courseId] || 0);
-    }
-
-    function setStats(classes){
-      totalClassesEl.textContent = String(classes.length);
-
-      const totalStudents = classes.reduce((sum, row) => {
-        return sum + getMemberCount(row.id);
-      }, 0);
-
-      totalStudentsEl.textContent = String(totalStudents);
-      classCountLabel.textContent = `${classes.length} ${classes.length === 1 ? "class" : "classes"}`;
-    }
-
-    function goToCreateClass(){
-      window.location.href = "create_class.html";
-    }
-
-    function goToClassDetails(courseId){
-      if (!courseId) return;
-      window.location.href = `class_details.html?course_id=${encodeURIComponent(courseId)}`;
-    }
-
-    function goToEditClass(courseId){
-      if (!courseId) return;
-      window.location.href = `edit_class.html?course_id=${encodeURIComponent(courseId)}`;
-    }
-
-    function goToAttendance(courseId){
-      if (!courseId) return;
-      window.location.href = `create_attendance.html?course_id=${encodeURIComponent(courseId)}`;
-    }
-
-    function showMoreMenu(courseId, inviteCode){
-      const lines = [
-        "Class options",
-        "",
-        `Course ID: ${courseId || "—"}`,
-        `Invite code: ${inviteCode || "—"}`
-      ];
-      alert(lines.join("\n"));
-    }
-
-    function renderClasses(rows){
-      const q = norm(searchInput.value).toLowerCase();
-
-      const filtered = rows.filter((row) => {
-        if (!q) return true;
-        const bag = [
-          row.course_code,
-          row.course_title,
-          row.academic_session,
-          formatPrograms(row),
-          formatLevels(row),
-          row.invite_code
-        ].join(" ").toLowerCase();
-
-        return bag.includes(q);
-      });
-
-      setStats(rows);
-
-      if (!rows.length) {
-        loadingBox.style.display = "none";
-        errorBox.style.display = "none";
-        emptyState.style.display = "block";
-        classListEl.style.display = "none";
+    try {
+      if (typeof supabase === "undefined") {
+        showClassesError("We couldn’t connect to the server. Please refresh and try again.");
+        if (wrap) wrap.innerHTML = `<div class="empty-box">Could not load classes.</div>`;
         return;
       }
 
-      if (!filtered.length) {
-        loadingBox.style.display = "none";
-        errorBox.style.display = "none";
-        emptyState.style.display = "none";
-        classListEl.style.display = "block";
-        classListEl.innerHTML = `
-          <div class="empty">
-            <h3>No matching class</h3>
-            <p>Try another search by course code or title.</p>
-          </div>
-        `;
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) {
+        showClassesError("Your session has expired. Please sign in again.");
+        if (wrap) wrap.innerHTML = `<div class="empty-box">Could not load classes.</div>`;
         return;
       }
 
-      classListEl.innerHTML = filtered.map((row) => {
-        const memberCount = getMemberCount(row.id);
-        const courseCode = norm(row.course_code);
-        const courseTitle = norm(row.course_title) || "Untitled class";
-        const session = norm(row.academic_session) || "Session not set";
-        const programs = formatPrograms(row);
-        const levels = formatLevels(row);
-        const inviteCode = norm(row.invite_code) || "No invite code";
+      const user = userData.user;
 
-        return `
-          <div class="class-card">
-            <div class="class-top">
-              <div class="course-chip">${escapeHtml(shortCode(courseCode))}</div>
-
-              <div class="course-main">
-                <h3 class="course-code">${escapeHtml(courseCode || "CLASS")}</h3>
-                <div class="course-title">${escapeHtml(courseTitle)}</div>
-                <div class="course-session">${escapeHtml(session)} Session</div>
-              </div>
-
-              <div class="members">${memberCount} ${memberCount === 1 ? "member" : "members"}</div>
-            </div>
-
-            <div class="course-meta">
-              ${escapeHtml(programs)} | ${escapeHtml(levels)}
-            </div>
-
-            <div class="pill-row">
-              <div class="pill">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 13a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3 19a5 5 0 0 1 10 0M13.5 19a4.5 4.5 0 0 1 7.5-3.354" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Invite code: ${escapeHtml(inviteCode)}</span>
-              </div>
-            </div>
-
-            <div class="action-row">
-              <button class="action-btn primary" onclick="goToClassDetails('${escapeHtml(row.id)}')">Open</button>
-              <button class="action-btn" onclick="goToEditClass('${escapeHtml(row.id)}')">Edit</button>
-              <button class="action-btn" onclick="goToAttendance('${escapeHtml(row.id)}')">Attendance</button>
-              <button class="action-btn more" onclick="showMoreMenu('${escapeHtml(row.id)}','${escapeHtml(inviteCode)}')">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="5" cy="12" r="1.8" fill="currentColor"/>
-                  <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
-                  <circle cx="19" cy="12" r="1.8" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      loadingBox.style.display = "none";
-      errorBox.style.display = "none";
-      emptyState.style.display = "none";
-      classListEl.style.display = "flex";
-    }
-
-    async function getCurrentUser(sb){
-      const { data, error } = await sb.auth.getUser();
-      if (error) throw error;
-      if (!data?.user?.id) throw new Error("You need to sign in again.");
-      return data.user;
-    }
-
-    async function loadMembershipCounts(sb, courseIds){
-      membershipCountMap = {};
-      if (!courseIds.length) return;
-
-      const { data, error } = await sb
-        .from("course_memberships")
-        .select("course_id")
-        .in("course_id", courseIds);
-
-      if (error) throw error;
-
-      for (const row of data || []) {
-        const key = row.course_id;
-        membershipCountMap[key] = (membershipCountMap[key] || 0) + 1;
-      }
-    }
-
-    async function loadClasses(){
-      const sb = window.supabase;
-      if (!sb) {
-        throw new Error("Supabase is not ready.");
-      }
-
-      const user = await getCurrentUser(sb);
-
-      const { data, error } = await sb
+      const { data: classes, error: classesError } = await supabase
         .from("courses")
-        .select(`
-          id,
-          created_by,
-          course_code,
-          course_title,
-          academic_session,
-          allowed_programs,
-          allowed_levels,
-          allowed_program_levels,
-          invite_code,
-          created_at
-        `)
+        .select("*")
         .eq("created_by", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (classesError) throw classesError;
 
-      allClasses = data || [];
-      await loadMembershipCounts(sb, allClasses.map((row) => row.id));
-      renderClasses(allClasses);
-    }
+      const rows = Array.isArray(classes) ? classes : [];
+      if (!rows.length) {
+        lecturerClassesCache = [];
+        renderLecturerClasses([]);
+        return;
+      }
 
-    async function boot(){
-      try {
-        loadingBox.style.display = "block";
-        errorBox.style.display = "none";
-        emptyState.style.display = "none";
-        classListEl.style.display = "none";
+      const classIds = rows.map((r) => r.id).filter(Boolean);
 
-        await loadClasses();
-      } catch (err) {
-        loadingBox.style.display = "none";
-        errorBox.style.display = "block";
-        errorBox.textContent = err?.message || "Failed to load classes.";
+      let memberships = [];
+      if (classIds.length) {
+        const { data: memberRows, error: memberError } = await supabase
+          .from("course_memberships")
+          .select("course_id")
+          .in("course_id", classIds);
+
+        if (!memberError && Array.isArray(memberRows)) {
+          memberships = memberRows;
+        }
+      }
+
+      const memberMap = {};
+      memberships.forEach((m) => {
+        const key = String(m.course_id || "");
+        memberMap[key] = (memberMap[key] || 0) + 1;
+      });
+
+      lecturerClassesCache = rows.map((row) => {
+        const code = String(row.course_code || "").trim();
+        let shortCode = code.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+        if (!shortCode) shortCode = "CLS";
+
+        return {
+          ...row,
+          short_code: shortCode,
+          member_count: memberMap[String(row.id || "")] || 0
+        };
+      });
+
+      renderLecturerClasses(lecturerClassesCache);
+    } catch (err) {
+      console.error("loadLecturerClasses failed:", err);
+      showClassesError("We couldn’t load your classes right now. Please check your internet and try again.");
+      if (wrap) {
+        wrap.innerHTML = `<div class="empty-box">Could not load classes.</div>`;
       }
     }
+  }
 
-    createClassBtn.addEventListener("click", goToCreateClass);
-    emptyCreateBtn.addEventListener("click", goToCreateClass);
-    searchInput.addEventListener("input", () => renderClasses(allClasses));
+  document.addEventListener("DOMContentLoaded", () => {
+    const classesSearchInput = document.getElementById("classesSearchInput");
+    if (classesSearchInput) {
+      classesSearchInput.addEventListener("input", (e) => {
+        filterLecturerClasses(e.target.value);
+      });
+    }
 
-    window.goToClassDetails = goToClassDetails;
-    window.goToEditClass = goToEditClass;
-    window.goToAttendance = goToAttendance;
-    window.showMoreMenu = showMoreMenu;
-
-    window.addEventListener("load", boot);
-  </script>
-</body>
-</html>
+    loadLecturerClasses();
+  });
+</script>
+<!-- 🔹 CLASSES SCREEN END -->
