@@ -1116,7 +1116,7 @@
     const greetLine = document.getElementById("greetingLine");
     const avatarInitial = document.getElementById("avatarInitial");
 
-    const fullName = (fullNameRaw && fullNameRaw.toString().trim()) || "there";
+    const fullName = (fullNameRaw && String(fullNameRaw).trim()) || "there";
     const firstName = fullName.split(" ")[0] || "there";
 
     if (greetLine) {
@@ -1228,9 +1228,7 @@
   }
 
   async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
-    if (!("geolocation" in navigator)) {
-      return null;
-    }
+    if (!("geolocation" in navigator)) return null;
 
     let best = null;
 
@@ -1556,11 +1554,27 @@
     const monthKey = getCurrentMonthKey();
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("scan_sheets")
         .select("id", { count: "exact", head: false })
         .eq("user_id", user.id)
         .eq("month_key", monthKey);
+
+      let { data, error } = await query;
+
+      if (error && String(error.message || "").toLowerCase().includes("month_key")) {
+        const fallback = await supabase
+          .from("scan_sheets")
+          .select("id", { count: "exact", head: false })
+          .eq("user_id", user.id);
+
+        data = fallback.data;
+        error = fallback.error;
+
+        if (!error) {
+          console.warn("scan_sheets.month_key missing, using fallback count without monthly filter");
+        }
+      }
 
       if (error) throw error;
 
@@ -1691,13 +1705,23 @@
 
       try {
         if (typeof supabase !== "undefined") {
-          await supabase.from("scan_sheets").insert({
+          const insertPayload = {
             user_id: user.id,
             title,
-            month_key: getCurrentMonthKey(),
             output_type: outputType,
             source_name: file.name
-          });
+          };
+
+          const tryInsert = await supabase
+            .from("scan_sheets")
+            .insert({
+              ...insertPayload,
+              month_key: getCurrentMonthKey()
+            });
+
+          if (tryInsert.error && String(tryInsert.error.message || "").toLowerCase().includes("month_key")) {
+            await supabase.from("scan_sheets").insert(insertPayload);
+          }
         }
       } catch (logErr) {
         console.warn("scan_sheets insert failed:", logErr);
@@ -1729,7 +1753,12 @@
     const section = document.getElementById("announcementSection");
     const titleEl = document.getElementById("announcementTitle");
     const msgEl = document.getElementById("announcementMessage");
-    if (!section || !titleEl || !msgEl || typeof supabase === "undefined") return;
+    if (!section || !titleEl || !msgEl) return;
+
+    if (typeof supabase === "undefined") {
+      section.style.display = "none";
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -1744,65 +1773,141 @@
 
       if (!ann) {
         section.style.display = "none";
+        stopOfflineRetry();
         return;
       }
 
+      if (ann.show_until && new Date(ann.show_until) < new Date()) {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      const dismissKey = "colspot_announcement_dismissed_" + ann.id;
+      if (localStorage.getItem(dismissKey) === "1") {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      section.dataset.announcementId = ann.id;
       titleEl.textContent = ann.title || "Update";
       msgEl.textContent = ann.message || "";
       section.style.display = "block";
+
+      stopOfflineRetry();
     } catch (e) {
-      console.warn("loadAnnouncements failed:", e);
-      section.style.display = "none";
+      console.error("loadAnnouncements failed:", e);
+      scheduleOfflineRetry();
     }
   }
 
-  function applyUpdateRuleFromLocal() {
+  function dismissAnnouncement() {
+    const section = document.getElementById("announcementSection");
+    if (!section) return;
+
+    const id = section.dataset.announcementId;
+    if (id) {
+      try {
+        localStorage.setItem("colspot_announcement_dismissed_" + id, "1");
+      } catch (e) {
+        console.warn("Failed to persist announcement dismiss:", e);
+      }
+    }
+
+    section.style.display = "none";
+  }
+
+  function hideSoftUpdateBanner() {
+    const softSection = document.getElementById("updateSoftSection");
+    if (softSection) softSection.style.display = "none";
+  }
+
+  function hideHardUpdateOverlay() {
+    const hardOverlay = document.getElementById("updateHardOverlay");
+    if (hardOverlay) hardOverlay.style.display = "none";
+  }
+
+  function showSoftUpdateBanner(rule) {
     const softSection = document.getElementById("updateSoftSection");
     const softTitle = document.getElementById("updateSoftTitle");
     const softMessage = document.getElementById("updateSoftMessage");
+
+    if (!softSection || !softTitle || !softMessage) return;
+
+    softTitle.textContent = rule.title || "New version available";
+    softMessage.textContent = rule.message || "Please update Colspot.";
+    softSection.style.display = "block";
+  }
+
+  function showHardUpdateOverlay(rule) {
     const hardOverlay = document.getElementById("updateHardOverlay");
     const hardTitle = document.getElementById("updateHardTitle");
     const hardMessage = document.getElementById("updateHardMessage");
 
+    if (!hardOverlay || !hardTitle || !hardMessage) return;
+
+    hardTitle.textContent = rule.title || "Please update Colspot";
+    hardMessage.textContent =
+      rule.message ||
+      "A newer version of Colspot is required to continue. Please update to keep using the app.";
+
+    hardOverlay.style.display = "flex";
+  }
+
+  function applyUpdateRuleFromLocal() {
+    let raw;
     try {
-      const raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
-      currentUpdateRule = raw ? JSON.parse(raw) : null;
+      raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
+    } catch {
+      raw = null;
+    }
+
+    if (!raw) {
+      currentUpdateRule = null;
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
+      return;
+    }
+
+    let rule;
+    try {
+      rule = JSON.parse(raw);
     } catch {
       currentUpdateRule = null;
-    }
-
-    if (!currentUpdateRule) {
-      if (softSection) softSection.style.display = "none";
-      if (hardOverlay) hardOverlay.style.display = "none";
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
       return;
     }
 
-    const type = String(currentUpdateRule.type || "").toLowerCase();
-    const title = currentUpdateRule.title || "New version available";
-    const message = currentUpdateRule.message || "Please update Colspot.";
-
-    if (type === "hard") {
-      if (softSection) softSection.style.display = "none";
-      if (hardTitle) hardTitle.textContent = title;
-      if (hardMessage) hardMessage.textContent = message;
-      if (hardOverlay) hardOverlay.style.display = "flex";
+    if (!rule || !rule.mode || rule.mode === "none") {
+      currentUpdateRule = null;
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
       return;
     }
 
-    if (softTitle) softTitle.textContent = title;
-    if (softMessage) softMessage.textContent = message;
-    if (softSection) softSection.style.display = "block";
-    if (hardOverlay) hardOverlay.style.display = "none";
+    currentUpdateRule = rule;
+
+    if (rule.mode === "hard") {
+      hideSoftUpdateBanner();
+      showHardUpdateOverlay(rule);
+      return;
+    }
+
+    if (rule.mode === "soft") {
+      hideHardUpdateOverlay();
+      showSoftUpdateBanner(rule);
+      return;
+    }
+
+    hideSoftUpdateBanner();
+    hideHardUpdateOverlay();
   }
 
   function openUpdateUrlFromRule() {
     if (!currentUpdateRule || !currentUpdateRule.url) return;
     window.open(currentUpdateRule.url, "_blank");
-  }
-
-  function dismissAnnouncement() {
-    const section = document.getElementById("announcementSection");
-    if (section) section.style.display = "none";
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
