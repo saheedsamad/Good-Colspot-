@@ -593,12 +593,13 @@
 <script>
   const BUCKET = "verification_uploads";
   const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
-  const VERIFICATION_TABLE = "verification_clearance";
+  const VERIFICATION_TABLE = "verification_course_forms";
   const DUPLICATE_CHECK_TABLE = "verification_course_forms";
   const ACCOUNT_TABLE = "student_accounts";
   const FACE_TABLE = "face_profiles";
   const FACE_CAPTURE_URL = "face-capture.html";
   const MAIN_URL = "main.html";
+  const DEBUG_MODE = false;
 
   const el = (id) => document.getElementById(id);
 
@@ -651,6 +652,9 @@
     return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
   }
 
+  function setDebug(){}
+  function clearDebug(){}
+
   function normalizeText(value){
     return String(value || "").trim();
   }
@@ -664,10 +668,6 @@
   let extracted = null;
   let currentUser = null;
   let verificationLocked = false;
-
-  let continueCheckPassed = false;
-  let continueCheckSchool = "";
-  let continueCheckMatric = "";
 
   async function getUser(){
     const sb = window.supabase;
@@ -716,20 +716,6 @@
     thumb.appendChild(div);
   }
 
-  function buildNormalizedExtracted(){
-    return {
-      full_name: normalizeText(extracted?.full_name),
-      matric_no: normalizeText(extracted?.matric_no || extracted?.matric),
-      school_name: normalizeUpper(extracted?.school_name),
-      department: normalizeText(extracted?.department),
-      programme: normalizeText(extracted?.programme),
-      faculty: normalizeText(extracted?.faculty),
-      level: normalizeText(extracted?.level),
-      session: normalizeText(extracted?.session),
-      semester: normalizeText(extracted?.semester)
-    };
-  }
-
   function paintExtracted(details){
     el("vFullName").textContent = details?.full_name || "—";
     el("vMatric").textContent = details?.matric_no || details?.matric || "—";
@@ -742,16 +728,9 @@
     el("vSemester").textContent = details?.semester || "—";
   }
 
-  function clearContinueDebugState(){
-    continueCheckPassed = false;
-    continueCheckSchool = "";
-    continueCheckMatric = "";
-  }
-
   function clearExtractedDetails(){
     extracted = null;
     uploadedPath = null;
-    clearContinueDebugState();
     el("details").style.display = "none";
     el("vFullName").textContent = "—";
     el("vMatric").textContent = "—";
@@ -781,7 +760,6 @@
     uploadedPath = null;
     extracted = null;
     verificationLocked = false;
-    clearContinueDebugState();
 
     el("fileInput").value = "";
     el("fileInput").disabled = false;
@@ -793,6 +771,7 @@
     if (el("btnCancel")) el("btnCancel").disabled = false;
     el("details").style.display = "none";
     clearMsgs();
+    clearDebug();
     setLoading(false);
 
     const fileBtn = el("fileBtn");
@@ -865,6 +844,20 @@
     }
 
     return data;
+  }
+
+  function buildNormalizedExtracted(){
+    return {
+      full_name: normalizeText(extracted?.full_name),
+      matric_no: normalizeText(extracted?.matric_no || extracted?.matric),
+      school_name: normalizeUpper(extracted?.school_name),
+      department: normalizeText(extracted?.department),
+      programme: normalizeText(extracted?.programme),
+      faculty: normalizeText(extracted?.faculty),
+      level: normalizeText(extracted?.level),
+      session: normalizeText(extracted?.session),
+      semester: normalizeText(extracted?.semester)
+    };
   }
 
   async function saveToVerificationTable(){
@@ -963,7 +956,7 @@
 
     const { data, error } = await sb
       .from(DUPLICATE_CHECK_TABLE)
-      .select("user_id, school_name, matric_no, full_name")
+      .select("user_id, school_name, matric_no")
       .eq("school_name", normalized.school_name)
       .eq("matric_no", normalized.matric_no)
       .neq("user_id", currentUser.id)
@@ -971,7 +964,7 @@
       .maybeSingle();
 
     if (error) throw error;
-    return data || null;
+    return !!data;
   }
 
   async function hasVerifiedFaceAlready(){
@@ -1152,8 +1145,6 @@
         extracted.matric_no = normalizeText(extracted.matric_no || extracted.matric);
       }
 
-      clearContinueDebugState();
-
       const hasUsefulDetails =
         extracted &&
         (
@@ -1203,41 +1194,12 @@
 
     try {
       setLoading(true);
+
       await ensureCurrentUser();
 
-      const normalized = buildNormalizedExtracted();
-
-      if (
-        !continueCheckPassed ||
-        continueCheckSchool !== normalized.school_name ||
-        continueCheckMatric !== normalized.matric_no
-      ) {
-        const existingRow = await checkDuplicateMatricInVerificationCourseForms();
-
-        continueCheckSchool = normalized.school_name;
-        continueCheckMatric = normalized.matric_no;
-
-        if (existingRow) {
-          showErr(
-            "DEBUG CHECK RESULT:\n" +
-            "These details already exist.\n\n" +
-            "School: " + (existingRow.school_name || normalized.school_name) + "\n" +
-            "Matric: " + (existingRow.matric_no || normalized.matric_no) + "\n" +
-            "Name: " + (existingRow.full_name || "—") + "\n" +
-            "User ID: " + (existingRow.user_id || "—")
-          );
-          continueCheckPassed = false;
-          return;
-        }
-
-        continueCheckPassed = true;
-        showWarn(
-          "DEBUG CHECK RESULT:\n" +
-          "No existing details found in verification_course_forms.\n\n" +
-          "School: " + normalized.school_name + "\n" +
-          "Matric: " + normalized.matric_no + "\n\n" +
-          "If this looks correct, click Continue again to save and proceed."
-        );
+      const duplicateExists = await checkDuplicateMatricInVerificationCourseForms();
+      if (duplicateExists) {
+        showErr("This matric number is already linked to another account in this school.");
         return;
       }
 
