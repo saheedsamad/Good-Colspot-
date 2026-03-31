@@ -1,8 +1,7 @@
 // Auth.js
 // Assumes window.supabase is created in client_supabase.js
-
 let currentMode = "signin";
-let pendingSignup = null; // { email, password, fullName, role, schoolName, dept, accountId }
+let pendingSignup = null; // { email, password, fullName, role, schoolName, dept, matricNumber }
 let resetEmail = null;    // for forgot-password flow
 
 // ----------------------------
@@ -775,11 +774,65 @@ function hideResetPanel() {
 /* ----------------------------
  * Redirect if already signed in
  * ---------------------------- */
+async function resolveUserRole(user) {
+  if (!user) return "";
+
+  const metaRole = String(
+    user.user_metadata?.role ||
+    user.app_metadata?.role ||
+    ""
+  ).trim().toLowerCase();
+
+  if (metaRole) return metaRole;
+
+  if (!window.supabase) return "";
+
+  try {
+    const { data: studentRow } = await supabase
+      .from("student_accounts")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (studentRow?.user_id) return "student";
+
+    const { data: lecturerRow } = await supabase
+      .from("lecturer_accounts")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (lecturerRow?.user_id) return "lecturer";
+  } catch (e) {
+    console.error("resolveUserRole error:", e);
+  }
+
+  return "";
+}
+
+async function redirectUserByRole(user) {
+  const role = await resolveUserRole(user);
+
+  if (role === "lecturer") {
+    window.location.href = "Main_lecturer.html";
+    return;
+  }
+
+  window.location.href = "Main_student.html";
+}
+
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
-  if (cached && cached.id) {
-    window.location.href = "main.html";
-    return true;
+  if (cached && cached.id && window.supabase) {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        await redirectUserByRole(data.user);
+        return true;
+      }
+    } catch (e) {
+      console.error("redirectIfSignedIn error:", e);
+    }
   }
   return false;
 }
@@ -792,7 +845,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
     throw new Error("Missing signup data");
   }
 
-  const { fullName, role, schoolName, dept, accountId } = signupData;
+  const { fullName, role, schoolName, dept, matricNumber } = signupData;
   const emailToSave = (userEmail || signupData.email || "").trim().toLowerCase();
 
   if (role === "student") {
@@ -801,7 +854,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       full_name: fullName,
       school_name: schoolName,
       department: dept,
-      matric_number: accountId,
+      matric_number: matricNumber,
       email: emailToSave,
     };
 
@@ -819,7 +872,6 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       full_name: fullName,
       school_name: schoolName,
       department: dept,
-      staff_id: accountId,
       email: emailToSave,
     };
 
@@ -921,7 +973,7 @@ if (signinFormEl) {
         saveLocalUserFromSession(data.session);
       }
 
-      window.location.href = "main.html";
+await redirectUserByRole(data.session.user);
     } catch (err) {
       console.error(err);
       if (isLikelyOfflineError(err)) {
@@ -945,14 +997,14 @@ if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const fullName = document.getElementById("signup-fullname").value.trim();
-    const role = document.getElementById("signup-role").value;
-    const schoolName = document.getElementById("signup-schoolname")?.value.trim() || "";
-    const dept = document.getElementById("signup-dept").value.trim();
-    const accountId = document.getElementById("signup-matric").value.trim();
-    const email = document.getElementById("signup-email").value.trim().toLowerCase();
-    const password = document.getElementById("signup-password").value;
-    const password2 = document.getElementById("signup-password2").value;
+const fullName = document.getElementById("signup-fullname").value.trim();
+const role = document.getElementById("signup-role").value;
+const schoolName = document.getElementById("signup-schoolname")?.value.trim() || "";
+const dept = document.getElementById("signup-dept").value.trim();
+const matricNumber = document.getElementById("signup-matric")?.value.trim() || "";
+const email = document.getElementById("signup-email").value.trim().toLowerCase();
+const password = document.getElementById("signup-password").value;
+const password2 = document.getElementById("signup-password2").value;
 
     const msgEl = document.getElementById("signup-message");
     msgEl.textContent = "";
@@ -992,15 +1044,15 @@ if (signupFormEl) {
     try {
       setButtonLoading("signup-btn", "signup-text", "signup-loader", true);
 
-      pendingSignup = {
-        email,
-        password,
-        fullName,
-        role,
-        schoolName,
-        dept,
-        accountId,
-      };
+    pendingSignup = {
+  email,
+  password,
+  fullName,
+  role,
+  schoolName,
+  dept,
+  matricNumber,
+};
 
       localStorage.setItem("colspot_pending_email", email);
 
@@ -1110,24 +1162,18 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
     }
 
     if (pendingSignup && pendingSignup.password) {
-      const { password, fullName, role, schoolName, dept, accountId } = pendingSignup;
+    const { password, fullName, role, schoolName, dept, matricNumber } = pendingSignup;
 
-      const metadata =
-        role === "student"
-          ? {
-              full_name: fullName,
-              role,
-              school_name: schoolName,
-              department: dept,
-              matric_number: accountId,
-            }
-          : {
-              full_name: fullName,
-              role,
-              school_name: schoolName,
-              department: dept,
-              staff_id: accountId,
-            };
+const metadata = {
+  full_name: fullName,
+  role,
+  school_name: schoolName,
+  department: dept,
+};
+
+if (role === "student") {
+  metadata.matric_number = matricNumber;
+}
 
       const { error: updateError } = await supabase.auth.updateUser({
         password,
@@ -1180,10 +1226,12 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
 
     msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
     msgEl.className = "message success";
+    
+setTimeout(async () => {
+  await redirectUserByRole(data.session.user);
+}, 800);
 
-    setTimeout(() => {
-      window.location.href = "main.html";
-    }, 800);
+
   } catch (err) {
     console.error(err);
     msgEl.textContent = MSG.VERIFY_FAIL;
