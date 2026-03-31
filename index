@@ -613,7 +613,12 @@
           </select>
 
           <label for="signup-schoolname">School name</label>
-          <input id="signup-schoolname" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
+          <select id="signup-schoolname" required>
+            <option value="">Loading schools...</option>
+          </select>
+          <div class="hint" id="school-load-hint">
+            Select your school from the list.
+          </div>
 
           <div id="id-field-wrap" class="hidden">
             <label id="signup-id-label" for="signup-matric">Matric number</label>
@@ -770,6 +775,49 @@
       window.location.href = "privacy.html";
     }
 
+    async function loadSchoolsIntoSelect() {
+      const schoolSelect = document.getElementById("signup-schoolname");
+      const hint = document.getElementById("school-load-hint");
+      if (!schoolSelect || !window.supabase) return;
+
+      schoolSelect.innerHTML = `<option value="">Loading schools...</option>`;
+
+      try {
+        const { data, error } = await window.supabase
+          .from("school")
+          .select("id, school_name")
+          .order("school_name", { ascending: true });
+
+        if (error) throw error;
+
+        const rows = Array.isArray(data) ? data : [];
+
+        if (!rows.length) {
+          schoolSelect.innerHTML = `<option value="">No school found</option>`;
+          if (hint) hint.textContent = "No school was found in the school table yet.";
+          return;
+        }
+
+        schoolSelect.innerHTML = `<option value="">Select school</option>` +
+          rows.map((row) => {
+            const name = String(row.school_name || "").trim();
+            const safeName = name
+              .replaceAll("&", "&amp;")
+              .replaceAll("<", "&lt;")
+              .replaceAll(">", "&gt;")
+              .replaceAll('"', "&quot;")
+              .replaceAll("'", "&#039;");
+            return `<option value="${safeName}">${safeName}</option>`;
+          }).join("");
+
+        if (hint) hint.textContent = "Select your school from the list.";
+      } catch (err) {
+        console.error("School load error:", err);
+        schoolSelect.innerHTML = `<option value="">Could not load schools</option>`;
+        if (hint) hint.textContent = "Could not load schools. Please reload the page.";
+      }
+    }
+
     (function setupRoleUI() {
       const roleSelect = document.getElementById("signup-role");
       const idFieldWrap = document.getElementById("id-field-wrap");
@@ -780,9 +828,7 @@
 
       if (!roleSelect) return;
 
-      roleSelect.addEventListener("change", function () {
-        const role = roleSelect.value;
-
+      function applyRole(role) {
         if (!role) {
           if (idFieldWrap) idFieldWrap.classList.add("hidden");
           if (lecturerHint) lecturerHint.classList.add("hidden");
@@ -794,25 +840,36 @@
           return;
         }
 
-        if (idFieldWrap) idFieldWrap.classList.remove("hidden");
-        if (idInput) idInput.required = true;
-
         if (role === "student") {
+          if (idFieldWrap) idFieldWrap.classList.remove("hidden");
           if (idLabel) idLabel.textContent = "Matric number";
-          if (idInput) idInput.placeholder = "e.g. CSC/21/1234";
+          if (idInput) {
+            idInput.required = true;
+            idInput.placeholder = "e.g. CSC/21/1234";
+          }
           if (idHint) {
             idHint.innerHTML = "Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>";
           }
           if (lecturerHint) lecturerHint.classList.add("hidden");
-        } else if (role === "lecturer") {
-          if (idLabel) idLabel.textContent = "Staff ID";
-          if (idInput) idInput.placeholder = "Enter your staff ID";
-          if (idHint) {
-            idHint.innerHTML = "Make sure this staff ID is correct before continuing.";
+          return;
+        }
+
+        if (role === "lecturer") {
+          if (idFieldWrap) idFieldWrap.classList.add("hidden");
+          if (idInput) {
+            idInput.value = "";
+            idInput.required = false;
+            idInput.placeholder = "";
           }
           if (lecturerHint) lecturerHint.classList.remove("hidden");
         }
+      }
+
+      roleSelect.addEventListener("change", function () {
+        applyRole(roleSelect.value);
       });
+
+      applyRole(roleSelect.value);
     })();
 
     (function guardLecturerEmail() {
@@ -1020,23 +1077,25 @@
     }
 
     function goToDashboard(role) {
-  const cleanRole = String(role || "").trim().toLowerCase();
+      const cleanRole = String(role || "").trim().toLowerCase();
 
-  if (cleanRole === "super_admin") {
-    window.location.href = "super_admin.html";
-  } else if (cleanRole === "hos") {
-    window.location.href = "hos.html";
-  } else if (cleanRole === "hod") {
-    window.location.href = "hod.html";
-  } else if (cleanRole === "report_agent") {
-    window.location.href = "report_agent.html";
-  } else {
-    if (adminMessage) {
-      adminMessage.textContent = "Unknown admin role.";
-      adminMessage.className = "message error";
+      if (cleanRole === "super_admin") {
+        window.location.href = "super_admin.html";
+      } else if (cleanRole === "hos") {
+        window.location.href = "hos.html";
+      } else if (cleanRole === "hod") {
+        window.location.href = "hod.html";
+      } else if (cleanRole === "report_agent") {
+        window.location.href = "report_agent.html";
+      } else if (cleanRole === "assistant_report_agent") {
+        window.location.href = "assistant_report_agent.html";
+      } else {
+        if (adminMessage) {
+          adminMessage.textContent = "Unknown admin role.";
+          adminMessage.className = "message error";
+        }
+      }
     }
-  }
-}
 
     async function invokeEdge(functionName, body) {
       if (!window.supabase) {
@@ -1044,9 +1103,6 @@
       }
 
       const { data, error } = await window.supabase.functions.invoke(functionName, { body });
-
-      console.log(functionName + " data:", data);
-      console.log(functionName + " error:", error);
 
       if (error) {
         throw new Error(
@@ -1120,9 +1176,6 @@
           ...(result.account || {}),
           role: result.role || ""
         };
-
-        console.log("result from backend:", result);
-        console.log("final admin object:", admin);
 
         saveAdminSession(admin);
 
@@ -1297,4 +1350,20 @@
       showAdminLinkEmail(pending?.email || "");
     });
   })();
-</script>
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const waitForSupabase = async (tries = 40) => {
+      while (!window.supabase && tries > 0) {
+        await new Promise((r) => setTimeout(r, 150));
+        tries -= 1;
+      }
+    };
+
+    await waitForSupabase();
+    if (window.supabase) {
+      await loadSchoolsIntoSelect();
+    }
+  });
+  </script>
+</body>
+</html>
