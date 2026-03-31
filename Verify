@@ -594,6 +594,7 @@
   const BUCKET = "verification_uploads";
   const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
   const VERIFICATION_TABLE = "verification_clearance";
+  const DUPLICATE_CHECK_TABLE = "verification_course_forms";
   const ACCOUNT_TABLE = "student_accounts";
   const FACE_TABLE = "face_profiles";
   const FACE_CAPTURE_URL = "face-capture.html";
@@ -658,6 +659,10 @@
     return String(value || "").trim();
   }
 
+  function normalizeUpper(value){
+    return String(value || "").trim().toUpperCase();
+  }
+
   let pickedFile = null;
   let uploadedPath = null;
   let extracted = null;
@@ -714,7 +719,7 @@
   function paintExtracted(details){
     el("vFullName").textContent = details?.full_name || "—";
     el("vMatric").textContent = details?.matric_no || details?.matric || "—";
-    el("vSchool").textContent = details?.school_name || "—";
+    el("vSchool").textContent = normalizeUpper(details?.school_name) || "—";
     el("vDept").textContent = details?.department || "—";
     el("vProgramme").textContent = details?.programme || "—";
     el("vFaculty").textContent = details?.faculty || "—";
@@ -841,26 +846,45 @@
     return data;
   }
 
+  function buildNormalizedExtracted(){
+    return {
+      full_name: normalizeText(extracted?.full_name),
+      matric_no: normalizeText(extracted?.matric_no || extracted?.matric),
+      school_name: normalizeUpper(extracted?.school_name),
+      department: normalizeText(extracted?.department),
+      programme: normalizeText(extracted?.programme),
+      faculty: normalizeText(extracted?.faculty),
+      level: normalizeText(extracted?.level),
+      session: normalizeText(extracted?.session),
+      semester: normalizeText(extracted?.semester)
+    };
+  }
+
   async function saveToVerificationTable(){
     const sb = window.supabase;
     if (!sb) throw new Error("Supabase not ready.");
 
     await ensureCurrentUser();
+    const normalized = buildNormalizedExtracted();
 
     const payload = {
       user_id: currentUser.id,
       file_bucket: BUCKET,
       file_path: uploadedPath,
-      full_name: extracted?.full_name || null,
-      matric_no: extracted?.matric_no || null,
-      school_name: extracted?.school_name || null,
-      department: extracted?.department || null,
-      programme: extracted?.programme || null,
-      faculty: extracted?.faculty || null,
-      level: extracted?.level || null,
-      session: extracted?.session || null,
-      semester: extracted?.semester || null,
-      extracted_json: extracted || null,
+      full_name: normalized.full_name || null,
+      matric_no: normalized.matric_no || null,
+      school_name: normalized.school_name || null,
+      department: normalized.department || null,
+      programme: normalized.programme || null,
+      faculty: normalized.faculty || null,
+      level: normalized.level || null,
+      session: normalized.session || null,
+      semester: normalized.semester || null,
+      extracted_json: {
+        ...(extracted || {}),
+        school_name: normalized.school_name || null,
+        matric_no: normalized.matric_no || null
+      },
       status: "successful"
     };
 
@@ -896,15 +920,16 @@
     if (!sb) throw new Error("Supabase not ready.");
 
     await ensureCurrentUser();
+    const normalized = buildNormalizedExtracted();
 
     const payload = {
       user_id: currentUser.id,
-      full_name: extracted?.full_name || null,
-      school_name: extracted?.school_name || null,
-      department: extracted?.department || null,
-      programme: extracted?.programme || null,
-      matric_number: extracted?.matric_no || null,
-      level: extracted?.level || null
+      full_name: normalized.full_name || null,
+      school_name: normalized.school_name || null,
+      department: normalized.department || null,
+      programme: normalized.programme || null,
+      matric_number: normalized.matric_no || null,
+      level: normalized.level || null
     };
 
     const { error } = await sb
@@ -914,28 +939,26 @@
     if (error) throw error;
   }
 
-  async function checkDuplicateMatricInSchool(){
+  async function checkDuplicateMatricInVerificationCourseForms(){
     const sb = window.supabase;
     if (!sb) throw new Error("Supabase not ready.");
 
     await ensureCurrentUser();
+    const normalized = buildNormalizedExtracted();
 
-    const schoolName = normalizeText(extracted?.school_name);
-    const matricNumber = normalizeText(extracted?.matric_no || extracted?.matric);
-
-    if (!schoolName) {
+    if (!normalized.school_name) {
       throw new Error("School name is missing from the verified course form.");
     }
 
-    if (!matricNumber) {
+    if (!normalized.matric_no) {
       throw new Error("Matric number is missing from the verified course form.");
     }
 
     const { data, error } = await sb
-      .from(ACCOUNT_TABLE)
-      .select("user_id, school_name, matric_number")
-      .eq("school_name", schoolName)
-      .eq("matric_number", matricNumber)
+      .from(DUPLICATE_CHECK_TABLE)
+      .select("user_id, school_name, matric_no")
+      .eq("school_name", normalized.school_name)
+      .eq("matric_no", normalized.matric_no)
       .neq("user_id", currentUser.id)
       .limit(1)
       .maybeSingle();
@@ -1015,6 +1038,11 @@
       session: data.session,
       semester: data.semester
     };
+
+    if (extracted) {
+      extracted.school_name = normalizeUpper(extracted.school_name);
+      extracted.matric_no = normalizeText(extracted.matric_no || extracted.matric);
+    }
 
     await routeAfterVerification();
   }
@@ -1112,6 +1140,11 @@
 
       extracted = result.extracted || null;
 
+      if (extracted) {
+        extracted.school_name = normalizeUpper(extracted.school_name);
+        extracted.matric_no = normalizeText(extracted.matric_no || extracted.matric);
+      }
+
       const hasUsefulDetails =
         extracted &&
         (
@@ -1161,9 +1194,10 @@
 
     try {
       setLoading(true);
+
       await ensureCurrentUser();
 
-      const duplicateExists = await checkDuplicateMatricInSchool();
+      const duplicateExists = await checkDuplicateMatricInVerificationCourseForms();
       if (duplicateExists) {
         showErr("This matric number is already linked to another account in this school.");
         return;
