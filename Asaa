@@ -7,6 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const DUPLICATE_THRESHOLD = 0.85;
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -55,6 +57,37 @@ function decodeBase64ToBytes(base64: string): Uint8Array {
 function publicErrorMessage(err: unknown) {
   if (err instanceof Error) return err.message;
   return String(err);
+}
+
+function normalizeSchoolName(value: unknown) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function toNumberArray(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  const out: number[] = [];
+  for (const item of value) {
+    const n = typeof item === "number" ? item : Number(item);
+    if (Number.isFinite(n)) out.push(n);
+  }
+  return out;
+}
+
+function cosineSimilarity(a: number[], b: number[]) {
+  if (!a.length || !b.length || a.length !== b.length) return -1;
+
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+
+  if (normA === 0 || normB === 0) return -1;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 serve(async (req) => {
@@ -108,6 +141,45 @@ serve(async (req) => {
     const imageBase64 = stripDataUrlPrefix(imageBase64Raw);
     if (!imageBase64) {
       return json({ error: "Invalid imageBase64" }, 400);
+    }
+
+    // Load school from student_accounts first
+    const studentResult = await supabaseAdmin
+      .from("student_accounts")
+      .select("user_id, school_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (studentResult.error) {
+      return json({ error: `Failed to load student account: ${studentResult.error.message}` }, 500);
+    }
+
+    const schoolName = normalizeSchoolName(studentResult.data?.school_name);
+    if (!schoolName) {
+      return json({
+        error: "School name is missing on your account. Complete course form verification first.",
+      }, 400);
+    }
+
+    // Stop if this account already has approved face
+    const existingApproved = await supabaseAdmin
+      .from("face_profiles")
+      .select("user_id, capture_status, face_verified")
+      .eq("user_id", user.id)
+      .or("capture_status.eq.approved,capture_status.eq.verified")
+      .limit(1)
+      .maybeSingle();
+
+    if (existingApproved.error) {
+      return json({ error: `Failed to check existing face profile: ${existingApproved.error.message}` }, 500);
+    }
+
+    if (existingApproved.data) {
+      return json({
+        ok: false,
+        status: "already_enrolled",
+        message: "This account already has an approved face.",
+      }, 409);
     }
 
     const fileBytes = decodeBase64ToBytes(imageBase64);
@@ -177,32 +249,132 @@ serve(async (req) => {
       }, 502);
     }
 
-    const savePayload = {
+    const newEmbedding = toNumberArray(embedData.embedding);
+    if (!newEmbedding.length) {
+      return json({ error: "Embedding returned by service is invalid." }, 502);
+    }
+
+    const nowIso = new Date().toISOString();
+
+    // Save pending first
+    const pendingPayload = {
       user_id: user.id,
+      school_name: schoolName,
       face_image_path: filePath,
-      embedding: embedData.embedding,
-      capture_status: "verified",
+      embedding: newEmbedding,
+      capture_status: "pending",
+      face_verified: false,
+      matched_user_id: null,
+      similarity_score: null,
+      updated_at: nowIso,
+    };
+
+    const pendingResult = await supabaseAdmin
+      .from("face_profiles")
+      .upsert(pendingPayload, { onConflict: "user_id" })
+      .select("user_id, school_name, face_image_path, capture_status, face_verified, updated_at")
+      .single();
+
+    if (pendingResult.error) {
+      return json({ error: `Failed to save pending face profile: ${pendingResult.error.message}` }, 500);
+    }
+
+    // Load approved faces from same school, excluding same user
+    const approvedFaces = await supabaseAdmin
+      .from("face_profiles")
+      .select("user_id, school_name, embedding, capture_status, face_verified")
+      .eq("school_name", schoolName)
+      .neq("user_id", user.id)
+      .or("capture_status.eq.approved,capture_status.eq.verified");
+
+    if (approvedFaces.error) {
+      return json({ error: `Failed to load school face profiles: ${approvedFaces.error.message}` }, 500);
+    }
+
+    let bestMatchUserId: string | null = null;
+    let bestSimilarity = -1;
+
+    for (const row of approvedFaces.data || []) {
+      const otherEmbedding = toNumberArray((row as any).embedding);
+      if (!otherEmbedding.length) continue;
+      if (otherEmbedding.length !== newEmbedding.length) continue;
+
+      const similarity = cosineSimilarity(newEmbedding, otherEmbedding);
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestMatchUserId = row.user_id;
+      }
+    }
+
+    // Duplicate found
+    if (bestMatchUserId && bestSimilarity >= DUPLICATE_THRESHOLD) {
+      const duplicatePayload = {
+        user_id: user.id,
+        school_name: schoolName,
+        face_image_path: filePath,
+        embedding: newEmbedding,
+        capture_status: "duplicate",
+        face_verified: false,
+        matched_user_id: bestMatchUserId,
+        similarity_score: bestSimilarity,
+        updated_at: new Date().toISOString(),
+      };
+
+      const duplicateResult = await supabaseAdmin
+        .from("face_profiles")
+        .upsert(duplicatePayload, { onConflict: "user_id" })
+        .select("user_id, school_name, face_image_path, capture_status, face_verified, matched_user_id, similarity_score, updated_at")
+        .single();
+
+      if (duplicateResult.error) {
+        return json({ error: `Failed to save duplicate result: ${duplicateResult.error.message}` }, 500);
+      }
+
+      return json({
+        ok: false,
+        status: "duplicate",
+        message: "This face is already linked to another account in your school.",
+        profile: duplicateResult.data,
+        similarity_score: bestSimilarity,
+        matched_user_id: bestMatchUserId,
+        threshold: DUPLICATE_THRESHOLD,
+        embedding_length: newEmbedding.length,
+        quality_score: embedData.quality_score ?? null,
+        face_count: embedData.face_count ?? 1,
+        service_device: embedData.device ?? null,
+      }, 409);
+    }
+
+    // No duplicate found, approve
+    const approvedPayload = {
+      user_id: user.id,
+      school_name: schoolName,
+      face_image_path: filePath,
+      embedding: newEmbedding,
+      capture_status: "approved",
       face_verified: true,
+      matched_user_id: null,
+      similarity_score: bestSimilarity >= 0 ? bestSimilarity : null,
       updated_at: new Date().toISOString(),
     };
 
-    const upsertResult = await supabaseAdmin
+    const approvedResult = await supabaseAdmin
       .from("face_profiles")
-      .upsert(savePayload, {
-        onConflict: "user_id",
-      })
-      .select("user_id, face_image_path, capture_status, face_verified, updated_at")
+      .upsert(approvedPayload, { onConflict: "user_id" })
+      .select("user_id, school_name, face_image_path, capture_status, face_verified, similarity_score, updated_at")
       .single();
 
-    if (upsertResult.error) {
-      return json({ error: `Failed to save face profile: ${upsertResult.error.message}` }, 500);
+    if (approvedResult.error) {
+      return json({ error: `Failed to approve face profile: ${approvedResult.error.message}` }, 500);
     }
 
     return json({
       ok: true,
+      status: "approved",
       message: "Face enrolled successfully",
-      profile: upsertResult.data,
-      embedding_length: embedData.embedding.length,
+      profile: approvedResult.data,
+      threshold: DUPLICATE_THRESHOLD,
+      embedding_length: newEmbedding.length,
       quality_score: embedData.quality_score ?? null,
       face_count: embedData.face_count ?? 1,
       service_device: embedData.device ?? null,
