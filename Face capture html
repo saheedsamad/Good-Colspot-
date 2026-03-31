@@ -444,6 +444,65 @@
       display:none !important;
     }
 
+    .fc-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(12,18,32,.42);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+
+    .fc-modal.hidden{
+      display:none !important;
+    }
+
+    .fc-modal-card{
+      width:100%;
+      max-width:360px;
+      background:#fff;
+      border-radius:24px;
+      padding:22px 18px 18px;
+      box-shadow:0 24px 60px rgba(15,23,42,.22);
+      text-align:center;
+    }
+
+    .fc-modal-icon{
+      width:62px;
+      height:62px;
+      margin:0 auto 12px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--green-soft);
+      color:var(--green);
+      font-size:28px;
+      font-weight:900;
+    }
+
+    .fc-modal-title{
+      font-size:20px;
+      font-weight:900;
+      color:#1b2436;
+      margin-bottom:8px;
+    }
+
+    .fc-modal-sub{
+      font-size:14px;
+      line-height:1.5;
+      color:#667085;
+      margin-bottom:12px;
+    }
+
+    .fc-modal-countdown{
+      font-size:13px;
+      font-weight:800;
+      color:#316df0;
+    }
+
     @media (max-width:380px){
       .fc-camera-shell{
         min-height:290px;
@@ -498,7 +557,7 @@
           </div>
 
           <div class="fc-live-pill" id="cameraBadge">
-            Look straight, turn left, turn right
+            Look straight, turn left, turn right, then look straight again
           </div>
         </div>
 
@@ -511,9 +570,11 @@
             <div class="fc-step-line"></div>
             <div class="fc-step-circle">3</div>
             <div class="fc-step-line"></div>
+            <div class="fc-step-circle">4</div>
+            <div class="fc-step-line"></div>
           </div>
 
-          <div class="fc-step-chip" id="statusTitle">Turn left</div>
+          <div class="fc-step-chip" id="statusTitle">Look straight</div>
         </div>
 
         <p class="fc-status-sub" id="statusSub">
@@ -560,6 +621,17 @@
     </section>
   </div>
 
+  <div class="fc-modal hidden" id="approvedModal">
+    <div class="fc-modal-card">
+      <div class="fc-modal-icon">✓</div>
+      <div class="fc-modal-title">Verification approved</div>
+      <div class="fc-modal-sub">
+        Your face has been approved successfully. You will be redirected to the main page shortly.
+      </div>
+      <div class="fc-modal-countdown" id="modalCountdown">Redirecting in 5 seconds...</div>
+    </div>
+  </div>
+
   <script>
     window.SUPABASE_URL = "YOUR_SUPABASE_URL";
     window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
@@ -601,6 +673,8 @@
     const backBtn = document.getElementById("backBtn");
     const whyBtn = document.getElementById("whyBtn");
     const captureActions = document.getElementById("captureActions");
+    const approvedModal = document.getElementById("approvedModal");
+    const modalCountdown = document.getElementById("modalCountdown");
 
     let mediaStream = null;
     let mpCamera = null;
@@ -612,7 +686,7 @@
 
     let poseHoldFrames = 0;
     let currentStepIndex = 0;
-    const scanSequence = ["center", "left", "right"];
+    const scanSequence = ["center", "left", "right", "center"];
     const POSE_HOLD_TARGET = 8;
 
     function showError(message) {
@@ -671,40 +745,19 @@
 
       lines.forEach((el) => el.classList.remove("done"));
 
-      if (circles[0]) {
-        if (currentStepIndex <= 0) {
-          circles[0].classList.add("active");
-          circles[0].textContent = "1";
-        } else {
-          circles[0].classList.add("done");
-          circles[0].textContent = "✓";
+      for (let i = 0; i < circles.length; i++) {
+        if (i < currentStepIndex) {
+          circles[i].classList.add("done");
+          circles[i].textContent = "✓";
+        } else if (i === currentStepIndex) {
+          circles[i].classList.add("active");
+          circles[i].textContent = String(i + 1);
         }
       }
 
-      if (circles[1]) {
-        if (currentStepIndex === 1) {
-          circles[1].classList.add("active");
-          circles[1].textContent = "2";
-        } else if (currentStepIndex > 1) {
-          circles[1].classList.add("done");
-          circles[1].textContent = "✓";
-        }
+      for (let i = 0; i < lines.length; i++) {
+        if (i < currentStepIndex) lines[i].classList.add("done");
       }
-
-      if (circles[2]) {
-        if (currentStepIndex === 2) {
-          circles[2].classList.add("active");
-          circles[2].textContent = "3";
-        } else if (currentStepIndex > 2) {
-          circles[2].classList.add("done");
-          circles[2].textContent = "✓";
-        }
-      }
-
-      if (lines[0] && currentStepIndex > 0) lines[0].classList.add("done");
-      if (lines[1] && currentStepIndex > 0) lines[1].classList.add("done");
-      if (lines[2] && currentStepIndex > 1) lines[2].classList.add("done");
-      if (lines[3] && currentStepIndex > 2) lines[3].classList.add("done");
 
       if (step2) {
         step2.textContent = currentInstruction();
@@ -842,8 +895,8 @@
       setButtonsForIdle();
       resetSequenceState();
       clearFlashMessages();
-      setCameraBadge("Look straight, turn left, turn right");
-      setStatus("Turn left", "Start your camera and follow the movement guide.");
+      setCameraBadge("Look straight, turn left, turn right, then look straight again");
+      setStatus("Look straight", "Start your camera and follow the movement guide.");
     }
 
     function buildCaptureMeta() {
@@ -855,6 +908,24 @@
           localStorage.getItem("device_id") ||
           null
       };
+    }
+
+    function openApprovedModal() {
+      if (approvedModal) approvedModal.classList.remove("hidden");
+      let seconds = 5;
+      if (modalCountdown) modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
+
+      const timer = setInterval(() => {
+        seconds -= 1;
+        if (modalCountdown) {
+          modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
+        }
+
+        if (seconds <= 0) {
+          clearInterval(timer);
+          window.location.href = SUCCESS_REDIRECT_URL;
+        }
+      }, 1000);
     }
 
     async function ensureSession() {
@@ -918,14 +989,19 @@
           return;
         }
 
-        setCameraBadge(`Expected: ${expectedPose}`);
+        setCameraBadge(currentInstruction());
 
         if (pose === expectedPose) {
           poseHoldFrames += 1;
           clearFlashMessages();
+
+          let detectedText = "Look straight";
+          if (expectedPose === "left") detectedText = "Turn left";
+          if (expectedPose === "right") detectedText = "Turn right";
+
           setStatus(
             currentInstruction(),
-            `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+            `${detectedText} detected. Hold still...`
           );
         } else {
           poseHoldFrames = 0;
@@ -947,6 +1023,7 @@
           }
 
           setStatus(currentInstruction(), "Good. Move to the next step.");
+          setCameraBadge(currentInstruction());
         }
       });
     }
@@ -978,7 +1055,7 @@
       setButtonsForCaptured();
       setCameraBadge("Capture ready");
       showSuccess("Face captured successfully.");
-      setStatus("Turn right", "Review your capture or continue.");
+      setStatus("Capture ready", "Review your capture or continue.");
     }
 
     async function startCamera() {
@@ -1021,7 +1098,7 @@
         scanningActive = true;
         hidePlaceholder();
         setButtonsForLiveCamera();
-        setCameraBadge("Expected: center");
+        setCameraBadge("Look straight");
         setStatus("Look straight", "Start by looking straight at the camera.");
       } catch (err) {
         console.error(err);
@@ -1063,6 +1140,25 @@
 
         const result = await res.json().catch(() => ({}));
 
+        if (result && result.status === "duplicate") {
+          continueBtn.disabled = false;
+          retakeBtn.disabled = false;
+          showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
+          setStatus("Verification failed", "This face is already linked to another account.");
+          setCameraBadge("Capture ready");
+          return;
+        }
+
+        if (result && result.status === "already_enrolled") {
+          showSuccess("Your face has already been verified before. Redirecting to main...");
+          setStatus("Already verified", "Your face is already linked to this account.");
+          setCameraBadge("Approved");
+          setTimeout(() => {
+            window.location.href = SUCCESS_REDIRECT_URL;
+          }, 5000);
+          return;
+        }
+
         if (!res.ok) {
           throw new Error(result.error || "Failed to save face.");
         }
@@ -1070,19 +1166,26 @@
         localStorage.setItem("colspot_face_enrolled", "true");
         localStorage.removeItem("colspot_face_step_ready");
 
-        showSuccess("Face capture completed successfully.");
-        setStatus("Face saved", "Your face image has been saved.");
-        setCameraBadge("Done");
-
-        setTimeout(() => {
-          window.location.href = SUCCESS_REDIRECT_URL;
-        }, 1200);
+        showSuccess("Verification approved successfully.");
+        setStatus("Approved", "Your face has been verified successfully.");
+        setCameraBadge("Approved");
+        openApprovedModal();
       } catch (err) {
         console.error(err);
         continueBtn.disabled = false;
         retakeBtn.disabled = false;
-        showError(err?.message || "Could not save your face. Please try again.");
-        setStatus("Upload failed", "Please check your connection and try again.");
+
+        const rawMessage = err?.message || "Could not save your face. Please try again.";
+        const lower = String(rawMessage).toLowerCase();
+
+        if (lower.includes("duplicate")) {
+          showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
+          setStatus("Verification failed", "This face is already linked to another account.");
+        } else {
+          showError(rawMessage);
+          setStatus("Upload failed", "Please check your connection and try again.");
+        }
+
         setCameraBadge("Capture ready");
       }
     }
@@ -1095,7 +1198,7 @@
       scanningActive = true;
       resetSequenceState();
       setButtonsForLiveCamera();
-      setCameraBadge("Expected: center");
+      setCameraBadge("Look straight");
       setStatus("Look straight", "Start again by looking straight at the camera.");
     }
 
@@ -1141,4 +1244,3 @@
   </script>
 </body>
 </html>
-
