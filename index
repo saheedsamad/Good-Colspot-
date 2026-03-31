@@ -784,9 +784,9 @@
 
       try {
         const { data, error } = await window.supabase
-          .from("school")
-          .select("id, school_name")
-          .order("school_name", { ascending: true });
+          .from("schools")
+          .select("id, name")
+          .order("name", { ascending: true });
 
         if (error) throw error;
 
@@ -794,13 +794,14 @@
 
         if (!rows.length) {
           schoolSelect.innerHTML = `<option value="">No school found</option>`;
-          if (hint) hint.textContent = "No school was found in the school table yet.";
+          if (hint) hint.textContent = "No school was found in the schools table yet.";
           return;
         }
 
-        schoolSelect.innerHTML = `<option value="">Select school</option>` +
+        schoolSelect.innerHTML =
+          `<option value="">Select school</option>` +
           rows.map((row) => {
-            const name = String(row.school_name || "").trim();
+            const name = String(row.name || "").trim();
             const safeName = name
               .replaceAll("&", "&amp;")
               .replaceAll("<", "&lt;")
@@ -1007,52 +1008,59 @@
 
     function showAdminLogin() {
       hideAllPanels();
+      clearAdminMessages();
+
       if (titleEl) titleEl.textContent = "Admin login";
       if (subEl) subEl.textContent = "Sign in to your Colspot admin account";
+
       if (modeToggle) modeToggle.classList.remove("hidden");
       if (switchRow) switchRow.classList.add("hidden");
+
       if (adminForm) adminForm.classList.remove("hidden");
-      clearAdminMessages();
       setActive(tabAdmin);
     }
 
     function showAdminLinkEmail(prefill = "") {
       hideAllPanels();
+      clearAdminMessages();
+
       if (titleEl) titleEl.textContent = "Link your email";
       if (subEl) subEl.textContent = "Add your email to continue";
+
       if (modeToggle) modeToggle.classList.add("hidden");
       if (switchRow) switchRow.classList.add("hidden");
+
       if (adminLinkPanel) adminLinkPanel.classList.remove("hidden");
       if (adminLinkEmailInput) adminLinkEmailInput.value = prefill || "";
-      clearAdminMessages();
     }
 
     function showAdminVerify(email = "") {
       hideAllPanels();
+      clearAdminMessages();
+
       if (titleEl) titleEl.textContent = "Verify admin email";
       if (subEl) subEl.textContent = "Enter the code sent to your email";
+
       if (modeToggle) modeToggle.classList.add("hidden");
       if (switchRow) switchRow.classList.add("hidden");
+
       if (adminVerifyPanel) adminVerifyPanel.classList.remove("hidden");
       if (adminVerifyEmailLabel) adminVerifyEmailLabel.textContent = email || "";
       if (adminVerifyCodeInput) adminVerifyCodeInput.value = "";
-      clearAdminMessages();
     }
 
     function restoreNormalMode(mode) {
       clearAdminMessages();
-      if (mode === "signup") {
-        if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
-          window.switchMode.__original__("signup");
-        } else if (typeof window.switchMode === "function") {
-          window.switchMode("signup");
-        }
-      } else {
-        if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
-          window.switchMode.__original__("signin");
-        } else if (typeof window.switchMode === "function") {
-          window.switchMode("signin");
-        }
+      clearPendingAdmin();
+      hideAllPanels();
+
+      if (modeToggle) modeToggle.classList.remove("hidden");
+      if (switchRow) switchRow.classList.remove("hidden");
+
+      if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
+        window.switchMode.__original__(mode === "signup" ? "signup" : "signin");
+      } else if (typeof window.switchMode === "function") {
+        window.switchMode(mode === "signup" ? "signup" : "signin");
       }
     }
 
@@ -1117,17 +1125,25 @@
 
     const originalSwitchMode = window.switchMode;
     const originalToggleAuthMode = window.toggleAuthMode;
+    const originalOpenForgotPasswordPage = window.openForgotPasswordPage;
 
     window.switchMode = function(mode) {
+      clearAdminMessages();
+      clearPendingAdmin();
+      hideAllPanels();
+
       if (mode === "admin") {
+        if (modeToggle) modeToggle.classList.remove("hidden");
+        if (switchRow) switchRow.classList.add("hidden");
         showAdminLogin();
         return;
       }
 
-      clearPendingAdmin();
+      if (modeToggle) modeToggle.classList.remove("hidden");
+      if (switchRow) switchRow.classList.remove("hidden");
 
       if (typeof originalSwitchMode === "function") {
-        return originalSwitchMode(mode);
+        return originalSwitchMode(mode === "signup" ? "signup" : "signin");
       }
     };
     window.switchMode.__wrapped_admin__ = true;
@@ -1135,15 +1151,28 @@
 
     window.toggleAuthMode = function() {
       if (
-        !adminForm.classList.contains("hidden") ||
-        !adminLinkPanel.classList.contains("hidden") ||
-        !adminVerifyPanel.classList.contains("hidden")
+        (adminForm && !adminForm.classList.contains("hidden")) ||
+        (adminLinkPanel && !adminLinkPanel.classList.contains("hidden")) ||
+        (adminVerifyPanel && !adminVerifyPanel.classList.contains("hidden"))
       ) {
         return restoreNormalMode("signin");
       }
 
       if (typeof originalToggleAuthMode === "function") {
         return originalToggleAuthMode();
+      }
+    };
+
+    window.openForgotPasswordPage = function() {
+      clearAdminMessages();
+      clearPendingAdmin();
+      hideAllPanels();
+
+      if (modeToggle) modeToggle.classList.add("hidden");
+      if (switchRow) switchRow.classList.add("hidden");
+
+      if (typeof originalOpenForgotPasswordPage === "function") {
+        return originalOpenForgotPasswordPage();
       }
     };
 
