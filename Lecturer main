@@ -1040,30 +1040,27 @@
 
   let currentUser = null;
   let offlineRetryTimer = null;
-
   let currentScanQuota = null;
   let currentScanUserId = null;
   let currentUpdateRule = null;
 
-  async function ensureCurrentUser() {
-    if (currentUser) return currentUser;
-    if (typeof supabase === "undefined") return null;
+  function norm(value) {
+    return String(value || "").trim();
+  }
 
-    try {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) return null;
-      currentUser = data.user;
-      saveLocalUserFromSupabaseUser(currentUser);
-      return currentUser;
-    } catch (e) {
-      console.error("ensureCurrentUser failed:", e);
-      return null;
-    }
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function isBrowserOffline() {
     try {
-      return typeof navigator !== "undefined" && navigator.onLine === false;
+      if (typeof navigator === "undefined" || navigator === null) return false;
+      return navigator.onLine === false;
     } catch {
       return false;
     }
@@ -1119,11 +1116,15 @@
     const greetLine = document.getElementById("greetingLine");
     const avatarInitial = document.getElementById("avatarInitial");
 
-    const fullName = (fullNameRaw && String(fullNameRaw).trim()) || "there";
+    const fullName = (fullNameRaw && fullNameRaw.toString().trim()) || "there";
     const firstName = fullName.split(" ")[0] || "there";
 
-    if (greetLine) greetLine.textContent = `Hello, ${firstName}`;
-    if (avatarInitial) avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
+    if (greetLine) {
+      greetLine.textContent = `Hello, ${firstName}`;
+    }
+    if (avatarInitial) {
+      avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
+    }
   }
 
   function scheduleOfflineRetry() {
@@ -1151,7 +1152,7 @@
       loadAnnouncements();
       applyUpdateRuleFromLocal();
     } catch (e) {
-      console.warn("online refresh failed:", e);
+      console.warn("online handler failed:", e);
     }
   });
 
@@ -1227,7 +1228,9 @@
   }
 
   async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
-    if (!("geolocation" in navigator)) return null;
+    if (!("geolocation" in navigator)) {
+      return null;
+    }
 
     let best = null;
 
@@ -1255,7 +1258,10 @@
 
       const snap = { pos, accuracyMeters: acc };
 
-      if (!best || acc < best.accuracyMeters) best = snap;
+      if (!best || acc < best.accuracyMeters) {
+        best = snap;
+      }
+
       if (acc <= targetAccuracy) break;
 
       await new Promise((r) => setTimeout(r, 800));
@@ -1271,13 +1277,13 @@
       if (isBrowserOffline()) return;
 
       const user = await ensureCurrentUser();
-      if (!user?.id) return;
+      if (!user || !user.id) return;
 
       const deviceId = getOrCreateDeviceId();
       if (!deviceId) return;
 
       const warm = await getSmartLocationFromMain(10, 120);
-      if (!warm?.pos?.coords) return;
+      if (!warm || !warm.pos || !warm.pos.coords) return;
 
       const { latitude, longitude } = warm.pos.coords;
       const accuracyMeters = warm.accuracyMeters;
@@ -1314,8 +1320,31 @@
     }
   }
 
-  function norm(value) {
-    return String(value || "").trim();
+  function getCurrentMonthKey() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+
+  async function ensureCurrentUser() {
+    if (currentUser) return currentUser;
+    if (typeof supabase === "undefined") return null;
+
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        scheduleOfflineRetry();
+        return null;
+      }
+      currentUser = data.user;
+      saveLocalUserFromSupabaseUser(currentUser);
+      return currentUser;
+    } catch (e) {
+      console.error("ensureCurrentUser failed:", e);
+      scheduleOfflineRetry();
+      return null;
+    }
   }
 
   function showScreen(name) {
@@ -1343,9 +1372,10 @@
     const navButtons = document.querySelectorAll(".nav-btn");
     navButtons.forEach((btn) => btn.classList.remove("active"));
 
-    const navName = (name === "scan" || name === "ai" || name === "attendance")
-      ? "home"
-      : name;
+    const navName =
+      name === "scan" || name === "ai" || name === "attendance"
+        ? "home"
+        : name;
 
     const activeBtn = document.querySelector(
       '.nav-btn[data-nav="' + navName + '"]'
@@ -1370,11 +1400,6 @@
 
   function openCreateClass() {
     window.location.href = "create_class.html";
-  }
-
-  function dismissAnnouncement() {
-    const section = document.getElementById("announcementSection");
-    if (section) section.style.display = "none";
   }
 
   async function loadLecturerDashboard() {
@@ -1483,28 +1508,30 @@
         return;
       }
 
-      const html = sessions.map((s) => {
-        const baseDateStr = s.starts_at || s.created_at;
-        const d = baseDateStr ? new Date(baseDateStr) : null;
-        const timeStr = d
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "--:--";
+      const html = sessions
+        .map((s) => {
+          const baseDateStr = s.starts_at || s.created_at;
+          const d = baseDateStr ? new Date(baseDateStr) : null;
+          const timeStr = d
+            ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "--:--";
 
-        const code = s.course_code || "Attendance session";
+          const code = s.course_code || "Attendance session";
 
-        return `
-          <div class="history-item">
-            <div class="history-item-header">
-              <div class="history-course">${escapeHtml(code)}</div>
-              <div class="history-time">${escapeHtml(timeStr)}</div>
+          return `
+            <div class="history-item">
+              <div class="history-item-header">
+                <div class="history-course">${escapeHtml(code)}</div>
+                <div class="history-time">${escapeHtml(timeStr)}</div>
+              </div>
+              <div class="history-meta">Attendance session created</div>
+              <div class="history-progress-track">
+                <div class="history-progress-bar"></div>
+              </div>
             </div>
-            <div class="history-meta">Attendance session created</div>
-            <div class="history-progress-track">
-              <div class="history-progress-bar"></div>
-            </div>
-          </div>
-        `;
-      }).join("");
+          `;
+        })
+        .join("");
 
       if (listEl) listEl.innerHTML = html;
       if (altEl) altEl.innerHTML = html;
@@ -1518,22 +1545,6 @@
       if (altEl) altEl.innerHTML = msg;
       scheduleOfflineRetry();
     }
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function getCurrentMonthKey() {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
   }
 
   async function loadScanQuota() {
@@ -1610,7 +1621,9 @@
     const statusEl = document.getElementById("scanStatus");
     const btn = document.getElementById("scanSubmitBtn");
     const titleInput = document.getElementById("scanTitle");
-    const outputTypeEl = document.querySelector('input[name="scanOutputType"]:checked');
+    const outputTypeEl = document.querySelector(
+      'input[name="scanOutputType"]:checked'
+    );
 
     if (!fileInput || !fileInput.files || !fileInput.files[0]) {
       if (statusEl) {
@@ -1693,7 +1706,8 @@
       await initScanQuotaUI();
 
       if (statusEl) {
-        statusEl.textContent = result?.message || "Scan completed successfully.";
+        statusEl.textContent =
+          result?.message || "Scan completed successfully.";
         statusEl.className = "scan-status ok";
       }
 
@@ -1786,6 +1800,11 @@
     window.open(currentUpdateRule.url, "_blank");
   }
 
+  function dismissAnnouncement() {
+    const section = document.getElementById("announcementSection");
+    if (section) section.style.display = "none";
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     await new Promise((r) => setTimeout(r, 50));
 
@@ -1793,7 +1812,10 @@
 
     let localAuth = null;
     try {
-      if (window.ColspotGuard && typeof ColspotGuard.guardPageAccess === "function") {
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.guardPageAccess === "function"
+      ) {
         const localUser = ColspotGuard.guardPageAccess();
         if (!localUser) return;
 
@@ -1847,20 +1869,26 @@
       createClassBtn.addEventListener("click", openCreateClass);
     }
 
-    if (window.ColspotGuard && typeof ColspotGuard.verifySupabaseSessionInBackground === "function") {
+    if (
+      window.ColspotGuard &&
+      typeof ColspotGuard.verifySupabaseSessionInBackground === "function"
+    ) {
       ColspotGuard.verifySupabaseSessionInBackground();
     } else if (typeof supabase !== "undefined") {
       try {
         const { data, error } = await supabase.auth.getUser();
-        if (!error && data?.user) {
+        if (!error && data && data.user) {
           currentUser = data.user;
           const profileName =
-            (currentUser.user_metadata && currentUser.user_metadata.full_name) ||
+            (currentUser.user_metadata &&
+              currentUser.user_metadata.full_name) ||
             currentUser.email ||
             currentUser.phone ||
             "";
           saveLocalUserFromSupabaseUser(currentUser);
-          if (profileName) setGreetingFromProfile(profileName);
+          if (profileName) {
+            setGreetingFromProfile(profileName);
+          }
         }
       } catch (e) {
         console.error("Fallback getUser on main failed:", e);
