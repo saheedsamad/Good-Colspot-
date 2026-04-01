@@ -41,8 +41,7 @@
     }
 
     button,
-    input,
-    select{
+    input{
       font:inherit;
     }
 
@@ -50,8 +49,10 @@
       display:flex;
       min-height:100vh;
       width:100%;
+      overflow:hidden;
     }
 
+    /* SIDEBAR */
     .sidebar{
       width:250px;
       background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));
@@ -60,6 +61,8 @@
       flex-direction:column;
       border-right:1px solid rgba(255,255,255,.06);
       flex-shrink:0;
+      min-height:100vh;
+      overflow-y:auto;
     }
 
     .brand{
@@ -69,6 +72,7 @@
       gap:12px;
       padding:0 22px;
       border-bottom:1px solid rgba(255,255,255,.08);
+      flex-shrink:0;
     }
 
     .brand-badge{
@@ -135,11 +139,14 @@
       flex-shrink:0;
     }
 
+    /* MAIN */
     .main{
       flex:1;
       display:flex;
       flex-direction:column;
       min-width:0;
+      min-height:100vh;
+      overflow:hidden;
     }
 
     .topbar{
@@ -151,6 +158,7 @@
       justify-content:space-between;
       padding:0 26px;
       flex-shrink:0;
+      gap:16px;
     }
 
     .topbar-title{
@@ -163,6 +171,7 @@
       display:flex;
       align-items:center;
       gap:16px;
+      flex-wrap:wrap;
     }
 
     .search{
@@ -218,10 +227,14 @@
       box-shadow:0 6px 14px rgba(15,23,42,.08);
     }
 
+    /* CONTENT */
     .content{
       flex:1;
-      overflow:auto;
+      overflow-y:auto;
+      overflow-x:hidden;
       padding:22px;
+      min-height:0;
+      -webkit-overflow-scrolling:touch;
     }
 
     .screen{
@@ -230,6 +243,43 @@
 
     .screen.active{
       display:block;
+    }
+
+    /* DASHBOARD */
+    .welcome-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:22px;
+      margin-bottom:18px;
+    }
+
+    .welcome-label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .welcome-title{
+      font-size:28px;
+      font-weight:800;
+      color:#13253d;
+      line-height:1.12;
+      letter-spacing:-0.03em;
+      margin-bottom:8px;
+    }
+
+    .welcome-title .hos-name{
+      color:var(--blue);
+    }
+
+    .welcome-sub{
+      font-size:14px;
+      line-height:1.55;
+      color:var(--muted);
+      max-width:760px;
     }
 
     .stats-grid{
@@ -342,6 +392,7 @@
     .quick-green{ background:linear-gradient(135deg,#65a30d,#4d7c0f); }
     .quick-orange{ background:linear-gradient(135deg,#f59e0b,#ea580c); }
 
+    /* PLACEHOLDER SCREENS */
     .page-shell{
       background:var(--card);
       border:1px solid var(--line);
@@ -416,393 +467,6 @@
       padding:24px;
     }
 
-    /* CREATE ACCOUNT SCREEN */
-    #screen-create-account{
-      padding:0;
-    }
-
-    #screen-create-account .create-account-shell{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      min-height:100%;
-    }
-
-    #screen-create-account .create-top{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:22px;
-    }
-
-    #screen-create-account .create-kicker{
-      font-size:12px;
-      font-weight:700;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    #screen-create-account .create-main-title{
-      font-size:28px;
-      line-height:1.12;
-      font-weight:800;
-      color:#13253d;
-      letter-spacing:-0.03em;
-      margin-bottom:8px;
-    }
-
-    #screen-create-account .create-main-title span{
-      color:var(--blue);
-    }
-
-    #screen-create-account .create-top-sub{
-      font-size:14px;
-      line-height:1.55;
-      color:var(--muted);
-      max-width:780px;
-    }
-
-    #screen-create-account .create-layout{
-      display:grid;
-      grid-template-columns:1.08fr .92fr;
-      gap:18px;
-      align-items:start;
-    }
-
-    #screen-create-account .create-card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:20px;
-    }
-
-    #screen-create-account .card-title{
-      font-size:17px;
-      font-weight:800;
-      color:#13253d;
-      margin-bottom:4px;
-    }
-
-    #screen-create-account .card-sub{
-      font-size:13px;
-      line-height:1.5;
-      color:var(--muted);
-      margin-bottom:16px;
-    }
-
-    #screen-create-account .field-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
-
-    #screen-create-account .field{
-      display:flex;
-      flex-direction:column;
-      gap:7px;
-      margin-bottom:14px;
-    }
-
-    #screen-create-account .field.full{
-      grid-column:1 / -1;
-    }
-
-    #screen-create-account .field label{
-      font-size:12px;
-      font-weight:700;
-      color:#475569;
-    }
-
-    #screen-create-account .text-input,
-    #screen-create-account .select-input,
-    #screen-create-account .search-input-ca{
-      width:100%;
-      height:48px;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:0 14px;
-      font-size:14px;
-      color:#0f172a;
-      outline:none;
-      transition:.15s ease;
-    }
-
-    #screen-create-account .text-input:focus,
-    #screen-create-account .select-input:focus,
-    #screen-create-account .search-input-ca:focus{
-      border-color:var(--blue);
-      box-shadow:0 0 0 3px rgba(37,99,235,.12);
-    }
-
-    #screen-create-account .field-help{
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    #screen-create-account .btn-row{
-      display:flex;
-      gap:10px;
-      margin-top:4px;
-      flex-wrap:wrap;
-    }
-
-    #screen-create-account .primary-btn,
-    #screen-create-account .secondary-btn,
-    #screen-create-account .mini-btn{
-      border:none;
-      cursor:pointer;
-      font-weight:800;
-      transition:.15s ease;
-    }
-
-    #screen-create-account .primary-btn{
-      flex:1;
-      min-width:180px;
-      height:48px;
-      border-radius:14px;
-      color:#fff;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      box-shadow:0 14px 35px rgba(37,99,235,.28);
-    }
-
-    #screen-create-account .primary-btn:hover{
-      opacity:.96;
-    }
-
-    #screen-create-account .primary-btn:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    #screen-create-account .secondary-btn{
-      min-width:150px;
-      height:48px;
-      padding:0 16px;
-      border-radius:14px;
-      color:#223754;
-      background:#fff;
-      border:1px solid var(--line);
-    }
-
-    #screen-create-account .secondary-btn:hover,
-    #screen-create-account .mini-btn:hover{
-      background:#f8fafc;
-    }
-
-    #screen-create-account .message{
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:13px;
-      font-weight:700;
-      line-height:1.5;
-      display:none;
-    }
-
-    #screen-create-account .message.error{
-      color:#dc2626;
-      background:#fef2f2;
-      border:1px solid #fecaca;
-    }
-
-    #screen-create-account .message.success{
-      color:#15803d;
-      background:#f0fdf4;
-      border:1px solid #bbf7d0;
-    }
-
-    #screen-create-account .result-box{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:18px;
-      padding:16px;
-      display:none;
-      margin-bottom:14px;
-    }
-
-    #screen-create-account .result-title{
-      font-size:14px;
-      font-weight:800;
-      color:#13253d;
-      margin-bottom:10px;
-    }
-
-    #screen-create-account .result-row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      padding:10px 0;
-      border-top:1px solid #eef2f7;
-    }
-
-    #screen-create-account .result-row:first-of-type{
-      border-top:none;
-      padding-top:0;
-    }
-
-    #screen-create-account .result-key{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    #screen-create-account .result-value{
-      font-size:13px;
-      color:#0f172a;
-      font-weight:800;
-      text-align:right;
-      word-break:break-word;
-    }
-
-    #screen-create-account .mini-row{
-      display:flex;
-      gap:8px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    #screen-create-account .mini-btn{
-      flex:1;
-      min-width:140px;
-      height:40px;
-      border-radius:12px;
-      background:#fff;
-      color:#1e3a8a;
-      border:1px solid var(--line);
-    }
-
-    #screen-create-account .helper-box{
-      border:1px solid var(--line);
-      background:#f8fbff;
-      border-radius:18px;
-      padding:16px;
-    }
-
-    #screen-create-account .helper-title{
-      font-size:14px;
-      font-weight:800;
-      color:#13253d;
-      margin-bottom:6px;
-    }
-
-    #screen-create-account .helper-text{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.6;
-    }
-
-    #screen-create-account .list-card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-
-    #screen-create-account .toolbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:12px;
-    }
-
-    #screen-create-account .chip-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    #screen-create-account .stat-chip{
-      display:inline-flex;
-      align-items:center;
-      height:34px;
-      padding:0 12px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid var(--line);
-      font-size:12px;
-      font-weight:800;
-      color:#334155;
-    }
-
-    #screen-create-account .table-wrap-ca{
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:#fff;
-    }
-
-    #screen-create-account table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:860px;
-    }
-
-    #screen-create-account th,
-    #screen-create-account td{
-      text-align:left;
-      padding:14px;
-      border-bottom:1px solid #eef2f7;
-      font-size:13px;
-      vertical-align:top;
-    }
-
-    #screen-create-account th{
-      background:#f8fafc;
-      color:#64748b;
-      font-weight:800;
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
-
-    #screen-create-account td{
-      color:#0f172a;
-      font-weight:600;
-    }
-
-    #screen-create-account tr:last-child td{
-      border-bottom:none;
-    }
-
-    #screen-create-account .pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:78px;
-      height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      white-space:nowrap;
-    }
-
-    #screen-create-account .pill.type{
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
-
-    #screen-create-account .pill.status{
-      background:#ecfdf5;
-      color:#15803d;
-    }
-
-    #screen-create-account .empty-box{
-      padding:26px 16px;
-      text-align:center;
-      color:#64748b;
-      font-size:13px;
-      font-weight:700;
-    }
-
     @media (max-width: 1400px){
       .stats-grid{
         grid-template-columns:repeat(3, minmax(0,1fr));
@@ -817,10 +481,6 @@
       .quick-grid{
         grid-template-columns:repeat(2, minmax(0,1fr));
       }
-
-      #screen-create-account .create-layout{
-        grid-template-columns:1fr;
-      }
     }
 
     @media (max-width: 900px){
@@ -834,6 +494,7 @@
 
       .sidebar{
         width:100%;
+        min-height:auto;
       }
 
       .topbar{
@@ -858,11 +519,7 @@
         grid-template-columns:1fr;
       }
 
-      #screen-create-account .field-grid{
-        grid-template-columns:1fr;
-      }
-
-      #screen-create-account .create-main-title{
+      .welcome-title{
         font-size:24px;
       }
     }
@@ -871,6 +528,7 @@
 <body>
   <div class="app">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-badge">
@@ -884,7 +542,7 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-btn active" data-screen="dashboard">
+        <button class="nav-btn active" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M3 11.5 12 4l9 7.5"/>
             <path d="M5 10.5V20h14v-9.5"/>
@@ -893,7 +551,7 @@
           <span>Dashboard</span>
         </button>
 
-        <button class="nav-btn" data-screen="create-account">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
             <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -903,7 +561,7 @@
           <span>Create Account</span>
         </button>
 
-        <button class="nav-btn" data-screen="staff-roles">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
             <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
@@ -913,7 +571,7 @@
           <span>Staff &amp; Roles</span>
         </button>
 
-        <button class="nav-btn" data-screen="announcements">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M4 14V10l11-4v12L4 14Z"/>
             <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
@@ -922,7 +580,7 @@
           <span>Announcements</span>
         </button>
 
-        <button class="nav-btn" data-screen="reports">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M7 3h7l5 5v13H7z"/>
             <path d="M14 3v5h5"/>
@@ -932,7 +590,7 @@
           <span>Reports</span>
         </button>
 
-        <button class="nav-btn" data-screen="forms">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M8 6h13"/>
             <path d="M8 12h13"/>
@@ -944,7 +602,7 @@
           <span>Forms</span>
         </button>
 
-        <button class="nav-btn" data-screen="history">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M3 12a9 9 0 1 0 3-6.7"/>
             <path d="M3 4v5h5"/>
@@ -953,7 +611,7 @@
           <span>History</span>
         </button>
 
-        <button class="nav-btn" data-screen="settings">
+        <button class="nav-btn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
             <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/>
@@ -963,9 +621,10 @@
       </nav>
     </aside>
 
+    <!-- MAIN -->
     <main class="main">
       <header class="topbar">
-        <div class="topbar-title" id="topbarTitle">HOS Dashboard</div>
+        <div class="topbar-title">HOS Dashboard</div>
 
         <div class="topbar-right">
           <div class="search">
@@ -981,7 +640,7 @@
               <path d="M6 10V8a6 6 0 1 1 12 0v2"/>
               <rect x="4" y="10" width="16" height="10" rx="2"/>
             </svg>
-            <span id="schoolChipText">School</span>
+            <span>School</span>
             <div class="avatar"></div>
           </div>
         </div>
@@ -989,41 +648,52 @@
 
       <section class="content">
 
+        <!-- DASHBOARD -->
         <section class="screen active" id="screen-dashboard">
+          <div class="welcome-card">
+            <div class="welcome-label">Dashboard</div>
+            <div class="welcome-title">
+              Welcome back, <span class="hos-name">HOS Name</span>
+            </div>
+            <div class="welcome-sub">
+              Monitor your school activities, check quick summaries, and manage HODs, agents, reports, announcements, and forms from one place.
+            </div>
+          </div>
+
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-label">Total HODs</div>
-              <div class="stat-value" id="totalHodsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-label">Total Agents</div>
-              <div class="stat-value" id="totalAgentsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-label">Active Forms</div>
-              <div class="stat-value" id="activeFormsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-label">Announcements</div>
-              <div class="stat-value" id="totalAnnouncementsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-label">Reports</div>
-              <div class="stat-value" id="totalReportsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-label">Pending Actions</div>
-              <div class="stat-value" id="pendingActionsValue">0</div>
+              <div class="stat-value">0</div>
             </div>
           </div>
 
           <div class="quick-grid">
-            <button class="quick-btn quick-blue" type="button" onclick="showScreen('create-account')">
+            <button class="quick-btn quick-blue" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
                 <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -1033,7 +703,7 @@
               <span>Create HOD</span>
             </button>
 
-            <button class="quick-btn quick-green" type="button" onclick="showScreen('create-account')">
+            <button class="quick-btn quick-green" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
                 <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -1086,153 +756,33 @@
 
         <!-- CREATE ACCOUNT -->
         <section class="screen" id="screen-create-account">
-          <div class="create-account-shell">
-            <div class="create-top">
-              <div class="create-kicker">Create Account</div>
-              <div class="create-main-title">
-                Create HOD or agent account<br>
-                <span>Generate login details instantly</span>
-              </div>
-              <div class="create-top-sub">
-                Choose the account type, enter full name, and add email if available.
-                Department is required only for HOD account.
-              </div>
-            </div>
-
-            <div class="create-layout">
-              <div class="create-card">
-                <div class="card-title">Account details</div>
-                <div class="card-sub">
-                  You can create HOD account, Report agent, Form agent, or Announcement agent from this screen.
+          <div class="page-shell">
+            <div class="page-top">
+              <div class="page-title-wrap">
+                <div class="page-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+                    <path d="M5 20a7 7 0 0 1 14 0"/>
+                    <path d="M18.5 8.5h5"/>
+                    <path d="M21 6v5"/>
+                  </svg>
                 </div>
-
-                <div class="field-grid">
-                  <div class="field">
-                    <label for="createAccountType">Account type</label>
-                    <select id="createAccountType" class="select-input">
-                      <option value="">Select account type</option>
-                      <option value="hod">HOD account</option>
-                      <option value="report_agent">Report agent</option>
-                      <option value="form_agent">Form agent</option>
-                      <option value="announcement_agent">Announcement agent</option>
-                    </select>
-                  </div>
-
-                  <div class="field">
-                    <label for="createFullName">Full name</label>
-                    <input id="createFullName" class="text-input" type="text" placeholder="Enter full name">
-                  </div>
-
-                  <div class="field full">
-                    <label for="createEmail">Email (optional)</label>
-                    <input id="createEmail" class="text-input" type="email" placeholder="Enter email address">
-                  </div>
-
-                  <div class="field full" id="createDepartmentWrap">
-                    <label for="createDepartment">Department</label>
-                    <input id="createDepartment" class="text-input" type="text" placeholder="Enter department name">
-                    <div class="field-help">This field is only required when creating HOD account.</div>
-                  </div>
-                </div>
-
-                <div class="btn-row">
-                  <button id="createAccountBtn" class="primary-btn" type="button">Create account</button>
-                  <button id="clearCreateAccountBtn" class="secondary-btn" type="button">Clear form</button>
-                </div>
-
-                <div id="createAccountError" class="message error"></div>
-                <div id="createAccountSuccess" class="message success"></div>
-              </div>
-
-              <div>
-                <div id="createdAccountBox" class="result-box">
-                  <div class="result-title">Generated account details</div>
-
-                  <div class="result-row">
-                    <div class="result-key">Type</div>
-                    <div id="generatedType" class="result-value">-</div>
-                  </div>
-
-                  <div class="result-row">
-                    <div class="result-key">Full name</div>
-                    <div id="generatedFullName" class="result-value">-</div>
-                  </div>
-
-                  <div class="result-row">
-                    <div class="result-key">Login ID</div>
-                    <div id="generatedLoginId" class="result-value">-</div>
-                  </div>
-
-                  <div class="result-row">
-                    <div class="result-key">Temporary password</div>
-                    <div id="generatedPassword" class="result-value">-</div>
-                  </div>
-
-                  <div class="mini-row">
-                    <button id="copyGeneratedLoginBtn" class="mini-btn" type="button">Copy login</button>
-                    <button id="copyGeneratedPasswordBtn" class="mini-btn" type="button">Copy password</button>
-                  </div>
-                </div>
-
-                <div class="helper-box">
-                  <div class="helper-title">Notes</div>
-                  <div class="helper-text">
-                    HOD account creates a department head.<br>
-                    Agent account types are Report agent, Form agent, and Announcement agent.<br>
-                    After creation, the generated login ID and temporary password will appear above.
-                  </div>
+                <div>
+                  <div class="page-title">Create Account</div>
+                  <div class="page-sub">This is create account screen as a placeholder</div>
                 </div>
               </div>
             </div>
 
-            <div class="list-card">
-              <div class="card-title">Created accounts</div>
-              <div class="card-sub">All HOD and agent accounts created under this HOS will appear here.</div>
-
-              <div class="toolbar">
-                <div class="chip-wrap">
-                  <span class="stat-chip">HOD: <strong id="countHodAccounts" style="margin-left:6px;">0</strong></span>
-                  <span class="stat-chip">Report: <strong id="countReportAgents" style="margin-left:6px;">0</strong></span>
-                  <span class="stat-chip">Form: <strong id="countFormAgents" style="margin-left:6px;">0</strong></span>
-                  <span class="stat-chip">Announcement: <strong id="countAnnouncementAgents" style="margin-left:6px;">0</strong></span>
-                  <span class="stat-chip">Total: <strong id="countAllHosAccounts" style="margin-left:6px;">0</strong></span>
-                </div>
-
-                <input
-                  id="createAccountSearch"
-                  type="text"
-                  class="search-input-ca"
-                  placeholder="Search by full name, type, login ID or email..."
-                  style="max-width:320px;"
-                >
-              </div>
-
-              <div class="table-wrap-ca">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Full name</th>
-                      <th>Type</th>
-                      <th>Department</th>
-                      <th>Login ID</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                      <th>Created</th>
-                    </tr>
-                  </thead>
-                  <tbody id="hosCreatedAccountsBody">
-                    <tr>
-                      <td colspan="7">
-                        <div class="empty-box">Loading accounts...</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            <div class="page-body">
+              <div class="big-placeholder">
+                This is create account screen as a placeholder
               </div>
             </div>
           </div>
         </section>
 
+        <!-- STAFF & ROLES -->
         <section class="screen" id="screen-staff-roles">
           <div class="page-shell">
             <div class="page-top">
@@ -1260,6 +810,7 @@
           </div>
         </section>
 
+        <!-- ANNOUNCEMENTS -->
         <section class="screen" id="screen-announcements">
           <div class="page-shell">
             <div class="page-top">
@@ -1286,6 +837,7 @@
           </div>
         </section>
 
+        <!-- REPORTS -->
         <section class="screen" id="screen-reports">
           <div class="page-shell">
             <div class="page-top">
@@ -1313,6 +865,7 @@
           </div>
         </section>
 
+        <!-- FORMS -->
         <section class="screen" id="screen-forms">
           <div class="page-shell">
             <div class="page-top">
@@ -1342,6 +895,7 @@
           </div>
         </section>
 
+        <!-- HISTORY -->
         <section class="screen" id="screen-history">
           <div class="page-shell">
             <div class="page-top">
@@ -1368,6 +922,7 @@
           </div>
         </section>
 
+        <!-- SETTINGS -->
         <section class="screen" id="screen-settings">
           <div class="page-shell">
             <div class="page-top">
@@ -1396,466 +951,5 @@
       </section>
     </main>
   </div>
-
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true }
-    });
-
-    const navButtons = document.querySelectorAll(".nav-btn");
-    const screens = document.querySelectorAll(".screen");
-    const topbarTitle = document.getElementById("topbarTitle");
-    const contentEl = document.querySelector(".content");
-    const schoolChipText = document.getElementById("schoolChipText");
-
-    let hosSession = null;
-    let hosCreatedAccounts = [];
-    let lastGeneratedHosLoginId = "";
-    let lastGeneratedHosPassword = "";
-
-    function toTitle(value) {
-      if (value === "create-account") return "Create Account";
-      if (value === "staff-roles") return "Staff & Roles";
-      return value
-        .split("-")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    }
-
-    function showScreen(name) {
-      navButtons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.screen === name);
-      });
-
-      screens.forEach(screen => {
-        screen.classList.toggle("active", screen.id === "screen-" + name);
-      });
-
-      topbarTitle.textContent = name === "dashboard" ? "HOS Dashboard" : toTitle(name);
-
-      if (contentEl) {
-        contentEl.scrollTop = 0;
-      }
-    }
-
-    function readHosSession() {
-      try {
-        const raw =
-          sessionStorage.getItem("colspot_hos_session") ||
-          localStorage.getItem("colspot_hos_session");
-
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.id) return null;
-        return parsed;
-      } catch (err) {
-        console.error("Failed to parse HOS session:", err);
-        return null;
-      }
-    }
-
-    function applyHosIdentity() {
-      hosSession = readHosSession();
-      if (!hosSession) {
-        if (schoolChipText) schoolChipText.textContent = "School";
-        return;
-      }
-      if (schoolChipText) {
-        schoolChipText.textContent = hosSession.school_name || hosSession.full_name || "School";
-      }
-    }
-
-    function showCreateAccountError(msg) {
-      const e = document.getElementById("createAccountError");
-      const s = document.getElementById("createAccountSuccess");
-      if (s) s.style.display = "none";
-      if (e) {
-        e.textContent = msg || "";
-        e.style.display = msg ? "block" : "none";
-      }
-    }
-
-    function showCreateAccountSuccess(msg) {
-      const e = document.getElementById("createAccountError");
-      const s = document.getElementById("createAccountSuccess");
-      if (e) e.style.display = "none";
-      if (s) {
-        s.textContent = msg || "";
-        s.style.display = msg ? "block" : "none";
-      }
-    }
-
-    function clearCreateAccountMessages() {
-      showCreateAccountError("");
-      showCreateAccountSuccess("");
-    }
-
-    function formatHosAccountType(row) {
-      if (!row) return "-";
-      if (row.account_type === "hod" || row.function_type === "hod") return "HOD";
-      if (row.function_type === "report") return "Report agent";
-      if (row.function_type === "form") return "Form agent";
-      if (row.function_type === "announcement") return "Announcement agent";
-      if (row.account_type === "agent") return "Agent";
-      return "-";
-    }
-
-    function formatHosAccountDate(value) {
-      if (!value) return "-";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "-";
-      return d.toLocaleString();
-    }
-
-    function escapeHosHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function updateCreateDepartmentVisibility() {
-      const type = document.getElementById("createAccountType")?.value || "";
-      const wrap = document.getElementById("createDepartmentWrap");
-      const input = document.getElementById("createDepartment");
-
-      if (!wrap || !input) return;
-
-      if (type === "hod") {
-        wrap.style.display = "";
-      } else {
-        wrap.style.display = "none";
-        input.value = "";
-      }
-    }
-
-    function updateHosCreateCounts(counts = {}) {
-      const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = String(value ?? 0);
-      };
-
-      setText("countHodAccounts", counts.hods || 0);
-      setText("countReportAgents", counts.report_agents || 0);
-      setText("countFormAgents", counts.form_agents || 0);
-      setText("countAnnouncementAgents", counts.announcement_agents || 0);
-      setText("countAllHosAccounts", counts.total || 0);
-    }
-
-    function renderHosCreatedAccounts() {
-      const tbody = document.getElementById("hosCreatedAccountsBody");
-      const search = (document.getElementById("createAccountSearch")?.value || "").trim().toLowerCase();
-
-      if (!tbody) return;
-
-      const filtered = hosCreatedAccounts.filter((row) => {
-        const hay = [
-          row.full_name,
-          row.account_type,
-          row.function_type,
-          row.department_name,
-          row.login_id,
-          row.linked_email
-        ]
-          .map(v => String(v || "").toLowerCase())
-          .join(" ");
-        return !search || hay.includes(search);
-      });
-
-      if (!filtered.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="empty-box">No accounts found.</div>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map((row) => `
-        <tr>
-          <td>${escapeHosHtml(row.full_name || "-")}</td>
-          <td><span class="pill type">${escapeHosHtml(formatHosAccountType(row))}</span></td>
-          <td>${escapeHosHtml(row.department_name || "-")}</td>
-          <td>${escapeHosHtml(row.login_id || "-")}</td>
-          <td>${escapeHosHtml(row.linked_email || "-")}</td>
-          <td><span class="pill status">${row.is_active ? "Active" : "Inactive"}</span></td>
-          <td>${escapeHosHtml(formatHosAccountDate(row.created_at))}</td>
-        </tr>
-      `).join("");
-    }
-
-    async function loadHosCreatedAccounts() {
-      const tbody = document.getElementById("hosCreatedAccountsBody");
-      if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="empty-box">Loading accounts...</div>
-            </td>
-          </tr>
-        `;
-      }
-
-      if (!hosSession?.id) {
-        if (tbody) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="7">
-                <div class="empty-box">HOS session not found.</div>
-              </td>
-            </tr>
-          `;
-        }
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke("list-hos-created-accounts", {
-          body: { hos_admin_id: hosSession.id }
-        });
-
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || "Could not load accounts.");
-
-        hosCreatedAccounts = Array.isArray(data.accounts) ? data.accounts : [];
-        updateHosCreateCounts(data.counts || {});
-        renderHosCreatedAccounts();
-      } catch (err) {
-        console.error(err);
-        if (tbody) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="7">
-                <div class="empty-box">${escapeHosHtml(err.message || "Could not load accounts.")}</div>
-              </td>
-            </tr>
-          `;
-        }
-      }
-    }
-
-    async function createHosManagedAccount() {
-      clearCreateAccountMessages();
-
-      const type = (document.getElementById("createAccountType")?.value || "").trim();
-      const fullName = (document.getElementById("createFullName")?.value || "").trim();
-      const email = (document.getElementById("createEmail")?.value || "").trim();
-      const departmentName = (document.getElementById("createDepartment")?.value || "").trim();
-      const btn = document.getElementById("createAccountBtn");
-
-      if (!hosSession?.id) {
-        showCreateAccountError("HOS session not found. Please sign in again.");
-        return;
-      }
-
-      if (!type) {
-        showCreateAccountError("Please choose an account type.");
-        return;
-      }
-
-      if (!fullName) {
-        showCreateAccountError("Please enter full name.");
-        return;
-      }
-
-      if (type === "hod" && !departmentName) {
-        showCreateAccountError("Please enter department name for HOD account.");
-        return;
-      }
-
-      let functionName = "";
-      const payload = {
-        hos_admin_id: hosSession.id,
-        full_name: fullName,
-        email: email || null,
-        linked_email: email || null
-      };
-
-      if (type === "hod") {
-        functionName = "create-hod-account";
-        payload.department_name = departmentName;
-      } else if (type === "report_agent") {
-        functionName = "create-report-agent-account";
-      } else if (type === "form_agent") {
-        functionName = "create-form-agent-account";
-      } else if (type === "announcement_agent") {
-        functionName = "create-announcement-agent-account";
-      }
-
-      if (!functionName) {
-        showCreateAccountError("Invalid account type selected.");
-        return;
-      }
-
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Creating...";
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke(functionName, {
-          body: payload
-        });
-
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || "Could not create account.");
-
-        let created = null;
-        if (type === "hod") created = data.hod_account || null;
-        if (type === "report_agent") created = data.report_agent_account || null;
-        if (type === "form_agent") created = data.form_agent_account || null;
-        if (type === "announcement_agent") created = data.announcement_agent_account || null;
-
-        lastGeneratedHosLoginId = created?.login_id || "";
-        lastGeneratedHosPassword = data.temporary_password || "";
-
-        const box = document.getElementById("createdAccountBox");
-        const typeEl = document.getElementById("generatedType");
-        const nameEl = document.getElementById("generatedFullName");
-        const loginEl = document.getElementById("generatedLoginId");
-        const passEl = document.getElementById("generatedPassword");
-
-        if (typeEl) {
-          typeEl.textContent = formatHosAccountType({
-            account_type: type === "hod" ? "hod" : "agent",
-            function_type: type === "hod" ? "hod" : type.replace("_agent", "")
-          });
-        }
-        if (nameEl) nameEl.textContent = created?.full_name || fullName || "-";
-        if (loginEl) loginEl.textContent = lastGeneratedHosLoginId || "-";
-        if (passEl) passEl.textContent = lastGeneratedHosPassword || "-";
-        if (box) box.style.display = "block";
-
-        showCreateAccountSuccess("Account created successfully.");
-
-        const fullNameInput = document.getElementById("createFullName");
-        const emailInput = document.getElementById("createEmail");
-        const deptInput = document.getElementById("createDepartment");
-
-        if (fullNameInput) fullNameInput.value = "";
-        if (emailInput) emailInput.value = "";
-        if (deptInput) deptInput.value = "";
-
-        await loadHosCreatedAccounts();
-      } catch (err) {
-        console.error(err);
-        showCreateAccountError(err.message || "Could not create account.");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = "Create account";
-        }
-      }
-    }
-
-    function clearHosCreateForm() {
-      const type = document.getElementById("createAccountType");
-      const fullName = document.getElementById("createFullName");
-      const email = document.getElementById("createEmail");
-      const department = document.getElementById("createDepartment");
-      const box = document.getElementById("createdAccountBox");
-      const typeEl = document.getElementById("generatedType");
-      const nameEl = document.getElementById("generatedFullName");
-      const loginEl = document.getElementById("generatedLoginId");
-      const passEl = document.getElementById("generatedPassword");
-
-      if (type) type.value = "";
-      if (fullName) fullName.value = "";
-      if (email) email.value = "";
-      if (department) department.value = "";
-
-      if (box) box.style.display = "none";
-      if (typeEl) typeEl.textContent = "-";
-      if (nameEl) nameEl.textContent = "-";
-      if (loginEl) loginEl.textContent = "-";
-      if (passEl) passEl.textContent = "-";
-
-      lastGeneratedHosLoginId = "";
-      lastGeneratedHosPassword = "";
-
-      clearCreateAccountMessages();
-      updateCreateDepartmentVisibility();
-    }
-
-    async function copyHosCreateText(text, successMessage) {
-      if (!text) return;
-      try {
-        await navigator.clipboard.writeText(text);
-        showCreateAccountSuccess(successMessage);
-      } catch (err) {
-        console.error(err);
-        showCreateAccountError("Could not copy.");
-      }
-    }
-
-    function bindCreateAccountScreen() {
-      const type = document.getElementById("createAccountType");
-      const createBtn = document.getElementById("createAccountBtn");
-      const clearBtn = document.getElementById("clearCreateAccountBtn");
-      const search = document.getElementById("createAccountSearch");
-      const copyLoginBtn = document.getElementById("copyGeneratedLoginBtn");
-      const copyPasswordBtn = document.getElementById("copyGeneratedPasswordBtn");
-
-      if (type) {
-        type.addEventListener("change", updateCreateDepartmentVisibility);
-        updateCreateDepartmentVisibility();
-      }
-
-      if (createBtn) {
-        createBtn.addEventListener("click", createHosManagedAccount);
-      }
-
-      if (clearBtn) {
-        clearBtn.addEventListener("click", clearHosCreateForm);
-      }
-
-      if (search) {
-        search.addEventListener("input", renderHosCreatedAccounts);
-      }
-
-      if (copyLoginBtn) {
-        copyLoginBtn.addEventListener("click", () => {
-          if (!lastGeneratedHosLoginId) return;
-          copyHosCreateText(lastGeneratedHosLoginId, "Generated login ID copied");
-        });
-      }
-
-      if (copyPasswordBtn) {
-        copyPasswordBtn.addEventListener("click", () => {
-          if (!lastGeneratedHosPassword) return;
-          copyHosCreateText(lastGeneratedHosPassword, "Generated password copied");
-        });
-      }
-    }
-
-    function bindNavigation() {
-      navButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          showScreen(btn.dataset.screen);
-        });
-      });
-    }
-
-    async function initHosPage() {
-      applyHosIdentity();
-      bindNavigation();
-      bindCreateAccountScreen();
-      await loadHosCreatedAccounts();
-    }
-
-    window.showScreen = showScreen;
-    window.supabase = supabase;
-
-    initHosPage();
-  </script>
 </body>
 </html>
