@@ -112,6 +112,10 @@
       background:#fef3c7;
       color:#b45309;
     }
+    #screen-reports .activity-badge.expired{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
     #screen-reports .activity-meta-row{
       display:flex;
       flex-wrap:wrap;
@@ -147,6 +151,9 @@
     }
     #screen-reports .activity-status.submitted{
       color:#6b7280;
+    }
+    #screen-reports .activity-status.expired{
+      color:#b91c1c;
     }
     #screen-reports .activity-open-btn{
       border:none;
@@ -235,6 +242,33 @@
       font-size:12px;
       line-height:1.45;
       margin-bottom:12px;
+    }
+    #screen-reports .activity-timer-box{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-radius:14px;
+      background:#eff6ff;
+      border:1px solid #dbeafe;
+      color:#1e3a8a;
+      padding:10px 12px;
+      margin-bottom:12px;
+    }
+    #screen-reports .activity-timer-label{
+      font-size:12px;
+      font-weight:700;
+      color:#1e3a8a;
+    }
+    #screen-reports .activity-timer-value{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:.02em;
+      color:#1d4ed8;
+      font-variant-numeric:tabular-nums;
+    }
+    #screen-reports .activity-timer-value.warning{
+      color:#dc2626;
     }
     #screen-reports .activity-progress-top{
       display:flex;
@@ -395,12 +429,6 @@
       margin-bottom:14px;
       text-align:center;
     }
-    #screen-reports .activity-loading{
-      font-size:12px;
-      color:var(--text-muted);
-      text-align:center;
-      padding:14px 12px;
-    }
     #screen-reports .hidden{
       display:none !important;
     }
@@ -411,7 +439,6 @@
     }
   </style>
 
-  <!-- LIST -->
   <section id="studentActivitiesListView">
     <section class="hero">
       <div class="hero-line-1">Class activity</div>
@@ -435,7 +462,6 @@
     </div>
   </section>
 
-  <!-- INTRO -->
   <section id="studentActivityIntroView" class="hidden">
     <button class="activity-back-btn" type="button" onclick="studentBackToActivitiesList()">← Back to activities</button>
 
@@ -458,7 +484,7 @@
         </div>
       </div>
 
-      <div class="activity-warning-box">
+      <div class="activity-warning-box" id="studentActivityStartWarning">
         You can only submit once. Your score will not show immediately. You will only see confirmation after submission.
       </div>
 
@@ -466,11 +492,15 @@
     </article>
   </section>
 
-  <!-- QUESTIONS -->
   <section id="studentActivityQuestionView" class="hidden">
     <button class="activity-back-btn" type="button" onclick="studentGoBackQuestion()">← Back</button>
 
     <article class="activity-question-card">
+      <div class="activity-timer-box">
+        <div class="activity-timer-label">Time remaining</div>
+        <div id="studentActivityTimerValue" class="activity-timer-value">--:--</div>
+      </div>
+
       <div class="activity-progress-top">
         <span id="studentActivityProgressText">Question 1 of 1</span>
         <span id="studentActivityProgressPercent">100%</span>
@@ -491,11 +521,15 @@
     </article>
   </section>
 
-  <!-- REVIEW -->
   <section id="studentActivityReviewView" class="hidden">
     <button class="activity-back-btn" type="button" onclick="studentBackToLastQuestion()">← Back to questions</button>
 
     <article class="activity-review-card">
+      <div class="activity-timer-box">
+        <div class="activity-timer-label">Time remaining</div>
+        <div id="studentActivityReviewTimerValue" class="activity-timer-value">--:--</div>
+      </div>
+
       <div class="activity-review-title">Review your answers</div>
       <div class="activity-submit-note">
         Check all your selected answers below before submitting. Tap any item if you want to go back and change it.
@@ -507,7 +541,6 @@
     </article>
   </section>
 
-  <!-- SUBMITTED -->
   <section id="studentActivitySubmittedView" class="hidden">
     <article class="activity-submitted-card">
       <div class="activity-success-icon">
@@ -538,7 +571,8 @@
       answers: {},
       currentIndex: 0,
       currentAttemptId: null,
-      loading: false
+      currentAttemptExpiresAt: null,
+      timerInterval: null
     };
 
     function studentActivityEscape(value) {
@@ -567,6 +601,76 @@
       }
     }
 
+    function studentFormatDuration(minutes) {
+      const n = Number(minutes || 0);
+      if (!n || n <= 0) return "No limit";
+      if (n === 1) return "1 minute";
+      return `${n} minutes`;
+    }
+
+    function studentFormatCountdown(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function studentStopTimer() {
+      if (window.studentClassActivityState.timerInterval) {
+        clearInterval(window.studentClassActivityState.timerInterval);
+        window.studentClassActivityState.timerInterval = null;
+      }
+    }
+
+    function studentSetTimerText(text, warning = false) {
+      ["studentActivityTimerValue", "studentActivityReviewTimerValue"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.classList.toggle("warning", !!warning);
+      });
+    }
+
+    async function studentAutoSubmitFromTimer() {
+      studentStopTimer();
+      alert("Time is up. Your activity will be submitted now.");
+      await studentSubmitActivity(true);
+    }
+
+    function studentStartTimer(expiresAt) {
+      studentStopTimer();
+
+      if (!expiresAt) {
+        studentSetTimerText("--:--", false);
+        return;
+      }
+
+      window.studentClassActivityState.currentAttemptExpiresAt = expiresAt;
+
+      const tick = () => {
+        const endMs = new Date(expiresAt).getTime();
+        const diff = endMs - Date.now();
+
+        if (Number.isNaN(endMs)) {
+          studentSetTimerText("--:--", false);
+          studentStopTimer();
+          return;
+        }
+
+        if (diff <= 0) {
+          studentSetTimerText("00:00", true);
+          studentAutoSubmitFromTimer();
+          return;
+        }
+
+        const warning = diff <= 5 * 60 * 1000;
+        studentSetTimerText(studentFormatCountdown(diff), warning);
+      };
+
+      tick();
+      window.studentClassActivityState.timerInterval = setInterval(tick, 1000);
+    }
+
     function studentShowActivityView(viewName) {
       const ids = [
         "studentActivitiesListView",
@@ -581,6 +685,12 @@
         if (!el) return;
         el.classList.toggle("hidden", id !== viewName);
       });
+
+      if (viewName === "studentActivitiesListView" || viewName === "studentActivityIntroView" || viewName === "studentActivitySubmittedView") {
+        if (viewName !== "studentActivitySubmittedView") {
+          studentStopTimer();
+        }
+      }
     }
 
     async function studentEnsureUser() {
@@ -599,6 +709,13 @@
       } catch {
         return null;
       }
+    }
+
+    function studentIsExpiredByDueDate(dueAt) {
+      if (!dueAt) return false;
+      const t = new Date(dueAt).getTime();
+      if (Number.isNaN(t)) return false;
+      return Date.now() > t;
     }
 
     async function studentLoadActivitiesScreen() {
@@ -662,7 +779,7 @@
         if (activityIds.length) {
           const { data: attemptsData, error: attemptsError } = await supabase
             .from("class_activity_attempts")
-            .select("id, activity_id, started_at, submitted_at, status")
+            .select("id, activity_id, started_at, submitted_at, status, expires_at")
             .eq("user_id", user.id)
             .in("activity_id", activityIds);
 
@@ -694,11 +811,18 @@
 
         const items = (activities || []).map((a) => {
           const attempt = attemptMap[a.id] || null;
+          const expiredByDueDate = studentIsExpiredByDueDate(a.due_at);
+          const expiredByTimer = !!(attempt?.expires_at && new Date(attempt.expires_at).getTime() < Date.now());
+
           let status = "not-started";
           if (attempt?.status === "submitted" || attempt?.submitted_at) {
             status = "submitted";
           } else if (attempt) {
             status = "in-progress";
+          }
+
+          if (expiredByDueDate || expiredByTimer) {
+            if (status !== "submitted") status = "expired";
           }
 
           const course = courseMap[a.class_id] || {};
@@ -715,7 +839,8 @@
             due_at: a.due_at || null,
             due_text: studentFmtDate(a.due_at),
             status,
-            attempt_id: attempt?.id || null
+            attempt_id: attempt?.id || null,
+            expires_at: attempt?.expires_at || null
           };
         });
 
@@ -727,23 +852,26 @@
         }
 
         wrap.innerHTML = items.map((item) => {
-          const typeClass = item.type || "revision";
+          const typeClass = item.status === "expired" ? "expired" : (item.type || "revision");
           const typeLabel =
-            typeClass === "assignment" ? "Assignment" :
-            typeClass === "test" ? "Test" : "Revision";
+            item.status === "expired" ? "Expired" :
+            item.type === "assignment" ? "Assignment" :
+            item.type === "test" ? "Test" : "Revision";
 
           const statusClass =
             item.status === "submitted" ? "submitted" :
-            item.status === "in-progress" ? "in-progress" : "not-started";
+            item.status === "in-progress" ? "in-progress" :
+            item.status === "expired" ? "expired" : "not-started";
 
           const statusLabel =
             item.status === "submitted" ? "Submitted" :
-            item.status === "in-progress" ? "In progress" : "Not started";
+            item.status === "in-progress" ? "In progress" :
+            item.status === "expired" ? "Expired" : "Not started";
 
-          const isSubmitted = item.status === "submitted";
+          const isBlocked = item.status === "submitted" || item.status === "expired";
 
           return `
-            <article class="activity-item" onclick="${isSubmitted ? "" : `studentOpenActivityIntro('${item.id}')`}">
+            <article class="activity-item" onclick="${isBlocked ? "" : `studentOpenActivityIntro('${item.id}')`}">
               <div class="activity-item-top">
                 <div>
                   <div class="activity-course">${studentActivityEscape(item.class_code)}</div>
@@ -755,12 +883,13 @@
               <div class="activity-meta-row">
                 <div class="activity-meta-pill">${studentActivityEscape(item.questions_count)} Questions</div>
                 <div class="activity-meta-pill">${studentActivityEscape(item.due_text)}</div>
+                <div class="activity-meta-pill">${item.time_limit ? studentActivityEscape(studentFormatDuration(item.time_limit)) : "No limit"}</div>
               </div>
 
               <div class="activity-status-row">
                 <div class="activity-status ${statusClass}">${statusLabel}</div>
-                <button class="activity-open-btn ${isSubmitted ? "disabled" : ""}" type="button">
-                  ${item.status === "in-progress" ? "Continue" : isSubmitted ? "Submitted" : "Open"}
+                <button class="activity-open-btn ${isBlocked ? "disabled" : ""}" type="button">
+                  ${item.status === "in-progress" ? "Continue" : item.status === "submitted" ? "Submitted" : item.status === "expired" ? "Expired" : "Open"}
                 </button>
               </div>
             </article>
@@ -779,19 +908,28 @@
       document.getElementById("studentActivityIntroTitle").textContent = found.title;
       document.getElementById("studentActivityIntroCourse").textContent = `${found.class_code} - ${found.class_title}`;
       document.getElementById("studentActivityIntroQuestions").textContent = `${found.questions_count} Questions`;
-      document.getElementById("studentActivityIntroTime").textContent = found.time_limit ? `${found.time_limit} Minutes` : "No limit";
+      document.getElementById("studentActivityIntroTime").textContent = found.time_limit ? studentFormatDuration(found.time_limit) : "No limit";
       document.getElementById("studentActivityIntroDue").textContent = found.due_text || "No due date";
+
+      const warningEl = document.getElementById("studentActivityStartWarning");
+      if (warningEl) {
+        warningEl.textContent = found.time_limit
+          ? `Once you start, this activity will expire after ${studentFormatDuration(found.time_limit)}. A countdown will show at the top while you answer. You can only submit once, and your score will not show immediately.`
+          : `You can only submit once. Your score will not show immediately. You will only see confirmation after submission.`;
+      }
 
       window.studentClassActivityState.currentActivity = found;
       window.studentClassActivityState.questions = [];
       window.studentClassActivityState.answers = {};
       window.studentClassActivityState.currentIndex = 0;
       window.studentClassActivityState.currentAttemptId = found.attempt_id || null;
+      window.studentClassActivityState.currentAttemptExpiresAt = found.expires_at || null;
 
       studentShowActivityView("studentActivityIntroView");
     }
 
     function studentBackToActivitiesList() {
+      studentStopTimer();
       studentShowActivityView("studentActivitiesListView");
       studentLoadActivitiesScreen();
     }
@@ -809,7 +947,7 @@
 
       const { data: existing, error: existingError } = await supabase
         .from("class_activity_attempts")
-        .select("id, status, submitted_at")
+        .select("id, status, submitted_at, expires_at")
         .eq("activity_id", activity.id)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -817,11 +955,8 @@
       if (existingError) throw existingError;
 
       if (existing) {
-        if (existing.status === "submitted" || existing.submitted_at) {
-          window.studentClassActivityState.currentAttemptId = existing.id;
-          return existing.id;
-        }
         window.studentClassActivityState.currentAttemptId = existing.id;
+        window.studentClassActivityState.currentAttemptExpiresAt = existing.expires_at || null;
         return existing.id;
       }
 
@@ -833,18 +968,18 @@
           status: "in_progress",
           started_at: new Date().toISOString()
         }])
-        .select("id")
+        .select("id, expires_at")
         .single();
 
       if (createError) throw createError;
 
       window.studentClassActivityState.currentAttemptId = created.id;
+      window.studentClassActivityState.currentAttemptExpiresAt = created.expires_at || null;
       return created.id;
     }
 
     async function studentLoadAnswersForAttempt(attemptId) {
       if (!attemptId) return {};
-
       const { data, error } = await supabase
         .from("class_activity_answers")
         .select("question_id, selected_option")
@@ -863,6 +998,12 @@
       if (typeof supabase === "undefined") return;
       const activity = window.studentClassActivityState.currentActivity;
       if (!activity) return;
+
+      if (studentIsExpiredByDueDate(activity.due_at)) {
+        alert("This activity has expired.");
+        studentBackToActivitiesList();
+        return;
+      }
 
       const btn = document.getElementById("studentStartActivityBtn");
       const oldText = btn.textContent;
@@ -896,6 +1037,16 @@
         window.studentClassActivityState.answers = savedAnswers || {};
         window.studentClassActivityState.currentIndex = 0;
 
+        if (window.studentClassActivityState.currentAttemptExpiresAt) {
+          const endMs = new Date(window.studentClassActivityState.currentAttemptExpiresAt).getTime();
+          if (!Number.isNaN(endMs) && Date.now() >= endMs) {
+            alert("This activity time has already expired.");
+            studentBackToActivitiesList();
+            return;
+          }
+        }
+
+        studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
         studentRenderQuestion();
         studentShowActivityView("studentActivityQuestionView");
       } catch (err) {
@@ -986,6 +1137,7 @@
       if (window.studentClassActivityState.currentIndex > 0) {
         studentGoPrevQuestion();
       } else {
+        studentStopTimer();
         studentShowActivityView("studentActivityIntroView");
       }
     }
@@ -1012,6 +1164,7 @@
 
     function studentBackToLastQuestion() {
       studentShowActivityView("studentActivityQuestionView");
+      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
       window.studentClassActivityState.currentIndex = window.studentClassActivityState.questions.length - 1;
       studentRenderQuestion();
     }
@@ -1019,6 +1172,7 @@
     function studentJumpToQuestion(index) {
       window.studentClassActivityState.currentIndex = index;
       studentShowActivityView("studentActivityQuestionView");
+      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
       studentRenderQuestion();
     }
 
@@ -1037,13 +1191,16 @@
       }).join("");
 
       studentShowActivityView("studentActivityReviewView");
+      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
     }
 
-    async function studentSubmitActivity() {
+    async function studentSubmitActivity(fromTimer = false) {
       const btn = document.getElementById("studentSubmitActivityBtn");
-      const oldText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
+      const oldText = btn ? btn.textContent : "Submit activity";
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = fromTimer ? "Submitting..." : "Submitting...";
+      }
 
       try {
         const attemptId = await studentEnsureAttempt();
@@ -1059,13 +1216,16 @@
 
         if (error) throw error;
 
+        studentStopTimer();
         studentShowActivityView("studentActivitySubmittedView");
       } catch (err) {
         console.error("studentSubmitActivity failed:", err);
         alert("Could not submit activity right now.");
       } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
       }
     }
 
