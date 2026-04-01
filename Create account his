@@ -292,32 +292,19 @@
 
             <div class="field">
               <label for="createFullName">Full Name</label>
-              <input
-                type="text"
-                id="createFullName"
-                placeholder="Enter full name"
-                required
-              />
+              <input type="text" id="createFullName" placeholder="Enter full name" required />
             </div>
           </div>
 
           <div class="form-row two">
             <div class="field">
               <label for="createEmail">Email <span class="optional-text">(optional)</span></label>
-              <input
-                type="email"
-                id="createEmail"
-                placeholder="Enter email address"
-              />
+              <input type="email" id="createEmail" placeholder="Enter email address" />
             </div>
 
             <div class="field" id="departmentFieldWrap" style="display:none;">
               <label for="createDepartment">Department</label>
-              <input
-                type="text"
-                id="createDepartment"
-                placeholder="Enter department name"
-              />
+              <input type="text" id="createDepartment" placeholder="Enter department name" />
             </div>
           </div>
 
@@ -425,11 +412,9 @@
         if (role === "report_agent") return "Report Agent";
         if (role === "form_agent") return "Form Agent";
         if (role === "announcement_agent") return "Announcement Agent";
-
         if (role === "agent" && functionType === "report") return "Report Agent";
         if (role === "agent" && functionType === "form") return "Form Agent";
         if (role === "agent" && functionType === "announcement") return "Announcement Agent";
-
         return role || "Account";
       }
 
@@ -445,7 +430,6 @@
         const btn = document.getElementById("createAccountBtn");
         const btnText = document.getElementById("createAccountBtnText");
         const refreshBtn = document.getElementById("refreshCreatedAccountsBtn");
-
         if (btn) btn.disabled = isLoading;
         if (refreshBtn) refreshBtn.disabled = isLoading;
         if (btnText) btnText.textContent = isLoading ? "Creating..." : "Create Account";
@@ -523,16 +507,16 @@
       }
 
       async function callHosEdgeFunction(functionName, payload){
-        if (typeof SUPABASE_URL === "undefined" || typeof SUPABASE_ANON_KEY === "undefined") {
+        if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
           throw new Error("SUPABASE_URL or SUPABASE_ANON_KEY is missing in your main script.");
         }
 
         const headers = {
           "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY
+          "apikey": window.SUPABASE_ANON_KEY
         };
 
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+        const res = await fetch(`${window.SUPABASE_URL}/functions/v1/${functionName}`, {
           method: "POST",
           headers,
           body: JSON.stringify(payload)
@@ -556,15 +540,15 @@
       }
 
       function getHosAdminId(){
-        if (typeof adminSession !== "undefined" && adminSession) {
-          return (adminSession.account && adminSession.account.id) || adminSession.id || "";
+        if (window.adminSession) {
+          return (window.adminSession.account && window.adminSession.account.id) || window.adminSession.id || "";
         }
         return "";
       }
 
       function getHosSchoolName(){
-        if (typeof adminSession !== "undefined" && adminSession) {
-          return (adminSession.account && adminSession.account.school_name) || adminSession.school_name || "School";
+        if (window.adminSession) {
+          return (window.adminSession.account && window.adminSession.account.school_name) || window.adminSession.school_name || "School";
         }
         return "School";
       }
