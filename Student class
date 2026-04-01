@@ -1,0 +1,920 @@
+<!-- 🔹 STUDENT CLASS ACTIVITY SCREEN START -->
+<div id="screen-reports" class="screen">
+  <style>
+    #screen-reports{
+      padding:8px 6px 96px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    #screen-reports .hero{
+      padding:4px 4px 6px;
+      margin-bottom:6px;
+    }
+
+    #screen-reports .hero-line-1{
+      font-size:12px;
+      font-weight:500;
+      color:var(--text-muted);
+      margin-bottom:3px;
+    }
+
+    #screen-reports .hero-title{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      line-height:1.2;
+      color:var(--text-main);
+      margin:0;
+    }
+
+    #screen-reports .hero-title span{
+      color:var(--blue);
+      font-weight:600;
+    }
+
+    #screen-reports .hero-sub{
+      font-size:12px;
+      color:var(--text-muted);
+      margin:6px 0 0;
+      line-height:1.45;
+    }
+
+    #screen-reports .activities-top-card{
+      margin:6px 2px 14px;
+      border-radius:18px;
+      background:linear-gradient(135deg,#eff6ff,#ffffff);
+      border:1px solid #dbeafe;
+      padding:14px 14px 12px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    #screen-reports .activities-top-title{
+      font-size:15px;
+      font-weight:700;
+      color:var(--text-main);
+      margin-bottom:4px;
+    }
+
+    #screen-reports .activities-top-sub{
+      font-size:12px;
+      color:var(--text-muted);
+      line-height:1.4;
+    }
+
+    #screen-reports .activity-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    #screen-reports .activity-item{
+      border-radius:18px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      cursor:pointer;
+      transition:transform .05s, box-shadow .15s;
+    }
+
+    #screen-reports .activity-item:active{
+      transform:scale(.99);
+    }
+
+    #screen-reports .activity-item-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    #screen-reports .activity-course{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-main);
+      margin-bottom:3px;
+    }
+
+    #screen-reports .activity-title{
+      font-size:15px;
+      font-weight:700;
+      color:var(--text-main);
+      line-height:1.3;
+    }
+
+    #screen-reports .activity-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:11px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    #screen-reports .activity-badge.revision{
+      background:#eff6ff;
+      color:#2563eb;
+    }
+
+    #screen-reports .activity-badge.assignment{
+      background:#f5f3ff;
+      color:#6d28d9;
+    }
+
+    #screen-reports .activity-badge.test{
+      background:#fef3c7;
+      color:#b45309;
+    }
+
+    #screen-reports .activity-meta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    #screen-reports .activity-meta-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:11px;
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      color:var(--text-muted);
+    }
+
+    #screen-reports .activity-status-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+
+    #screen-reports .activity-status{
+      font-size:12px;
+      font-weight:600;
+    }
+
+    #screen-reports .activity-status.not-started{
+      color:#15803d;
+    }
+
+    #screen-reports .activity-status.in-progress{
+      color:#2563eb;
+    }
+
+    #screen-reports .activity-status.submitted{
+      color:#6b7280;
+    }
+
+    #screen-reports .activity-open-btn{
+      border:none;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:12px;
+      font-weight:700;
+      color:#ffffff;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      cursor:pointer;
+      box-shadow:var(--shadow-soft);
+    }
+
+    #screen-reports .activity-open-btn.disabled{
+      background:#cbd5e1;
+      box-shadow:none;
+      cursor:default;
+    }
+
+    #screen-reports .activity-empty{
+      border-radius:18px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      padding:16px 14px;
+      font-size:12px;
+      color:var(--text-muted);
+      text-align:center;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    #screen-reports .activity-intro-card,
+    #screen-reports .activity-question-card,
+    #screen-reports .activity-review-card,
+    #screen-reports .activity-submitted-card{
+      border-radius:18px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      margin:8px 2px 14px;
+    }
+
+    #screen-reports .activity-back-btn{
+      width:100%;
+      margin-bottom:10px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      color:var(--text-main);
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    #screen-reports .activity-intro-title,
+    #screen-reports .activity-review-title,
+    #screen-reports .activity-submitted-title{
+      font-size:18px;
+      font-weight:700;
+      color:var(--text-main);
+      margin-bottom:8px;
+    }
+
+    #screen-reports .activity-intro-course{
+      font-size:14px;
+      font-weight:700;
+      color:var(--text-main);
+      margin-bottom:10px;
+    }
+
+    #screen-reports .activity-intro-meta{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-intro-meta-item{
+      font-size:13px;
+      color:var(--text-main);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:8px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    #screen-reports .activity-warning-box{
+      border-radius:14px;
+      background:#eff6ff;
+      border:1px solid #dbeafe;
+      color:#1e3a8a;
+      padding:12px;
+      font-size:12px;
+      line-height:1.45;
+      margin-bottom:12px;
+    }
+
+    #screen-reports .activity-progress-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+      font-size:12px;
+      color:var(--text-main);
+      font-weight:600;
+    }
+
+    #screen-reports .activity-progress-track{
+      width:100%;
+      height:6px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-progress-bar{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      width:0%;
+    }
+
+    #screen-reports .activity-question-title{
+      font-size:17px;
+      font-weight:700;
+      line-height:1.4;
+      color:var(--text-main);
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-option-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-option{
+      border-radius:14px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      padding:12px 12px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      cursor:pointer;
+    }
+
+    #screen-reports .activity-option.active{
+      border-color:#2563eb;
+      background:#eff6ff;
+      box-shadow:0 0 0 1px rgba(37,99,235,.2);
+    }
+
+    #screen-reports .activity-option-letter{
+      width:28px;
+      height:28px;
+      border-radius:8px;
+      background:#f3f4f6;
+      color:var(--text-main);
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    #screen-reports .activity-option.active .activity-option-letter{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    #screen-reports .activity-option-text{
+      font-size:14px;
+      line-height:1.45;
+      color:var(--text-main);
+      flex:1;
+    }
+
+    #screen-reports .activity-nav-row{
+      display:flex;
+      gap:10px;
+    }
+
+    #screen-reports .activity-nav-row button{
+      flex:1;
+    }
+
+    #screen-reports .activity-ghost-btn{
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      padding:11px 14px;
+      font-size:14px;
+      font-weight:600;
+      background:#ffffff;
+      color:var(--text-main);
+      cursor:pointer;
+    }
+
+    #screen-reports .activity-review-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-review-item{
+      border-radius:14px;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      cursor:pointer;
+    }
+
+    #screen-reports .activity-review-q{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-main);
+      margin-bottom:8px;
+    }
+
+    #screen-reports .activity-review-a{
+      font-size:13px;
+      color:var(--text-muted);
+      line-height:1.4;
+    }
+
+    #screen-reports .activity-review-a strong{
+      color:var(--text-main);
+    }
+
+    #screen-reports .activity-submit-note{
+      font-size:12px;
+      color:var(--text-muted);
+      line-height:1.45;
+      margin-bottom:12px;
+    }
+
+    #screen-reports .activity-success-icon{
+      width:78px;
+      height:78px;
+      border-radius:999px;
+      background:#22c55e;
+      color:#ffffff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:6px auto 14px;
+      box-shadow:0 12px 30px rgba(34,197,94,.25);
+    }
+
+    #screen-reports .activity-success-icon svg{
+      width:38px;
+      height:38px;
+    }
+
+    #screen-reports .activity-submitted-text{
+      font-size:14px;
+      color:var(--text-main);
+      text-align:center;
+      line-height:1.5;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .activity-submitted-box{
+      border-radius:14px;
+      background:#eff6ff;
+      border:1px solid #dbeafe;
+      color:#1e3a8a;
+      padding:12px;
+      font-size:12px;
+      line-height:1.45;
+      margin-bottom:14px;
+      text-align:center;
+    }
+
+    #screen-reports .hidden{
+      display:none !important;
+    }
+
+    @media (max-width:360px){
+      #screen-reports .activity-nav-row{
+        flex-direction:column;
+      }
+    }
+  </style>
+
+  <!-- ACTIVITIES LIST -->
+  <section id="studentActivitiesListView">
+    <section class="hero">
+      <div class="hero-line-1">Class activity</div>
+      <h1 class="hero-title">
+        Answer your <span>class questions</span>
+      </h1>
+      <p class="hero-sub">
+        Revisions, tests, and assignments from classes you already joined.
+      </p>
+    </section>
+
+    <article class="activities-top-card">
+      <div class="activities-top-title">Your class activities</div>
+      <div class="activities-top-sub">
+        Tap any published activity to open it. Once you submit, you cannot retry again.
+      </div>
+    </article>
+
+    <div id="studentActivitiesList" class="activity-list">
+      <div class="activity-empty">Loading class activities...</div>
+    </div>
+  </section>
+
+  <!-- INTRO -->
+  <section id="studentActivityIntroView" class="hidden">
+    <button class="activity-back-btn" type="button" onclick="studentBackToActivitiesList()">← Back to activities</button>
+
+    <article class="activity-intro-card">
+      <div class="activity-intro-title" id="studentActivityIntroTitle">Week 3 Revision</div>
+      <div class="activity-intro-course" id="studentActivityIntroCourse">ENT 303 - Software Engineering</div>
+
+      <div class="activity-intro-meta">
+        <div class="activity-intro-meta-item">
+          <span>Questions</span>
+          <strong id="studentActivityIntroQuestions">10 Questions</strong>
+        </div>
+        <div class="activity-intro-meta-item">
+          <span>Time limit</span>
+          <strong id="studentActivityIntroTime">20 Minutes</strong>
+        </div>
+        <div class="activity-intro-meta-item">
+          <span>Due</span>
+          <strong id="studentActivityIntroDue">Today, 11:59 PM</strong>
+        </div>
+      </div>
+
+      <div class="activity-warning-box">
+        You can only submit once. Your score will not show immediately. You will only see confirmation after submission.
+      </div>
+
+      <button class="primary-cta" type="button" onclick="studentStartActivity()">Start activity</button>
+    </article>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section id="studentActivityQuestionView" class="hidden">
+    <button class="activity-back-btn" type="button" onclick="studentGoBackQuestion()">← Back</button>
+
+    <article class="activity-question-card">
+      <div class="activity-progress-top">
+        <span id="studentActivityProgressText">Question 1 of 10</span>
+        <span id="studentActivityProgressPercent">10%</span>
+      </div>
+
+      <div class="activity-progress-track">
+        <div id="studentActivityProgressBar" class="activity-progress-bar"></div>
+      </div>
+
+      <div id="studentActivityQuestionTitle" class="activity-question-title">
+        What is entrepreneurship?
+      </div>
+
+      <div id="studentActivityOptionList" class="activity-option-list"></div>
+
+      <div class="activity-nav-row">
+        <button id="studentActivityPrevBtn" class="activity-ghost-btn" type="button" onclick="studentGoPrevQuestion()">Back</button>
+        <button id="studentActivityNextBtn" class="primary-cta" type="button" onclick="studentGoNextQuestion()">Next</button>
+      </div>
+    </article>
+  </section>
+
+  <!-- REVIEW -->
+  <section id="studentActivityReviewView" class="hidden">
+    <button class="activity-back-btn" type="button" onclick="studentBackToLastQuestion()">← Back to questions</button>
+
+    <article class="activity-review-card">
+      <div class="activity-review-title">Review your answers</div>
+      <div class="activity-submit-note">
+        Check all your selected answers below before submitting. Tap any item if you want to go back and change it.
+      </div>
+
+      <div id="studentActivityReviewList" class="activity-review-list"></div>
+
+      <button class="primary-cta" type="button" onclick="studentSubmitActivity()">Submit activity</button>
+    </article>
+  </section>
+
+  <!-- SUBMITTED -->
+  <section id="studentActivitySubmittedView" class="hidden">
+    <article class="activity-submitted-card">
+      <div class="activity-success-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="activity-submitted-title" style="text-align:center;">Activity submitted</div>
+
+      <div class="activity-submitted-text">
+        Your answers have been submitted successfully.
+      </div>
+
+      <div class="activity-submitted-box">
+        You cannot retry this activity again. Your result will only show after the lecturer releases it.
+      </div>
+
+      <button class="primary-cta" type="button" onclick="studentBackToActivitiesList()">Back to activities</button>
+    </article>
+  </section>
+
+  <script>
+    window.studentClassActivityState = window.studentClassActivityState || {
+      activities: [],
+      currentActivity: null,
+      questions: [],
+      answers: {},
+      currentIndex: 0,
+      submittedActivityIds: {}
+    };
+
+    function studentActivityEscape(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function studentGetSampleActivities() {
+      return [
+        {
+          id: "act1",
+          class_code: "ENT 303",
+          class_title: "Entrepreneurship Development",
+          type: "revision",
+          title: "Week 3 Revision",
+          questions_count: 5,
+          time_limit: 20,
+          due_text: "Today, 11:59 PM",
+          status: "not-started"
+        },
+        {
+          id: "act2",
+          class_code: "CSC 202",
+          class_title: "Data Structures",
+          type: "assignment",
+          title: "Assignment 2",
+          questions_count: 5,
+          time_limit: 15,
+          due_text: "Tomorrow, 5:00 PM",
+          status: "in-progress"
+        }
+      ];
+    }
+
+    function studentGetSampleQuestions(activityId) {
+      return [
+        {
+          id: "q1",
+          question: "What is the primary purpose of entrepreneurship?",
+          options: {
+            A: "To avoid all risk in business",
+            B: "To identify opportunities and create value",
+            C: "To copy other people’s business exactly",
+            D: "To only work in government offices"
+          }
+        },
+        {
+          id: "q2",
+          question: "Which of these is a characteristic of an entrepreneur?",
+          options: {
+            A: "Fear of all change",
+            B: "Avoiding decisions",
+            C: "Innovation and initiative",
+            D: "Rejecting all opportunities"
+          }
+        },
+        {
+          id: "q3",
+          question: "Which of the following best describes business opportunity?",
+          options: {
+            A: "Anything that wastes money",
+            B: "A chance to meet needs and make profit",
+            C: "Only jobs in banks",
+            D: "Government salary payment"
+          }
+        },
+        {
+          id: "q4",
+          question: "An entrepreneur mainly organizes:",
+          options: {
+            A: "Complaints only",
+            B: "Rumours and gossip",
+            C: "Resources to create profit",
+            D: "Examination malpractice"
+          }
+        },
+        {
+          id: "q5",
+          question: "Entrepreneurship helps society by:",
+          options: {
+            A: "Reducing all innovation",
+            B: "Creating jobs and solutions",
+            C: "Stopping business growth",
+            D: "Avoiding production"
+          }
+        }
+      ];
+    }
+
+    function studentShowActivityView(viewName) {
+      const ids = [
+        "studentActivitiesListView",
+        "studentActivityIntroView",
+        "studentActivityQuestionView",
+        "studentActivityReviewView",
+        "studentActivitySubmittedView"
+      ];
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle("hidden", id !== viewName);
+      });
+    }
+
+    function studentLoadActivitiesScreen() {
+      const wrap = document.getElementById("studentActivitiesList");
+      if (!wrap) return;
+
+      const items = studentGetSampleActivities().map((item) => {
+        if (window.studentClassActivityState.submittedActivityIds[item.id]) {
+          return { ...item, status: "submitted" };
+        }
+        return item;
+      });
+
+      window.studentClassActivityState.activities = items;
+
+      if (!items.length) {
+        wrap.innerHTML = `<div class="activity-empty">No class activity available yet.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = items.map((item) => {
+        const typeClass = item.type || "revision";
+        const typeLabel =
+          typeClass === "assignment" ? "Assignment" :
+          typeClass === "test" ? "Test" : "Revision";
+
+        const statusClass =
+          item.status === "submitted" ? "submitted" :
+          item.status === "in-progress" ? "in-progress" : "not-started";
+
+        const statusLabel =
+          item.status === "submitted" ? "Submitted" :
+          item.status === "in-progress" ? "In progress" : "Not started";
+
+        const isSubmitted = item.status === "submitted";
+
+        return `
+          <article class="activity-item" onclick="${isSubmitted ? '' : `studentOpenActivityIntro('${item.id}')`}">
+            <div class="activity-item-top">
+              <div>
+                <div class="activity-course">${studentActivityEscape(item.class_code)}</div>
+                <div class="activity-title">${studentActivityEscape(item.title)}</div>
+              </div>
+              <div class="activity-badge ${typeClass}">${typeLabel}</div>
+            </div>
+
+            <div class="activity-meta-row">
+              <div class="activity-meta-pill">${studentActivityEscape(item.questions_count)} Questions</div>
+              <div class="activity-meta-pill">${studentActivityEscape(item.due_text)}</div>
+            </div>
+
+            <div class="activity-status-row">
+              <div class="activity-status ${statusClass}">${statusLabel}</div>
+              <button class="activity-open-btn ${isSubmitted ? 'disabled' : ''}" type="button">
+                ${item.status === "in-progress" ? "Continue" : isSubmitted ? "Submitted" : "Open"}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function studentOpenActivityIntro(activityId) {
+      const items = window.studentClassActivityState.activities || [];
+      const found = items.find((x) => x.id === activityId);
+      if (!found) return;
+
+      window.studentClassActivityState.currentActivity = found;
+      window.studentClassActivityState.questions = studentGetSampleQuestions(activityId);
+      window.studentClassActivityState.answers = {};
+      window.studentClassActivityState.currentIndex = 0;
+
+      document.getElementById("studentActivityIntroTitle").textContent = found.title;
+      document.getElementById("studentActivityIntroCourse").textContent = `${found.class_code} - ${found.class_title}`;
+      document.getElementById("studentActivityIntroQuestions").textContent = `${found.questions_count} Questions`;
+      document.getElementById("studentActivityIntroTime").textContent = `${found.time_limit} Minutes`;
+      document.getElementById("studentActivityIntroDue").textContent = found.due_text;
+
+      studentShowActivityView("studentActivityIntroView");
+    }
+
+    function studentBackToActivitiesList() {
+      studentShowActivityView("studentActivitiesListView");
+      studentLoadActivitiesScreen();
+    }
+
+    function studentStartActivity() {
+      window.studentClassActivityState.currentIndex = 0;
+      studentRenderQuestion();
+      studentShowActivityView("studentActivityQuestionView");
+    }
+
+    function studentRenderQuestion() {
+      const questions = window.studentClassActivityState.questions;
+      const idx = window.studentClassActivityState.currentIndex;
+      const q = questions[idx];
+      if (!q) return;
+
+      const total = questions.length;
+      const progress = Math.round(((idx + 1) / total) * 100);
+
+      document.getElementById("studentActivityProgressText").textContent = `Question ${idx + 1} of ${total}`;
+      document.getElementById("studentActivityProgressPercent").textContent = `${progress}%`;
+      document.getElementById("studentActivityProgressBar").style.width = `${progress}%`;
+      document.getElementById("studentActivityQuestionTitle").textContent = q.question;
+
+      const wrap = document.getElementById("studentActivityOptionList");
+      const selected = window.studentClassActivityState.answers[q.id] || "";
+
+      wrap.innerHTML = Object.entries(q.options).map(([key, value]) => `
+        <div class="activity-option ${selected === key ? "active" : ""}" onclick="studentSelectOption('${q.id}','${key}')">
+          <div class="activity-option-letter">${key}</div>
+          <div class="activity-option-text">${studentActivityEscape(value)}</div>
+        </div>
+      `).join("");
+
+      document.getElementById("studentActivityPrevBtn").style.visibility = idx === 0 ? "hidden" : "visible";
+      document.getElementById("studentActivityNextBtn").textContent = idx === total - 1 ? "Review answers" : "Next";
+    }
+
+    function studentSelectOption(questionId, optionKey) {
+      window.studentClassActivityState.answers[questionId] = optionKey;
+      studentRenderQuestion();
+    }
+
+    function studentGoPrevQuestion() {
+      if (window.studentClassActivityState.currentIndex > 0) {
+        window.studentClassActivityState.currentIndex -= 1;
+        studentRenderQuestion();
+      }
+    }
+
+    function studentGoBackQuestion() {
+      if (window.studentClassActivityState.currentIndex > 0) {
+        studentGoPrevQuestion();
+      } else {
+        studentShowActivityView("studentActivityIntroView");
+      }
+    }
+
+    function studentGoNextQuestion() {
+      const questions = window.studentClassActivityState.questions;
+      const idx = window.studentClassActivityState.currentIndex;
+      const q = questions[idx];
+      if (!q) return;
+
+      if (!window.studentClassActivityState.answers[q.id]) {
+        alert("Please choose an answer before continuing.");
+        return;
+      }
+
+      if (idx === questions.length - 1) {
+        studentOpenReviewAnswers();
+        return;
+      }
+
+      window.studentClassActivityState.currentIndex += 1;
+      studentRenderQuestion();
+    }
+
+    function studentBackToLastQuestion() {
+      studentShowActivityView("studentActivityQuestionView");
+      window.studentClassActivityState.currentIndex = window.studentClassActivityState.questions.length - 1;
+      studentRenderQuestion();
+    }
+
+    function studentJumpToQuestion(index) {
+      window.studentClassActivityState.currentIndex = index;
+      studentShowActivityView("studentActivityQuestionView");
+      studentRenderQuestion();
+    }
+
+    function studentOpenReviewAnswers() {
+      const wrap = document.getElementById("studentActivityReviewList");
+      wrap.innerHTML = window.studentClassActivityState.questions.map((q, index) => {
+        const picked = window.studentClassActivityState.answers[q.id];
+        const pickedText = picked ? `${picked}. ${q.options[picked]}` : "No answer selected";
+
+        return `
+          <div class="activity-review-item" onclick="studentJumpToQuestion(${index})">
+            <div class="activity-review-q">Question ${index + 1}: ${studentActivityEscape(q.question)}</div>
+            <div class="activity-review-a"><strong>Your answer:</strong> ${studentActivityEscape(pickedText)}</div>
+          </div>
+        `;
+      }).join("");
+
+      studentShowActivityView("studentActivityReviewView");
+    }
+
+    function studentSubmitActivity() {
+      const current = window.studentClassActivityState.currentActivity;
+      if (current?.id) {
+        window.studentClassActivityState.submittedActivityIds[current.id] = true;
+      }
+      studentShowActivityView("studentActivitySubmittedView");
+    }
+
+    (function bindStudentActivityScreen() {
+      const originalShowScreen = window.showScreen;
+
+      if (!window.__studentActivityShowScreenWrapped && typeof originalShowScreen === "function") {
+        window.showScreen = function(name) {
+          originalShowScreen(name);
+          if (name === "reports") {
+            studentBackToActivitiesList();
+          }
+        };
+        window.__studentActivityShowScreenWrapped = true;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        studentLoadActivitiesScreen();
+      });
+    })();
+  </script>
+</div>
+<!-- 🔹 STUDENT CLASS ACTIVITY SCREEN END -->
