@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>HOS Dashboard</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --sidebar-1: #10253f;
+      --sidebar-2: #17355b;
+      --sidebar-active: #2467db;
+      --page-bg: #f3f6fb;
+      --card-bg: #ffffff;
+      --line: #e4eaf2;
+      --text: #1b2c45;
+      --muted: #7c8ba0;
+      --title: #152a45;
+      --blue: #2567da;
+      --green: #62a63c;
+      --orange: #f18a16;
+      --danger: #ef5a4c;
+      --shadow: 0 10px 28px rgba(17, 37, 63, 0.06);
+      --radius: 14px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 248px;
+      background: linear-gradient(180deg, var(--sidebar-1), var(--sidebar-2));
+      color: #fff;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand {
+      height: 92px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      opacity: 0.96;
+    }
+
+    .brand-text {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .side-nav {
+      padding: 14px 10px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .side-link {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      height: 52px;
+      padding: 0 18px;
+      border-radius: 12px;
+      color: rgba(255,255,255,0.94);
+      font-size: 15px;
+      font-weight: 700;
+      transition: 0.18s ease;
+    }
+
+    .side-link:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .side-link.active {
+      background: var(--sidebar-active);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    .side-icon {
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: currentColor;
+      flex-shrink: 0;
+    }
+
+    .side-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: 248px;
+      width: calc(100% - 248px);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      height: 88px;
+      background: #f5f7fb;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+    }
+
+    .page-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--title);
+      letter-spacing: 0.2px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .search-box {
+      width: 316px;
+      height: 46px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      color: var(--muted);
+    }
+
+    .search-box svg {
+      width: 18px;
+      height: 18px;
+      stroke: #7b8797;
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #334155;
+      font-size: 14px;
+    }
+
+    .school-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #223754;
+      white-space: nowrap;
+    }
+
+    .school-icon svg,
+    .caret-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: #223754;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      background: linear-gradient(135deg, #d9e7ff, #bdd2ff);
+      display: block;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .content {
+      padding: 22px 24px 34px;
+    }
+
+    /* GLOBAL SECTIONS */
+    .screen-section {
+      margin-bottom: 28px;
+      scroll-margin-top: 108px;
+    }
+
+    .section-shell {
+      background: transparent;
+    }
+
+    .section-label {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1e314f;
+      margin-bottom: 14px;
+      letter-spacing: 0.2px;
+    }
+
+    /* DASHBOARD TOP CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 104px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8794a5;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1;
+      color: #17253f;
+    }
+
+    .stat-card.red .stat-value {
+      color: #eb5b48;
+    }
+
+    .stat-card.green .stat-value {
+      color: #5ba13a;
+    }
+
+    /* ACTIONS */
+    .actions-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px 38px;
+      margin-bottom: 18px;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 26px;
+    }
+
+    .action-btn {
+      height: 56px;
+      border-radius: 10px;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: default;
+      letter-spacing: 0.1px;
+    }
+
+    .action-btn svg {
+      width: 19px;
+      height: 19px;
+      stroke: #fff;
+    }
+
+    .action-blue { background: #2364d8; }
+    .action-green { background: #67a93a; }
+    .action-orange { background: #ef8a16; }
+
+    /* DASHBOARD GRID */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 18px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      height: 50px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      color: #1d314d;
+    }
+
+    .dots {
+      color: #abb6c2;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+
+    /* ACTIVITIES */
+    .activity-list {
+      list-style: none;
+    }
+
+    .activity-item {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .status-circle svg {
+      width: 10px;
+      height: 10px;
+      stroke: #fff;
+      stroke-width: 2.4;
+    }
+
+    .green { background: #58b045; }
+    .yellow { background: #f1b31c; }
+    .red { background: #ef5b55; }
+
+    .activity-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #213754;
+    }
+
+    .activity-text .accent {
+      color: #1f61d5;
+      font-weight: 800;
+    }
+
+    .activity-time {
+      font-size: 14px;
+      color: #7d899a;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    th {
+      color: #7e8a9a;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    td {
+      color: #223754;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #5ea63a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* FUNCTION LIST */
+    .function-list {
+      list-style: none;
+    }
+
+    .function-item {
+      display: grid;
+      grid-template-columns: 28px 1fr auto 14px;
+      gap: 14px;
+      align-items: center;
+      padding: 18px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .function-item:last-child {
+      border-bottom: none;
+    }
+
+    .function-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .function-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+    }
+
+    .fi-blue { background: #58719a; }
+    .fi-yellow { background: #f0b120; }
+    .fi-deep { background: #1f5ebf; }
+    .fi-green { background: #51a642; }
+
+    .function-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #223754;
+    }
+
+    .function-count {
+      font-size: 16px;
+      font-weight: 800;
+      color: #223754;
+    }
+
+    .chev {
+      color: #8d99ac;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chev svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+    }
+
+    /* MINI LIST */
+    .mini-list {
+      list-style: none;
+    }
+
+    .mini-list li {
+      display: grid;
+      grid-template-columns: 1fr auto 14px;
+      align-items: center;
+      gap: 12px;
+      padding: 17px 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f61d5;
+    }
+
+    .mini-list li:last-child {
+      border-bottom: none;
+    }
+
+    .mini-meta {
+      color: #728093;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* PLACEHOLDER SCREENS */
+    .placeholder-screen {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .placeholder-top {
+      min-height: 72px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      background: #fff;
+    }
+
+    .placeholder-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .placeholder-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #edf3ff;
+      display: grid;
+      place-items: center;
+      color: #2467db;
+    }
+
+    .placeholder-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
+
+    .placeholder-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #19304d;
+    }
+
+    .placeholder-subtitle {
+      font-size: 13px;
+      color: #7f8b9d;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .placeholder-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-btn,
+    .solid-btn {
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #28415f;
+    }
+
+    .solid-btn {
+      background: #2467db;
+      border-color: #2467db;
+      color: #fff;
+    }
+
+    .ghost-btn svg,
+    .solid-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+    }
+
+    .placeholder-body {
+      padding: 22px;
+    }
+
+    .placeholder-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 18px;
+    }
+
+    .ph-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .ph-card-header {
+      min-height: 50px;
+      border-bottom: 1px solid var(--line);
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      color: #1c314e;
+    }
+
+    .ph-card-body {
+      padding: 18px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #66758a;
+    }
+
+    .field .input,
+    .field .textarea,
+    .field .select,
+    .line-box {
+      border: 1px solid var(--line);
+      background: #fbfcfe;
+      border-radius: 12px;
+    }
+
+    .field .input,
+    .field .select {
+      height: 46px;
+    }
+
+    .field .textarea {
+      height: 114px;
+    }
+
+    .field .input,
+    .field .textarea,
+    .field .select {
+      width: 100%;
+    }
+
+    .line-box {
+      height: 46px;
+      width: 100%;
+    }
+
+    .table-placeholder {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .table-placeholder .tp-head,
+    .table-placeholder .tp-row {
+      display: grid;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+    }
+
+    .table-placeholder .tp-head {
+      background: #fbfcfe;
+      color: #758295;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-placeholder .tp-row {
+      color: #213754;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .table-placeholder .tp-row:last-child {
+      border-bottom: none;
+    }
+
+    .tp-4 {
+      grid-template-columns: 1.4fr 1fr 1fr 100px;
+    }
+
+    .tp-5 {
+      grid-template-columns: 1.2fr 1fr 1fr 1fr 100px;
+    }
+
+    .tiny-pill {
+      width: 74px;
+      height: 28px;
+      border-radius: 999px;
+      background: #eaf7e4;
+      color: #4c9830;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tiny-pill.orange {
+      background: #fff3e2;
+      color: #e98918;
+    }
+
+    .tiny-pill.blue {
+      background: #e8f0ff;
+      color: #2567da;
+    }
+
+    .placeholder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .placeholder-item {
+      min-height: 62px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcfe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 14px;
+    }
+
+    .placeholder-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .placeholder-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #edf3ff;
+      display: grid;
+      place-items: center;
+      color: #2467db;
+    }
+
+    .placeholder-badge svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+    }
+
+    .placeholder-main-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1f344f;
+    }
+
+    .placeholder-sub-text {
+      font-size: 12px;
+      color: #7b8799;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1450px) {
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .actions-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .placeholder-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .main {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+
+      .main {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .topbar {
+        height: auto;
+        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      .topbar-right {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .stats-grid,
+      .actions-row,
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 8.5 12 4l10 4.5-10 4.5L2 8.5Z"/>
+            <path d="M6 10.3V15c0 1.6 3 3 6 3s6-1.4 6-3v-4.7"/>
+            <path d="M22 9v6"/>
+          </svg>
+        </div>
+        <div class="brand-text">HOS</div>
+      </div>
+
+      <nav class="side-nav">
+        <a class="side-link active" href="#dashboard-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11.5 12 4l9 7.5"/>
+              <path d="M5 10.5V20h14v-9.5"/>
+              <path d="M9 20v-5h6v5"/>
+            </svg>
+          </span>
+          <span>Dashboard</span>
+        </a>
+
+        <a class="side-link" href="#create-account-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+              <path d="M5 20a7 7 0 0 1 14 0"/>
+              <path d="M18.5 8.5h5"/>
+              <path d="M21 6v5"/>
+            </svg>
+          </span>
+          <span>Create Account</span>
+        </a>
+
+        <a class="side-link" href="#staff-roles-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+              <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+              <path d="M2.5 19a5.5 5.5 0 0 1 11 0"/>
+              <path d="M14 19a4.5 4.5 0 0 1 8 0"/>
+            </svg>
+          </span>
+          <span>Staff &amp; Roles</span>
+        </a>
+
+        <a class="side-link" href="#announcements-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 14V10l11-4v12L4 14Z"/>
+              <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
+              <path d="M6 14.5 7.5 20h3l-1.2-4.2"/>
+            </svg>
+          </span>
+          <span>Announcements</span>
+        </a>
+
+        <a class="side-link" href="#reports-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 3h7l5 5v13H7z"/>
+              <path d="M14 3v5h5"/>
+              <path d="M10 13h6"/>
+              <path d="M10 17h6"/>
+            </svg>
+          </span>
+          <span>Reports</span>
+        </a>
+
+        <a class="side-link" href="#forms-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 6h13"/>
+              <path d="M8 12h13"/>
+              <path d="M8 18h13"/>
+              <path d="M3.5 6h.01"/>
+              <path d="M3.5 12h.01"/>
+              <path d="M3.5 18h.01"/>
+            </svg>
+          </span>
+          <span>Forms</span>
+        </a>
+
+        <a class="side-link" href="#history-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/>
+              <path d="M3 4v5h5"/>
+              <path d="M12 7v6l4 2"/>
+            </svg>
+          </span>
+          <span>History</span>
+        </a>
+
+        <a class="side-link" href="#settings-screen">
+          <span class="side-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+              <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/>
+            </svg>
+          </span>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <div class="page-title">HOS Dashboard</div>
+
+        <div class="topbar-right">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.2-3.2"></path>
+            </svg>
+            <input type="text" placeholder="Search..." />
+          </div>
+
+          <div class="school-box">
+            <span class="school-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 10V8a6 6 0 1 1 12 0v2"/>
+                <rect x="4" y="10" width="16" height="10" rx="2"/>
+              </svg>
+            </span>
+            <span>Greenfield University</span>
+
+            <span class="avatar">
+              <img
+                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80"
+                alt="profile"
+              />
+            </span>
+
+            <span class="caret-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+
+        <!-- DASHBOARD -->
+        <section class="screen-section" id="dashboard-screen">
+          <div class="section-shell">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-title">Total HODs</div>
+                <div class="stat-value">12</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-title">Total Agents</div>
+                <div class="stat-value">8</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-title">Active Forms</div>
+                <div class="stat-value">5</div>
+              </div>
+
+              <div class="stat-card red">
+                <div class="stat-title">Total Announcements</div>
+                <div class="stat-value">15</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-title">Total Reports</div>
+                <div class="stat-value">23</div>
+              </div>
+
+              <div class="stat-card green">
+                <div class="stat-title">Pending Actions</div>
+                <div class="stat-value">6</div>
+              </div>
+            </div>
+
+            <div class="actions-panel">
+              <div class="actions-row">
+                <button class="action-btn action-blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+                    <path d="M5 20a7 7 0 0 1 14 0"/>
+                    <path d="M18.5 8.5h5"/>
+                    <path d="M21 6v5"/>
+                  </svg>
+                  <span>Create HOD</span>
+                </button>
+
+                <button class="action-btn action-green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+                    <path d="M5 20a7 7 0 0 1 14 0"/>
+                  </svg>
+                  <span>Create Agent</span>
+                </button>
+
+                <button class="action-btn action-orange">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 14V10l11-4v12L4 14Z"/>
+                    <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
+                    <path d="M6 14.5 7.5 20h3l-1.2-4.2"/>
+                  </svg>
+                  <span>Send Announcement</span>
+                </button>
+
+                <button class="action-btn action-green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 6h13"/>
+                    <path d="M8 12h13"/>
+                    <path d="M8 18h13"/>
+                    <path d="M3.5 6h.01"/>
+                    <path d="M3.5 12h.01"/>
+                    <path d="M3.5 18h.01"/>
+                  </svg>
+                  <span>Create Form</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="dashboard-grid">
+              <div class="stack">
+                <div class="panel">
+                  <div class="panel-header">Recent Activities</div>
+                  <ul class="activity-list">
+                    <li class="activity-item">
+                      <span class="status-circle green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m5 12 4 4 10-10"/>
+                        </svg>
+                      </span>
+                      <div class="activity-text">New Agent <span class="accent">"ESC Office"</span> Created</div>
+                      <div class="activity-time">5 mins ago</div>
+                    </li>
+
+                    <li class="activity-item">
+                      <span class="status-circle yellow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 7v6"/>
+                          <path d="M12 17h.01"/>
+                        </svg>
+                      </span>
+                      <div class="activity-text">Form <span class="accent">"Course Feedback"</span> Published</div>
+                      <div class="activity-time">1 hr ago</div>
+                    </li>
+
+                    <li class="activity-item">
+                      <span class="status-circle red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M6 12h12"/>
+                        </svg>
+                      </span>
+                      <div class="activity-text">Announcement Sent to All Departments</div>
+                      <div class="activity-time">3 hrs ago</div>
+                    </li>
+
+                    <li class="activity-item">
+                      <span class="status-circle red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M6 12h12"/>
+                        </svg>
+                      </span>
+                      <div class="activity-text">Report Submitted by Exams Office</div>
+                      <div class="activity-time">1 day ago</div>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="panel">
+                  <div class="panel-header">Agent Functions Overview</div>
+                  <ul class="function-list">
+                    <li class="function-item">
+                      <div class="function-icon fi-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                          <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                          <path d="M2.5 19a5.5 5.5 0 0 1 11 0"/>
+                          <path d="M14 19a4.5 4.5 0 0 1 8 0"/>
+                        </svg>
+                      </div>
+                      <div class="function-name">Report Agents</div>
+                      <div class="function-count">4</div>
+                      <div class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </div>
+                    </li>
+
+                    <li class="function-item">
+                      <div class="function-icon fi-yellow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 14V10l11-4v12L4 14Z"/>
+                          <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
+                        </svg>
+                      </div>
+                      <div class="function-name">Announcement Agents</div>
+                      <div class="function-count">3</div>
+                      <div class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </div>
+                    </li>
+
+                    <li class="function-item">
+                      <div class="function-icon fi-deep">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M7 3h7l5 5v13H7z"/>
+                          <path d="M14 3v5h5"/>
+                        </svg>
+                      </div>
+                      <div class="function-name">Form Agents</div>
+                      <div class="function-count">2</div>
+                      <div class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </div>
+                    </li>
+
+                    <li class="function-item">
+                      <div class="function-icon fi-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M7 3h7l5 5v13H7z"/>
+                          <path d="M14 3v5h5"/>
+                          <path d="M10 13h6"/>
+                        </svg>
+                      </div>
+                      <div class="function-name">HOD Agents</div>
+                      <div class="function-count">5</div>
+                      <div class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="panel">
+                  <div class="panel-header">
+                    <span>Staff Overview</span>
+                    <span class="dots">•••</span>
+                  </div>
+                  <div class="panel-body">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Role</th>
+                          <th>Functions</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Dr. Musa Adeyemi</td>
+                          <td>HOD</td>
+                          <td>Physics Department</td>
+                          <td><span class="status-pill">Active</span></td>
+                        </tr>
+                        <tr>
+                          <td>ESC Office</td>
+                          <td>Agent</td>
+                          <td>Announcements, Forms</td>
+                          <td><span class="status-pill">Active</span></td>
+                        </tr>
+                        <tr>
+                          <td>Quality Office</td>
+                          <td>Agent</td>
+                          <td>Reports</td>
+                          <td><span class="status-pill">Active</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="panel">
+                  <div class="panel-header">Latest Forms</div>
+                  <ul class="mini-list">
+                    <li>
+                      <span>Clearance Form</span>
+                      <span class="mini-meta">120 Responses</span>
+                      <span class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </span>
+                    </li>
+                    <li>
+                      <span>Complaint Form</span>
+                      <span class="mini-meta">85 Responses</span>
+                      <span class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="panel">
+                  <div class="panel-header">Recent Announcements</div>
+                  <ul class="mini-list">
+                    <li>
+                      <span>Exam Schedule Update</span>
+                      <span class="mini-meta">Today</span>
+                      <span class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </span>
+                    </li>
+                    <li>
+                      <span>Student Feedback Survey</span>
+                      <span class="mini-meta">Yesterday</span>
+                      <span class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </span>
+                    </li>
+                    <li>
+                      <span>Departmental Meeting</span>
+                      <span class="mini-meta">2 days ago</span>
+                      <span class="chev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m9 6 6 6-6 6"/>
+                        </svg>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CREATE ACCOUNT -->
+        <section class="screen-section" id="create-account-screen">
+          <div class="section-label">Create Account Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+                    <path d="M5 20a7 7 0 0 1 14 0"/>
+                    <path d="M18.5 8.5h5"/>
+                    <path d="M21 6v5"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Create Account</div>
+                  <div class="placeholder-subtitle">Placeholder layout for HOD and Agent creation</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5v14"/>
+                  </svg>
+                  New Tab
+                </button>
+                <button class="solid-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m5 12 4 4 10-10"/>
+                  </svg>
+                  Save Account
+                </button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="placeholder-grid">
+                <div class="ph-card">
+                  <div class="ph-card-header">Account Form</div>
+                  <div class="ph-card-body">
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Full Name</label>
+                        <div class="input"></div>
+                      </div>
+                      <div class="field">
+                        <label>Email Address</label>
+                        <div class="input"></div>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Role Type</label>
+                        <div class="select"></div>
+                      </div>
+                      <div class="field">
+                        <label>Department</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Office Name</label>
+                        <div class="input"></div>
+                      </div>
+                      <div class="field">
+                        <label>Status</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Assigned Function</label>
+                        <div class="select"></div>
+                      </div>
+                      <div class="field">
+                        <label>Temporary Password</label>
+                        <div class="input"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ph-card">
+                  <div class="ph-card-header">Recently Created Accounts</div>
+                  <div class="ph-card-body">
+                    <div class="table-placeholder">
+                      <div class="tp-head tp-4">
+                        <div>Name</div>
+                        <div>Role</div>
+                        <div>Department</div>
+                        <div>Status</div>
+                      </div>
+                      <div class="tp-row tp-4">
+                        <div>Dr. Femi Oladele</div>
+                        <div>HOD</div>
+                        <div>Computer Science</div>
+                        <div><span class="tiny-pill">Active</span></div>
+                      </div>
+                      <div class="tp-row tp-4">
+                        <div>ESC Office</div>
+                        <div>Agent</div>
+                        <div>General</div>
+                        <div><span class="tiny-pill blue">Draft</span></div>
+                      </div>
+                      <div class="tp-row tp-4">
+                        <div>Report Desk</div>
+                        <div>Agent</div>
+                        <div>Exams</div>
+                        <div><span class="tiny-pill orange">Review</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STAFF & ROLES -->
+        <section class="screen-section" id="staff-roles-screen">
+          <div class="section-label">Staff &amp; Roles Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                    <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                    <path d="M2.5 19a5.5 5.5 0 0 1 11 0"/>
+                    <path d="M14 19a4.5 4.5 0 0 1 8 0"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Staff &amp; Roles</div>
+                  <div class="placeholder-subtitle">Placeholder layout for all HOD and agent management</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Filter</button>
+                <button class="solid-btn">Add Staff</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="table-placeholder">
+                <div class="tp-head tp-5">
+                  <div>Name</div>
+                  <div>Role</div>
+                  <div>Office / Department</div>
+                  <div>Function</div>
+                  <div>Status</div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Dr. Musa Adeyemi</div>
+                  <div>HOD</div>
+                  <div>Physics</div>
+                  <div>Department Head</div>
+                  <div><span class="tiny-pill">Active</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>ESC Office</div>
+                  <div>Agent</div>
+                  <div>General</div>
+                  <div>Announcement</div>
+                  <div><span class="tiny-pill">Active</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Form Desk</div>
+                  <div>Agent</div>
+                  <div>General</div>
+                  <div>Form</div>
+                  <div><span class="tiny-pill orange">Paused</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Reports Unit</div>
+                  <div>Agent</div>
+                  <div>Exams</div>
+                  <div>Report</div>
+                  <div><span class="tiny-pill blue">Review</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANNOUNCEMENTS -->
+        <section class="screen-section" id="announcements-screen">
+          <div class="section-label">Announcements Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 14V10l11-4v12L4 14Z"/>
+                    <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
+                    <path d="M6 14.5 7.5 20h3l-1.2-4.2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Announcements</div>
+                  <div class="placeholder-subtitle">Placeholder layout for school-wide or department announcements</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Preview</button>
+                <button class="solid-btn">Send</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="placeholder-grid">
+                <div class="ph-card">
+                  <div class="ph-card-header">New Announcement</div>
+                  <div class="ph-card-body">
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Title</label>
+                        <div class="input"></div>
+                      </div>
+                      <div class="field">
+                        <label>Audience</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>Message</label>
+                      <div class="textarea"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ph-card">
+                  <div class="ph-card-header">Recent Announcement History</div>
+                  <div class="ph-card-body">
+                    <div class="placeholder-list">
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div class="placeholder-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M4 14V10l11-4v12L4 14Z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div class="placeholder-main-text">Semester Resumption Notice</div>
+                            <div class="placeholder-sub-text">Sent to all students</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill">Sent</span>
+                      </div>
+
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div class="placeholder-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M4 14V10l11-4v12L4 14Z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div class="placeholder-main-text">Engineering Meeting Update</div>
+                            <div class="placeholder-sub-text">Sent to one department</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill blue">Draft</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REPORTS -->
+        <section class="screen-section" id="reports-screen">
+          <div class="section-label">Reports Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 3h7l5 5v13H7z"/>
+                    <path d="M14 3v5h5"/>
+                    <path d="M10 13h6"/>
+                    <path d="M10 17h6"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Reports</div>
+                  <div class="placeholder-subtitle">Placeholder layout for report agent activity and history</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Export</button>
+                <button class="solid-btn">Open Report</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="table-placeholder">
+                <div class="tp-head tp-5">
+                  <div>Report Title</div>
+                  <div>Department</div>
+                  <div>Submitted By</div>
+                  <div>Date</div>
+                  <div>Status</div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Monthly Academic Summary</div>
+                  <div>Science</div>
+                  <div>Reports Unit</div>
+                  <div>Today</div>
+                  <div><span class="tiny-pill">Done</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Examination Irregularity Report</div>
+                  <div>Exams</div>
+                  <div>Reports Unit</div>
+                  <div>Yesterday</div>
+                  <div><span class="tiny-pill orange">Review</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Department Attendance Analysis</div>
+                  <div>Engineering</div>
+                  <div>Form Desk</div>
+                  <div>2 days ago</div>
+                  <div><span class="tiny-pill blue">Draft</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FORMS -->
+        <section class="screen-section" id="forms-screen">
+          <div class="section-label">Forms Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 6h13"/>
+                    <path d="M8 12h13"/>
+                    <path d="M8 18h13"/>
+                    <path d="M3.5 6h.01"/>
+                    <path d="M3.5 12h.01"/>
+                    <path d="M3.5 18h.01"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Forms</div>
+                  <div class="placeholder-subtitle">Placeholder layout for form creation and response tracking</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Drafts</button>
+                <button class="solid-btn">Publish Form</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="placeholder-grid">
+                <div class="ph-card">
+                  <div class="ph-card-header">Form Builder</div>
+                  <div class="ph-card-body">
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Form Title</label>
+                        <div class="input"></div>
+                      </div>
+                      <div class="field">
+                        <label>Target Audience</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Department</label>
+                        <div class="select"></div>
+                      </div>
+                      <div class="field">
+                        <label>Closing Date</label>
+                        <div class="input"></div>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>Description</label>
+                      <div class="textarea"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ph-card">
+                  <div class="ph-card-header">Live Forms</div>
+                  <div class="ph-card-body">
+                    <div class="placeholder-list">
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div class="placeholder-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M8 6h13"/>
+                              <path d="M8 12h13"/>
+                              <path d="M8 18h13"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div class="placeholder-main-text">Clearance Form</div>
+                            <div class="placeholder-sub-text">120 responses collected</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill">Open</span>
+                      </div>
+
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div class="placeholder-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M8 6h13"/>
+                              <path d="M8 12h13"/>
+                              <path d="M8 18h13"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div class="placeholder-main-text">Complaint Form</div>
+                            <div class="placeholder-sub-text">85 responses collected</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill orange">Closing</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="screen-section" id="history-screen">
+          <div class="section-label">History Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 3-6.7"/>
+                    <path d="M3 4v5h5"/>
+                    <path d="M12 7v6l4 2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">History</div>
+                  <div class="placeholder-subtitle">Placeholder layout for full HOD and agent action history</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Filter</button>
+                <button class="solid-btn">Export Log</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="table-placeholder">
+                <div class="tp-head tp-5">
+                  <div>User</div>
+                  <div>Role</div>
+                  <div>Action</div>
+                  <div>Date</div>
+                  <div>Status</div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>ESC Office</div>
+                  <div>Agent</div>
+                  <div>Sent announcement to Science students</div>
+                  <div>Today</div>
+                  <div><span class="tiny-pill">Done</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Form Desk</div>
+                  <div>Agent</div>
+                  <div>Published complaint form</div>
+                  <div>Today</div>
+                  <div><span class="tiny-pill">Done</span></div>
+                </div>
+                <div class="tp-row tp-5">
+                  <div>Dr. Musa Adeyemi</div>
+                  <div>HOD</div>
+                  <div>Updated department record</div>
+                  <div>Yesterday</div>
+                  <div><span class="tiny-pill orange">Checked</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="screen-section" id="settings-screen">
+          <div class="section-label">Settings Screen Placeholder</div>
+          <div class="placeholder-screen">
+            <div class="placeholder-top">
+              <div class="placeholder-title-wrap">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+                    <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="placeholder-title">Settings</div>
+                  <div class="placeholder-subtitle">Placeholder layout for school profile and system controls</div>
+                </div>
+              </div>
+
+              <div class="placeholder-actions">
+                <button class="ghost-btn">Reset</button>
+                <button class="solid-btn">Save Settings</button>
+              </div>
+            </div>
+
+            <div class="placeholder-body">
+              <div class="placeholder-grid">
+                <div class="ph-card">
+                  <div class="ph-card-header">School Settings</div>
+                  <div class="ph-card-body">
+                    <div class="field-row">
+                      <div class="field">
+                        <label>School Name</label>
+                        <div class="input"></div>
+                      </div>
+                      <div class="field">
+                        <label>Default Department</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label>Announcement Access</label>
+                        <div class="select"></div>
+                      </div>
+                      <div class="field">
+                        <label>Form Deadline Policy</label>
+                        <div class="select"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ph-card">
+                  <div class="ph-card-header">System Toggles</div>
+                  <div class="ph-card-body">
+                    <div class="placeholder-list">
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div>
+                            <div class="placeholder-main-text">Allow department-only announcements</div>
+                            <div class="placeholder-sub-text">Toggle placeholder row</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill">On</span>
+                      </div>
+
+                      <div class="placeholder-item">
+                        <div class="placeholder-item-left">
+                          <div>
+                            <div class="placeholder-main-text">Allow form publishing by agent</div>
+                            <div class="placeholder-sub-text">Toggle placeholder row</div>
+                          </div>
+                        </div>
+                        <span class="tiny-pill orange">Off</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </section>
+    </main>
+  </div>
+</body>
+</html>
