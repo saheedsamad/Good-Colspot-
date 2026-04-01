@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colspot • Main HOS</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,7 +11,6 @@
     :root{
       --bg:#f4f7fb;
       --panel:#ffffff;
-      --panel-2:#f8fbff;
       --line:#e5e7eb;
       --text:#0f172a;
       --muted:#6b7280;
@@ -367,11 +363,34 @@
       to{opacity:1; transform:translateY(0);}
     }
 
+    .message{
+      display:none;
+      margin-bottom:16px;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .message.error{
+      display:block;
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    .message.success{
+      display:block;
+      background:#effdf4;
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
     .hero{
       background:linear-gradient(135deg,#2563eb 0%, #3b82f6 60%, #60a5fa 100%);
       color:#fff;
       border-radius:var(--radius-xl);
-      padding:28px 28px;
+      padding:28px;
       position:relative;
       overflow:hidden;
       box-shadow:0 24px 50px rgba(37,99,235,.22);
@@ -419,7 +438,7 @@
       line-height:1.08;
       letter-spacing:-.04em;
       font-weight:900;
-      max-width:700px;
+      max-width:760px;
     }
 
     .hero-sub{
@@ -511,7 +530,7 @@
     .stat-value{
       position:relative;
       z-index:1;
-      font-size:46px;
+      font-size:40px;
       line-height:1;
       letter-spacing:-.06em;
       font-weight:900;
@@ -523,6 +542,7 @@
       z-index:1;
       font-size:12px;
       color:var(--muted);
+      line-height:1.45;
     }
 
     .actions-panel{
@@ -607,121 +627,19 @@
       padding:18px 20px;
     }
 
-    .history-list{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-
-    .history-row{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-      padding-bottom:14px;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .history-row:last-child{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .history-main{
-      display:flex;
-      gap:12px;
-      min-width:0;
-    }
-
-    .history-icon{
-      width:24px;
-      height:24px;
-      flex-shrink:0;
-      border-radius:50%;
+    .live-empty{
       display:flex;
       align-items:center;
       justify-content:center;
-      margin-top:2px;
-    }
-
-    .history-icon svg{
-      width:14px;
-      height:14px;
-      color:#fff;
-    }
-
-    .history-icon.green{ background:#4d8f3a; }
-    .history-icon.orange{ background:#eab308; }
-    .history-icon.red{ background:#ef4444; }
-    .history-icon.blue{ background:#2563eb; }
-
-    .history-title{
-      font-size:14px;
-      font-weight:800;
-      line-height:1.35;
-      color:#0f172a;
-    }
-
-    .history-desc{
-      font-size:12px;
+      min-height:160px;
+      text-align:center;
       color:var(--muted);
-      line-height:1.45;
-      margin-top:3px;
-    }
-
-    .history-time{
-      font-size:13px;
-      color:#475569;
-      white-space:nowrap;
-      padding-left:10px;
-    }
-
-    .staff-table{
-      width:100%;
-      border-collapse:collapse;
-    }
-
-    .staff-table th{
-      text-align:left;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-      padding:0 0 12px;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .staff-table td{
       font-size:14px;
-      padding:15px 0;
-      border-bottom:1px solid #eef2f7;
-      vertical-align:middle;
-    }
-
-    .staff-table tr:last-child td{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .staff-name{
-      font-weight:800;
-      color:#1e293b;
-    }
-
-    .status-pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      padding:6px 11px;
-      font-size:12px;
-      font-weight:800;
-      background:#e9f8eb;
-      color:#2f7a36;
-    }
-
-    .mini-stack{
-      display:grid;
-      gap:14px;
+      line-height:1.6;
+      border:1px dashed #d7e0eb;
+      border-radius:18px;
+      background:#fbfdff;
+      padding:22px;
     }
 
     .list-card{
@@ -803,53 +721,33 @@
       color:#64748b;
     }
 
-    .placeholder-box{
+    .holder-box{
       background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
       border:1px dashed #cbd5e1;
       border-radius:24px;
       padding:28px;
       min-height:280px;
-    }
-
-    .placeholder-top{
       display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
+      flex-direction:column;
       gap:18px;
-      margin-bottom:22px;
     }
 
-    .placeholder-title{
+    .holder-title{
       font-size:26px;
       font-weight:900;
       letter-spacing:-.03em;
-      margin:0 0 6px;
+      margin:0;
     }
 
-    .placeholder-sub{
+    .holder-sub{
       font-size:14px;
       color:var(--muted);
       line-height:1.6;
       max-width:760px;
+      margin:0;
     }
 
-    .placeholder-badge{
-      border-radius:999px;
-      padding:9px 13px;
-      font-size:12px;
-      font-weight:800;
-      background:var(--blue-soft);
-      color:var(--blue);
-      white-space:nowrap;
-    }
-
-    .placeholder-grid{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:18px;
-    }
-
-    .placeholder-card{
+    .holder-card{
       background:#fff;
       border:1px solid var(--line);
       border-radius:22px;
@@ -857,124 +755,22 @@
       box-shadow:var(--shadow-soft);
     }
 
-    .placeholder-card h3{
-      margin:0 0 8px;
-      font-size:17px;
+    .holder-card-title{
+      font-size:16px;
       font-weight:900;
-      letter-spacing:-.02em;
+      margin:0 0 8px;
     }
 
-    .placeholder-card p{
-      margin:0 0 18px;
-      font-size:13px;
+    .holder-card-sub{
+      margin:0;
       color:var(--muted);
+      font-size:13px;
       line-height:1.6;
     }
 
-    .placeholder-list{
+    .section-shell{
       display:grid;
-      gap:12px;
-    }
-
-    .placeholder-item{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:12px 0;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .placeholder-item:last-child{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .placeholder-item .badge-icon{
-      width:38px;
-      height:38px;
-      border-radius:12px;
-      background:var(--blue-soft);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--blue);
-      flex-shrink:0;
-    }
-
-    .placeholder-item .badge-icon svg{
-      width:18px;
-      height:18px;
-    }
-
-    .placeholder-item-title{
-      font-size:14px;
-      font-weight:800;
-      color:#0f172a;
-    }
-
-    .placeholder-item-sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:3px;
-    }
-
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:14px;
-      margin-top:14px;
-    }
-
-    .fake-field{
-      min-height:58px;
-      border:1px solid var(--line);
-      background:#fbfdff;
-      border-radius:16px;
-      padding:12px 14px;
-    }
-
-    .fake-label{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      color:var(--muted);
-      font-weight:800;
-      margin-bottom:7px;
-    }
-
-    .fake-value{
-      font-size:14px;
-      color:#94a3b8;
-      font-weight:600;
-    }
-
-    .message{
-      display:none;
-      margin-bottom:16px;
-      border-radius:16px;
-      padding:14px 16px;
-      font-size:14px;
-      line-height:1.5;
-    }
-
-    .message.error{
-      display:block;
-      background:#fef2f2;
-      border:1px solid #fecaca;
-      color:#991b1b;
-    }
-
-    .message.success{
-      display:block;
-      background:#effdf4;
-      border:1px solid #bbf7d0;
-      color:#166534;
-    }
-
-    .muted-empty{
-      color:var(--muted);
-      font-size:14px;
-      padding:10px 0;
+      gap:18px;
     }
 
     @media (max-width:1250px){
@@ -986,8 +782,7 @@
         grid-template-columns:repeat(2,minmax(0,1fr));
       }
 
-      .two-col,
-      .placeholder-grid{
+      .two-col{
         grid-template-columns:1fr;
       }
     }
@@ -1037,8 +832,7 @@
 
     @media (max-width:640px){
       .grid-cards,
-      .actions-grid,
-      .form-grid{
+      .actions-grid{
         grid-template-columns:1fr;
       }
 
@@ -1056,17 +850,12 @@
         font-size:28px;
       }
 
-      .placeholder-box{
-        padding:20px 16px;
-      }
-
-      .placeholder-top{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
       .identity-meta{
         display:none;
+      }
+
+      .holder-box{
+        padding:20px 16px;
       }
     }
   </style>
@@ -1178,7 +967,7 @@
       <div class="sidebar-bottom">
         <div class="school-chip">
           <div class="school-chip-label">School</div>
-          <div class="school-chip-name" id="sidebarSchoolName">Greenfield University</div>
+          <div class="school-chip-name" id="sidebarSchoolName">School</div>
         </div>
       </div>
     </aside>
@@ -1215,9 +1004,9 @@
         <section id="screen-dashboard" class="screen active">
           <div class="hero">
             <div class="hero-line">Welcome back, <span id="welcomeHosName">HOS</span></div>
-            <h2 class="hero-title">Oversee your school system from one calm, clean dashboard.</h2>
+            <h2 class="hero-title">Oversee your school system from one clean desktop dashboard.</h2>
             <div class="hero-sub">
-              Manage HODs, agents, announcements, reports, forms, and system activity from a desktop-ready control center.
+              Manage HODs, agents, announcements, reports, forms, history, and system settings from one place.
             </div>
             <div class="hero-actions">
               <button class="hero-btn primary" type="button" onclick="showHosScreen('create-account')">
@@ -1226,11 +1015,13 @@
                 </svg>
                 <span>Create account</span>
               </button>
-              <button class="hero-btn soft" type="button" onclick="showHosScreen('announcements')">
+
+              <button class="hero-btn soft" type="button" onclick="showHosScreen('history')">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span>Go to announcements</span>
+                <span>View history</span>
               </button>
             </div>
           </div>
@@ -1238,38 +1029,38 @@
           <section class="grid-cards">
             <article class="stat-card">
               <div class="stat-label">Total HODs</div>
-              <div class="stat-value" id="totalHods">12</div>
-              <div class="stat-note">Heads of department in the system</div>
+              <div class="stat-value" id="totalHods">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
 
             <article class="stat-card">
               <div class="stat-label">Total Agents</div>
-              <div class="stat-value" id="totalAgents">8</div>
-              <div class="stat-note">All report, form and announcement agents</div>
+              <div class="stat-value" id="totalAgents">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
 
             <article class="stat-card">
               <div class="stat-label">Active Forms</div>
-              <div class="stat-value" id="activeForms">5</div>
-              <div class="stat-note">Forms currently active in the system</div>
+              <div class="stat-value" id="activeForms">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
 
             <article class="stat-card">
               <div class="stat-label">Total Announcements</div>
-              <div class="stat-value" id="totalAnnouncements">15</div>
-              <div class="stat-note">School-wide updates already sent</div>
+              <div class="stat-value" id="totalAnnouncements">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
 
             <article class="stat-card">
               <div class="stat-label">Total Reports</div>
-              <div class="stat-value" id="totalReports">23</div>
-              <div class="stat-note">Report items tracked in the system</div>
+              <div class="stat-value" id="totalReports">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
 
             <article class="stat-card">
               <div class="stat-label">Pending Actions</div>
-              <div class="stat-value" id="pendingActions">6</div>
-              <div class="stat-note">Items waiting for HOS attention</div>
+              <div class="stat-value" id="pendingActions">--</div>
+              <div class="stat-note">Live count will load here</div>
             </article>
           </section>
 
@@ -1281,7 +1072,7 @@
                   <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.8"/>
                   <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
-                <span>Create HOD</span>
+                <span>Create Account</span>
               </button>
 
               <button class="action-btn green" type="button" onclick="showHosScreen('staff-roles')">
@@ -1291,22 +1082,22 @@
                   <circle cx="17.5" cy="9" r="2.5" stroke="currentColor" stroke-width="1.8"/>
                   <path d="M15 19a4.5 4.5 0 016.5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
-                <span>Create Agent</span>
+                <span>Staff &amp; Roles</span>
               </button>
 
               <button class="action-btn orange" type="button" onclick="showHosScreen('announcements')">
                 <svg viewBox="0 0 24 24" fill="none">
                   <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
                 </svg>
-                <span>Send Announcement</span>
+                <span>Announcements</span>
               </button>
 
-              <button class="action-btn teal" type="button" onclick="showHosScreen('forms')">
+              <button class="action-btn teal" type="button" onclick="showHosScreen('reports')">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M7 3.75h10A1.75 1.75 0 0 1 18.75 5.5v13A1.75 1.75 0 0 1 17 20.25H7A1.75 1.75 0 0 1 5.25 18.5v-13A1.75 1.75 0 0 1 7 3.75Z" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M8.75 8.5h6.5M8.75 12h6.5M8.75 15.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M7 3.75h7l4.25 4.25V19A1.75 1.75 0 0 1 16.5 20.75h-9A1.75 1.75 0 0 1 5.75 19V5.5A1.75 1.75 0 0 1 7.5 3.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M10 10.25h4M10 14h4M8.75 10.25h.01M8.75 14h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
-                <span>Create Form</span>
+                <span>Reports</span>
               </button>
             </div>
           </section>
@@ -1316,73 +1107,12 @@
               <div class="panel-head">
                 <div>
                   <div class="panel-title">Recent Activities</div>
-                  <div class="panel-sub">Quick system movement and latest actions</div>
+                  <div class="panel-sub">Live activity area</div>
                 </div>
               </div>
               <div class="panel-body">
-                <div class="history-list" id="dashboardHistoryList">
-                  <div class="history-row">
-                    <div class="history-main">
-                      <div class="history-icon green">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div class="history-title">New Agent “ESC Office” created</div>
-                        <div class="history-desc">A new school agent account was added successfully.</div>
-                      </div>
-                    </div>
-                    <div class="history-time">5 mins ago</div>
-                  </div>
-
-                  <div class="history-row">
-                    <div class="history-main">
-                      <div class="history-icon orange">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div class="history-title">Form “Course Feedback” published</div>
-                        <div class="history-desc">A form was created and made available for responses.</div>
-                      </div>
-                    </div>
-                    <div class="history-time">1 hr ago</div>
-                  </div>
-
-                  <div class="history-row">
-                    <div class="history-main">
-                      <div class="history-icon red">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div class="history-title">Announcement sent to all departments</div>
-                        <div class="history-desc">A global announcement was pushed across the school system.</div>
-                      </div>
-                    </div>
-                    <div class="history-time">3 hrs ago</div>
-                  </div>
-
-                  <div class="history-row">
-                    <div class="history-main">
-                      <div class="history-icon red">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div class="history-title">Report submitted by Exams Office</div>
-                        <div class="history-desc">A report item was newly added to the reporting workflow.</div>
-                      </div>
-                    </div>
-                    <div class="history-time">1 day ago</div>
-                  </div>
+                <div class="live-empty" id="dashboardHistoryBox">
+                  Loading recent HOS activity...
                 </div>
               </div>
             </article>
@@ -1391,435 +1121,169 @@
               <div class="panel-head">
                 <div>
                   <div class="panel-title">Staff Overview</div>
-                  <div class="panel-sub">Recent staff roles visible to HOS</div>
+                  <div class="panel-sub">Live overview area</div>
                 </div>
               </div>
               <div class="panel-body">
-                <table class="staff-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Role</th>
-                      <th>Functions</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="staff-name">Dr. Musa Adeyemi</td>
-                      <td>HOD</td>
-                      <td>Physics Department</td>
-                      <td><span class="status-pill">Active</span></td>
-                    </tr>
-                    <tr>
-                      <td class="staff-name">ESC Office</td>
-                      <td>Agent</td>
-                      <td>Announcements, Forms</td>
-                      <td><span class="status-pill">Active</span></td>
-                    </tr>
-                    <tr>
-                      <td class="staff-name">Quality Office</td>
-                      <td>Agent</td>
-                      <td>Reports</td>
-                      <td><span class="status-pill">Active</span></td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="live-empty" id="staffOverviewBox">
+                  Loading staff overview...
+                </div>
               </div>
             </article>
           </section>
 
           <section class="two-col">
-            <div class="mini-stack">
-              <article class="list-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-title">Agent Functions Overview</div>
-                    <div class="panel-sub">How your agents are grouped for work</div>
-                  </div>
+            <article class="list-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Forms Overview</div>
+                  <div class="panel-sub">Live forms area</div>
                 </div>
-                <div class="list-body">
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div class="simple-icon blue">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                      <div class="simple-title">Report Agents</div>
-                    </div>
-                    <div class="simple-right">4
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div class="simple-icon orange">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                      <div class="simple-title">Announcement Agents</div>
-                    </div>
-                    <div class="simple-right">3
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div class="simple-icon blue">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M7 3.75h10A1.75 1.75 0 0 1 18.75 5.5v13A1.75 1.75 0 0 1 17 20.25H7A1.75 1.75 0 0 1 5.25 18.5v-13A1.75 1.75 0 0 1 7 3.75Z" stroke="currentColor" stroke-width="1.8"/>
-                          <path d="M8.75 8.5h6.5M8.75 12h6.5M8.75 15.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                      </div>
-                      <div class="simple-title">Form Agents</div>
-                    </div>
-                    <div class="simple-right">2
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div class="simple-icon green">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
-                          <path d="M2.5 19a5.5 5.5 0 0111 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                          <circle cx="17.5" cy="9" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-                          <path d="M15 19a4.5 4.5 0 016.5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                      </div>
-                      <div class="simple-title">Multi-function Agents</div>
-                    </div>
-                    <div class="simple-right">5
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
+              </div>
+              <div class="panel-body">
+                <div class="live-empty" id="formsOverviewBox">
+                  Loading forms overview...
                 </div>
-              </article>
-            </div>
+              </div>
+            </article>
 
-            <div class="mini-stack">
-              <article class="list-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-title">Latest Forms</div>
-                    <div class="panel-sub">Recent form activity</div>
-                  </div>
+            <article class="list-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Announcements Overview</div>
+                  <div class="panel-sub">Live announcement area</div>
                 </div>
-                <div class="list-body">
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div>
-                        <div class="simple-title">Clearance Form</div>
-                      </div>
-                    </div>
-                    <div class="simple-right">120 Responses
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div>
-                        <div class="simple-title">Complaint Form</div>
-                      </div>
-                    </div>
-                    <div class="simple-right">85 Responses
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
+              </div>
+              <div class="panel-body">
+                <div class="live-empty" id="announcementsOverviewBox">
+                  Loading announcement overview...
                 </div>
-              </article>
-
-              <article class="list-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-title">Recent Announcements</div>
-                    <div class="panel-sub">Latest school broadcasts</div>
-                  </div>
-                </div>
-                <div class="list-body">
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div>
-                        <div class="simple-title">Exam Schedule Update</div>
-                      </div>
-                    </div>
-                    <div class="simple-right">Today
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div>
-                        <div class="simple-title">Student Feedback Survey</div>
-                      </div>
-                    </div>
-                    <div class="simple-right">Yesterday
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="simple-row">
-                    <div class="simple-row-left">
-                      <div>
-                        <div class="simple-title">Departmental Meeting</div>
-                      </div>
-                    </div>
-                    <div class="simple-right">2 days ago
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </div>
+              </div>
+            </article>
           </section>
         </section>
 
         <section id="screen-create-account" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Create Account</h2>
-                <div class="placeholder-sub">
-                  This is the placeholder section for your real create-account system. The layout is ready and the form block is positioned so you can connect your final HOD and agent creation code next.
-                </div>
-              </div>
-              <div class="placeholder-badge">Placeholder kept</div>
-            </div>
+          <div class="holder-box">
+            <h2 class="holder-title">Create Account</h2>
+            <p class="holder-sub">
+              This is the holder for your real create-account screen. Paste your final create-account code here next.
+            </p>
 
-            <div class="placeholder-grid">
-              <div class="placeholder-card">
-                <h3>Create account types</h3>
-                <p>Only these account types should be created from HOS.</p>
-
-                <div class="placeholder-list">
-                  <div class="placeholder-item">
-                    <div class="badge-icon">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="8" r="3.25" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M5 19a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div class="placeholder-item-title">HOD account</div>
-                      <div class="placeholder-item-sub">Requires full name and department</div>
-                    </div>
-                  </div>
-
-                  <div class="placeholder-item">
-                    <div class="badge-icon">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div class="placeholder-item-title">Report agent</div>
-                      <div class="placeholder-item-sub">Optional email, generated login and temp password</div>
-                    </div>
-                  </div>
-
-                  <div class="placeholder-item">
-                    <div class="badge-icon">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M7 3.75h10A1.75 1.75 0 0 1 18.75 5.5v13A1.75 1.75 0 0 1 17 20.25H7A1.75 1.75 0 0 1 5.25 18.5v-13A1.75 1.75 0 0 1 7 3.75Z" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M8.75 8.5h6.5M8.75 12h6.5M8.75 15.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div class="placeholder-item-title">Form agent</div>
-                      <div class="placeholder-item-sub">Form management account type</div>
-                    </div>
-                  </div>
-
-                  <div class="placeholder-item">
-                    <div class="badge-icon">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div class="placeholder-item-title">Announcement agent</div>
-                      <div class="placeholder-item-sub">Announcement management account type</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="placeholder-card">
-                <h3>Create form placeholder</h3>
-                <p>This area matches the kind of placeholder block you said to keep until your real create-account code is pasted in.</p>
-
-                <div class="form-grid">
-                  <div class="fake-field">
-                    <div class="fake-label">Full name</div>
-                    <div class="fake-value">Enter full name</div>
-                  </div>
-
-                  <div class="fake-field">
-                    <div class="fake-label">Email</div>
-                    <div class="fake-value">Optional email address</div>
-                  </div>
-
-                  <div class="fake-field">
-                    <div class="fake-label">Account type</div>
-                    <div class="fake-value">Select HOD or agent type</div>
-                  </div>
-
-                  <div class="fake-field">
-                    <div class="fake-label">Department</div>
-                    <div class="fake-value">Required only for HOD</div>
-                  </div>
-
-                  <div class="fake-field">
-                    <div class="fake-label">Generated login ID</div>
-                    <div class="fake-value">Will appear here</div>
-                  </div>
-
-                  <div class="fake-field">
-                    <div class="fake-label">Temporary password</div>
-                    <div class="fake-value">Will appear here</div>
-                  </div>
-                </div>
-              </div>
+            <div class="holder-card">
+              <h3 class="holder-card-title">Create Account Holder</h3>
+              <p class="holder-card-sub">
+                Keep this section as holder only for now, same idea as your main page holder sections.
+              </p>
             </div>
           </div>
         </section>
 
         <section id="screen-staff-roles" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Staff &amp; Roles</h2>
-                <div class="placeholder-sub">
-                  This section will later list all created HODs and agents so the HOS can manage roles, view status, and take actions.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Staff &amp; Roles</div>
+                  <div class="panel-sub">Live staff management area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>Section placeholder</h3>
-              <p>Ready for live list of HODs, report agents, form agents, and announcement agents.</p>
-              <div class="muted-empty">No live staff data connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="staffRolesLiveBox">
+                  Live staff and role data will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section id="screen-announcements" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Announcements</h2>
-                <div class="placeholder-sub">
-                  This section will later allow the HOS to send school-wide announcements and monitor announcement activity.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Announcements</div>
+                  <div class="panel-sub">Live announcement management area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>Announcement workspace placeholder</h3>
-              <p>Ready for announcement compose, delivery status, and recent broadcast monitoring.</p>
-              <div class="muted-empty">No live announcement workflow connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="announcementLiveBox">
+                  Live announcements will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section id="screen-reports" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Reports</h2>
-                <div class="placeholder-sub">
-                  This section will later manage report-related work and report agents from the HOS control center.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Reports</div>
+                  <div class="panel-sub">Live report management area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>Report management placeholder</h3>
-              <p>Ready for pending reports, handled reports, and report agent controls.</p>
-              <div class="muted-empty">No live report workflow connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="reportsLiveBox">
+                  Live reports will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section id="screen-forms" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Forms</h2>
-                <div class="placeholder-sub">
-                  This section will later manage forms, view form response summaries, and control form agents.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Forms</div>
+                  <div class="panel-sub">Live forms management area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>Form management placeholder</h3>
-              <p>Ready for active forms, archived forms, and form-related agent actions.</p>
-              <div class="muted-empty">No live forms connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="formsLiveBox">
+                  Live forms will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section id="screen-history" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">History</h2>
-                <div class="placeholder-sub">
-                  This section will later show activity logs and actions performed across the HOS system.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">History</div>
+                  <div class="panel-sub">Live history area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>History placeholder</h3>
-              <p>Ready for action logs like account creation, announcement sending, report updates, and form activity.</p>
-              <div class="muted-empty">No live history connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="historyLiveBox">
+                  Live history will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section id="screen-settings" class="screen">
-          <div class="placeholder-box">
-            <div class="placeholder-top">
-              <div>
-                <h2 class="placeholder-title">Settings</h2>
-                <div class="placeholder-sub">
-                  This section will later handle school setup, permissions, system preferences, and HOS-level settings.
+          <div class="section-shell">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Settings</div>
+                  <div class="panel-sub">Live settings area</div>
                 </div>
               </div>
-              <div class="placeholder-badge">Future live data</div>
-            </div>
-            <div class="placeholder-card">
-              <h3>Settings placeholder</h3>
-              <p>Ready for school profile setup, system rules, and future HOS configuration options.</p>
-              <div class="muted-empty">No settings module connected yet.</div>
-            </div>
+              <div class="panel-body">
+                <div class="live-empty" id="settingsLiveBox">
+                  Live settings will show here when connected.
+                </div>
+              </div>
+            </article>
           </div>
         </section>
       </main>
@@ -1829,12 +1293,10 @@
   <script>
     (() => {
       const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-      const SUPABASE_ANON_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJ9";
+      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
 
       let sb = null;
       let adminSession = null;
-      let currentHosScreen = "dashboard";
 
       const pageMeta = {
         "dashboard": {
@@ -1843,7 +1305,7 @@
         },
         "create-account": {
           title: "Create Account",
-          sub: "Create HOD and agent accounts from one place."
+          sub: "Holder for your final create-account screen."
         },
         "staff-roles": {
           title: "Staff & Roles",
@@ -1902,15 +1364,6 @@
         }
         box.textContent = text;
         box.className = "message " + (type || "error");
-      }
-
-      function escapeHtml(value){
-        return String(value || "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#39;");
       }
 
       function getDisplayNameFromSession(session){
@@ -1974,7 +1427,6 @@
           target.classList.add("active");
         }
 
-        currentHosScreen = screenName;
         setActiveNav(screenName);
         updateTopbar(screenName);
 
@@ -1989,87 +1441,46 @@
       function bindSidebar(){
         document.querySelectorAll(".nav-btn[data-screen]").forEach((btn) => {
           btn.addEventListener("click", () => {
-            const screenName = btn.dataset.screen || "dashboard";
-            setActiveScreen(screenName);
+            setActiveScreen(btn.dataset.screen || "dashboard");
           });
         });
       }
 
-      function bindHeaderActions(){
-        $("avatarChip").addEventListener("click", () => {
-          showMessage("Avatar action is ready. Connect this to your HOS account page later.", "success");
-          setTimeout(() => showMessage(""), 2200);
-        });
+      function renderEmptyState(id, text){
+        const el = $(id);
+        if (!el) return;
+        el.textContent = text;
       }
 
-      function loadDashboardFromLocal(){
+      async function loadDashboardLive(){
         try{
-          const statsRaw = localStorage.getItem("colspot_hos_dashboard_preview");
-          if (!statsRaw) return;
+          renderEmptyState("dashboardHistoryBox", "No live activity connected yet.");
+          renderEmptyState("staffOverviewBox", "No live staff overview connected yet.");
+          renderEmptyState("formsOverviewBox", "No live forms overview connected yet.");
+          renderEmptyState("announcementsOverviewBox", "No live announcement overview connected yet.");
 
-          const stats = JSON.parse(statsRaw);
+          $("totalHods").textContent = "--";
+          $("totalAgents").textContent = "--";
+          $("activeForms").textContent = "--";
+          $("totalAnnouncements").textContent = "--";
+          $("totalReports").textContent = "--";
+          $("pendingActions").textContent = "--";
 
-          if ($("totalHods") && stats.total_hods != null) $("totalHods").textContent = String(stats.total_hods);
-          if ($("totalAgents") && stats.total_agents != null) $("totalAgents").textContent = String(stats.total_agents);
-          if ($("activeForms") && stats.active_forms != null) $("activeForms").textContent = String(stats.active_forms);
-          if ($("totalAnnouncements") && stats.total_announcements != null) $("totalAnnouncements").textContent = String(stats.total_announcements);
-          if ($("totalReports") && stats.total_reports != null) $("totalReports").textContent = String(stats.total_reports);
-          if ($("pendingActions") && stats.pending_actions != null) $("pendingActions").textContent = String(stats.pending_actions);
+          if (!sb) return;
         }catch(err){
-          console.error("Failed to load preview dashboard stats:", err);
+          console.error("loadDashboardLive failed:", err);
+          showMessage("Could not load live dashboard data.", "error");
         }
       }
 
-      function loadHistoryPreviewFromLocal(){
-        try{
-          const raw = localStorage.getItem("colspot_hos_history_preview");
-          if (!raw) return;
-
-          const items = JSON.parse(raw);
-          if (!Array.isArray(items) || !items.length) return;
-
-          const list = $("dashboardHistoryList");
-          list.innerHTML = items.slice(0, 4).map((item, index) => {
-            const colorClass = index % 4 === 0
-              ? "green"
-              : index % 4 === 1
-              ? "orange"
-              : index % 4 === 2
-              ? "red"
-              : "blue";
-
-            return `
-              <div class="history-row">
-                <div class="history-main">
-                  <div class="history-icon ${colorClass}">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div class="history-title">${escapeHtml(item.title || "System activity")}</div>
-                    <div class="history-desc">${escapeHtml(item.description || "Recent action in the HOS dashboard.")}</div>
-                  </div>
-                </div>
-                <div class="history-time">${escapeHtml(item.time || "-")}</div>
-              </div>
-            `;
-          }).join("");
-        }catch(err){
-          console.error("Failed to load preview history:", err);
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         initSupabase();
 
         if (!requireHosSession()) return;
 
         bindSidebar();
-        bindHeaderActions();
-        loadDashboardFromLocal();
-        loadHistoryPreviewFromLocal();
         setActiveScreen("dashboard");
+        await loadDashboardLive();
       });
     })();
   </script>
