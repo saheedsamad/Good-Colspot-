@@ -8,12 +8,9 @@
       --forms-blue:#2563eb;
       --forms-blue-dark:#1d4ed8;
       --forms-blue-soft:#eff6ff;
-      --forms-green:#16a34a;
       --forms-green-soft:#effdf4;
-      --forms-orange:#f97316;
-      --forms-orange-soft:#fff7ed;
-      --forms-red:#ef4444;
       --forms-red-soft:#fef2f2;
+      --forms-orange-soft:#fff7ed;
       --forms-shadow:0 10px 25px rgba(37,99,235,.08);
       --forms-shadow-soft:0 18px 40px rgba(15,23,42,.06);
     }
@@ -22,31 +19,38 @@
       box-sizing:border-box;
     }
 
+    #screen-forms .forms-hidden{
+      display:none !important;
+    }
+
     #screen-forms .forms-system{
       display:grid;
       gap:18px;
     }
 
-    #screen-forms .forms-hidden{
-      display:none !important;
+    #screen-forms .forms-btn,
+    #screen-forms .forms-btn-soft,
+    #screen-forms .forms-btn-danger,
+    #screen-forms .forms-mini-btn{
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      transition:.18s ease;
+      font:inherit;
+      white-space:nowrap;
     }
 
     #screen-forms .forms-btn,
     #screen-forms .forms-btn-soft,
     #screen-forms .forms-btn-danger{
-      border:none;
       min-height:48px;
       padding:0 16px;
       border-radius:16px;
-      font-size:14px;
-      font-weight:800;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:10px;
-      cursor:pointer;
-      transition:.18s ease;
-      white-space:nowrap;
+      font-size:14px;
       text-decoration:none;
     }
 
@@ -137,6 +141,8 @@
       background:#fff;
       color:var(--forms-text);
       font-size:14px;
+      transition:.15s ease;
+      font:inherit;
     }
 
     #screen-forms .forms-input,
@@ -150,6 +156,13 @@
       padding:14px;
       resize:vertical;
       line-height:1.55;
+    }
+
+    #screen-forms .forms-input:focus,
+    #screen-forms .forms-select:focus,
+    #screen-forms .forms-textarea:focus{
+      border-color:var(--forms-blue);
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
     }
 
     #screen-forms .forms-grid-2{
@@ -181,6 +194,18 @@
       background:var(--forms-green-soft);
       border:1px solid #bbf7d0;
       color:#166534;
+    }
+
+    #screen-forms .forms-note.warn{
+      background:var(--forms-orange-soft);
+      border:1px solid #fed7aa;
+      color:#c2410c;
+    }
+
+    #screen-forms .forms-note.error{
+      background:var(--forms-red-soft);
+      border:1px solid #fecaca;
+      color:#991b1b;
     }
 
     #screen-forms .forms-empty{
@@ -246,7 +271,6 @@
       border:1px solid #e5edf7;
     }
 
-    /* HOME VIEW */
     #screen-forms .forms-home{
       display:grid;
       gap:18px;
@@ -301,6 +325,7 @@
       display:inline-flex;
       align-items:center;
       gap:10px;
+      font:inherit;
     }
 
     #screen-forms .forms-status-tab:last-child{
@@ -326,6 +351,11 @@
       display:grid;
       gap:14px;
       box-shadow:var(--forms-shadow);
+    }
+
+    #screen-forms .form-item.active{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.08), var(--forms-shadow);
     }
 
     #screen-forms .form-item-top{
@@ -363,14 +393,11 @@
       gap:10px;
     }
 
-    #screen-forms .mini-btn{
-      border:none;
+    #screen-forms .forms-mini-btn{
       min-height:40px;
       padding:0 14px;
       border-radius:13px;
       font-size:13px;
-      font-weight:800;
-      cursor:pointer;
       display:inline-flex;
       align-items:center;
       gap:8px;
@@ -378,17 +405,16 @@
       color:#1d4ed8;
     }
 
-    #screen-forms .mini-btn.gray{
+    #screen-forms .forms-mini-btn.gray{
       background:#f8fafc;
       color:#334155;
     }
 
-    #screen-forms .mini-btn.red{
+    #screen-forms .forms-mini-btn.red{
       background:var(--forms-red-soft);
       color:#991b1b;
     }
 
-    /* BUILDER VIEW */
     #screen-forms .forms-builder-system{
       display:grid;
       gap:18px;
@@ -457,6 +483,7 @@
       font-weight:800;
       cursor:pointer;
       border-right:1px solid var(--forms-line);
+      font:inherit;
     }
 
     #screen-forms .builder-tab:last-child{
@@ -726,7 +753,6 @@
       flex-wrap:wrap;
     }
 
-    /* ADD QUESTION PICKER AFTER LAST QUESTION */
     #screen-forms .add-question-dock{
       border:1px dashed #bfdbfe;
       border-radius:24px;
@@ -782,6 +808,7 @@
       gap:8px;
       text-align:center;
       box-shadow:0 6px 16px rgba(15,23,42,.03);
+      font:inherit;
     }
 
     #screen-forms .type-btn svg{
@@ -790,7 +817,6 @@
       flex-shrink:0;
     }
 
-    /* PREVIEW */
     #screen-forms .student-preview{
       border:1px solid #e5edf7;
       border-radius:24px;
@@ -882,21 +908,24 @@
     }
 
     @media (max-width:1400px){
-      #screen-forms .builder-layout{
+      #screen-forms .forms-main-grid{
         grid-template-columns:1fr;
       }
     }
 
     @media (max-width:980px){
+      #screen-forms .quick-type-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
       #screen-forms .forms-grid-2,
-      #screen-forms .forms-grid-3,
       #screen-forms .question-grid-2,
       #screen-forms .question-grid-3{
         grid-template-columns:1fr;
       }
 
-      #screen-forms .quick-type-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+      #screen-forms .builder-layout{
+        grid-template-columns:1fr;
       }
     }
 
@@ -916,17 +945,17 @@
   </style>
 
   <div class="forms-system">
-    <!-- FORMS HOME -->
-    <div class="forms-home">
+    <!-- HOME VIEW -->
+    <div id="formsHomeView" class="forms-home">
       <div class="forms-home-top">
         <div>
           <h2 class="forms-home-title">Forms</h2>
           <p class="forms-home-sub">
-            Create and manage school forms. Open a form to continue editing, preview it, or publish it when ready.
+            Create and manage school forms from here.
           </p>
         </div>
 
-        <button type="button" class="forms-btn">
+        <button type="button" class="forms-btn" id="formsCreateFormBtn">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
@@ -934,520 +963,258 @@
         </button>
       </div>
 
-      <div class="forms-status-tabs">
-        <button type="button" class="forms-status-tab active">Draft</button>
-        <button type="button" class="forms-status-tab">Published</button>
-        <button type="button" class="forms-status-tab">Closed</button>
-        <button type="button" class="forms-status-tab">Archived</button>
+      <div class="forms-status-tabs" id="formsStatusTabs">
+        <button type="button" class="forms-status-tab active" data-status-filter="draft">Draft</button>
+        <button type="button" class="forms-status-tab" data-status-filter="published">Published</button>
+        <button type="button" class="forms-status-tab" data-status-filter="closed">Closed</button>
+        <button type="button" class="forms-status-tab" data-status-filter="archived">Archived</button>
       </div>
 
       <div class="forms-card">
         <div class="forms-card-head">
           <div>
             <h3 class="forms-card-title">Forms List</h3>
-            <p class="forms-card-sub">Forms you create will appear here.</p>
+            <p class="forms-card-sub">Your live forms will appear here when connected.</p>
           </div>
         </div>
 
         <div class="forms-card-body">
-          <div class="forms-list-grid">
-            <div class="form-item">
-              <div class="form-item-top">
-                <div>
-                  <h4 class="form-item-title">Course Feedback Survey</h4>
-                  <p class="form-item-desc">Gathering students’ feedback on their recent courses.</p>
-                </div>
-                <span class="status-pill draft">Draft</span>
-              </div>
-
-              <div class="form-item-meta">
-                <span class="meta-chip">5 Questions</span>
-                <span class="meta-chip">All Students</span>
-                <span class="meta-chip">Updated Today</span>
-              </div>
-
-              <div class="form-item-actions">
-                <button type="button" class="mini-btn">Open</button>
-                <button type="button" class="mini-btn gray">Duplicate</button>
-                <button type="button" class="mini-btn red">Delete</button>
-              </div>
-            </div>
-
-            <div class="form-item">
-              <div class="form-item-top">
-                <div>
-                  <h4 class="form-item-title">Event Registration Form</h4>
-                  <p class="form-item-desc">For signing up students for upcoming events.</p>
-                </div>
-                <span class="status-pill published">Published</span>
-              </div>
-
-              <div class="form-item-meta">
-                <span class="meta-chip">4 Questions</span>
-                <span class="meta-chip">All Students</span>
-                <span class="meta-chip">Updated Today</span>
-              </div>
-
-              <div class="form-item-actions">
-                <button type="button" class="mini-btn">Open</button>
-                <button type="button" class="mini-btn gray">Duplicate</button>
-                <button type="button" class="mini-btn red">Delete</button>
-              </div>
-            </div>
-          </div>
+          <div id="formsListBox" class="forms-list-grid"></div>
         </div>
       </div>
     </div>
 
-    <!-- BUILDER WORKSPACE -->
-    <div class="forms-builder-system">
+    <!-- BUILDER VIEW -->
+    <div id="formsBuilderSystem" class="forms-builder-system forms-hidden">
       <div class="forms-builder-topbar">
         <div class="forms-builder-topbar-left">
-          <button type="button" class="forms-btn-soft">
+          <button type="button" class="forms-btn-soft" id="formsBackHomeBtn">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Back to Forms</span>
           </button>
 
-          <div class="save-pill">
+          <div class="save-pill" id="formsSavePill">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>Saved</span>
+            <span>Ready</span>
           </div>
         </div>
 
         <div class="forms-builder-topbar-right">
-          <button type="button" class="forms-btn-soft">Save Draft</button>
-          <button type="button" class="forms-btn-soft">Preview</button>
-          <button type="button" class="forms-btn">Publish Form</button>
+          <button type="button" class="forms-btn-soft" id="formsSaveDraftBtn">Save Draft</button>
+          <button type="button" class="forms-btn-soft" id="formsPreviewModeBtn">Preview</button>
+          <button type="button" class="forms-btn" id="formsPublishBtn">Publish Form</button>
         </div>
       </div>
 
-      <div class="builder-tabs">
-        <button type="button" class="builder-tab active">Setup</button>
-        <button type="button" class="builder-tab">Questions</button>
-        <button type="button" class="builder-tab">Preview</button>
+      <div class="builder-tabs" id="formsBuilderTabs">
+        <button type="button" class="builder-tab active" data-builder-tab="setup">Setup</button>
+        <button type="button" class="builder-tab" data-builder-tab="questions">Questions</button>
+        <button type="button" class="builder-tab" data-builder-tab="preview">Preview</button>
       </div>
 
       <div class="builder-layout">
-        <!-- LEFT SIDE -->
         <div class="builder-side">
-          <div class="builder-panel">
+          <div id="formsSetupPanel" class="builder-panel">
             <div class="builder-panel-head">
               <h3>Form Setup</h3>
-              <p>Set up your form details before publishing.</p>
+              <p>Set up your form details here.</p>
             </div>
 
             <div class="builder-panel-body">
               <div class="forms-field">
-                <label>Form Title</label>
-                <input class="forms-input" type="text" placeholder="New Form" />
+                <label for="formTitleInput">Form Title</label>
+                <input class="forms-input" id="formTitleInput" type="text" placeholder="New Form" />
               </div>
 
               <div class="forms-field">
-                <label>Description</label>
-                <textarea class="forms-textarea" placeholder="Enter a description for your form."></textarea>
+                <label for="formDescriptionInput">Description</label>
+                <textarea class="forms-textarea" id="formDescriptionInput" placeholder="Enter a description for your form."></textarea>
               </div>
 
               <div class="forms-field">
-                <label>Target Audience</label>
-                <select class="forms-select">
-                  <option>All Students</option>
-                  <option>All Staff</option>
-                  <option>Lecturers</option>
-                  <option>Department Students</option>
-                  <option>Specific Group</option>
+                <label for="formTargetAudience">Target Audience</label>
+                <select class="forms-select" id="formTargetAudience">
+                  <option value="all_students">All Students</option>
+                  <option value="all_staff">All Staff</option>
+                  <option value="lecturers">Lecturers</option>
+                  <option value="department_students">Department Students</option>
+                  <option value="specific_group">Specific Group</option>
                 </select>
               </div>
 
               <div class="forms-grid-2">
                 <div class="forms-field">
-                  <label>Open Date</label>
-                  <input class="forms-input" type="date" />
+                  <label for="formOpenDateInput">Open Date</label>
+                  <input class="forms-input" id="formOpenDateInput" type="date" />
                 </div>
 
                 <div class="forms-field">
-                  <label>Close Date</label>
-                  <input class="forms-input" type="date" />
+                  <label for="formCloseDateInput">Close Date</label>
+                  <input class="forms-input" id="formCloseDateInput" type="date" />
                 </div>
               </div>
 
               <div class="forms-grid-2">
                 <div class="forms-field">
-                  <label>Response Rule</label>
-                  <select class="forms-select">
-                    <option>One response per user</option>
-                    <option>Allow multiple responses</option>
+                  <label for="formResponseRule">Response Rule</label>
+                  <select class="forms-select" id="formResponseRule">
+                    <option value="one">One response per user</option>
+                    <option value="many">Allow multiple responses</option>
                   </select>
                 </div>
 
                 <div class="forms-field">
-                  <label>Identity Mode</label>
-                  <select class="forms-select">
-                    <option>Use logged-in identity</option>
-                    <option>Ask user manually</option>
-                    <option>Anonymous</option>
+                  <label for="formIdentityMode">Identity Mode</label>
+                  <select class="forms-select" id="formIdentityMode">
+                    <option value="auto">Use logged-in identity</option>
+                    <option value="manual">Ask user manually</option>
+                    <option value="anonymous">Anonymous</option>
                   </select>
                 </div>
               </div>
 
               <div class="forms-field">
-                <label>Form Status</label>
-                <select class="forms-select">
-                  <option>Draft</option>
-                  <option>Published</option>
-                  <option>Closed</option>
-                  <option>Archived</option>
+                <label for="formStatusSelect">Form Status</label>
+                <select class="forms-select" id="formStatusSelect">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="closed">Closed</option>
+                  <option value="archived">Archived</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div class="builder-panel">
+          <div id="formsPreviewSidePanel" class="builder-panel forms-hidden">
             <div class="builder-panel-head">
               <h3>Student Preview</h3>
-              <p>This is how the form will look to users.</p>
+              <p>Preview area stays clean until real form data is rendered.</p>
             </div>
 
             <div class="builder-panel-body">
-              <div class="student-preview">
-                <div class="student-preview-head">
-                  <h3 class="student-preview-title">Untitled Form</h3>
-                  <p class="student-preview-desc">Form description will appear here.</p>
-                </div>
-
-                <div class="student-preview-body">
-                  <div class="student-q">
-                    <h4>1. What is your feedback?<span class="student-required">*</span></h4>
-                    <p>Answer this question below.</p>
-                    <input class="forms-input" type="text" placeholder="Short answer" />
-                  </div>
-                </div>
-
-                <div class="student-preview-footer">
-                  <button type="button" class="forms-btn">Submit Form</button>
-                </div>
+              <div id="formsPreviewSideEmpty" class="forms-empty">
+                Student preview will appear here when the form data is rendered.
               </div>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT SIDE -->
         <div class="builder-main">
-          <div class="builder-panel">
+          <div id="formsQuestionsPanel" class="builder-panel">
             <div class="builder-panel-head">
               <h3>Questions</h3>
-              <p>Build your questions here. Add the next question from the bottom after finishing the current one.</p>
+              <p>Build your questions here. The next question picker stays at the bottom after the last question.</p>
             </div>
 
             <div class="builder-panel-body">
-              <div class="question-list">
-                <!-- QUESTION 1 -->
-                <div class="question-card">
-                  <div class="question-card-head">
-                    <div class="question-head-left">
-                      <div class="question-number">1</div>
-                      <div>
-                        <div class="question-title-static">What is blank</div>
-                        <div class="question-type-static">Short Answer</div>
-                      </div>
-                    </div>
+              <div id="formsQuestionList" class="question-list"></div>
 
-                    <div class="question-head-right">
-                      <label class="toggle-wrap">
-                        <span>Required</span>
-                        <span class="switch">
-                          <input type="checkbox" checked />
-                          <span class="slider"></span>
-                        </span>
-                      </label>
-
-                      <button type="button" class="icon-btn" title="Move Up">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
-
-                      <button type="button" class="icon-btn" title="Move Down">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
-
-                      <button type="button" class="icon-btn" title="Duplicate">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                          <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                        </svg>
-                      </button>
-
-                      <button type="button" class="icon-btn" title="Delete">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                          <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="question-card-body">
-                    <div class="question-grid-2">
-                      <div class="forms-field">
-                        <label>Question Title</label>
-                        <input class="forms-input" type="text" value="what is blank" />
-                      </div>
-
-                      <div class="forms-field">
-                        <label>Question Type</label>
-                        <select class="forms-select">
-                          <option selected>Short Answer</option>
-                          <option>Paragraph</option>
-                          <option>Multiple Choice</option>
-                          <option>Checkboxes</option>
-                          <option>Dropdown</option>
-                          <option>Date</option>
-                          <option>File Upload</option>
-                          <option>Yes / No</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="forms-field">
-                      <label>Help Text</label>
-                      <input class="forms-input" type="text" placeholder="Optional helper text." />
-                    </div>
-
-                    <div class="forms-field">
-                      <label>Placeholder</label>
-                      <input class="forms-input" type="text" placeholder="Optional placeholder." />
-                    </div>
-
-                    <div class="question-footer">
-                      <div class="question-footer-left"></div>
-                      <div class="question-footer-right">
-                        <button type="button" class="forms-btn-danger">Delete Question</button>
-                      </div>
-                    </div>
+              <div id="formsAddQuestionDock" class="add-question-dock">
+                <div class="add-question-dock-head">
+                  <div>
+                    <h3 class="add-question-dock-title">Add Next Question</h3>
+                    <p class="add-question-dock-sub">
+                      Choose the next question type here after finishing the last question.
+                    </p>
                   </div>
                 </div>
 
-                <!-- QUESTION 2 -->
-                <div class="question-card">
-                  <div class="question-card-head">
-                    <div class="question-head-left">
-                      <div class="question-number">2</div>
-                      <div>
-                        <div class="question-title-static">Choose your department</div>
-                        <div class="question-type-static">Dropdown</div>
-                      </div>
-                    </div>
+                <div class="quick-type-grid">
+                  <button type="button" class="type-btn" data-question-type="short_answer">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5 7.75h14M5 12h14M5 16.25h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Short Answer</span>
+                  </button>
 
-                    <div class="question-head-right">
-                      <label class="toggle-wrap">
-                        <span>Required</span>
-                        <span class="switch">
-                          <input type="checkbox" />
-                          <span class="slider"></span>
-                        </span>
-                      </label>
+                  <button type="button" class="type-btn" data-question-type="paragraph">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5 7.75h14M5 12h14M5 16.25h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Paragraph</span>
+                  </button>
 
-                      <button type="button" class="icon-btn">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
+                  <button type="button" class="type-btn" data-question-type="multiple_choice">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="6.5" cy="7.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                      <circle cx="6.5" cy="12" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                      <circle cx="6.5" cy="16.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Multiple Choice</span>
+                  </button>
 
-                      <button type="button" class="icon-btn">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
+                  <button type="button" class="type-btn" data-question-type="checkboxes">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4.75" y="5.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                      <rect x="4.75" y="10.25" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                      <rect x="4.75" y="14.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Checkboxes</span>
+                  </button>
 
-                      <button type="button" class="icon-btn">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                          <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                        </svg>
-                      </button>
+                  <button type="button" class="type-btn" data-question-type="dropdown">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4.75" y="6.25" width="14.5" height="11.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="m15 11 2 2 2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Dropdown</span>
+                  </button>
 
-                      <button type="button" class="icon-btn">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                          <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                  <button type="button" class="type-btn" data-question-type="date">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4.75" y="5.75" width="14.5" height="12.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M8 4.75v3M16 4.75v3M4.75 9.5h14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Date</span>
+                  </button>
 
-                  <div class="question-card-body">
-                    <div class="question-grid-2">
-                      <div class="forms-field">
-                        <label>Question Title</label>
-                        <input class="forms-input" type="text" value="Choose your department" />
-                      </div>
+                  <button type="button" class="type-btn" data-question-type="file_upload">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M12 16V6M12 6l-3 3M12 6l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M5.75 15.75v1.5A1.75 1.75 0 0 0 7.5 19h9a1.75 1.75 0 0 0 1.75-1.75v-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>File Upload</span>
+                  </button>
 
-                      <div class="forms-field">
-                        <label>Question Type</label>
-                        <select class="forms-select">
-                          <option>Short Answer</option>
-                          <option>Paragraph</option>
-                          <option>Multiple Choice</option>
-                          <option>Checkboxes</option>
-                          <option selected>Dropdown</option>
-                          <option>Date</option>
-                          <option>File Upload</option>
-                          <option>Yes / No</option>
-                        </select>
-                      </div>
-                    </div>
+                  <button type="button" class="type-btn" data-question-type="yes_no">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Yes / No</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                    <div class="forms-field">
-                      <label>Options</label>
-                      <div class="options-list">
-                        <div class="option-row">
-                          <div class="option-badge">1</div>
-                          <input class="forms-input" type="text" value="Computer Science" />
-                          <div class="option-actions">
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                              </svg>
-                            </button>
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                              </svg>
-                            </button>
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
+          <div id="formsPreviewMainPanel" class="builder-panel forms-hidden">
+            <div class="builder-panel-head">
+              <h3>Preview</h3>
+              <p>Clean student-facing preview.</p>
+            </div>
 
-                        <div class="option-row">
-                          <div class="option-badge">2</div>
-                          <input class="forms-input" type="text" value="Accounting" />
-                          <div class="option-actions">
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                              </svg>
-                            </button>
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                              </svg>
-                            </button>
-                            <button type="button" class="icon-btn">
-                              <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="question-footer">
-                      <div class="question-footer-left">
-                        <button type="button" class="forms-btn-soft">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                          <span>Add Option</span>
-                        </button>
-                      </div>
-
-                      <div class="question-footer-right">
-                        <button type="button" class="forms-btn-danger">Delete Question</button>
-                      </div>
-                    </div>
-                  </div>
+            <div class="builder-panel-body">
+              <div id="formsPreviewMainBox" class="student-preview">
+                <div class="student-preview-head">
+                  <h3 class="student-preview-title" id="studentPreviewTitle">Untitled Form</h3>
+                  <p class="student-preview-desc" id="studentPreviewDescription">Form description will appear here.</p>
                 </div>
 
-                <!-- ADD QUESTION AT THE BOTTOM -->
-                <div class="add-question-dock">
-                  <div class="add-question-dock-head">
-                    <div>
-                      <h3 class="add-question-dock-title">Add Next Question</h3>
-                      <p class="add-question-dock-sub">
-                        After finishing the current question, choose the next type here. This stays at the bottom so the user does not need to scroll back up.
-                      </p>
-                    </div>
-                  </div>
+                <div class="student-preview-body" id="studentPreviewBody"></div>
 
-                  <div class="quick-type-grid">
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M5 7.75h14M5 12h14M5 16.25h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>Short Answer</span>
-                    </button>
+                <div id="previewSubmitSuccess" class="forms-note success preview-submit-success forms-hidden">
+                  Preview submitted successfully.
+                </div>
 
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M5 7.75h14M5 12h14M5 16.25h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>Paragraph</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <circle cx="6.5" cy="7.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
-                        <circle cx="6.5" cy="12" r="1.75" stroke="currentColor" stroke-width="1.8"/>
-                        <circle cx="6.5" cy="16.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>Multiple Choice</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <rect x="4.75" y="5.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
-                        <rect x="4.75" y="10.25" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
-                        <rect x="4.75" y="14.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>Checkboxes</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <rect x="4.75" y="6.25" width="14.5" height="11.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="m15 11 2 2 2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <span>Dropdown</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <rect x="4.75" y="5.75" width="14.5" height="12.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M8 4.75v3M16 4.75v3M4.75 9.5h14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>Date</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M12 16V6M12 6l-3 3M12 6l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M5.75 15.75v1.5A1.75 1.75 0 0 0 7.5 19h9a1.75 1.75 0 0 0 1.75-1.75v-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      </svg>
-                      <span>File Upload</span>
-                    </button>
-
-                    <button type="button" class="type-btn">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <span>Yes / No</span>
-                    </button>
-                  </div>
+                <div class="student-preview-footer">
+                  <button type="button" class="forms-btn-soft" id="previewBackToQuestionsBtn">Back to Questions</button>
+                  <button type="button" class="forms-btn" id="previewSubmitBtn">Submit Preview</button>
                 </div>
               </div>
             </div>
@@ -1456,19 +1223,952 @@
           <div class="builder-panel">
             <div class="builder-panel-head">
               <h3>Bottom Actions</h3>
-              <p>Keep final actions reachable after the user finishes editing.</p>
+              <p>Keep important actions reachable after editing.</p>
             </div>
 
             <div class="builder-panel-body">
               <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button type="button" class="forms-btn-soft">Save Draft</button>
-                <button type="button" class="forms-btn-soft">Preview</button>
-                <button type="button" class="forms-btn">Publish Form</button>
+                <button type="button" class="forms-btn-soft" id="formsBottomSaveDraftBtn">Save Draft</button>
+                <button type="button" class="forms-btn-soft" id="formsBottomPreviewBtn">Preview</button>
+                <button type="button" class="forms-btn" id="formsBottomPublishBtn">Publish Form</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- SAFE EMPTY TEMPLATE HOLDER -->
+    <template id="formsQuestionEmptyTemplate">
+      <div class="forms-empty">
+        No questions yet. Add the first question from the question picker below.
+      </div>
+    </template>
   </div>
+
+  <script>
+    (function () {
+      if (window.__formsSystemInitialized) return;
+      window.__formsSystemInitialized = true;
+
+      const STORAGE_KEY = "colspot_forms_system_v2";
+
+      const state = {
+        forms: [],
+        activeFormId: null,
+        homeFilter: "draft",
+        builderTab: "questions"
+      };
+
+      function $(id){
+        return document.getElementById(id);
+      }
+
+      function uid(prefix){
+        return prefix + "_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+      }
+
+      function escapeHtml(value){
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function formatDate(value){
+        if (!value) return "—";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return value;
+        return d.toLocaleDateString();
+      }
+
+      function clone(obj){
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      function setSavePill(text){
+        const pill = $("formsSavePill");
+        if (!pill) return;
+        pill.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>${escapeHtml(text)}</span>
+        `;
+      }
+
+      function createEmptyForm(){
+        return {
+          id: uid("form"),
+          title: "",
+          description: "",
+          targetAudience: "all_students",
+          openDate: "",
+          closeDate: "",
+          responseRule: "one",
+          identityMode: "auto",
+          status: "draft",
+          questions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      function createQuestion(type){
+        const question = {
+          id: uid("question"),
+          type: type,
+          title: "",
+          helpText: "",
+          placeholder: "",
+          required: false,
+          options: [],
+          fileTypes: "pdf,image",
+          maxFileSizeMb: 5,
+          maxFiles: 1
+        };
+
+        if (type === "multiple_choice" || type === "checkboxes" || type === "dropdown"){
+          question.options = ["", ""];
+        }
+
+        if (type === "yes_no"){
+          question.options = ["Yes", "No"];
+        }
+
+        return question;
+      }
+
+      function getActiveForm(){
+        return state.forms.find(form => form.id === state.activeFormId) || null;
+      }
+
+      function saveState(){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          forms: state.forms,
+          activeFormId: state.activeFormId,
+          homeFilter: state.homeFilter,
+          builderTab: state.builderTab
+        }));
+        setSavePill("Saved");
+      }
+
+      function touchForm(form){
+        form.updatedAt = new Date().toISOString();
+        saveState();
+      }
+
+      function loadState(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          state.forms = Array.isArray(parsed.forms) ? parsed.forms : [];
+          state.activeFormId = parsed.activeFormId || null;
+          state.homeFilter = parsed.homeFilter || "draft";
+          state.builderTab = parsed.builderTab || "questions";
+        }catch(err){
+          console.error("Could not load forms state:", err);
+        }
+      }
+
+      function showHomeView(){
+        $("formsHomeView").classList.remove("forms-hidden");
+        $("formsBuilderSystem").classList.add("forms-hidden");
+      }
+
+      function showBuilderView(){
+        $("formsHomeView").classList.add("forms-hidden");
+        $("formsBuilderSystem").classList.remove("forms-hidden");
+        renderBuilderTabVisibility();
+      }
+
+      function renderHomeTabs(){
+        document.querySelectorAll("#formsStatusTabs [data-status-filter]").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.statusFilter === state.homeFilter);
+        });
+      }
+
+      function getFilteredForms(){
+        return state.forms
+          .filter(form => form.status === state.homeFilter)
+          .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+      }
+
+      function renderFormsList(){
+        const box = $("formsListBox");
+        const forms = getFilteredForms();
+
+        if (!forms.length){
+          box.innerHTML = `
+            <div class="forms-empty">
+              No ${escapeHtml(state.homeFilter)} forms yet.
+            </div>
+          `;
+          return;
+        }
+
+        box.innerHTML = forms.map(form => {
+          const isActive = form.id === state.activeFormId;
+          return `
+            <div class="form-item ${isActive ? "active" : ""}">
+              <div class="form-item-top">
+                <div>
+                  <h4 class="form-item-title">${escapeHtml(form.title || "Untitled Form")}</h4>
+                  <p class="form-item-desc">${escapeHtml(form.description || "No description yet.")}</p>
+                </div>
+                <span class="status-pill ${escapeHtml(form.status)}">${escapeHtml(form.status)}</span>
+              </div>
+
+              <div class="form-item-meta">
+                <span class="meta-chip">${(form.questions || []).length} Questions</span>
+                <span class="meta-chip">${escapeHtml(getAudienceLabel(form.targetAudience))}</span>
+                <span class="meta-chip">Updated ${escapeHtml(formatDate(form.updatedAt || form.createdAt))}</span>
+              </div>
+
+              <div class="form-item-actions">
+                <button type="button" class="forms-mini-btn" data-form-action="open" data-form-id="${form.id}">Open</button>
+                <button type="button" class="forms-mini-btn gray" data-form-action="duplicate" data-form-id="${form.id}">Duplicate</button>
+                <button type="button" class="forms-mini-btn red" data-form-action="delete" data-form-id="${form.id}">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function getAudienceLabel(value){
+        const map = {
+          all_students: "All Students",
+          all_staff: "All Staff",
+          lecturers: "Lecturers",
+          department_students: "Department Students",
+          specific_group: "Specific Group"
+        };
+        return map[value] || value || "Audience";
+      }
+
+      function getQuestionTypeLabel(type){
+        const map = {
+          short_answer: "Short Answer",
+          paragraph: "Paragraph",
+          multiple_choice: "Multiple Choice",
+          checkboxes: "Checkboxes",
+          dropdown: "Dropdown",
+          date: "Date",
+          file_upload: "File Upload",
+          yes_no: "Yes / No"
+        };
+        return map[type] || type;
+      }
+
+      function renderSetupForm(){
+        const form = getActiveForm();
+        if (!form) return;
+
+        $("formTitleInput").value = form.title || "";
+        $("formDescriptionInput").value = form.description || "";
+        $("formTargetAudience").value = form.targetAudience || "all_students";
+        $("formOpenDateInput").value = form.openDate || "";
+        $("formCloseDateInput").value = form.closeDate || "";
+        $("formResponseRule").value = form.responseRule || "one";
+        $("formIdentityMode").value = form.identityMode || "auto";
+        $("formStatusSelect").value = form.status || "draft";
+      }
+
+      function renderQuestions(){
+        const list = $("formsQuestionList");
+        const form = getActiveForm();
+
+        if (!form){
+          list.innerHTML = "";
+          return;
+        }
+
+        if (!form.questions.length){
+          list.innerHTML = $("formsQuestionEmptyTemplate").innerHTML;
+          return;
+        }
+
+        list.innerHTML = form.questions.map((question, index) => {
+          const supportsOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(question.type);
+          const isFile = question.type === "file_upload";
+          const isYesNo = question.type === "yes_no";
+
+          return `
+            <div class="question-card" data-question-id="${question.id}">
+              <div class="question-card-head">
+                <div class="question-head-left">
+                  <div class="question-number">${index + 1}</div>
+                  <div>
+                    <div class="question-title-static">${escapeHtml(question.title || "Untitled Question")}</div>
+                    <div class="question-type-static">${escapeHtml(getQuestionTypeLabel(question.type))}</div>
+                  </div>
+                </div>
+
+                <div class="question-head-right">
+                  <label class="toggle-wrap">
+                    <span>Required</span>
+                    <span class="switch">
+                      <input type="checkbox" data-question-action="toggle-required" data-question-id="${question.id}" ${question.required ? "checked" : ""}>
+                      <span class="slider"></span>
+                    </span>
+                  </label>
+
+                  <button type="button" class="icon-btn" data-question-action="move-up" data-question-id="${question.id}" title="Move Up">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-question-action="move-down" data-question-id="${question.id}" title="Move Down">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-question-action="duplicate" data-question-id="${question.id}" title="Duplicate">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                      <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-question-action="delete" data-question-id="${question.id}" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="question-card-body">
+                <div class="question-grid-2">
+                  <div class="forms-field">
+                    <label>Question Title</label>
+                    <input class="forms-input" type="text" value="${escapeHtml(question.title || "")}" data-question-input="title" data-question-id="${question.id}" placeholder="Enter your question here." />
+                  </div>
+
+                  <div class="forms-field">
+                    <label>Question Type</label>
+                    <select class="forms-select" data-question-input="type" data-question-id="${question.id}">
+                      <option value="short_answer" ${question.type === "short_answer" ? "selected" : ""}>Short Answer</option>
+                      <option value="paragraph" ${question.type === "paragraph" ? "selected" : ""}>Paragraph</option>
+                      <option value="multiple_choice" ${question.type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
+                      <option value="checkboxes" ${question.type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
+                      <option value="dropdown" ${question.type === "dropdown" ? "selected" : ""}>Dropdown</option>
+                      <option value="date" ${question.type === "date" ? "selected" : ""}>Date</option>
+                      <option value="file_upload" ${question.type === "file_upload" ? "selected" : ""}>File Upload</option>
+                      <option value="yes_no" ${question.type === "yes_no" ? "selected" : ""}>Yes / No</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="forms-field">
+                  <label>Help Text</label>
+                  <input class="forms-input" type="text" value="${escapeHtml(question.helpText || "")}" data-question-input="helpText" data-question-id="${question.id}" placeholder="Optional helper text." />
+                </div>
+
+                ${!isFile ? `
+                  <div class="forms-field">
+                    <label>Placeholder</label>
+                    <input class="forms-input" type="text" value="${escapeHtml(question.placeholder || "")}" data-question-input="placeholder" data-question-id="${question.id}" placeholder="Optional placeholder." />
+                  </div>
+                ` : ""}
+
+                ${supportsOptions ? `
+                  <div class="forms-field">
+                    <label>Options</label>
+                    <div class="options-list">
+                      ${(question.options || []).map((option, optionIndex) => `
+                        <div class="option-row">
+                          <div class="option-badge">${optionIndex + 1}</div>
+                          <input
+                            class="forms-input"
+                            type="text"
+                            value="${escapeHtml(option)}"
+                            data-question-input="option"
+                            data-question-id="${question.id}"
+                            data-option-index="${optionIndex}"
+                            placeholder="Option text"
+                          />
+                          <div class="option-actions">
+                            <button type="button" class="icon-btn" data-question-action="option-up" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Move option up">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </button>
+                            <button type="button" class="icon-btn" data-question-action="option-down" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Move option down">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </button>
+                            <button type="button" class="icon-btn" data-question-action="delete-option" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Delete option">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      `).join("")}
+                    </div>
+                  </div>
+                ` : ""}
+
+                ${isFile ? `
+                  <div class="question-grid-3">
+                    <div class="forms-field">
+                      <label>Allowed File Types</label>
+                      <input class="forms-input" type="text" value="${escapeHtml(question.fileTypes || "pdf,image")}" data-question-input="fileTypes" data-question-id="${question.id}" placeholder="pdf,image" />
+                    </div>
+
+                    <div class="forms-field">
+                      <label>Max File Size (MB)</label>
+                      <input class="forms-input" type="number" min="1" value="${escapeHtml(String(question.maxFileSizeMb || 5))}" data-question-input="maxFileSizeMb" data-question-id="${question.id}" />
+                    </div>
+
+                    <div class="forms-field">
+                      <label>Max Files</label>
+                      <input class="forms-input" type="number" min="1" value="${escapeHtml(String(question.maxFiles || 1))}" data-question-input="maxFiles" data-question-id="${question.id}" />
+                    </div>
+                  </div>
+                ` : ""}
+
+                ${isYesNo ? `
+                  <div class="forms-note info">
+                    This question uses fixed options: Yes and No.
+                  </div>
+                ` : ""}
+
+                <div class="question-footer">
+                  <div class="question-footer-left">
+                    ${supportsOptions ? `
+                      <button type="button" class="forms-btn-soft" data-question-action="add-option" data-question-id="${question.id}">
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Add Option</span>
+                      </button>
+                    ` : ""}
+                  </div>
+
+                  <div class="question-footer-right">
+                    <button type="button" class="forms-btn-danger" data-question-action="delete" data-question-id="${question.id}">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      </svg>
+                      <span>Delete Question</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderPreview(){
+        const form = getActiveForm();
+        const titleEl = $("studentPreviewTitle");
+        const descEl = $("studentPreviewDescription");
+        const bodyEl = $("studentPreviewBody");
+        const successEl = $("previewSubmitSuccess");
+
+        successEl.classList.add("forms-hidden");
+
+        if (!form){
+          titleEl.textContent = "Untitled Form";
+          descEl.textContent = "Form description will appear here.";
+          bodyEl.innerHTML = `<div class="forms-empty">Preview will appear here when a form is open.</div>`;
+          return;
+        }
+
+        titleEl.textContent = form.title || "Untitled Form";
+        descEl.textContent = form.description || "Form description will appear here.";
+
+        if (!form.questions.length){
+          bodyEl.innerHTML = `<div class="forms-empty">No questions yet. Add questions first.</div>`;
+          return;
+        }
+
+        bodyEl.innerHTML = form.questions.map((question, index) => {
+          const requiredMark = question.required ? `<span class="student-required">*</span>` : "";
+          let inputHtml = "";
+
+          if (question.type === "short_answer"){
+            inputHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(question.placeholder || "Short answer")}" />`;
+          } else if (question.type === "paragraph"){
+            inputHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(question.placeholder || "Write your answer here")}"></textarea>`;
+          } else if (question.type === "multiple_choice"){
+            inputHtml = `
+              <div class="student-option-list">
+                ${(question.options || []).map(opt => `
+                  <label class="student-option">
+                    <input type="radio" name="preview_q_${index}" />
+                    <span>${escapeHtml(opt || "Option")}</span>
+                  </label>
+                `).join("")}
+              </div>
+            `;
+          } else if (question.type === "checkboxes"){
+            inputHtml = `
+              <div class="student-option-list">
+                ${(question.options || []).map(opt => `
+                  <label class="student-option">
+                    <input type="checkbox" />
+                    <span>${escapeHtml(opt || "Option")}</span>
+                  </label>
+                `).join("")}
+              </div>
+            `;
+          } else if (question.type === "dropdown"){
+            inputHtml = `
+              <select class="forms-select">
+                <option value="">Select an option</option>
+                ${(question.options || []).map(opt => `<option>${escapeHtml(opt || "Option")}</option>`).join("")}
+              </select>
+            `;
+          } else if (question.type === "date"){
+            inputHtml = `<input class="forms-input" type="date" />`;
+          } else if (question.type === "file_upload"){
+            inputHtml = `
+              <div class="forms-note info">
+                Allowed: ${escapeHtml(question.fileTypes || "pdf,image")} • Max size: ${escapeHtml(String(question.maxFileSizeMb || 5))}MB • Max files: ${escapeHtml(String(question.maxFiles || 1))}
+              </div>
+            `;
+          } else if (question.type === "yes_no"){
+            inputHtml = `
+              <div class="student-option-list">
+                <label class="student-option">
+                  <input type="radio" name="preview_q_${index}" />
+                  <span>Yes</span>
+                </label>
+                <label class="student-option">
+                  <input type="radio" name="preview_q_${index}" />
+                  <span>No</span>
+                </label>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="student-q">
+              <h4>${index + 1}. ${escapeHtml(question.title || "Untitled Question")}${requiredMark}</h4>
+              <p>${escapeHtml(question.helpText || "Answer this question below.")}</p>
+              ${inputHtml}
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderBuilderTabVisibility(){
+        const setupVisible = state.builderTab === "setup" || state.builderTab === "questions";
+        const questionsVisible = state.builderTab === "questions";
+        const previewVisible = state.builderTab === "preview";
+
+        $("formsSetupPanel").classList.toggle("forms-hidden", !setupVisible);
+        $("formsQuestionsPanel").classList.toggle("forms-hidden", !questionsVisible);
+        $("formsPreviewMainPanel").classList.toggle("forms-hidden", !previewVisible);
+        $("formsPreviewSidePanel").classList.toggle("forms-hidden", true);
+
+        document.querySelectorAll("#formsBuilderTabs [data-builder-tab]").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.builderTab === state.builderTab);
+        });
+
+        if (previewVisible){
+          renderPreview();
+        }
+      }
+
+      function renderAll(){
+        renderHomeTabs();
+        renderFormsList();
+        renderSetupForm();
+        renderQuestions();
+        renderBuilderTabVisibility();
+      }
+
+      function addNewForm(){
+        const form = createEmptyForm();
+        state.forms.unshift(form);
+        state.activeFormId = form.id;
+        state.builderTab = "setup";
+        saveState();
+        showBuilderView();
+        renderAll();
+      }
+
+      function bindHomeActions(){
+        $("formsCreateFormBtn").addEventListener("click", addNewForm);
+
+        document.querySelectorAll("#formsStatusTabs [data-status-filter]").forEach(btn => {
+          btn.addEventListener("click", function(){
+            state.homeFilter = btn.dataset.statusFilter || "draft";
+            renderHomeTabs();
+            renderFormsList();
+            saveState();
+          });
+        });
+
+        $("formsListBox").addEventListener("click", function(e){
+          const btn = e.target.closest("[data-form-action]");
+          if (!btn) return;
+
+          const action = btn.dataset.formAction;
+          const formId = btn.dataset.formId;
+          const form = state.forms.find(item => item.id === formId);
+          if (!form) return;
+
+          if (action === "open"){
+            state.activeFormId = form.id;
+            state.builderTab = "questions";
+            saveState();
+            showBuilderView();
+            renderAll();
+            return;
+          }
+
+          if (action === "duplicate"){
+            const copy = clone(form);
+            copy.id = uid("form");
+            copy.title = (form.title || "Untitled Form") ? (form.title || "Untitled Form") + " Copy" : "Untitled Form Copy";
+            copy.status = "draft";
+            copy.createdAt = new Date().toISOString();
+            copy.updatedAt = new Date().toISOString();
+            copy.questions = (copy.questions || []).map(q => {
+              q.id = uid("question");
+              return q;
+            });
+            state.forms.unshift(copy);
+            state.activeFormId = copy.id;
+            state.homeFilter = "draft";
+            saveState();
+            renderAll();
+            return;
+          }
+
+          if (action === "delete"){
+            const confirmed = confirm(`Delete "${form.title || "Untitled Form"}"?`);
+            if (!confirmed) return;
+
+            state.forms = state.forms.filter(item => item.id !== form.id);
+            if (state.activeFormId === form.id){
+              state.activeFormId = null;
+            }
+            saveState();
+            renderAll();
+          }
+        });
+      }
+
+      function bindBuilderActions(){
+        $("formsBackHomeBtn").addEventListener("click", function(){
+          showHomeView();
+          renderAll();
+        });
+
+        document.querySelectorAll("#formsBuilderTabs [data-builder-tab]").forEach(btn => {
+          btn.addEventListener("click", function(){
+            state.builderTab = btn.dataset.builderTab || "questions";
+            saveState();
+            renderBuilderTabVisibility();
+          });
+        });
+
+        $("formsPreviewModeBtn").addEventListener("click", function(){
+          state.builderTab = "preview";
+          saveState();
+          renderBuilderTabVisibility();
+        });
+
+        $("previewBackToQuestionsBtn").addEventListener("click", function(){
+          state.builderTab = "questions";
+          saveState();
+          renderBuilderTabVisibility();
+        });
+
+        $("formsSaveDraftBtn").addEventListener("click", saveDraftActiveForm);
+        $("formsBottomSaveDraftBtn").addEventListener("click", saveDraftActiveForm);
+
+        $("formsPublishBtn").addEventListener("click", publishActiveForm);
+        $("formsBottomPublishBtn").addEventListener("click", publishActiveForm);
+
+        $("formsBottomPreviewBtn").addEventListener("click", function(){
+          state.builderTab = "preview";
+          saveState();
+          renderBuilderTabVisibility();
+        });
+
+        $("previewSubmitBtn").addEventListener("click", function(){
+          $("previewSubmitSuccess").classList.remove("forms-hidden");
+        });
+      }
+
+      function saveDraftActiveForm(){
+        const form = getActiveForm();
+        if (!form) return;
+        form.status = "draft";
+        touchForm(form);
+        renderAll();
+      }
+
+      function publishActiveForm(){
+        const form = getActiveForm();
+        if (!form) return;
+
+        if (!String(form.title || "").trim()){
+          alert("Add form title first.");
+          return;
+        }
+
+        if (!(form.questions || []).length){
+          alert("Add at least one question before publishing.");
+          return;
+        }
+
+        form.status = "published";
+        touchForm(form);
+        state.homeFilter = "published";
+        renderAll();
+      }
+
+      function bindSetupFields(){
+        const fieldMap = [
+          ["formTitleInput", "title"],
+          ["formDescriptionInput", "description"],
+          ["formTargetAudience", "targetAudience"],
+          ["formOpenDateInput", "openDate"],
+          ["formCloseDateInput", "closeDate"],
+          ["formResponseRule", "responseRule"],
+          ["formIdentityMode", "identityMode"],
+          ["formStatusSelect", "status"]
+        ];
+
+        fieldMap.forEach(([id, key]) => {
+          const el = $(id);
+
+          el.addEventListener("input", function(){
+            const form = getActiveForm();
+            if (!form) return;
+            form[key] = el.value;
+            touchForm(form);
+            renderFormsList();
+          });
+
+          el.addEventListener("change", function(){
+            const form = getActiveForm();
+            if (!form) return;
+            form[key] = el.value;
+            touchForm(form);
+            renderFormsList();
+          });
+        });
+      }
+
+      function bindQuestionTypeButtons(){
+        document.querySelectorAll("#screen-forms [data-question-type]").forEach(btn => {
+          btn.addEventListener("click", function(){
+            const type = btn.dataset.questionType;
+            const form = getActiveForm();
+            if (!form) return;
+
+            form.questions.push(createQuestion(type));
+            state.builderTab = "questions";
+            touchForm(form);
+            renderQuestions();
+            renderPreview();
+          });
+        });
+      }
+
+      function moveArrayItem(arr, from, to){
+        if (to < 0 || to >= arr.length) return;
+        const item = arr.splice(from, 1)[0];
+        arr.splice(to, 0, item);
+      }
+
+      function bindQuestionActions(){
+        const list = $("formsQuestionList");
+
+        list.addEventListener("input", function(e){
+          const target = e.target;
+          const field = target.dataset.questionInput;
+          const questionId = target.dataset.questionId;
+          if (!field || !questionId) return;
+
+          const form = getActiveForm();
+          if (!form) return;
+
+          const question = form.questions.find(q => q.id === questionId);
+          if (!question) return;
+
+          if (field === "title") question.title = target.value;
+          if (field === "helpText") question.helpText = target.value;
+          if (field === "placeholder") question.placeholder = target.value;
+          if (field === "fileTypes") question.fileTypes = target.value;
+          if (field === "maxFileSizeMb") question.maxFileSizeMb = Math.max(1, Number(target.value || 1));
+          if (field === "maxFiles") question.maxFiles = Math.max(1, Number(target.value || 1));
+
+          if (field === "option"){
+            const optionIndex = Number(target.dataset.optionIndex);
+            question.options[optionIndex] = target.value;
+          }
+
+          touchForm(form);
+          renderFormsList();
+          if (state.builderTab === "preview") renderPreview();
+        });
+
+        list.addEventListener("change", function(e){
+          const target = e.target;
+          const field = target.dataset.questionInput;
+          const questionId = target.dataset.questionId;
+          const action = target.dataset.questionAction;
+
+          const form = getActiveForm();
+          if (!form) return;
+
+          if (action === "toggle-required"){
+            const q = form.questions.find(item => item.id === questionId);
+            if (!q) return;
+            q.required = !!target.checked;
+            touchForm(form);
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (field === "type"){
+            const q = form.questions.find(item => item.id === questionId);
+            if (!q) return;
+
+            const newType = target.value;
+            const fresh = createQuestion(newType);
+
+            q.type = fresh.type;
+            q.options = fresh.options;
+            q.fileTypes = fresh.fileTypes;
+            q.maxFileSizeMb = fresh.maxFileSizeMb;
+            q.maxFiles = fresh.maxFiles;
+
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+          }
+        });
+
+        list.addEventListener("click", function(e){
+          const btn = e.target.closest("[data-question-action]");
+          if (!btn) return;
+
+          const action = btn.dataset.questionAction;
+          const questionId = btn.dataset.questionId;
+          const form = getActiveForm();
+          if (!form) return;
+
+          const qIndex = form.questions.findIndex(item => item.id === questionId);
+          if (qIndex === -1) return;
+          const question = form.questions[qIndex];
+
+          if (action === "delete"){
+            form.questions.splice(qIndex, 1);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "duplicate"){
+            const copy = clone(question);
+            copy.id = uid("question");
+            form.questions.splice(qIndex + 1, 0, copy);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "move-up"){
+            moveArrayItem(form.questions, qIndex, qIndex - 1);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "move-down"){
+            moveArrayItem(form.questions, qIndex, qIndex + 1);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "add-option"){
+            if (!Array.isArray(question.options)) question.options = [];
+            question.options.push("");
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "delete-option"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            question.options.splice(optionIndex, 1);
+            if (!question.options.length && ["multiple_choice", "checkboxes", "dropdown"].includes(question.type)){
+              question.options = [""];
+            }
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "option-up"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            moveArrayItem(question.options, optionIndex, optionIndex - 1);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+            return;
+          }
+
+          if (action === "option-down"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            moveArrayItem(question.options, optionIndex, optionIndex + 1);
+            touchForm(form);
+            renderQuestions();
+            if (state.builderTab === "preview") renderPreview();
+          }
+        });
+      }
+
+      function init(){
+        loadState();
+        bindHomeActions();
+        bindBuilderActions();
+        bindSetupFields();
+        bindQuestionTypeButtons();
+        bindQuestionActions();
+
+        if (state.activeFormId && getActiveForm()){
+          showBuilderView();
+        } else {
+          showHomeView();
+        }
+
+        renderAll();
+      }
+
+      if (document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
 </section>
