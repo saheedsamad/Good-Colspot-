@@ -1,0 +1,2704 @@
+<section id="screen-forms" class="screen">
+  <style>
+    #screen-forms .forms-shell{
+      display:grid;
+      gap:18px;
+    }
+
+    #screen-forms .forms-toolbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .forms-toolbar-left{
+      min-width:0;
+    }
+
+    #screen-forms .forms-title{
+      margin:0;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      color:#0f172a;
+    }
+
+    #screen-forms .forms-sub{
+      margin:8px 0 0;
+      font-size:14px;
+      color:var(--muted, #6b7280);
+      line-height:1.6;
+      max-width:780px;
+    }
+
+    #screen-forms .forms-toolbar-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .forms-search{
+      width:260px;
+      min-width:220px;
+      height:48px;
+      background:#fff;
+      border:1px solid var(--line, #e5e7eb);
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 14px;
+      box-shadow:var(--shadow-soft, 0 10px 25px rgba(37,99,235,.08));
+    }
+
+    #screen-forms .forms-search svg{
+      width:18px;
+      height:18px;
+      color:#64748b;
+      flex-shrink:0;
+    }
+
+    #screen-forms .forms-search input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      font-size:14px;
+      color:#0f172a;
+    }
+
+    #screen-forms .forms-primary-btn,
+    #screen-forms .forms-secondary-btn,
+    #screen-forms .forms-danger-btn,
+    #screen-forms .forms-soft-btn{
+      border:none;
+      border-radius:16px;
+      min-height:48px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      cursor:pointer;
+      transition:.18s ease;
+      white-space:nowrap;
+    }
+
+    #screen-forms .forms-primary-btn{
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;
+      box-shadow:0 16px 30px rgba(37,99,235,.22);
+    }
+
+    #screen-forms .forms-secondary-btn{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    #screen-forms .forms-soft-btn{
+      background:#fff;
+      color:#0f172a;
+      border:1px solid var(--line, #e5e7eb);
+    }
+
+    #screen-forms .forms-danger-btn{
+      background:#fef2f2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+    }
+
+    #screen-forms .forms-primary-btn svg,
+    #screen-forms .forms-secondary-btn svg,
+    #screen-forms .forms-danger-btn svg,
+    #screen-forms .forms-soft-btn svg{
+      width:18px;
+      height:18px;
+      flex-shrink:0;
+    }
+
+    #screen-forms .forms-overview-grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:14px;
+    }
+
+    #screen-forms .forms-stat{
+      background:#fff;
+      border:1px solid var(--line, #e5e7eb);
+      border-radius:22px;
+      padding:18px;
+      min-height:120px;
+      box-shadow:var(--shadow-soft, 0 10px 25px rgba(37,99,235,.08));
+      position:relative;
+      overflow:hidden;
+    }
+
+    #screen-forms .forms-stat::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      bottom:-18px;
+      width:84px;
+      height:84px;
+      border-radius:50%;
+      background:#eff6ff;
+    }
+
+    #screen-forms .forms-stat-label{
+      position:relative;
+      z-index:1;
+      font-size:13px;
+      color:#64748b;
+      font-weight:700;
+      margin-bottom:16px;
+    }
+
+    #screen-forms .forms-stat-value{
+      position:relative;
+      z-index:1;
+      font-size:36px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.05em;
+      color:#0f172a;
+    }
+
+    #screen-forms .forms-stat-note{
+      position:relative;
+      z-index:1;
+      margin-top:8px;
+      font-size:12px;
+      color:#64748b;
+    }
+
+    #screen-forms .forms-main-grid{
+      display:grid;
+      grid-template-columns:1.02fr 1.3fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    #screen-forms .forms-panel{
+      background:#fff;
+      border:1px solid var(--line, #e5e7eb);
+      border-radius:24px;
+      box-shadow:var(--shadow-soft, 0 10px 25px rgba(37,99,235,.08));
+      overflow:hidden;
+    }
+
+    #screen-forms .forms-panel-head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line, #e5e7eb);
+      background:linear-gradient(180deg,#ffffff 0%, #fafcff 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .forms-panel-title{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    #screen-forms .forms-panel-sub{
+      margin:5px 0 0;
+      font-size:13px;
+      color:#64748b;
+      line-height:1.5;
+    }
+
+    #screen-forms .forms-panel-body{
+      padding:18px 20px;
+    }
+
+    #screen-forms .forms-tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .forms-tab{
+      border:none;
+      background:#f8fbff;
+      color:#334155;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    #screen-forms .forms-tab.active{
+      background:#2563eb;
+      color:#fff;
+    }
+
+    #screen-forms .forms-filter-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    #screen-forms .forms-select,
+    #screen-forms .forms-input,
+    #screen-forms .forms-textarea{
+      width:100%;
+      background:#fff;
+      color:#0f172a;
+      border:1px solid #dbe3ee;
+      border-radius:16px;
+      outline:none;
+      padding:0 14px;
+      font-size:14px;
+    }
+
+    #screen-forms .forms-select,
+    #screen-forms .forms-input{
+      min-height:50px;
+    }
+
+    #screen-forms .forms-textarea{
+      min-height:108px;
+      resize:vertical;
+      padding:14px;
+      line-height:1.6;
+    }
+
+    #screen-forms .forms-select:focus,
+    #screen-forms .forms-input:focus,
+    #screen-forms .forms-textarea:focus{
+      border-color:#2563eb;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    #screen-forms .forms-inline-field{
+      display:grid;
+      gap:8px;
+      min-width:0;
+      flex:1;
+    }
+
+    #screen-forms .forms-inline-label,
+    #screen-forms .forms-field label{
+      font-size:13px;
+      font-weight:800;
+      color:#0f172a;
+    }
+
+    #screen-forms .forms-field{
+      display:grid;
+      gap:8px;
+    }
+
+    #screen-forms .forms-fields-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    #screen-forms .forms-fields-grid.three{
+      grid-template-columns:1fr 1fr 1fr;
+    }
+
+    #screen-forms .forms-form-card{
+      border:1px solid #e9eef5;
+      border-radius:20px;
+      padding:16px;
+      background:#fff;
+      margin-bottom:14px;
+    }
+
+    #screen-forms .forms-form-card:last-child{
+      margin-bottom:0;
+    }
+
+    #screen-forms .forms-form-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    #screen-forms .forms-form-name{
+      font-size:16px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.35;
+      margin:0;
+    }
+
+    #screen-forms .forms-form-desc{
+      font-size:13px;
+      color:#64748b;
+      line-height:1.5;
+      margin:6px 0 0;
+    }
+
+    #screen-forms .forms-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    #screen-forms .forms-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    #screen-forms .forms-badge.green{
+      background:#effdf4;
+      color:#15803d;
+    }
+
+    #screen-forms .forms-badge.orange{
+      background:#fff7ed;
+      color:#c2410c;
+    }
+
+    #screen-forms .forms-badge.red{
+      background:#fef2f2;
+      color:#b91c1c;
+    }
+
+    #screen-forms .forms-form-meta{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-top:14px;
+    }
+
+    #screen-forms .forms-form-meta-item{
+      min-height:52px;
+      border:1px solid #edf2f7;
+      border-radius:14px;
+      background:#fbfdff;
+      padding:10px 12px;
+    }
+
+    #screen-forms .forms-form-meta-label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:#64748b;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    #screen-forms .forms-form-meta-value{
+      font-size:13px;
+      color:#0f172a;
+      font-weight:700;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    #screen-forms .forms-form-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    #screen-forms .forms-mini-btn{
+      border:none;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    #screen-forms .forms-mini-btn svg{
+      width:15px;
+      height:15px;
+    }
+
+    #screen-forms .forms-mini-btn.blue{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    #screen-forms .forms-mini-btn.green{
+      background:#effdf4;
+      color:#15803d;
+    }
+
+    #screen-forms .forms-mini-btn.orange{
+      background:#fff7ed;
+      color:#c2410c;
+    }
+
+    #screen-forms .forms-mini-btn.red{
+      background:#fef2f2;
+      color:#b91c1c;
+    }
+
+    #screen-forms .forms-mini-btn.dark{
+      background:#0f172a;
+      color:#fff;
+    }
+
+    #screen-forms .forms-builder{
+      display:grid;
+      gap:18px;
+    }
+
+    #screen-forms .forms-builder-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .forms-builder-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    #screen-forms .forms-section-card{
+      border:1px solid #e9eef5;
+      background:#fbfdff;
+      border-radius:22px;
+      padding:16px;
+    }
+
+    #screen-forms .forms-question-list{
+      display:grid;
+      gap:16px;
+      margin-top:16px;
+    }
+
+    #screen-forms .question-card{
+      border:1px solid #e5edf7;
+      background:#fff;
+      border-radius:22px;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+      overflow:hidden;
+    }
+
+    #screen-forms .question-head{
+      padding:16px 18px;
+      border-bottom:1px solid #edf2f7;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+    }
+
+    #screen-forms .question-head-left{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    #screen-forms .question-number{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      font-weight:900;
+      flex-shrink:0;
+    }
+
+    #screen-forms .question-head-right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    #screen-forms .question-body{
+      padding:16px 18px 18px;
+      display:grid;
+      gap:16px;
+    }
+
+    #screen-forms .question-row{
+      display:grid;
+      gap:14px;
+    }
+
+    #screen-forms .question-row.two{
+      grid-template-columns:1fr 240px;
+    }
+
+    #screen-forms .question-row.three{
+      grid-template-columns:1fr 1fr 1fr;
+    }
+
+    #screen-forms .required-toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:42px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#f8fbff;
+      border:1px solid #e5edf7;
+      font-size:13px;
+      font-weight:800;
+      color:#334155;
+    }
+
+    #screen-forms .switch{
+      position:relative;
+      width:46px;
+      height:26px;
+      flex-shrink:0;
+    }
+
+    #screen-forms .switch input{
+      opacity:0;
+      width:0;
+      height:0;
+      position:absolute;
+    }
+
+    #screen-forms .slider{
+      position:absolute;
+      inset:0;
+      background:#cbd5e1;
+      border-radius:999px;
+      transition:.2s ease;
+      cursor:pointer;
+    }
+
+    #screen-forms .slider::before{
+      content:"";
+      position:absolute;
+      width:20px;
+      height:20px;
+      left:3px;
+      top:3px;
+      border-radius:50%;
+      background:#fff;
+      transition:.2s ease;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+    }
+
+    #screen-forms .switch input:checked + .slider{
+      background:#22c55e;
+    }
+
+    #screen-forms .switch input:checked + .slider::before{
+      transform:translateX(20px);
+    }
+
+    #screen-forms .option-list{
+      display:grid;
+      gap:10px;
+    }
+
+    #screen-forms .option-row{
+      display:grid;
+      grid-template-columns:40px 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+
+    #screen-forms .option-bullet{
+      width:40px;
+      height:42px;
+      border-radius:12px;
+      border:1px solid #e5edf7;
+      background:#fbfdff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:900;
+      color:#64748b;
+    }
+
+    #screen-forms .option-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .icon-btn{
+      border:none;
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      background:#f8fbff;
+      color:#334155;
+      border:1px solid #e5edf7;
+    }
+
+    #screen-forms .icon-btn svg{
+      width:16px;
+      height:16px;
+    }
+
+    #screen-forms .question-footer{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    #screen-forms .question-footer-left,
+    #screen-forms .question-footer-right{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    #screen-forms .forms-note{
+      padding:14px 16px;
+      border-radius:16px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:13px;
+      line-height:1.5;
+      border:1px solid #bfdbfe;
+    }
+
+    #screen-forms .forms-warning{
+      padding:14px 16px;
+      border-radius:16px;
+      background:#fff7ed;
+      color:#c2410c;
+      font-size:13px;
+      line-height:1.5;
+      border:1px solid #fed7aa;
+    }
+
+    #screen-forms .forms-danger-note{
+      padding:14px 16px;
+      border-radius:16px;
+      background:#fef2f2;
+      color:#b91c1c;
+      font-size:13px;
+      line-height:1.5;
+      border:1px solid #fecaca;
+    }
+
+    #screen-forms .student-preview{
+      border:1px solid #e5edf7;
+      border-radius:22px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+      overflow:hidden;
+    }
+
+    #screen-forms .student-preview-head{
+      padding:24px 22px 18px;
+      border-bottom:1px solid #edf2f7;
+      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 60%, #60a5fa 100%);
+      color:#fff;
+    }
+
+    #screen-forms .student-preview-title{
+      margin:0;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    #screen-forms .student-preview-desc{
+      margin:10px 0 0;
+      font-size:14px;
+      line-height:1.65;
+      opacity:.96;
+    }
+
+    #screen-forms .student-preview-body{
+      padding:20px;
+      display:grid;
+      gap:16px;
+    }
+
+    #screen-forms .student-q{
+      border:1px solid #e9eef5;
+      border-radius:20px;
+      padding:18px;
+      background:#fbfdff;
+    }
+
+    #screen-forms .student-q-title{
+      font-size:15px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.45;
+      margin:0 0 4px;
+    }
+
+    #screen-forms .student-q-help{
+      font-size:12px;
+      color:#64748b;
+      margin-bottom:12px;
+      line-height:1.5;
+    }
+
+    #screen-forms .student-required{
+      color:#dc2626;
+      margin-left:4px;
+    }
+
+    #screen-forms .student-option-list{
+      display:grid;
+      gap:10px;
+    }
+
+    #screen-forms .student-option{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:44px;
+      padding:0 14px;
+      border:1px solid #e5edf7;
+      border-radius:14px;
+      background:#fff;
+      color:#0f172a;
+      font-size:14px;
+    }
+
+    #screen-forms .student-option input{
+      accent-color:#2563eb;
+    }
+
+    #screen-forms .student-preview-footer{
+      padding:0 20px 20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .responses-wrap{
+      display:grid;
+      gap:16px;
+    }
+
+    #screen-forms .responses-summary{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+
+    #screen-forms .responses-stat{
+      min-height:96px;
+      border-radius:18px;
+      border:1px solid #e5edf7;
+      background:#fbfdff;
+      padding:14px 16px;
+    }
+
+    #screen-forms .responses-stat-label{
+      font-size:12px;
+      color:#64748b;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+
+    #screen-forms .responses-stat-value{
+      font-size:28px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.04em;
+      color:#0f172a;
+    }
+
+    #screen-forms .responses-tools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    #screen-forms .responses-table-wrap{
+      overflow:auto;
+      border:1px solid #e5edf7;
+      border-radius:20px;
+      background:#fff;
+    }
+
+    #screen-forms .responses-table{
+      width:100%;
+      min-width:860px;
+      border-collapse:collapse;
+    }
+
+    #screen-forms .responses-table th{
+      text-align:left;
+      font-size:12px;
+      color:#64748b;
+      font-weight:800;
+      padding:14px 16px;
+      border-bottom:1px solid #edf2f7;
+      background:#fbfdff;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    #screen-forms .responses-table td{
+      font-size:13px;
+      color:#0f172a;
+      padding:14px 16px;
+      border-bottom:1px solid #edf2f7;
+      vertical-align:top;
+      line-height:1.5;
+    }
+
+    #screen-forms .responses-table tr:last-child td{
+      border-bottom:none;
+    }
+
+    #screen-forms .empty-card{
+      min-height:180px;
+      border:1px dashed #d7e0eb;
+      border-radius:20px;
+      background:#fbfdff;
+      color:#64748b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:22px;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    #screen-forms .section-hidden{
+      display:none !important;
+    }
+
+    #screen-forms .save-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:40px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#effdf4;
+      color:#15803d;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid #bbf7d0;
+    }
+
+    #screen-forms .save-pill svg{
+      width:15px;
+      height:15px;
+    }
+
+    #screen-forms .question-type-strip{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    #screen-forms .type-btn{
+      border:none;
+      min-height:48px;
+      padding:0 12px;
+      border-radius:14px;
+      background:#f8fbff;
+      color:#334155;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      border:1px solid #e5edf7;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-align:center;
+    }
+
+    #screen-forms .type-btn svg{
+      width:16px;
+      height:16px;
+      flex-shrink:0;
+    }
+
+    #screen-forms .builder-section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    #screen-forms .builder-section-title{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      color:#0f172a;
+      letter-spacing:-.02em;
+    }
+
+    #screen-forms .helper-text{
+      font-size:12px;
+      color:#64748b;
+      line-height:1.5;
+    }
+
+    #screen-forms .student-success{
+      border:1px solid #bbf7d0;
+      background:#effdf4;
+      color:#166534;
+      border-radius:20px;
+      padding:18px;
+      font-size:14px;
+      line-height:1.6;
+      display:none;
+    }
+
+    @media (max-width:1400px){
+      #screen-forms .stats-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+
+      #screen-forms .forms-main-grid{
+        grid-template-columns:1fr;
+      }
+
+      #screen-forms .responses-summary{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      #screen-forms .question-type-strip{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    @media (max-width:900px){
+      #screen-forms .forms-overview-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      #screen-forms .forms-fields-grid,
+      #screen-forms .forms-fields-grid.three,
+      #screen-forms .question-row.two,
+      #screen-forms .question-row.three{
+        grid-template-columns:1fr;
+      }
+
+      #screen-forms .responses-summary{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:640px){
+      #screen-forms .forms-overview-grid,
+      #screen-forms .stats-grid,
+      #screen-forms .question-type-strip{
+        grid-template-columns:1fr;
+      }
+
+      #screen-forms .forms-search{
+        width:100%;
+      }
+    }
+  </style>
+
+  <div class="forms-shell">
+    <div class="forms-toolbar">
+      <div class="forms-toolbar-left">
+        <h2 class="forms-title">Forms</h2>
+        <p class="forms-sub">
+          Manage school forms, build new forms with question blocks, preview what students will see, and monitor responses from one place.
+        </p>
+      </div>
+
+      <div class="forms-toolbar-right">
+        <label class="forms-search">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="formsSearchInput" placeholder="Search forms..." />
+        </label>
+
+        <button type="button" class="forms-primary-btn" id="formsCreateNewBtn">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Create Form</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="forms-overview-grid">
+      <div class="forms-stat">
+        <div class="forms-stat-label">All Forms</div>
+        <div class="forms-stat-value" id="formsStatAll">0</div>
+        <div class="forms-stat-note">Every form created in this workspace</div>
+      </div>
+
+      <div class="forms-stat">
+        <div class="forms-stat-label">Drafts</div>
+        <div class="forms-stat-value" id="formsStatDraft">0</div>
+        <div class="forms-stat-note">Forms not yet published</div>
+      </div>
+
+      <div class="forms-stat">
+        <div class="forms-stat-label">Published</div>
+        <div class="forms-stat-value" id="formsStatPublished">0</div>
+        <div class="forms-stat-note">Active forms visible to users</div>
+      </div>
+
+      <div class="forms-stat">
+        <div class="forms-stat-label">Closed</div>
+        <div class="forms-stat-value" id="formsStatClosed">0</div>
+        <div class="forms-stat-note">No longer accepting responses</div>
+      </div>
+
+      <div class="forms-stat">
+        <div class="forms-stat-label">Responses</div>
+        <div class="forms-stat-value" id="formsStatResponses">0</div>
+        <div class="forms-stat-note">Total stored responses in this page</div>
+      </div>
+    </div>
+
+    <div class="forms-main-grid">
+      <div class="forms-panel">
+        <div class="forms-panel-head">
+          <div>
+            <h3 class="forms-panel-title">Forms List</h3>
+            <p class="forms-panel-sub">Open, filter, edit, duplicate, and manage forms.</p>
+          </div>
+
+          <div class="forms-tabs" id="formsStatusTabs">
+            <button class="forms-tab active" type="button" data-filter="all">All</button>
+            <button class="forms-tab" type="button" data-filter="draft">Draft</button>
+            <button class="forms-tab" type="button" data-filter="published">Published</button>
+            <button class="forms-tab" type="button" data-filter="closed">Closed</button>
+            <button class="forms-tab" type="button" data-filter="archived">Archived</button>
+          </div>
+        </div>
+
+        <div class="forms-panel-body">
+          <div id="formsListWrap"></div>
+        </div>
+      </div>
+
+      <div class="forms-panel">
+        <div class="forms-panel-head">
+          <div>
+            <h3 class="forms-panel-title" id="formsWorkspaceTitle">Form Builder</h3>
+            <p class="forms-panel-sub" id="formsWorkspaceSub">Create and manage forms for school use.</p>
+          </div>
+
+          <div class="forms-tabs" id="formsWorkspaceTabs">
+            <button class="forms-tab active" type="button" data-workspace="builder">Builder</button>
+            <button class="forms-tab" type="button" data-workspace="preview">Student Preview</button>
+            <button class="forms-tab" type="button" data-workspace="responses">Responses</button>
+          </div>
+        </div>
+
+        <div class="forms-panel-body">
+          <div class="forms-builder" id="formsBuilderWorkspace">
+            <div class="forms-builder-top">
+              <div class="save-pill" id="formsSaveState">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Ready</span>
+              </div>
+
+              <div class="forms-builder-actions">
+                <button type="button" class="forms-secondary-btn" id="formsSaveDraftBtn">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 5h11l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M8 5v5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Save Draft</span>
+                </button>
+
+                <button type="button" class="forms-soft-btn" id="formsDuplicateBtn">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                  </svg>
+                  <span>Duplicate</span>
+                </button>
+
+                <button type="button" class="forms-primary-btn" id="formsPublishBtn">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="m13 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Publish Form</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="forms-section-card">
+              <div class="builder-section-head">
+                <div>
+                  <h4 class="builder-section-title">Form Setup</h4>
+                  <div class="helper-text">Start with the form title, target audience, dates, and submission rules.</div>
+                </div>
+              </div>
+
+              <div class="forms-fields-grid">
+                <div class="forms-field">
+                  <label for="formsTitleInput">Form Title</label>
+                  <input class="forms-input" id="formsTitleInput" type="text" placeholder="e.g. Student Feedback Form" />
+                </div>
+
+                <div class="forms-field">
+                  <label for="formsAudienceSelect">Target Audience</label>
+                  <select class="forms-select" id="formsAudienceSelect">
+                    <option value="all_students">All Students</option>
+                    <option value="all_staff">All Staff</option>
+                    <option value="lecturers">Lecturers</option>
+                    <option value="department_students">Department Students</option>
+                    <option value="specific_group">Specific Group</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="forms-field" style="margin-top:14px;">
+                <label for="formsDescriptionInput">Description</label>
+                <textarea class="forms-textarea" id="formsDescriptionInput" placeholder="Explain what this form is about..."></textarea>
+              </div>
+
+              <div class="forms-fields-grid three" style="margin-top:14px;">
+                <div class="forms-field">
+                  <label for="formsStatusSelect">Status</label>
+                  <select class="forms-select" id="formsStatusSelect">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="closed">Closed</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                <div class="forms-field">
+                  <label for="formsOpenDateInput">Open Date</label>
+                  <input class="forms-input" id="formsOpenDateInput" type="date" />
+                </div>
+
+                <div class="forms-field">
+                  <label for="formsCloseDateInput">Close Date</label>
+                  <input class="forms-input" id="formsCloseDateInput" type="date" />
+                </div>
+              </div>
+
+              <div class="forms-fields-grid" style="margin-top:14px;">
+                <div class="forms-field">
+                  <label for="formsResponseRuleSelect">Response Rule</label>
+                  <select class="forms-select" id="formsResponseRuleSelect">
+                    <option value="one">One response per user</option>
+                    <option value="many">Allow multiple responses</option>
+                  </select>
+                </div>
+
+                <div class="forms-field">
+                  <label for="formsIdentitySelect">Collect Identity</label>
+                  <select class="forms-select" id="formsIdentitySelect">
+                    <option value="auto">Use logged-in user details</option>
+                    <option value="manual">Ask user to type details</option>
+                    <option value="anonymous">Anonymous responses</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="forms-section-card">
+              <div class="builder-section-head">
+                <div>
+                  <h4 class="builder-section-title">Quick Add Question</h4>
+                  <div class="helper-text">Choose a question type to add a new question block.</div>
+                </div>
+              </div>
+
+              <div class="question-type-strip">
+                <button class="type-btn" type="button" data-add-type="short_answer">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 7.75h14M5 12h14M5 16.25h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Short Answer</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="paragraph">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 7.75h14M5 12h14M5 16.25h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Paragraph</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="multiple_choice">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="6.5" cy="7.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                    <circle cx="6.5" cy="12" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                    <circle cx="6.5" cy="16.5" r="1.75" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Multiple Choice</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="checkboxes">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4.75" y="5.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="4.75" y="10.25" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="4.75" y="14.75" width="3.5" height="3.5" rx=".6" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M11 7.5h8M11 12h8M11 16.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Checkboxes</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="dropdown">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4.75" y="6.25" width="14.5" height="11.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="m15 11 2 2 2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Dropdown</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="date">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4.75" y="5.75" width="14.5" height="12.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M8 4.75v3M16 4.75v3M4.75 9.5h14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Date</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="file_upload">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 16V6M12 6l-3 3M12 6l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.75 15.75v1.5A1.75 1.75 0 0 0 7.5 19h9a1.75 1.75 0 0 0 1.75-1.75v-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>File Upload</span>
+                </button>
+
+                <button class="type-btn" type="button" data-add-type="yes_no">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Yes / No</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="forms-section-card">
+              <div class="builder-section-head">
+                <div>
+                  <h4 class="builder-section-title">Questions</h4>
+                  <div class="helper-text">Edit questions, options, requirement settings, and order.</div>
+                </div>
+              </div>
+
+              <div class="forms-warning" id="formsQuestionsEmptyNote">
+                No questions yet. Use the quick add buttons above to create your first question block.
+              </div>
+
+              <div class="forms-question-list" id="formsQuestionList"></div>
+            </div>
+          </div>
+
+          <div class="student-preview section-hidden" id="formsPreviewWorkspace">
+            <div class="student-preview-head">
+              <h3 class="student-preview-title" id="studentPreviewTitle">Untitled Form</h3>
+              <p class="student-preview-desc" id="studentPreviewDescription">Form description will appear here.</p>
+            </div>
+
+            <div class="student-preview-body" id="studentPreviewBody"></div>
+
+            <div class="student-success" id="studentPreviewSuccess">
+              Form submitted successfully in preview mode.
+            </div>
+
+            <div class="student-preview-footer">
+              <button type="button" class="forms-secondary-btn" id="studentPreviewSubmitBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="m13 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Submit Preview</span>
+              </button>
+
+              <button type="button" class="forms-soft-btn" id="studentPreviewResetBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 4v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Reset Preview</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="responses-wrap section-hidden" id="formsResponsesWorkspace">
+            <div class="responses-summary">
+              <div class="responses-stat">
+                <div class="responses-stat-label">Total Responses</div>
+                <div class="responses-stat-value" id="responsesStatTotal">0</div>
+              </div>
+
+              <div class="responses-stat">
+                <div class="responses-stat-label">Latest Response</div>
+                <div class="responses-stat-value" id="responsesStatLatest">--</div>
+              </div>
+
+              <div class="responses-stat">
+                <div class="responses-stat-label">Published Forms</div>
+                <div class="responses-stat-value" id="responsesStatPublished">0</div>
+              </div>
+
+              <div class="responses-stat">
+                <div class="responses-stat-label">Draft Forms</div>
+                <div class="responses-stat-value" id="responsesStatDraft">0</div>
+              </div>
+            </div>
+
+            <div class="responses-tools">
+              <button type="button" class="forms-secondary-btn" id="formsAddMockResponseBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Add Mock Response</span>
+              </button>
+
+              <button type="button" class="forms-soft-btn" id="formsExportResponsesBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 16V6M12 16l-3-3M12 16l3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5.75 18.25h12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <span>Export CSV</span>
+              </button>
+            </div>
+
+            <div class="responses-table-wrap">
+              <table class="responses-table">
+                <thead>
+                  <tr>
+                    <th>Form</th>
+                    <th>Respondent</th>
+                    <th>Audience</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Summary</th>
+                  </tr>
+                </thead>
+                <tbody id="formsResponsesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="forms-panel">
+      <div class="forms-panel-head">
+        <div>
+          <h3 class="forms-panel-title">How this Forms page works</h3>
+          <p class="forms-panel-sub">Builder for agents, preview for student view, and responses for monitoring.</p>
+        </div>
+      </div>
+
+      <div class="forms-panel-body">
+        <div class="forms-note">
+          Agents build forms with blocks. Each question can be required or optional, options can be added for choice fields, and forms can be saved as draft or published later.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      if (window.__formsSectionInit) return;
+      window.__formsSectionInit = true;
+
+      const STORAGE_KEY = "colspot_forms_agent_workspace_v1";
+      const RESPONSES_KEY = "colspot_forms_agent_responses_v1";
+
+      const state = {
+        workspaceMode: "builder",
+        listFilter: "all",
+        searchTerm: "",
+        forms: [],
+        responses: [],
+        activeFormId: null
+      };
+
+      function $(id){
+        return document.getElementById(id);
+      }
+
+      function uid(prefix = "id"){
+        return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+      }
+
+      function escapeHtml(value){
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function nowDate(){
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function formatDate(value){
+        if (!value) return "—";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return value;
+        return d.toLocaleDateString();
+      }
+
+      function formatDateTime(value){
+        if (!value) return "—";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return value;
+        return d.toLocaleString();
+      }
+
+      function deepClone(obj){
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      function saveWorkspace(){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          forms: state.forms,
+          activeFormId: state.activeFormId
+        }));
+
+        const pill = $("formsSaveState");
+        if (pill) {
+          pill.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Saved</span>
+          `;
+        }
+      }
+
+      function saveResponses(){
+        localStorage.setItem(RESPONSES_KEY, JSON.stringify(state.responses));
+      }
+
+      function loadWorkspace(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw){
+            const parsed = JSON.parse(raw);
+            state.forms = Array.isArray(parsed.forms) ? parsed.forms : [];
+            state.activeFormId = parsed.activeFormId || null;
+          }
+        }catch(err){
+          console.error("Failed to load forms workspace:", err);
+        }
+
+        try{
+          const rawResponses = localStorage.getItem(RESPONSES_KEY);
+          if (rawResponses){
+            const parsedResponses = JSON.parse(rawResponses);
+            state.responses = Array.isArray(parsedResponses) ? parsedResponses : [];
+          }
+        }catch(err){
+          console.error("Failed to load form responses:", err);
+        }
+
+        if (!state.forms.length){
+          const starterForm = createEmptyForm();
+          starterForm.title = "New Student Feedback";
+          starterForm.description = "Collect feedback from students about the school experience.";
+          starterForm.targetAudience = "all_students";
+          starterForm.status = "draft";
+          starterForm.questions = [
+            createQuestion("short_answer"),
+            createQuestion("multiple_choice")
+          ];
+          starterForm.questions[0].title = "Enter your full name";
+          starterForm.questions[0].required = true;
+          starterForm.questions[0].helpText = "This can also be auto-filled if identity is collected automatically.";
+
+          starterForm.questions[1].title = "How satisfied are you with the school experience?";
+          starterForm.questions[1].required = true;
+          starterForm.questions[1].options = ["Excellent", "Good", "Average", "Poor"];
+
+          state.forms.push(starterForm);
+          state.activeFormId = starterForm.id;
+          saveWorkspace();
+        }
+
+        if (!state.activeFormId && state.forms.length){
+          state.activeFormId = state.forms[0].id;
+        }
+      }
+
+      function createEmptyForm(){
+        return {
+          id: uid("form"),
+          title: "",
+          description: "",
+          targetAudience: "all_students",
+          status: "draft",
+          openDate: nowDate(),
+          closeDate: "",
+          responseRule: "one",
+          identityMode: "auto",
+          questions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      function createQuestion(type = "short_answer"){
+        const base = {
+          id: uid("q"),
+          type,
+          title: "",
+          helpText: "",
+          placeholder: "",
+          required: false,
+          options: [],
+          fileTypes: "pdf,image",
+          maxFileSize: "5MB",
+          maxFiles: 1
+        };
+
+        if (type === "multiple_choice"){
+          base.title = "New multiple choice question";
+          base.options = ["Option 1", "Option 2"];
+        } else if (type === "checkboxes"){
+          base.title = "New checkbox question";
+          base.options = ["Option 1", "Option 2"];
+        } else if (type === "dropdown"){
+          base.title = "New dropdown question";
+          base.options = ["Option 1", "Option 2"];
+        } else if (type === "paragraph"){
+          base.title = "New paragraph question";
+        } else if (type === "date"){
+          base.title = "New date question";
+        } else if (type === "file_upload"){
+          base.title = "New file upload question";
+        } else if (type === "yes_no"){
+          base.title = "New yes/no question";
+          base.options = ["Yes", "No"];
+        } else {
+          base.title = "New short answer question";
+        }
+
+        return base;
+      }
+
+      function getActiveForm(){
+        return state.forms.find(form => form.id === state.activeFormId) || null;
+      }
+
+      function setActiveForm(formId){
+        state.activeFormId = formId;
+        saveWorkspace();
+        renderAll();
+      }
+
+      function ensureActiveForm(){
+        if (!getActiveForm() && state.forms.length){
+          state.activeFormId = state.forms[0].id;
+        }
+      }
+
+      function markUpdated(form){
+        form.updatedAt = new Date().toISOString();
+        saveWorkspace();
+        renderOverviewStats();
+      }
+
+      function renderOverviewStats(){
+        const all = state.forms.length;
+        const draft = state.forms.filter(f => f.status === "draft").length;
+        const published = state.forms.filter(f => f.status === "published").length;
+        const closed = state.forms.filter(f => f.status === "closed").length;
+        const totalResponses = state.responses.length;
+
+        $("formsStatAll").textContent = String(all);
+        $("formsStatDraft").textContent = String(draft);
+        $("formsStatPublished").textContent = String(published);
+        $("formsStatClosed").textContent = String(closed);
+        $("formsStatResponses").textContent = String(totalResponses);
+
+        $("responsesStatTotal").textContent = String(totalResponses);
+        $("responsesStatPublished").textContent = String(published);
+        $("responsesStatDraft").textContent = String(draft);
+
+        if (state.responses.length){
+          const latest = [...state.responses].sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+          $("responsesStatLatest").textContent = formatDate(latest.submittedAt);
+        } else {
+          $("responsesStatLatest").textContent = "--";
+        }
+      }
+
+      function getStatusBadgeClass(status){
+        if (status === "published") return "green";
+        if (status === "closed") return "orange";
+        if (status === "archived") return "red";
+        return "";
+      }
+
+      function getAudienceLabel(value){
+        const map = {
+          all_students: "All Students",
+          all_staff: "All Staff",
+          lecturers: "Lecturers",
+          department_students: "Department Students",
+          specific_group: "Specific Group"
+        };
+        return map[value] || value || "—";
+      }
+
+      function getTypeLabel(type){
+        const map = {
+          short_answer: "Short Answer",
+          paragraph: "Paragraph",
+          multiple_choice: "Multiple Choice",
+          checkboxes: "Checkboxes",
+          dropdown: "Dropdown",
+          date: "Date",
+          file_upload: "File Upload",
+          yes_no: "Yes / No"
+        };
+        return map[type] || type;
+      }
+
+      function getFilteredForms(){
+        const term = state.searchTerm.trim().toLowerCase();
+
+        return state.forms.filter(form => {
+          const statusMatch = state.listFilter === "all" ? true : form.status === state.listFilter;
+          const textMatch = !term
+            ? true
+            : (
+                String(form.title || "").toLowerCase().includes(term) ||
+                String(form.description || "").toLowerCase().includes(term) ||
+                getAudienceLabel(form.targetAudience).toLowerCase().includes(term)
+              );
+
+          return statusMatch && textMatch;
+        }).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+      }
+
+      function renderFormsList(){
+        const wrap = $("formsListWrap");
+        const forms = getFilteredForms();
+
+        if (!forms.length){
+          wrap.innerHTML = `
+            <div class="empty-card">
+              No forms matched this filter. Create a new form or change your search.
+            </div>
+          `;
+          return;
+        }
+
+        wrap.innerHTML = forms.map(form => {
+          const responsesForForm = state.responses.filter(r => r.formId === form.id).length;
+          const isActive = form.id === state.activeFormId;
+
+          return `
+            <div class="forms-form-card">
+              <div class="forms-form-top">
+                <div>
+                  <h4 class="forms-form-name">${escapeHtml(form.title || "Untitled Form")}</h4>
+                  <p class="forms-form-desc">${escapeHtml(form.description || "No description added yet.")}</p>
+
+                  <div class="forms-badges">
+                    <span class="forms-badge ${getStatusBadgeClass(form.status)}">${escapeHtml(form.status)}</span>
+                    <span class="forms-badge">${escapeHtml(getAudienceLabel(form.targetAudience))}</span>
+                    <span class="forms-badge">${form.questions.length} Question${form.questions.length === 1 ? "" : "s"}</span>
+                    ${isActive ? '<span class="forms-badge green">Open in workspace</span>' : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div class="forms-form-meta">
+                <div class="forms-form-meta-item">
+                  <div class="forms-form-meta-label">Open Date</div>
+                  <div class="forms-form-meta-value">${escapeHtml(formatDate(form.openDate))}</div>
+                </div>
+
+                <div class="forms-form-meta-item">
+                  <div class="forms-form-meta-label">Close Date</div>
+                  <div class="forms-form-meta-value">${escapeHtml(formatDate(form.closeDate))}</div>
+                </div>
+
+                <div class="forms-form-meta-item">
+                  <div class="forms-form-meta-label">Responses</div>
+                  <div class="forms-form-meta-value">${responsesForForm}</div>
+                </div>
+
+                <div class="forms-form-meta-item">
+                  <div class="forms-form-meta-label">Updated</div>
+                  <div class="forms-form-meta-value">${escapeHtml(formatDateTime(form.updatedAt || form.createdAt))}</div>
+                </div>
+              </div>
+
+              <div class="forms-form-actions">
+                <button type="button" class="forms-mini-btn blue" data-action="open-form" data-id="${form.id}">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="m13 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Open</span>
+                </button>
+
+                <button type="button" class="forms-mini-btn green" data-action="duplicate-form" data-id="${form.id}">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                  </svg>
+                  <span>Duplicate</span>
+                </button>
+
+                ${form.status !== "published" ? `
+                  <button type="button" class="forms-mini-btn dark" data-action="publish-form" data-id="${form.id}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="m13 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Publish</span>
+                  </button>
+                ` : ""}
+
+                ${form.status === "published" ? `
+                  <button type="button" class="forms-mini-btn orange" data-action="close-form" data-id="${form.id}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Close</span>
+                  </button>
+                ` : ""}
+
+                ${form.status === "closed" ? `
+                  <button type="button" class="forms-mini-btn green" data-action="reopen-form" data-id="${form.id}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20 4v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Reopen</span>
+                  </button>
+                ` : ""}
+
+                ${form.status !== "archived" ? `
+                  <button type="button" class="forms-mini-btn red" data-action="archive-form" data-id="${form.id}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>Archive</span>
+                  </button>
+                ` : ""}
+
+                <button type="button" class="forms-mini-btn red" data-action="delete-form" data-id="${form.id}">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderBuilderFormFields(){
+        const form = getActiveForm();
+        if (!form) return;
+
+        $("formsTitleInput").value = form.title || "";
+        $("formsDescriptionInput").value = form.description || "";
+        $("formsAudienceSelect").value = form.targetAudience || "all_students";
+        $("formsStatusSelect").value = form.status || "draft";
+        $("formsOpenDateInput").value = form.openDate || "";
+        $("formsCloseDateInput").value = form.closeDate || "";
+        $("formsResponseRuleSelect").value = form.responseRule || "one";
+        $("formsIdentitySelect").value = form.identityMode || "auto";
+      }
+
+      function renderQuestionList(){
+        const form = getActiveForm();
+        const list = $("formsQuestionList");
+        const emptyNote = $("formsQuestionsEmptyNote");
+
+        if (!form) {
+          list.innerHTML = "";
+          emptyNote.style.display = "block";
+          return;
+        }
+
+        if (!form.questions.length){
+          list.innerHTML = "";
+          emptyNote.style.display = "block";
+          return;
+        }
+
+        emptyNote.style.display = "none";
+
+        list.innerHTML = form.questions.map((question, index) => {
+          const hasOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(question.type);
+          const isFile = question.type === "file_upload";
+          const isYesNo = question.type === "yes_no";
+
+          return `
+            <div class="question-card" data-question-id="${question.id}">
+              <div class="question-head">
+                <div class="question-head-left">
+                  <div class="question-number">${index + 1}</div>
+                  <div style="min-width:0; flex:1;">
+                    <div style="font-size:15px; font-weight:900; color:#0f172a; line-height:1.4;">${escapeHtml(question.title || "Untitled Question")}</div>
+                    <div class="helper-text">${escapeHtml(getTypeLabel(question.type))}</div>
+                  </div>
+                </div>
+
+                <div class="question-head-right">
+                  <label class="required-toggle">
+                    <span>Required</span>
+                    <span class="switch">
+                      <input type="checkbox" data-action="toggle-required" data-question-id="${question.id}" ${question.required ? "checked" : ""}>
+                      <span class="slider"></span>
+                    </span>
+                  </label>
+
+                  <button type="button" class="icon-btn" data-action="move-question-up" data-question-id="${question.id}" title="Move up">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-action="move-question-down" data-question-id="${question.id}" title="Move down">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-action="duplicate-question" data-question-id="${question.id}" title="Duplicate">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                      <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="icon-btn" data-action="delete-question" data-question-id="${question.id}" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="question-body">
+                <div class="question-row two">
+                  <div class="forms-field">
+                    <label>Question Title</label>
+                    <input class="forms-input" type="text" value="${escapeHtml(question.title)}" data-action="edit-question-title" data-question-id="${question.id}" placeholder="Enter question title" />
+                  </div>
+
+                  <div class="forms-field">
+                    <label>Question Type</label>
+                    <select class="forms-select" data-action="change-question-type" data-question-id="${question.id}">
+                      <option value="short_answer" ${question.type === "short_answer" ? "selected" : ""}>Short Answer</option>
+                      <option value="paragraph" ${question.type === "paragraph" ? "selected" : ""}>Paragraph</option>
+                      <option value="multiple_choice" ${question.type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
+                      <option value="checkboxes" ${question.type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
+                      <option value="dropdown" ${question.type === "dropdown" ? "selected" : ""}>Dropdown</option>
+                      <option value="date" ${question.type === "date" ? "selected" : ""}>Date</option>
+                      <option value="file_upload" ${question.type === "file_upload" ? "selected" : ""}>File Upload</option>
+                      <option value="yes_no" ${question.type === "yes_no" ? "selected" : ""}>Yes / No</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="forms-field">
+                  <label>Help Text</label>
+                  <input class="forms-input" type="text" value="${escapeHtml(question.helpText || "")}" data-action="edit-question-help" data-question-id="${question.id}" placeholder="Optional help text for users" />
+                </div>
+
+                ${!isFile ? `
+                  <div class="forms-field">
+                    <label>Placeholder / Hint</label>
+                    <input class="forms-input" type="text" value="${escapeHtml(question.placeholder || "")}" data-action="edit-question-placeholder" data-question-id="${question.id}" placeholder="Optional placeholder or hint" />
+                  </div>
+                ` : ""}
+
+                ${hasOptions ? `
+                  <div class="forms-field">
+                    <label>Options</label>
+                    <div class="option-list">
+                      ${(question.options || []).map((option, optionIndex) => `
+                        <div class="option-row">
+                          <div class="option-bullet">${optionIndex + 1}</div>
+                          <input class="forms-input" type="text" value="${escapeHtml(option)}" data-action="edit-option" data-question-id="${question.id}" data-option-index="${optionIndex}" placeholder="Enter option" />
+                          <div class="option-actions">
+                            <button type="button" class="icon-btn" data-action="move-option-up" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Move option up">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </button>
+                            <button type="button" class="icon-btn" data-action="move-option-down" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Move option down">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </button>
+                            <button type="button" class="icon-btn" data-action="delete-option" data-question-id="${question.id}" data-option-index="${optionIndex}" title="Delete option">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      `).join("")}
+                    </div>
+                  </div>
+                ` : ""}
+
+                ${isFile ? `
+                  <div class="question-row three">
+                    <div class="forms-field">
+                      <label>Allowed File Types</label>
+                      <input class="forms-input" type="text" value="${escapeHtml(question.fileTypes || "pdf,image")}" data-action="edit-file-types" data-question-id="${question.id}" placeholder="e.g. pdf,image,docx" />
+                    </div>
+
+                    <div class="forms-field">
+                      <label>Max File Size</label>
+                      <input class="forms-input" type="text" value="${escapeHtml(question.maxFileSize || "5MB")}" data-action="edit-file-size" data-question-id="${question.id}" placeholder="e.g. 5MB" />
+                    </div>
+
+                    <div class="forms-field">
+                      <label>Max Files</label>
+                      <input class="forms-input" type="number" min="1" value="${escapeHtml(String(question.maxFiles || 1))}" data-action="edit-file-count" data-question-id="${question.id}" />
+                    </div>
+                  </div>
+                ` : ""}
+
+                ${isYesNo ? `
+                  <div class="forms-note">This question will show fixed options: Yes and No.</div>
+                ` : ""}
+
+                <div class="question-footer">
+                  <div class="question-footer-left">
+                    ${hasOptions ? `
+                      <button type="button" class="forms-secondary-btn" data-action="add-option" data-question-id="${question.id}">
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Add Option</span>
+                      </button>
+                    ` : ""}
+
+                    <button type="button" class="forms-soft-btn" data-action="duplicate-question" data-question-id="${question.id}">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                        <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                      </svg>
+                      <span>Duplicate Question</span>
+                    </button>
+                  </div>
+
+                  <div class="question-footer-right">
+                    <button type="button" class="forms-danger-btn" data-action="delete-question" data-question-id="${question.id}">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      </svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderStudentPreview(){
+        const form = getActiveForm();
+        const titleEl = $("studentPreviewTitle");
+        const descEl = $("studentPreviewDescription");
+        const bodyEl = $("studentPreviewBody");
+        const successEl = $("studentPreviewSuccess");
+
+        successEl.style.display = "none";
+
+        if (!form){
+          titleEl.textContent = "Untitled Form";
+          descEl.textContent = "No active form selected.";
+          bodyEl.innerHTML = `<div class="empty-card">No form selected for preview.</div>`;
+          return;
+        }
+
+        titleEl.textContent = form.title || "Untitled Form";
+        descEl.textContent = form.description || "No description added yet.";
+
+        if (!form.questions.length){
+          bodyEl.innerHTML = `<div class="empty-card">No questions yet. Add question blocks in Builder mode first.</div>`;
+          return;
+        }
+
+        bodyEl.innerHTML = form.questions.map((question, index) => {
+          const requiredMark = question.required ? '<span class="student-required">*</span>' : '';
+          let controlHtml = "";
+
+          if (question.type === "short_answer"){
+            controlHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(question.placeholder || "Short answer")}" />`;
+          } else if (question.type === "paragraph"){
+            controlHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(question.placeholder || "Write your answer here")}"></textarea>`;
+          } else if (question.type === "multiple_choice"){
+            controlHtml = `
+              <div class="student-option-list">
+                ${(question.options || []).map((opt, optIndex) => `
+                  <label class="student-option">
+                    <input type="radio" name="preview_q_${index}" ${optIndex === 0 ? "" : ""} />
+                    <span>${escapeHtml(opt)}</span>
+                  </label>
+                `).join("")}
+              </div>
+            `;
+          } else if (question.type === "checkboxes"){
+            controlHtml = `
+              <div class="student-option-list">
+                ${(question.options || []).map((opt) => `
+                  <label class="student-option">
+                    <input type="checkbox" />
+                    <span>${escapeHtml(opt)}</span>
+                  </label>
+                `).join("")}
+              </div>
+            `;
+          } else if (question.type === "dropdown"){
+            controlHtml = `
+              <select class="forms-select">
+                <option value="">Select an option</option>
+                ${(question.options || []).map((opt) => `<option>${escapeHtml(opt)}</option>`).join("")}
+              </select>
+            `;
+          } else if (question.type === "date"){
+            controlHtml = `<input class="forms-input" type="date" />`;
+          } else if (question.type === "file_upload"){
+            controlHtml = `
+              <div class="forms-note">
+                Upload area: Allowed types ${escapeHtml(question.fileTypes || "pdf,image")} • Max size ${escapeHtml(question.maxFileSize || "5MB")} • Max files ${escapeHtml(String(question.maxFiles || 1))}
+              </div>
+            `;
+          } else if (question.type === "yes_no"){
+            controlHtml = `
+              <div class="student-option-list">
+                <label class="student-option">
+                  <input type="radio" name="preview_q_${index}" />
+                  <span>Yes</span>
+                </label>
+                <label class="student-option">
+                  <input type="radio" name="preview_q_${index}" />
+                  <span>No</span>
+                </label>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="student-q">
+              <h4 class="student-q-title">${index + 1}. ${escapeHtml(question.title || "Untitled Question")}${requiredMark}</h4>
+              <div class="student-q-help">${escapeHtml(question.helpText || "Answer this question below.")}</div>
+              ${controlHtml}
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderResponsesTable(){
+        const body = $("formsResponsesTableBody");
+
+        if (!state.responses.length){
+          body.innerHTML = `
+            <tr>
+              <td colspan="6">
+                <div class="empty-card" style="min-height:120px; margin:12px 0;">No responses yet. Add a mock response or use preview submit.</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        const formsMap = new Map(state.forms.map(form => [form.id, form]));
+
+        body.innerHTML = [...state.responses]
+          .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+          .map(response => {
+            const form = formsMap.get(response.formId);
+            return `
+              <tr>
+                <td>${escapeHtml(form?.title || "Deleted Form")}</td>
+                <td>${escapeHtml(response.respondentName || "Anonymous")}</td>
+                <td>${escapeHtml(getAudienceLabel(form?.targetAudience || ""))}</td>
+                <td>${escapeHtml(response.status || "Submitted")}</td>
+                <td>${escapeHtml(formatDateTime(response.submittedAt))}</td>
+                <td>${escapeHtml(response.summary || "Response captured.")}</td>
+              </tr>
+            `;
+          }).join("");
+      }
+
+      function updateWorkspaceTabs(){
+        document.querySelectorAll("#formsWorkspaceTabs .forms-tab").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.workspace === state.workspaceMode);
+        });
+
+        $("formsBuilderWorkspace").classList.toggle("section-hidden", state.workspaceMode !== "builder");
+        $("formsPreviewWorkspace").classList.toggle("section-hidden", state.workspaceMode !== "preview");
+        $("formsResponsesWorkspace").classList.toggle("section-hidden", state.workspaceMode !== "responses");
+
+        const titleMap = {
+          builder: ["Form Builder", "Create or edit forms with question blocks and settings."],
+          preview: ["Student Preview", "See the form exactly the way students or staff will see it."],
+          responses: ["Responses", "Review submissions, summaries, and export response data."]
+        };
+
+        $("formsWorkspaceTitle").textContent = titleMap[state.workspaceMode][0];
+        $("formsWorkspaceSub").textContent = titleMap[state.workspaceMode][1];
+      }
+
+      function updateListTabs(){
+        document.querySelectorAll("#formsStatusTabs .forms-tab").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.filter === state.listFilter);
+        });
+      }
+
+      function renderAll(){
+        ensureActiveForm();
+        renderOverviewStats();
+        renderFormsList();
+        renderBuilderFormFields();
+        renderQuestionList();
+        renderStudentPreview();
+        renderResponsesTable();
+        updateWorkspaceTabs();
+        updateListTabs();
+      }
+
+      function createNewForm(){
+        const form = createEmptyForm();
+        form.title = "Untitled Form";
+        form.description = "Add your form description here.";
+        state.forms.unshift(form);
+        state.activeFormId = form.id;
+        saveWorkspace();
+        renderAll();
+      }
+
+      function duplicateFormById(formId){
+        const form = state.forms.find(f => f.id === formId);
+        if (!form) return;
+
+        const copy = deepClone(form);
+        copy.id = uid("form");
+        copy.title = `${form.title || "Untitled Form"} Copy`;
+        copy.status = "draft";
+        copy.createdAt = new Date().toISOString();
+        copy.updatedAt = new Date().toISOString();
+        copy.questions = copy.questions.map(q => ({ ...q, id: uid("q") }));
+
+        state.forms.unshift(copy);
+        state.activeFormId = copy.id;
+        saveWorkspace();
+        renderAll();
+      }
+
+      function deleteFormById(formId){
+        const form = state.forms.find(f => f.id === formId);
+        if (!form) return;
+
+        const confirmed = confirm(`Delete "${form.title || "Untitled Form"}"? This will remove it from this page.`);
+        if (!confirmed) return;
+
+        state.forms = state.forms.filter(f => f.id !== formId);
+        state.responses = state.responses.filter(r => r.formId !== formId);
+
+        if (state.activeFormId === formId){
+          state.activeFormId = state.forms[0]?.id || null;
+        }
+
+        saveWorkspace();
+        saveResponses();
+        renderAll();
+      }
+
+      function setFormStatus(formId, status){
+        const form = state.forms.find(f => f.id === formId);
+        if (!form) return;
+        form.status = status;
+        form.updatedAt = new Date().toISOString();
+        saveWorkspace();
+        renderAll();
+      }
+
+      function addQuestion(type){
+        const form = getActiveForm();
+        if (!form) return;
+        form.questions.push(createQuestion(type));
+        markUpdated(form);
+        renderQuestionList();
+        renderStudentPreview();
+      }
+
+      function findQuestion(questionId){
+        const form = getActiveForm();
+        if (!form) return null;
+        return form.questions.find(q => q.id === questionId) || null;
+      }
+
+      function moveItem(array, fromIndex, toIndex){
+        if (toIndex < 0 || toIndex >= array.length) return array;
+        const item = array.splice(fromIndex, 1)[0];
+        array.splice(toIndex, 0, item);
+        return array;
+      }
+
+      function attachFormsListActions(){
+        const wrap = $("formsListWrap");
+        wrap.addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-action]");
+          if (!btn) return;
+
+          const action = btn.dataset.action;
+          const formId = btn.dataset.id;
+          if (!action || !formId) return;
+
+          if (action === "open-form"){
+            setActiveForm(formId);
+            state.workspaceMode = "builder";
+            updateWorkspaceTabs();
+            return;
+          }
+
+          if (action === "duplicate-form"){
+            duplicateFormById(formId);
+            return;
+          }
+
+          if (action === "publish-form"){
+            setFormStatus(formId, "published");
+            return;
+          }
+
+          if (action === "close-form"){
+            setFormStatus(formId, "closed");
+            return;
+          }
+
+          if (action === "reopen-form"){
+            setFormStatus(formId, "published");
+            return;
+          }
+
+          if (action === "archive-form"){
+            setFormStatus(formId, "archived");
+            return;
+          }
+
+          if (action === "delete-form"){
+            deleteFormById(formId);
+          }
+        });
+      }
+
+      function bindTopControls(){
+        $("formsCreateNewBtn").addEventListener("click", createNewForm);
+
+        $("formsSearchInput").addEventListener("input", (e) => {
+          state.searchTerm = e.target.value || "";
+          renderFormsList();
+        });
+
+        document.querySelectorAll("#formsStatusTabs .forms-tab").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.listFilter = btn.dataset.filter || "all";
+            updateListTabs();
+            renderFormsList();
+          });
+        });
+
+        document.querySelectorAll("#formsWorkspaceTabs .forms-tab").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.workspaceMode = btn.dataset.workspace || "builder";
+            updateWorkspaceTabs();
+            if (state.workspaceMode === "preview") renderStudentPreview();
+            if (state.workspaceMode === "responses") renderResponsesTable();
+          });
+        });
+      }
+
+      function bindFormSetupFields(){
+        const bindMap = [
+          ["formsTitleInput", "title"],
+          ["formsDescriptionInput", "description"],
+          ["formsAudienceSelect", "targetAudience"],
+          ["formsStatusSelect", "status"],
+          ["formsOpenDateInput", "openDate"],
+          ["formsCloseDateInput", "closeDate"],
+          ["formsResponseRuleSelect", "responseRule"],
+          ["formsIdentitySelect", "identityMode"]
+        ];
+
+        bindMap.forEach(([id, key]) => {
+          const el = $(id);
+          el.addEventListener("input", () => {
+            const form = getActiveForm();
+            if (!form) return;
+            form[key] = el.value;
+            markUpdated(form);
+            renderFormsList();
+            renderStudentPreview();
+            renderOverviewStats();
+          });
+          el.addEventListener("change", () => {
+            const form = getActiveForm();
+            if (!form) return;
+            form[key] = el.value;
+            markUpdated(form);
+            renderFormsList();
+            renderStudentPreview();
+            renderOverviewStats();
+          });
+        });
+
+        $("formsSaveDraftBtn").addEventListener("click", () => {
+          const form = getActiveForm();
+          if (!form) return;
+          form.status = "draft";
+          markUpdated(form);
+          renderAll();
+        });
+
+        $("formsPublishBtn").addEventListener("click", () => {
+          const form = getActiveForm();
+          if (!form) return;
+          form.status = "published";
+          markUpdated(form);
+          renderAll();
+        });
+
+        $("formsDuplicateBtn").addEventListener("click", () => {
+          const form = getActiveForm();
+          if (!form) return;
+          duplicateFormById(form.id);
+        });
+      }
+
+      function bindQuickAddButtons(){
+        document.querySelectorAll("#screen-forms [data-add-type]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            addQuestion(btn.dataset.addType);
+          });
+        });
+      }
+
+      function attachQuestionActions(){
+        const list = $("formsQuestionList");
+
+        list.addEventListener("input", (e) => {
+          const target = e.target;
+          const action = target.dataset.action;
+          const questionId = target.dataset.questionId;
+          if (!action || !questionId) return;
+
+          const form = getActiveForm();
+          const question = findQuestion(questionId);
+          if (!form || !question) return;
+
+          if (action === "edit-question-title"){
+            question.title = target.value;
+          } else if (action === "edit-question-help"){
+            question.helpText = target.value;
+          } else if (action === "edit-question-placeholder"){
+            question.placeholder = target.value;
+          } else if (action === "edit-option"){
+            const optionIndex = Number(target.dataset.optionIndex);
+            question.options[optionIndex] = target.value;
+          } else if (action === "edit-file-types"){
+            question.fileTypes = target.value;
+          } else if (action === "edit-file-size"){
+            question.maxFileSize = target.value;
+          } else if (action === "edit-file-count"){
+            question.maxFiles = Math.max(1, Number(target.value || 1));
+          } else {
+            return;
+          }
+
+          markUpdated(form);
+          renderFormsList();
+          renderStudentPreview();
+        });
+
+        list.addEventListener("change", (e) => {
+          const target = e.target;
+          const action = target.dataset.action;
+          const questionId = target.dataset.questionId;
+          if (!action || !questionId) return;
+
+          const form = getActiveForm();
+          const question = findQuestion(questionId);
+          if (!form || !question) return;
+
+          if (action === "change-question-type"){
+            const newType = target.value;
+            const fresh = createQuestion(newType);
+            question.type = fresh.type;
+            question.options = fresh.options;
+            question.fileTypes = fresh.fileTypes;
+            question.maxFileSize = fresh.maxFileSize;
+            question.maxFiles = fresh.maxFiles;
+          } else if (action === "toggle-required"){
+            question.required = !!target.checked;
+          } else {
+            return;
+          }
+
+          markUpdated(form);
+          renderQuestionList();
+          renderStudentPreview();
+        });
+
+        list.addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-action]");
+          if (!btn) return;
+
+          const action = btn.dataset.action;
+          const questionId = btn.dataset.questionId;
+          const form = getActiveForm();
+          if (!action || !questionId || !form) return;
+
+          const questionIndex = form.questions.findIndex(q => q.id === questionId);
+          if (questionIndex === -1) return;
+
+          const question = form.questions[questionIndex];
+
+          if (action === "delete-question"){
+            form.questions.splice(questionIndex, 1);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "duplicate-question"){
+            const copy = deepClone(question);
+            copy.id = uid("q");
+            form.questions.splice(questionIndex + 1, 0, copy);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "move-question-up"){
+            moveItem(form.questions, questionIndex, questionIndex - 1);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "move-question-down"){
+            moveItem(form.questions, questionIndex, questionIndex + 1);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "add-option"){
+            if (!Array.isArray(question.options)) question.options = [];
+            question.options.push(`Option ${question.options.length + 1}`);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "delete-option"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            question.options.splice(optionIndex, 1);
+            if (!question.options.length && ["multiple_choice","checkboxes","dropdown"].includes(question.type)){
+              question.options = ["Option 1"];
+            }
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "move-option-up"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            moveItem(question.options, optionIndex, optionIndex - 1);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+            return;
+          }
+
+          if (action === "move-option-down"){
+            const optionIndex = Number(btn.dataset.optionIndex);
+            moveItem(question.options, optionIndex, optionIndex + 1);
+            markUpdated(form);
+            renderQuestionList();
+            renderStudentPreview();
+          }
+        });
+      }
+
+      function bindPreviewActions(){
+        $("studentPreviewSubmitBtn").addEventListener("click", () => {
+          const form = getActiveForm();
+          if (!form) return;
+
+          const summary = form.questions.length
+            ? `${form.questions.length} questions answered in preview mode`
+            : "Preview response";
+
+          state.responses.push({
+            id: uid("resp"),
+            formId: form.id,
+            respondentName: form.identityMode === "anonymous" ? "Anonymous User" : "Preview User",
+            status: "Submitted",
+            submittedAt: new Date().toISOString(),
+            summary
+          });
+
+          saveResponses();
+          renderOverviewStats();
+          renderResponsesTable();
+
+          const success = $("studentPreviewSuccess");
+          success.style.display = "block";
+          success.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+
+        $("studentPreviewResetBtn").addEventListener("click", () => {
+          $("studentPreviewSuccess").style.display = "none";
+          renderStudentPreview();
+        });
+      }
+
+      function bindResponseTools(){
+        $("formsAddMockResponseBtn").addEventListener("click", () => {
+          const form = getActiveForm();
+          if (!form) return;
+
+          state.responses.push({
+            id: uid("resp"),
+            formId: form.id,
+            respondentName: "Mock Student",
+            status: "Submitted",
+            submittedAt: new Date().toISOString(),
+            summary: "Mock response generated for testing"
+          });
+
+          saveResponses();
+          renderOverviewStats();
+          renderResponsesTable();
+          renderFormsList();
+        });
+
+        $("formsExportResponsesBtn").addEventListener("click", () => {
+          const rows = [
+            ["Form", "Respondent", "Status", "Submitted At", "Summary"]
+          ];
+
+          const formsMap = new Map(state.forms.map(form => [form.id, form.title || "Untitled Form"]));
+
+          state.responses.forEach(response => {
+            rows.push([
+              formsMap.get(response.formId) || "Deleted Form",
+              response.respondentName || "Anonymous",
+              response.status || "Submitted",
+              response.submittedAt || "",
+              response.summary || ""
+            ]);
+          });
+
+          const csv = rows.map(row => row.map(cell => {
+            const safe = String(cell || "").replaceAll('"', '""');
+            return `"${safe}"`;
+          }).join(",")).join("\\n");
+
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "forms-responses.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        });
+      }
+
+      function init(){
+        loadWorkspace();
+        bindTopControls();
+        bindFormSetupFields();
+        bindQuickAddButtons();
+        bindPreviewActions();
+        bindResponseTools();
+        attachFormsListActions();
+        attachQuestionActions();
+        renderAll();
+      }
+
+      if (document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</section>
