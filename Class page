@@ -1,353 +1,377 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-  />
-  <title>Colspot • Create Activity</title>
-
+<!-- 🔹 CLASSES SCREEN START -->
+<div id="screen-classes" class="screen">
   <style>
-    :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --blue-soft:#eef4ff;
-      --bg:#f4f8ff;
-      --card:#ffffff;
-      --line:#e5e7eb;
-      --text:#0f172a;
-      --muted:#6b7280;
-      --success:#16a34a;
-      --error:#ef4444;
-      --shadow:0 16px 34px rgba(15,23,42,.08);
-      --shadow-soft:0 10px 22px rgba(37,99,235,.10);
-      --radius-xl:28px;
-      --radius-lg:22px;
-      --radius-md:18px;
-      --radius-sm:14px;
+    #screen-classes{
+      padding:8px 6px 90px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
     }
 
-    *{
-      box-sizing:border-box;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
-      -webkit-tap-highlight-color:transparent;
+    #screen-classes .hero{
+      padding:4px 4px 6px;
+      margin-bottom:6px;
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
+    #screen-classes .hero-line-1{
+      font-size:12px;
+      font-weight:500;
+      color:var(--text-muted);
+      margin-bottom:3px;
     }
 
-    body{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at top, #dfeeff 0%, #f6faff 46%, #ffffff 100%);
+    #screen-classes .hero-title{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      line-height:1.2;
+      color:var(--text-main);
+      margin:0;
+    }
+
+    #screen-classes .hero-title span{
+      color:var(--blue);
+      font-weight:600;
+    }
+
+    #screen-classes .hero-sub{
+      font-size:12px;
+      color:var(--text-muted);
+      margin:6px 0 0;
+      line-height:1.45;
+    }
+
+    #screen-classes .section-title{
+      font-size:13px;
+      font-weight:600;
+      color:var(--text-main);
+      margin:8px 2px 4px;
+    }
+
+    #screen-classes .section-sub{
+      font-size:12px;
+      color:var(--text-muted);
+      margin:0 2px 8px;
+      line-height:1.45;
+    }
+
+    #screen-classes .card{
+      background:#f9fafb;
+      border-radius:18px;
+      padding:10px 10px;
+      border:1px solid #e5e7eb;
+      margin-bottom:14px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    #screen-classes .search-row{
       display:flex;
-      justify-content:center;
-      align-items:stretch;
-      padding:0;
-      overscroll-behavior:none;
-      color:var(--text);
+      gap:6px;
+      margin-bottom:8px;
     }
 
-    body, main{
-      -ms-overflow-style:none;
-      scrollbar-width:none;
+    #screen-classes .search-input{
+      flex:1;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      font-size:16px;
+      background:#fff;
     }
 
-    body::-webkit-scrollbar,
-    main::-webkit-scrollbar{
-      width:0;
-      height:0;
-      display:none;
+    #screen-classes .search-input:focus{
+      outline:none;
+      border-color:#2563eb;
+      box-shadow:0 0 0 2px rgba(37,99,235,.18);
     }
 
-    .phone-shell{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
+    #screen-classes .recent-list{
       display:flex;
       flex-direction:column;
-      padding:calc(env(safe-area-inset-top) + 12px) 14px 28px;
-      position:relative;
+      gap:8px;
+      margin-bottom:8px;
     }
 
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .header-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-      flex:1;
-    }
-
-    .back-btn{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      border:1px solid rgba(37,99,235,.10);
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:var(--shadow-soft);
+    #screen-classes .recent-item{
+      border-radius:12px;
+      padding:10px 10px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
       cursor:pointer;
-      flex-shrink:0;
-      color:#0f172a;
+      position:relative;
+      transition:border-color .12s, box-shadow .12s, background .12s, transform .05s;
     }
 
-    .back-btn svg{
-      width:18px;
-      height:18px;
-      display:block;
+    #screen-classes .recent-item:active{
+      transform:scale(.98);
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
+    #screen-classes .recent-item.selected{
+      border-color:var(--blue);
+      background:#eff6ff;
+      box-shadow:0 0 0 1px rgba(37,99,235,.35);
     }
 
-    .brand-logo{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      overflow:hidden;
-      background:#fff;
-      border:1px solid rgba(37,99,235,.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:var(--shadow-soft);
-      flex-shrink:0;
-    }
-
-    .brand-logo img{
-      width:34px;
-      height:34px;
-      object-fit:contain;
-      display:block;
-    }
-
-    .brand-name{
-      font-weight:900;
-      font-size:18px;
-      letter-spacing:-.02em;
-      color:#10224a;
-      white-space:nowrap;
-    }
-
-    .avatar-chip{
-      height:40px;
-      min-width:40px;
+    #screen-classes .recent-item.selected::after{
+      content:"Selected";
+      position:absolute;
+      right:10px;
+      top:8px;
+      font-size:10px;
+      color:var(--blue);
+      background:#dbeafe;
+      padding:2px 6px;
       border-radius:999px;
-      background:linear-gradient(135deg,#1d4ed8,#22c55e);
-      color:#fff;
-      font-size:14px;
-      font-weight:800;
-      display:flex;
+      font-weight:700;
+    }
+
+    #screen-classes .recent-item-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-main);
+      padding-right:64px;
+    }
+
+    #screen-classes .recent-item-sub{
+      font-size:11px;
+      color:var(--text-muted);
+      line-height:1.35;
+      margin-top:3px;
+    }
+
+    #screen-classes .secondary-btn{
+      border-radius:999px;
+      padding:9px 12px;
+      font-size:13px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      cursor:pointer;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
+      gap:6px;
+      color:var(--text-main);
+      margin-top:4px;
+      width:100%;
+      font-weight:700;
+    }
+
+    #screen-classes .secondary-btn svg{
+      width:16px;
+      height:16px;
+    }
+
+    #screen-classes .primary-btn{
+      width:100%;
+      margin-top:10px;
+      border-radius:999px;
       border:none;
+      padding:12px 14px;
+      font-size:15px;
+      font-weight:700;
       cursor:pointer;
-      box-shadow:0 10px 24px rgba(37,99,235,.25);
-      flex-shrink:0;
+      color:#ffffff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 14px 35px rgba(37,99,235,.45);
+      transition:background .15s, transform .05s, box-shadow .15s;
     }
 
-    main{
-      flex:1;
-      overflow-y:auto;
-      padding:0 2px 10px;
+    #screen-classes .primary-btn:hover{
+      background:var(--blue-dark);
     }
 
-    .hero{
-      margin:4px 2px 14px;
-      padding:22px 18px;
-      border-radius:var(--radius-xl);
-      background:linear-gradient(135deg,var(--blue),#3b82f6);
-      color:#fff;
-      position:relative;
-      overflow:hidden;
-      box-shadow:0 24px 44px rgba(37,99,235,.22);
+    #screen-classes .primary-btn:active{
+      transform:scale(.97);
     }
 
-    .hero::before{
-      content:"";
-      position:absolute;
-      right:-30px;
-      top:-22px;
-      width:140px;
-      height:140px;
-      border-radius:50%;
-      background:rgba(255,255,255,.10);
+    #screen-classes .primary-btn:disabled{
+      background:#93c5fd;
+      cursor:not-allowed;
+      box-shadow:none;
     }
 
-    .hero::after{
-      content:"";
-      position:absolute;
-      right:-18px;
-      bottom:-34px;
-      width:190px;
-      height:94px;
-      border-radius:50%;
-      background:rgba(255,255,255,.08);
-      transform:rotate(-18deg);
-    }
-
-    .hero-line{
-      font-size:13px;
-      opacity:.95;
-      margin-bottom:6px;
-      font-weight:800;
-      position:relative;
-      z-index:1;
-    }
-
-    .hero-title{
-      font-size:30px;
-      line-height:1.05;
-      margin:0;
-      color:#fff;
-      font-weight:950;
-      letter-spacing:-.05em;
-      position:relative;
-      z-index:1;
-      max-width:280px;
-    }
-
-    .hero-sub{
+    #screen-classes .message{
       margin-top:8px;
-      font-size:13px;
-      line-height:1.55;
-      color:rgba(255,255,255,.94);
-      position:relative;
-      z-index:1;
-      max-width:290px;
+      font-size:12px;
+      text-align:center;
+      white-space:pre-line;
+      display:none;
+      padding:12px 14px;
+      border-radius:16px;
+      font-weight:800;
+      line-height:1.5;
     }
 
-    .step-strip{
+    #screen-classes .message.error{
+      color:#991b1b;
+      background:#fef2f2;
+      border:1px solid rgba(239,68,68,.16);
+    }
+
+    #screen-classes .message.success{
+      color:#166534;
+      background:#ecfdf5;
+      border:1px solid rgba(22,163,74,.16);
+    }
+
+    #screen-classes .quick-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
-      margin:0 2px 12px;
+      margin-bottom:10px;
     }
 
-    .step-card{
+    #screen-classes .quick-card{
+      border-radius:16px;
+      padding:12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      cursor:pointer;
+    }
+
+    #screen-classes .quick-card.primary{
+      background:#eff6ff;
+      border-color:#dbeafe;
+    }
+
+    #screen-classes .quick-icon{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:10px;
+    }
+
+    #screen-classes .quick-icon.blue{
+      background:#dbeafe;
+      color:#2563eb;
+    }
+
+    #screen-classes .quick-icon.purple{
+      background:#ede9fe;
+      color:#4f46e5;
+    }
+
+    #screen-classes .quick-icon svg{
+      width:18px;
+      height:18px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.8;
+    }
+
+    #screen-classes .quick-title{
+      font-size:13px;
+      font-weight:800;
+      color:var(--text-main);
+      margin-bottom:4px;
+    }
+
+    #screen-classes .quick-note{
+      font-size:11px;
+      color:var(--text-muted);
+      line-height:1.35;
+    }
+
+    #screen-classes .step-strip{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    #screen-classes .step-card{
       border-radius:18px;
       border:1px solid #dbeafe;
       background:#ffffff;
       padding:12px;
-      box-shadow:var(--shadow-soft);
+      box-shadow:0 8px 22px rgba(37,99,235,.08);
     }
 
-    .step-card.active{
+    #screen-classes .step-card.active{
       background:#eff6ff;
       border-color:#bfdbfe;
     }
 
-    .step-label{
+    #screen-classes .step-label{
       font-size:11px;
       text-transform:uppercase;
       letter-spacing:.08em;
-      color:var(--muted);
+      color:var(--text-muted);
       margin-bottom:5px;
       font-weight:800;
     }
 
-    .step-title{
+    #screen-classes .step-title{
       font-size:14px;
       font-weight:900;
-      color:var(--text);
+      color:var(--text-main);
       margin-bottom:3px;
     }
 
-    .step-note{
+    #screen-classes .step-note{
       font-size:12px;
-      color:var(--muted);
+      color:var(--text-muted);
       line-height:1.45;
     }
 
-    .card{
-      background:#fff;
-      border:1px solid rgba(15,23,42,.06);
-      border-radius:24px;
-      padding:15px;
-      box-shadow:var(--shadow);
-      margin:12px 2px;
+    #screen-classes .row{
+      margin-bottom:12px;
     }
 
-    .section-title{
-      font-size:16px;
-      font-weight:900;
-      color:var(--text);
-      margin:0 0 12px;
-      letter-spacing:-.02em;
-    }
-
-    .label{
+    #screen-classes .label{
       font-size:12px;
       color:#475569;
       font-weight:800;
       margin:0 0 7px;
       letter-spacing:.01em;
+      display:block;
     }
 
-    .input, .select, .textarea{
+    #screen-classes .input,
+    #screen-classes .textarea{
       width:100%;
-      border:1px solid var(--line);
+      border:1px solid #e5e7eb;
       border-radius:16px;
       padding:13px 14px;
       font-size:16px;
       outline:none;
       background:#fff;
-      color:var(--text);
+      color:var(--text-main);
       box-shadow:0 6px 16px rgba(15,23,42,.03);
       transition:.18s ease;
     }
 
-    .textarea{
+    #screen-classes .textarea{
       min-height:100px;
       resize:vertical;
     }
 
-    .input:focus, .select:focus, .textarea:focus{
+    #screen-classes .input:focus,
+    #screen-classes .textarea:focus{
       border-color:var(--blue);
       box-shadow:0 0 0 4px rgba(37,99,235,.12);
     }
 
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:8px;
-      line-height:1.5;
-    }
-
-    .grid-2{
+    #screen-classes .grid-2{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
     }
 
-    .type-grid{
+    #screen-classes .type-grid{
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
       gap:10px;
       margin-top:4px;
     }
 
-    .type-btn{
+    #screen-classes .type-btn{
       border:1px solid #dbeafe;
       background:#fff;
-      color:var(--text);
+      color:var(--text-main);
       border-radius:18px;
       padding:14px 10px;
       text-align:center;
@@ -356,13 +380,13 @@
       transition:.18s ease;
     }
 
-    .type-btn.active{
+    #screen-classes .type-btn.active{
       border-color:var(--blue);
       background:#eff6ff;
       color:var(--blue);
     }
 
-    .type-btn svg{
+    #screen-classes .type-btn svg{
       width:20px;
       height:20px;
       display:block;
@@ -372,119 +396,27 @@
       stroke-width:1.8;
     }
 
-    .type-btn-title{
+    #screen-classes .type-btn-title{
       font-size:13px;
       font-weight:900;
       margin-bottom:2px;
     }
 
-    .type-btn-note{
+    #screen-classes .type-btn-note{
       font-size:11px;
-      color:var(--muted);
+      color:var(--text-muted);
       line-height:1.35;
     }
 
-    .row{
-      margin-bottom:12px;
-    }
-
-    .primary-cta{
-      width:100%;
-      border-radius:999px;
-      border:none;
-      padding:14px 16px;
-      font-size:15px;
-      font-weight:900;
-      color:#fff;
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      box-shadow:0 16px 32px rgba(37,99,235,.22);
-      cursor:pointer;
-      transition:transform .05s, box-shadow .15s, filter .1s;
-      margin:14px 2px 10px;
-    }
-
-    .primary-cta:active{
-      transform:scale(.98);
-      filter:brightness(.98);
-    }
-
-    .primary-cta:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    .secondary-btn{
-      width:100%;
-      border-radius:999px;
-      border:1px solid var(--line);
-      padding:13px 16px;
-      font-size:14px;
-      font-weight:800;
-      color:var(--text);
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      cursor:pointer;
-      box-shadow:0 6px 16px rgba(15,23,42,.03);
-    }
-
-    .secondary-btn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
-
-    .inline-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-
-    .inline-actions button{
-      flex:1;
-      min-width:140px;
-    }
-
-    .msg{
-      font-size:13px;
-      text-align:center;
-      margin:10px 2px 0;
-      white-space:pre-line;
-      display:none;
-      padding:12px 14px;
-      border-radius:16px;
-      font-weight:800;
-      line-height:1.5;
-    }
-
-    .msg.error{
-      color:#991b1b;
-      background:#fef2f2;
-      border:1px solid rgba(239,68,68,.16);
-    }
-
-    .msg.success{
-      color:#166534;
-      background:#ecfdf5;
-      border:1px solid rgba(22,163,74,.16);
-    }
-
-    .question-card{
-      border:1px solid var(--line);
+    #screen-classes .question-card{
+      border:1px solid #e5e7eb;
       border-radius:20px;
       padding:14px;
       background:#fff;
       box-shadow:0 6px 16px rgba(15,23,42,.03);
     }
 
-    .question-title-row{
+    #screen-classes .question-title-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -492,13 +424,13 @@
       margin-bottom:10px;
     }
 
-    .question-no{
+    #screen-classes .question-no{
       font-size:14px;
       font-weight:900;
-      color:var(--text);
+      color:var(--text-main);
     }
 
-    .question-pill{
+    #screen-classes .question-pill{
       font-size:11px;
       font-weight:800;
       color:var(--blue);
@@ -508,15 +440,15 @@
       padding:6px 10px;
     }
 
-    .correct-grid{
+    #screen-classes .correct-grid{
       display:grid;
       grid-template-columns:1fr 1fr 1fr 1fr;
       gap:8px;
       margin-top:10px;
     }
 
-    .correct-btn{
-      border:1px solid var(--line);
+    #screen-classes .correct-btn{
+      border:1px solid #e5e7eb;
       border-radius:16px;
       padding:12px 10px;
       text-align:center;
@@ -526,27 +458,39 @@
       color:#334155;
     }
 
-    .correct-btn.active{
+    #screen-classes .correct-btn.active{
       border-color:var(--blue);
       background:#eff6ff;
       color:var(--blue);
     }
 
-    .saved-list{
+    #screen-classes .inline-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    #screen-classes .inline-actions button{
+      flex:1;
+      min-width:140px;
+    }
+
+    #screen-classes .saved-list{
       display:flex;
       flex-direction:column;
       gap:10px;
       margin-top:12px;
     }
 
-    .saved-item{
-      border:1px solid var(--line);
+    #screen-classes .saved-item{
+      border:1px solid #e5e7eb;
       border-radius:18px;
       padding:12px;
       background:#fff;
     }
 
-    .saved-top{
+    #screen-classes .saved-top{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -554,39 +498,39 @@
       margin-bottom:8px;
     }
 
-    .saved-q-no{
+    #screen-classes .saved-q-no{
       font-size:12px;
       font-weight:900;
       color:var(--blue);
       margin-bottom:4px;
     }
 
-    .saved-q-text{
+    #screen-classes .saved-q-text{
       font-size:14px;
       font-weight:800;
-      color:var(--text);
+      color:var(--text-main);
       line-height:1.4;
     }
 
-    .saved-points{
+    #screen-classes .saved-points{
       font-size:11px;
       font-weight:800;
       color:#475569;
       background:#f8fafc;
-      border:1px solid var(--line);
+      border:1px solid #e5e7eb;
       border-radius:999px;
       padding:6px 10px;
       white-space:nowrap;
     }
 
-    .saved-options{
+    #screen-classes .saved-options{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:8px;
       margin-top:8px;
     }
 
-    .saved-option{
+    #screen-classes .saved-option{
       border-radius:14px;
       background:#f8fafc;
       border:1px solid #e2e8f0;
@@ -596,309 +540,275 @@
       line-height:1.4;
     }
 
-    .saved-option.correct{
+    #screen-classes .saved-option.correct{
       background:#ecfdf5;
       border-color:#bbf7d0;
       color:#166534;
       font-weight:800;
     }
 
-    .small-note{
+    #screen-classes .small-note,
+    #screen-classes .hint{
       font-size:12px;
-      color:var(--muted);
+      color:var(--text-muted);
       line-height:1.45;
       margin-top:8px;
     }
 
-    .hidden{
+    #screen-classes .hidden{
       display:none !important;
     }
 
     @media (max-width:360px){
-      .type-grid{
+      #screen-classes .quick-grid,
+      #screen-classes .type-grid,
+      #screen-classes .grid-2,
+      #screen-classes .correct-grid,
+      #screen-classes .saved-options{
         grid-template-columns:1fr;
       }
 
-      .grid-2{
-        grid-template-columns:1fr;
-      }
-
-      .correct-grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .inline-actions{
+      #screen-classes .inline-actions{
         flex-direction:column;
       }
     }
   </style>
-</head>
 
-<body>
-  <div class="phone-shell">
-    <header>
-      <div class="header-left">
-        <button class="back-btn" type="button" onclick="history.back()" aria-label="Go back">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <section class="hero">
+    <div class="hero-line-1" id="classesHeroLine">Classes</div>
+    <h1 class="hero-title" id="classesHeroTitle">
+      Manage your <span>classes</span>
+    </h1>
+    <p class="hero-sub" id="classesHeroSub">
+      Create classes, manage them, and build assignments, revision, or tests.
+    </p>
+  </section>
+
+  <section id="classesMainPanel">
+    <div class="section-title">Quick actions</div>
+    <div class="quick-grid">
+      <button class="quick-card primary" type="button" onclick="openCreateClassPageFromClasses()">
+        <div class="quick-icon blue">
+          <svg viewBox="0 0 20 20">
+            <path d="M10 4v12M4 10h12" stroke-linecap="round"/>
           </svg>
-        </button>
+        </div>
+        <div class="quick-title">Create class</div>
+        <div class="quick-note">Start a new class</div>
+      </button>
 
-        <div class="brand">
-          <div class="brand-logo">
-            <img src="asset/logo walpaper.jpeg" alt="Colspot logo"
-                 onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color:#2563eb;font-weight:900;font-size:12px;&quot;>CS</span>';" />
-          </div>
-          <div class="brand-name">Colspot</div>
+      <button class="quick-card" type="button" onclick="openActivityBuilderFromClasses()">
+        <div class="quick-icon purple">
+          <svg viewBox="0 0 20 20">
+            <rect x="4.5" y="3.5" width="11" height="13" rx="1.4"></rect>
+            <path d="M7 7h6M7 10h6M7 13h4" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div class="quick-title">Create activity</div>
+        <div class="quick-note">Assignment, revision, or test</div>
+      </button>
+    </div>
+
+    <div class="section-title">My classes</div>
+    <div class="section-sub">Search and select a class to edit or use for activities.</div>
+
+    <div class="card">
+      <div class="search-row">
+        <input
+          id="classesSearchInput"
+          type="text"
+          class="search-input"
+          placeholder="Search by course code, title or session…"
+        />
+      </div>
+
+      <div id="classesList" class="recent-list"></div>
+
+      <button class="secondary-btn" type="button" onclick="reloadClassesScreenData()">
+        Refresh classes
+      </button>
+    </div>
+  </section>
+
+  <section id="activityBuilderPanel" class="hidden">
+    <div class="step-strip">
+      <div class="step-card active" id="activityStepCard1">
+        <div class="step-label">Step 1</div>
+        <div class="step-title">Activity setup</div>
+        <div class="step-note">Choose type, class, title, time, due date, and attempts.</div>
+      </div>
+      <div class="step-card" id="activityStepCard2">
+        <div class="step-label">Step 2</div>
+        <div class="step-title">Add questions</div>
+        <div class="step-note">Add one objective question at a time and choose the correct answer.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Activity details</div>
+
+      <div class="row">
+        <div class="label">Activity type</div>
+        <div class="type-grid">
+          <button class="type-btn active" type="button" data-type="assignment">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 6h8M8 12h8M8 18h5"></path>
+              <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+            </svg>
+            <div class="type-btn-title">Assignment</div>
+            <div class="type-btn-note">Take-home activity</div>
+          </button>
+
+          <button class="type-btn" type="button" data-type="revision">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 6v6l4 2"></path>
+              <circle cx="12" cy="12" r="8"></circle>
+            </svg>
+            <div class="type-btn-title">Revision</div>
+            <div class="type-btn-note">Practice questions</div>
+          </button>
+
+          <button class="type-btn" type="button" data-type="test">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 12l3 3 7-7"></path>
+              <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+            </svg>
+            <div class="type-btn-title">Test</div>
+            <div class="type-btn-note">Timed class test</div>
+          </button>
         </div>
       </div>
 
-      <button class="avatar-chip" id="avatarChip" type="button">S</button>
-    </header>
+      <div class="row">
+        <div class="label">Title</div>
+        <input id="activityTitleInput" class="input" placeholder="e.g. Week 3 revision" />
+      </div>
 
-    <main>
-      <section class="hero">
-        <div class="hero-line">Assessment</div>
-        <h1 class="hero-title" id="heroTitle">Create activity</h1>
-        <div class="hero-sub" id="heroSub">
-          Create an assignment, revision, or test and then add multiple-choice questions one by one.
-        </div>
-      </section>
+      <div class="row">
+        <div class="label">Instruction</div>
+        <textarea id="activityInstructionInput" class="textarea" placeholder="Write a short instruction for students..."></textarea>
+      </div>
 
-      <section class="step-strip">
-        <div class="step-card active" id="stepCard1">
-          <div class="step-label">Step 1</div>
-          <div class="step-title">Activity setup</div>
-          <div class="step-note">Choose type, class, title, time, due date, and attempts.</div>
-        </div>
-        <div class="step-card" id="stepCard2">
-          <div class="step-label">Step 2</div>
-          <div class="step-title">Add questions</div>
-          <div class="step-note">Add one objective question at a time and choose the correct answer.</div>
-        </div>
-      </section>
+      <div class="row">
+        <div class="label">Select class</div>
+        <input
+          id="activityClassSearchInput"
+          type="text"
+          class="search-input"
+          placeholder="Search class by course code or title…"
+        />
+        <div id="activityClassList" class="recent-list" style="margin-top:8px;"></div>
+      </div>
 
-      <section class="card">
-        <div class="section-title">Activity details</div>
-
+      <div class="grid-2">
         <div class="row">
-          <div class="label">Activity type</div>
-          <div class="type-grid">
-            <button class="type-btn active" type="button" data-type="assignment">
-              <svg viewBox="0 0 24 24">
-                <path d="M8 6h8" />
-                <path d="M8 12h8" />
-                <path d="M8 18h5" />
-                <rect x="5" y="3" width="14" height="18" rx="2" />
-              </svg>
-              <div class="type-btn-title">Assignment</div>
-              <div class="type-btn-note">Take-home activity</div>
-            </button>
-
-            <button class="type-btn" type="button" data-type="revision">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 6v6l4 2" />
-                <circle cx="12" cy="12" r="8" />
-              </svg>
-              <div class="type-btn-title">Revision</div>
-              <div class="type-btn-note">Practice questions</div>
-            </button>
-
-            <button class="type-btn" type="button" data-type="test">
-              <svg viewBox="0 0 24 24">
-                <path d="M7 12l3 3 7-7" />
-                <rect x="4" y="4" width="16" height="16" rx="2" />
-              </svg>
-              <div class="type-btn-title">Test</div>
-              <div class="type-btn-note">Timed class test</div>
-            </button>
-          </div>
+          <div class="label">Due date</div>
+          <input id="activityDueInput" class="input" type="datetime-local" />
         </div>
 
         <div class="row">
-          <div class="label">Title</div>
-          <input id="activityTitle" class="input" placeholder="e.g. Week 3 revision" />
+          <div class="label">Time limit (minutes)</div>
+          <input id="activityTimeLimitInput" class="input" type="number" min="1" placeholder="e.g. 20" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:0;">
+        <div class="label">Attempts allowed</div>
+        <input id="activityAttemptsInput" class="input" type="number" min="1" value="1" />
+      </div>
+
+      <div class="hint">
+        Save the activity first. After that, the page will scroll down automatically to the question section.
+      </div>
+
+      <button id="saveActivityBtn" class="primary-btn" type="button">Save activity & continue</button>
+      <button class="secondary-btn" type="button" onclick="closeActivityBuilderFromClasses()">Back to classes</button>
+
+      <div id="activitySetupMsg" class="message"></div>
+    </div>
+
+    <div id="activityQuestionsSection" class="card hidden">
+      <div class="section-title">Add questions</div>
+
+      <div class="question-card">
+        <div class="question-title-row">
+          <div class="question-no" id="activityQuestionNo">Question 1</div>
+          <div class="question-pill" id="activityTypeBadge">Assignment</div>
         </div>
 
         <div class="row">
-          <div class="label">Instruction</div>
-          <textarea id="activityInstruction" class="textarea" placeholder="Write a short instruction for students..."></textarea>
+          <div class="label">Question</div>
+          <textarea id="activityQuestionText" class="textarea" placeholder="Type your question here..."></textarea>
         </div>
 
         <div class="row">
-          <div class="label">Class</div>
-          <select id="activityClass" class="select">
-            <option value="">Loading classes...</option>
-          </select>
+          <div class="label">Option A</div>
+          <input id="activityOptionA" class="input" placeholder="Option A" />
         </div>
 
-        <div class="grid-2">
-          <div class="row">
-            <div class="label">Due date</div>
-            <input id="activityDueAt" class="input" type="datetime-local" />
-          </div>
+        <div class="row">
+          <div class="label">Option B</div>
+          <input id="activityOptionB" class="input" placeholder="Option B" />
+        </div>
 
-          <div class="row">
-            <div class="label">Time limit (minutes)</div>
-            <input id="activityTimeLimit" class="input" type="number" min="1" placeholder="e.g. 20" />
+        <div class="row">
+          <div class="label">Option C</div>
+          <input id="activityOptionC" class="input" placeholder="Option C" />
+        </div>
+
+        <div class="row">
+          <div class="label">Option D</div>
+          <input id="activityOptionD" class="input" placeholder="Option D" />
+        </div>
+
+        <div class="row">
+          <div class="label">Choose correct answer</div>
+          <div class="correct-grid">
+            <button class="correct-btn active" type="button" data-correct="A">A</button>
+            <button class="correct-btn" type="button" data-correct="B">B</button>
+            <button class="correct-btn" type="button" data-correct="C">C</button>
+            <button class="correct-btn" type="button" data-correct="D">D</button>
           </div>
         </div>
 
         <div class="row" style="margin-bottom:0;">
-          <div class="label">Attempts allowed</div>
-          <input id="activityAttempts" class="input" type="number" min="1" value="1" />
+          <div class="label">Points</div>
+          <input id="activityQuestionPoints" class="input" type="number" min="1" value="1" />
         </div>
 
-        <div class="hint">
-          Save the activity first. After that, the question section below will open automatically.
-        </div>
-      </section>
-
-      <button id="btnSaveActivity" class="primary-cta" type="button">Save activity & continue</button>
-
-      <div id="activityMsg" class="msg"></div>
-
-      <section id="questionsSection" class="card hidden">
-        <div class="section-title">Add questions</div>
-
-        <div class="question-card">
-          <div class="question-title-row">
-            <div class="question-no" id="questionNoText">Question 1</div>
-            <div class="question-pill" id="activityTypeBadge">Assignment</div>
-          </div>
-
-          <div class="row">
-            <div class="label">Question</div>
-            <textarea id="questionText" class="textarea" placeholder="Type your question here..."></textarea>
-          </div>
-
-          <div class="row">
-            <div class="label">Option A</div>
-            <input id="optionA" class="input" placeholder="Option A" />
-          </div>
-
-          <div class="row">
-            <div class="label">Option B</div>
-            <input id="optionB" class="input" placeholder="Option B" />
-          </div>
-
-          <div class="row">
-            <div class="label">Option C</div>
-            <input id="optionC" class="input" placeholder="Option C" />
-          </div>
-
-          <div class="row">
-            <div class="label">Option D</div>
-            <input id="optionD" class="input" placeholder="Option D" />
-          </div>
-
-          <div class="row">
-            <div class="label">Choose correct answer</div>
-            <div class="correct-grid">
-              <button class="correct-btn active" type="button" data-correct="A">A</button>
-              <button class="correct-btn" type="button" data-correct="B">B</button>
-              <button class="correct-btn" type="button" data-correct="C">C</button>
-              <button class="correct-btn" type="button" data-correct="D">D</button>
-            </div>
-          </div>
-
-          <div class="row" style="margin-bottom:0;">
-            <div class="label">Points</div>
-            <input id="questionPoints" class="input" type="number" min="1" value="1" />
-          </div>
-
-          <div class="inline-actions">
-            <button id="btnSaveQuestion" class="secondary-btn" type="button">Save question</button>
-            <button id="btnSaveNext" class="primary-cta" type="button" style="margin:0;">Save & add next</button>
-          </div>
-
-          <div class="small-note">
-            Lecturer must choose the correct answer before moving to the next question. Student answers will be marked automatically.
-          </div>
+        <div class="inline-actions">
+          <button id="saveQuestionBtn" class="secondary-btn" type="button">Save question</button>
+          <button id="saveQuestionNextBtn" class="primary-btn" type="button">Save & add next</button>
         </div>
 
-        <div id="questionMsg" class="msg"></div>
-
-        <div class="inline-actions" style="margin-top:14px;">
-          <button id="btnPublishActivity" class="primary-cta" type="button" style="margin:0;">Publish activity</button>
+        <div class="small-note">
+          Lecturer must choose the correct answer before moving to the next question. Student answers will be marked automatically.
         </div>
+      </div>
 
-        <div class="saved-list" id="savedQuestionsList"></div>
-      </section>
-    </main>
-  </div>
+      <div id="activityQuestionMsg" class="message"></div>
 
-  <script type="module">
-    import { supabase } from "./client_supabase.js";
+      <div class="inline-actions" style="margin-top:14px;">
+        <button id="publishActivityBtn" class="primary-btn" type="button">Publish activity</button>
+      </div>
 
-    const $ = (id) => document.getElementById(id);
+      <div id="savedQuestionsList" class="saved-list"></div>
+    </div>
+  </section>
 
-    let currentUser = null;
-    let currentActivityId = "";
-    let currentType = "assignment";
-    let currentCorrectOption = "A";
-    let savedQuestions = [];
-    let classOptions = [];
-    let lastQuestionPosition = 0;
+  <script>
+    window.classesScreenState = window.classesScreenState || {
+      classes: [],
+      selectedClass: null,
+      activityType: "assignment",
+      activityId: "",
+      correctOption: "A",
+      savedQuestions: [],
+      lastQuestionPosition: 0,
+      activitySelectedClassId: ""
+    };
 
-    function setAvatar() {
-      try {
-        const storedName =
-          localStorage.getItem("colspot_full_name") ||
-          localStorage.getItem("colspot_display_name") ||
-          localStorage.getItem("full_name") ||
-          localStorage.getItem("display_name") ||
-          "";
-        const email = localStorage.getItem("colspot_email") || "";
-        const firstChar = (storedName.trim()[0] || email.trim()[0] || "C").toUpperCase();
-        $("avatarChip").textContent = firstChar;
-      } catch {
-        $("avatarChip").textContent = "C";
-      }
-    }
-
-    function showMsg(id, text, type = "") {
-      const el = $(id);
-      if (!el) return;
-      el.style.display = "block";
-      el.className = "msg " + type;
-      el.textContent = text;
-    }
-
-    function clearMsg(id) {
-      const el = $(id);
-      if (!el) return;
-      el.style.display = "none";
-      el.textContent = "";
-      el.className = "msg";
-    }
-
-    function getQueryParam(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name) || "";
-    }
-
-    function applyTypeUI() {
-      document.querySelectorAll(".type-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.type === currentType);
-      });
-
-      const label = currentType.charAt(0).toUpperCase() + currentType.slice(1);
-      $("activityTypeBadge").textContent = label;
-    }
-
-    function applyCorrectUI() {
-      document.querySelectorAll(".correct-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.correct === currentCorrectOption);
-      });
-    }
-
-    function lockQuestionsStep(open) {
-      $("questionsSection").classList.toggle("hidden", !open);
-      $("stepCard2").classList.toggle("active", !!open);
-    }
-
-    function escapeHtml(value) {
+    function classesEscapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -907,20 +817,444 @@
         .replaceAll("'", "&#039;");
     }
 
-    function renderSavedQuestions() {
-      const wrap = $("savedQuestionsList");
+    function showClassesMsg(id, text, type = "") {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = "block";
+      el.className = "message " + type;
+      el.textContent = text;
+    }
+
+    function clearClassesMsg(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = "none";
+      el.textContent = "";
+      el.className = "message";
+    }
+
+    function renderClassesList(filterText = "") {
+      const wrap = document.getElementById("classesList");
       if (!wrap) return;
 
-      if (!savedQuestions.length) {
-        wrap.innerHTML = `
-          <div class="hint" style="margin-top:4px;">
-            No question saved yet. Add your first question above.
-          </div>
-        `;
+      const f = String(filterText || "").trim().toLowerCase();
+      let rows = Array.isArray(window.classesScreenState.classes) ? window.classesScreenState.classes : [];
+
+      if (f) {
+        rows = rows.filter((c) =>
+          [c.course_code, c.course_title, c.academic_session]
+            .map(v => String(v || "").toLowerCase())
+            .some(v => v.includes(f))
+        );
+      }
+
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
         return;
       }
 
-      wrap.innerHTML = savedQuestions
+      wrap.innerHTML = rows.map((c) => {
+        const selected =
+          window.classesScreenState.selectedClass &&
+          String(window.classesScreenState.selectedClass.id) === String(c.id);
+
+        return `
+          <div class="recent-item ${selected ? "selected" : ""}" onclick="selectClassesScreenClass('${String(c.id)}')">
+            <div class="recent-item-title">${classesEscapeHtml(c.course_code || "Untitled class")}</div>
+            <div class="recent-item-sub">${classesEscapeHtml(c.academic_session || "")}${c.course_title ? " • " + classesEscapeHtml(c.course_title) : ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderActivityClassList(filterText = "") {
+      const wrap = document.getElementById("activityClassList");
+      if (!wrap) return;
+
+      const f = String(filterText || "").trim().toLowerCase();
+      let rows = Array.isArray(window.classesScreenState.classes) ? window.classesScreenState.classes : [];
+
+      if (f) {
+        rows = rows.filter((c) =>
+          [c.course_code, c.course_title, c.academic_session]
+            .map(v => String(v || "").toLowerCase())
+            .some(v => v.includes(f))
+        );
+      }
+
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = rows.map((c) => {
+        const selected = String(window.classesScreenState.activitySelectedClassId || "") === String(c.id);
+
+        return `
+          <div class="recent-item ${selected ? "selected" : ""}" onclick="selectActivityClassInScreen('${String(c.id)}')">
+            <div class="recent-item-title">${classesEscapeHtml(c.course_code || "Untitled class")}</div>
+            <div class="recent-item-sub">${classesEscapeHtml(c.academic_session || "")}${c.course_title ? " • " + classesEscapeHtml(c.course_title) : ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function selectClassesScreenClass(classId) {
+      const found = window.classesScreenState.classes.find(c => String(c.id) === String(classId));
+      window.classesScreenState.selectedClass = found || null;
+      renderClassesList(document.getElementById("classesSearchInput")?.value || "");
+    }
+
+    function selectActivityClassInScreen(classId) {
+      window.classesScreenState.activitySelectedClassId = classId;
+      renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
+    }
+
+    function openCreateClassPageFromClasses() {
+      window.location.href = "create_class.html";
+    }
+
+    function openActivityBuilderFromClasses() {
+      document.getElementById("classesMainPanel")?.classList.add("hidden");
+      document.getElementById("activityBuilderPanel")?.classList.remove("hidden");
+      document.getElementById("classesHeroLine").textContent = "Assessment";
+      document.getElementById("classesHeroTitle").innerHTML = 'Create <span>activity</span>';
+      document.getElementById("classesHeroSub").textContent = "Create an assignment, revision, or test and then add multiple-choice questions one by one.";
+      renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
+    }
+
+    function closeActivityBuilderFromClasses() {
+      document.getElementById("activityBuilderPanel")?.classList.add("hidden");
+      document.getElementById("classesMainPanel")?.classList.remove("hidden");
+      document.getElementById("classesHeroLine").textContent = "Classes";
+      document.getElementById("classesHeroTitle").innerHTML = 'Manage your <span>classes</span>';
+      document.getElementById("classesHeroSub").textContent = "Create classes, manage them, and build assignments, revision, or tests.";
+    }
+
+    function applyActivityTypeUI() {
+      document.querySelectorAll('#screen-classes .type-btn').forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.type === window.classesScreenState.activityType);
+      });
+
+      const label = window.classesScreenState.activityType.charAt(0).toUpperCase() + window.classesScreenState.activityType.slice(1);
+      const badge = document.getElementById("activityTypeBadge");
+      if (badge) badge.textContent = label;
+    }
+
+    function applyCorrectOptionUI() {
+      document.querySelectorAll('#screen-classes .correct-btn').forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.correct === window.classesScreenState.correctOption);
+      });
+    }
+
+    async function reloadClassesScreenData() {
+      if (typeof supabase === "undefined") return;
+
+      try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) return;
+
+        const { data, error } = await supabase
+          .from("courses")
+          .select("id, course_code, course_title, academic_session, created_at")
+          .eq("created_by", userData.user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        window.classesScreenState.classes = Array.isArray(data) ? data : [];
+        renderClassesList(document.getElementById("classesSearchInput")?.value || "");
+        renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
+      } catch (err) {
+        console.error("reloadClassesScreenData failed:", err);
+        window.classesScreenState.classes = [];
+        renderClassesList();
+        renderActivityClassList();
+      }
+    }
+
+    function getActivityPayloadFromScreen() {
+      const title = (document.getElementById("activityTitleInput")?.value || "").trim();
+      const instruction = (document.getElementById("activityInstructionInput")?.value || "").trim();
+      const dueInput = (document.getElementById("activityDueInput")?.value || "").trim();
+      const timeLimitInput = (document.getElementById("activityTimeLimitInput")?.value || "").trim();
+      const attemptsInput = (document.getElementById("activityAttemptsInput")?.value || "").trim();
+
+      if (!window.classesScreenState.activityType) {
+        showClassesMsg("activitySetupMsg", "Choose the activity type.", "error");
+        return null;
+      }
+
+      if (!title) {
+        showClassesMsg("activitySetupMsg", "Enter the activity title.", "error");
+        return null;
+      }
+
+      if (!window.classesScreenState.activitySelectedClassId) {
+        showClassesMsg("activitySetupMsg", "Select the class for this activity.", "error");
+        return null;
+      }
+
+      const attemptsAllowed = Number(attemptsInput || 1);
+      if (!Number.isFinite(attemptsAllowed) || attemptsAllowed < 1) {
+        showClassesMsg("activitySetupMsg", "Attempts allowed must be 1 or more.", "error");
+        return null;
+      }
+
+      let timeLimitMinutes = null;
+      if (timeLimitInput) {
+        timeLimitMinutes = Number(timeLimitInput);
+        if (!Number.isFinite(timeLimitMinutes) || timeLimitMinutes <= 0) {
+          showClassesMsg("activitySetupMsg", "Time limit must be greater than 0.", "error");
+          return null;
+        }
+      }
+
+      let dueAt = null;
+      if (dueInput) {
+        const dt = new Date(dueInput);
+        if (Number.isNaN(dt.getTime())) {
+          showClassesMsg("activitySetupMsg", "Due date is not valid.", "error");
+          return null;
+        }
+        dueAt = dt.toISOString();
+      }
+
+      return {
+        class_id: window.classesScreenState.activitySelectedClassId,
+        created_by: currentUser?.id,
+        activity_type: window.classesScreenState.activityType,
+        title,
+        instruction,
+        due_at: dueAt,
+        time_limit_minutes: timeLimitMinutes,
+        attempts_allowed: attemptsAllowed,
+        is_published: false,
+        status: "draft"
+      };
+    }
+
+    async function saveActivityFromClassesScreen() {
+      clearClassesMsg("activitySetupMsg");
+      if (typeof supabase === "undefined") return;
+
+      try {
+        if (!currentUser) {
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError || !userData?.user) {
+            showClassesMsg("activitySetupMsg", "Please sign in again.", "error");
+            return;
+          }
+          currentUser = userData.user;
+        }
+
+        const payload = getActivityPayloadFromScreen();
+        if (!payload) return;
+
+        const btn = document.getElementById("saveActivityBtn");
+        const oldText = btn?.textContent || "Save activity & continue";
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = window.classesScreenState.activityId ? "Saving..." : "Creating...";
+        }
+
+        if (window.classesScreenState.activityId) {
+          const { error } = await supabase
+            .from("class_activities")
+            .update(payload)
+            .eq("id", window.classesScreenState.activityId)
+            .eq("created_by", currentUser.id);
+
+          if (error) throw error;
+
+          showClassesMsg("activitySetupMsg", "Activity updated. You can now continue adding questions.", "success");
+        } else {
+          const { data, error } = await supabase
+            .from("class_activities")
+            .insert([payload])
+            .select("id")
+            .single();
+
+          if (error) throw error;
+
+          window.classesScreenState.activityId = data.id;
+          showClassesMsg("activitySetupMsg", "Activity saved successfully. Now add your questions.", "success");
+        }
+
+        document.getElementById("activityQuestionsSection")?.classList.remove("hidden");
+        document.getElementById("activityStepCard2")?.classList.add("active");
+
+        setTimeout(() => {
+          document.getElementById("activityQuestionsSection")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }, 180);
+
+        await loadSavedQuestionsFromClassesScreen();
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      } catch (err) {
+        console.error("saveActivityFromClassesScreen failed:", err);
+        showClassesMsg("activitySetupMsg", err.message || "Could not save activity.", "error");
+        const btn = document.getElementById("saveActivityBtn");
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Save activity & continue";
+        }
+      }
+    }
+
+    function getQuestionPayloadFromClassesScreen() {
+      const questionText = (document.getElementById("activityQuestionText")?.value || "").trim();
+      const optionA = (document.getElementById("activityOptionA")?.value || "").trim();
+      const optionB = (document.getElementById("activityOptionB")?.value || "").trim();
+      const optionC = (document.getElementById("activityOptionC")?.value || "").trim();
+      const optionD = (document.getElementById("activityOptionD")?.value || "").trim();
+      const points = Number(document.getElementById("activityQuestionPoints")?.value || 1);
+
+      if (!window.classesScreenState.activityId) {
+        showClassesMsg("activityQuestionMsg", "Save the activity first before adding questions.", "error");
+        return null;
+      }
+
+      if (!questionText) {
+        showClassesMsg("activityQuestionMsg", "Enter the question text.", "error");
+        return null;
+      }
+
+      if (!optionA || !optionB || !optionC || !optionD) {
+        showClassesMsg("activityQuestionMsg", "Fill option A, B, C and D before saving.", "error");
+        return null;
+      }
+
+      if (!["A", "B", "C", "D"].includes(window.classesScreenState.correctOption)) {
+        showClassesMsg("activityQuestionMsg", "Choose the correct answer.", "error");
+        return null;
+      }
+
+      if (!Number.isFinite(points) || points < 1) {
+        showClassesMsg("activityQuestionMsg", "Points must be 1 or more.", "error");
+        return null;
+      }
+
+      return {
+        activity_id: window.classesScreenState.activityId,
+        question_text: questionText,
+        option_a: optionA,
+        option_b: optionB,
+        option_c: optionC,
+        option_d: optionD,
+        correct_option: window.classesScreenState.correctOption,
+        points,
+        position: Number(window.classesScreenState.lastQuestionPosition || 0) + 1
+      };
+    }
+
+    function clearQuestionFormFromClassesScreen() {
+      ["activityQuestionText","activityOptionA","activityOptionB","activityOptionC","activityOptionD"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      const points = document.getElementById("activityQuestionPoints");
+      if (points) points.value = "1";
+
+      window.classesScreenState.correctOption = "A";
+      applyCorrectOptionUI();
+
+      const qNo = document.getElementById("activityQuestionNo");
+      if (qNo) qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
+    }
+
+    async function saveQuestionFromClassesScreen(goNext = false) {
+      clearClassesMsg("activityQuestionMsg");
+      if (typeof supabase === "undefined") return;
+
+      const payload = getQuestionPayloadFromClassesScreen();
+      if (!payload) return;
+
+      try {
+        const btn = document.getElementById(goNext ? "saveQuestionNextBtn" : "saveQuestionBtn");
+        const oldText = btn?.textContent || "Save";
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Saving...";
+        }
+
+        const { error } = await supabase
+          .from("class_activity_questions")
+          .insert([payload]);
+
+        if (error) throw error;
+
+        window.classesScreenState.lastQuestionPosition = payload.position;
+        showClassesMsg("activityQuestionMsg", `Question ${payload.position} saved successfully.`, "success");
+        await loadSavedQuestionsFromClassesScreen();
+
+        if (goNext) {
+          clearQuestionFormFromClassesScreen();
+          document.getElementById("activityQuestionText")?.focus();
+        }
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      } catch (err) {
+        console.error("saveQuestionFromClassesScreen failed:", err);
+        showClassesMsg("activityQuestionMsg", err.message || "Could not save question.", "error");
+        const btn = document.getElementById(goNext ? "saveQuestionNextBtn" : "saveQuestionBtn");
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = goNext ? "Save & add next" : "Save question";
+        }
+      }
+    }
+
+    async function loadSavedQuestionsFromClassesScreen() {
+      if (typeof supabase === "undefined") return;
+      if (!window.classesScreenState.activityId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("class_activity_questions")
+          .select("*")
+          .eq("activity_id", window.classesScreenState.activityId)
+          .order("position", { ascending: true });
+
+        if (error) throw error;
+
+        window.classesScreenState.savedQuestions = Array.isArray(data) ? data : [];
+        window.classesScreenState.lastQuestionPosition = window.classesScreenState.savedQuestions.length
+          ? Math.max(...window.classesScreenState.savedQuestions.map((q) => Number(q.position || 0)))
+          : 0;
+
+        const qNo = document.getElementById("activityQuestionNo");
+        if (qNo) qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
+
+        renderSavedQuestionsFromClassesScreen();
+      } catch (err) {
+        console.error("loadSavedQuestionsFromClassesScreen failed:", err);
+        renderSavedQuestionsFromClassesScreen();
+      }
+    }
+
+    function renderSavedQuestionsFromClassesScreen() {
+      const wrap = document.getElementById("savedQuestionsList");
+      if (!wrap) return;
+
+      const list = Array.isArray(window.classesScreenState.savedQuestions) ? window.classesScreenState.savedQuestions : [];
+
+      if (!list.length) {
+        wrap.innerHTML = `<div class="hint" style="margin-top:4px;">No question saved yet. Add your first question above.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = list
         .sort((a, b) => Number(a.position || 0) - Number(b.position || 0))
         .map((q) => {
           const correct = String(q.correct_option || "A").toUpperCase();
@@ -935,426 +1269,120 @@
             <div class="saved-item">
               <div class="saved-top">
                 <div>
-                  <div class="saved-q-no">Question ${escapeHtml(q.position)}</div>
-                  <div class="saved-q-text">${escapeHtml(q.question_text)}</div>
+                  <div class="saved-q-no">Question ${classesEscapeHtml(q.position)}</div>
+                  <div class="saved-q-text">${classesEscapeHtml(q.question_text)}</div>
                 </div>
-                <div class="saved-points">${escapeHtml(q.points)} pt</div>
+                <div class="saved-points">${classesEscapeHtml(q.points)} pt</div>
               </div>
 
               <div class="saved-options">
                 <div class="saved-option ${correct === "A" ? "correct" : ""}">
-                  <strong>A.</strong> ${escapeHtml(q.option_a)}
+                  <strong>A.</strong> ${classesEscapeHtml(q.option_a)}
                 </div>
                 <div class="saved-option ${correct === "B" ? "correct" : ""}">
-                  <strong>B.</strong> ${escapeHtml(q.option_b)}
+                  <strong>B.</strong> ${classesEscapeHtml(q.option_b)}
                 </div>
                 <div class="saved-option ${correct === "C" ? "correct" : ""}">
-                  <strong>C.</strong> ${escapeHtml(q.option_c)}
+                  <strong>C.</strong> ${classesEscapeHtml(q.option_c)}
                 </div>
                 <div class="saved-option ${correct === "D" ? "correct" : ""}">
-                  <strong>D.</strong> ${escapeHtml(q.option_d)}
+                  <strong>D.</strong> ${classesEscapeHtml(q.option_d)}
                 </div>
               </div>
 
               <div class="small-note">
-                Correct answer: <strong>${correct}</strong> — ${escapeHtml(correctMap[correct] || "")}
+                Correct answer: <strong>${correct}</strong> — ${classesEscapeHtml(correctMap[correct] || "")}
               </div>
             </div>
           `;
-        })
-        .join("");
+        }).join("");
     }
 
-    function clearQuestionForm() {
-      $("questionText").value = "";
-      $("optionA").value = "";
-      $("optionB").value = "";
-      $("optionC").value = "";
-      $("optionD").value = "";
-      $("questionPoints").value = "1";
-      currentCorrectOption = "A";
-      applyCorrectUI();
-      $("questionNoText").textContent = `Question ${lastQuestionPosition + 1}`;
-    }
+    async function publishActivityFromClassesScreen() {
+      clearClassesMsg("activityQuestionMsg");
+      if (typeof supabase === "undefined") return;
 
-    async function ensureUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) {
-        window.location.href = "index.html";
-        return null;
-      }
-      currentUser = data.user;
-      return data.user;
-    }
-
-    async function loadLecturerClasses() {
-      const prefillClassId = getQueryParam("class_id");
-
-      const { data, error } = await supabase
-        .from("courses")
-        .select("id, course_code, course_title")
-        .eq("created_by", currentUser.id)
-        .order("created_at", { ascending: false });
-
-      const select = $("activityClass");
-
-      if (error) {
-        console.error(error);
-        select.innerHTML = `<option value="">Could not load classes</option>`;
+      if (!window.classesScreenState.activityId) {
+        showClassesMsg("activityQuestionMsg", "Save the activity first before publishing.", "error");
         return;
       }
 
-      classOptions = Array.isArray(data) ? data : [];
-
-      if (!classOptions.length) {
-        select.innerHTML = `<option value="">No class found</option>`;
+      if (!window.classesScreenState.savedQuestions.length) {
+        showClassesMsg("activityQuestionMsg", "Add at least one question before publishing.", "error");
         return;
       }
-
-      select.innerHTML = `<option value="">Select class</option>` + classOptions.map((item) => {
-        const label = [item.course_code, item.course_title].filter(Boolean).join(" • ");
-        return `<option value="${item.id}">${escapeHtml(label)}</option>`;
-      }).join("");
-
-      if (prefillClassId) {
-        select.value = prefillClassId;
-      }
-    }
-
-    async function loadActivityIfEditing() {
-      const activityId = getQueryParam("activity_id");
-      if (!activityId) return;
-
-      const { data, error } = await supabase
-        .from("class_activities")
-        .select("*")
-        .eq("id", activityId)
-        .eq("created_by", currentUser.id)
-        .single();
-
-      if (error || !data) {
-        console.warn("Could not load activity:", error);
-        return;
-      }
-
-      currentActivityId = data.id || "";
-      currentType = data.activity_type || "assignment";
-      $("activityTitle").value = data.title || "";
-      $("activityInstruction").value = data.instruction || "";
-      $("activityClass").value = data.class_id || "";
-      $("activityAttempts").value = String(data.attempts_allowed || 1);
-      $("activityTimeLimit").value = data.time_limit_minutes ? String(data.time_limit_minutes) : "";
-      $("activityDueAt").value = data.due_at ? toLocalDateTimeInputValue(data.due_at) : "";
-
-      applyTypeUI();
-      lockQuestionsStep(true);
-      $("heroTitle").textContent = "Update activity";
-      $("heroSub").textContent = "Edit your activity details, keep adding questions, and publish when ready.";
-      $("btnSaveActivity").textContent = "Save activity";
-      await loadSavedQuestions();
-    }
-
-    function toLocalDateTimeInputValue(isoString) {
-      const d = new Date(isoString);
-      if (Number.isNaN(d.getTime())) return "";
-      const pad = (n) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-
-    function buildActivityPayload() {
-      const title = $("activityTitle").value.trim();
-      const instruction = $("activityInstruction").value.trim();
-      const classId = $("activityClass").value;
-      const dueInput = $("activityDueAt").value.trim();
-      const timeLimitInput = $("activityTimeLimit").value.trim();
-      const attemptsInput = $("activityAttempts").value.trim();
-
-      if (!currentType) {
-        showMsg("activityMsg", "Choose the activity type.", "error");
-        return null;
-      }
-
-      if (!title) {
-        showMsg("activityMsg", "Enter the activity title.", "error");
-        return null;
-      }
-
-      if (!classId) {
-        showMsg("activityMsg", "Select the class for this activity.", "error");
-        return null;
-      }
-
-      const attemptsAllowed = Number(attemptsInput || 1);
-      if (!Number.isFinite(attemptsAllowed) || attemptsAllowed < 1) {
-        showMsg("activityMsg", "Attempts allowed must be 1 or more.", "error");
-        return null;
-      }
-
-      let timeLimitMinutes = null;
-      if (timeLimitInput) {
-        timeLimitMinutes = Number(timeLimitInput);
-        if (!Number.isFinite(timeLimitMinutes) || timeLimitMinutes <= 0) {
-          showMsg("activityMsg", "Time limit must be greater than 0.", "error");
-          return null;
-        }
-      }
-
-      let dueAt = null;
-      if (dueInput) {
-        const dt = new Date(dueInput);
-        if (Number.isNaN(dt.getTime())) {
-          showMsg("activityMsg", "Due date is not valid.", "error");
-          return null;
-        }
-        dueAt = dt.toISOString();
-      }
-
-      return {
-        class_id: classId,
-        created_by: currentUser.id,
-        activity_type: currentType,
-        title,
-        instruction,
-        due_at: dueAt,
-        time_limit_minutes: timeLimitMinutes,
-        attempts_allowed: attemptsAllowed,
-        is_published: false,
-        status: "draft"
-      };
-    }
-
-    async function saveActivity() {
-      clearMsg("activityMsg");
-
-      const payload = buildActivityPayload();
-      if (!payload) return;
-
-      const btn = $("btnSaveActivity");
-      btn.disabled = true;
-      const oldText = btn.textContent;
-      btn.textContent = currentActivityId ? "Saving..." : "Creating...";
 
       try {
-        if (currentActivityId) {
-          const { error } = await supabase
-            .from("class_activities")
-            .update(payload)
-            .eq("id", currentActivityId)
-            .eq("created_by", currentUser.id);
-
-          if (error) throw error;
-
-          showMsg("activityMsg", "Activity updated. You can now continue adding questions.", "success");
-        } else {
-          const { data, error } = await supabase
-            .from("class_activities")
-            .insert([payload])
-            .select("id")
-            .single();
-
-          if (error) throw error;
-
-          currentActivityId = data.id;
-          showMsg("activityMsg", "Activity saved successfully. Now add your questions.", "success");
-
-          const url = new URL(window.location.href);
-          url.searchParams.set("activity_id", currentActivityId);
-          window.history.replaceState({}, "", url.toString());
+        const btn = document.getElementById("publishActivityBtn");
+        const oldText = btn?.textContent || "Publish activity";
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Publishing...";
         }
 
-        lockQuestionsStep(true);
-      } catch (error) {
-        console.error(error);
-        showMsg("activityMsg", error.message || "Could not save activity.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-
-    function buildQuestionPayload() {
-      const questionText = $("questionText").value.trim();
-      const optionA = $("optionA").value.trim();
-      const optionB = $("optionB").value.trim();
-      const optionC = $("optionC").value.trim();
-      const optionD = $("optionD").value.trim();
-      const points = Number($("questionPoints").value || 1);
-
-      if (!currentActivityId) {
-        showMsg("questionMsg", "Save the activity first before adding questions.", "error");
-        return null;
-      }
-
-      if (!questionText) {
-        showMsg("questionMsg", "Enter the question text.", "error");
-        return null;
-      }
-
-      if (!optionA || !optionB || !optionC || !optionD) {
-        showMsg("questionMsg", "Fill option A, B, C and D before saving.", "error");
-        return null;
-      }
-
-      if (!["A", "B", "C", "D"].includes(currentCorrectOption)) {
-        showMsg("questionMsg", "Choose the correct answer.", "error");
-        return null;
-      }
-
-      if (!Number.isFinite(points) || points < 1) {
-        showMsg("questionMsg", "Points must be 1 or more.", "error");
-        return null;
-      }
-
-      return {
-        activity_id: currentActivityId,
-        question_text: questionText,
-        option_a: optionA,
-        option_b: optionB,
-        option_c: optionC,
-        option_d: optionD,
-        correct_option: currentCorrectOption,
-        points,
-        position: lastQuestionPosition + 1
-      };
-    }
-
-    async function saveQuestion(goNext = false) {
-      clearMsg("questionMsg");
-
-      const payload = buildQuestionPayload();
-      if (!payload) return;
-
-      const btn = goNext ? $("btnSaveNext") : $("btnSaveQuestion");
-      btn.disabled = true;
-      const oldText = btn.textContent;
-      btn.textContent = goNext ? "Saving..." : "Saving...";
-
-      try {
-        const { error } = await supabase
-          .from("class_activity_questions")
-          .insert([payload]);
-
-        if (error) throw error;
-
-        lastQuestionPosition = payload.position;
-        showMsg("questionMsg", `Question ${payload.position} saved successfully.`, "success");
-        await loadSavedQuestions();
-
-        if (goNext) {
-          clearQuestionForm();
-          $("questionText").focus();
-        }
-      } catch (error) {
-        console.error(error);
-        showMsg("questionMsg", error.message || "Could not save question.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-
-    async function loadSavedQuestions() {
-      if (!currentActivityId) return;
-
-      const { data, error } = await supabase
-        .from("class_activity_questions")
-        .select("*")
-        .eq("activity_id", currentActivityId)
-        .order("position", { ascending: true });
-
-      if (error) {
-        console.error(error);
-        renderSavedQuestions();
-        return;
-      }
-
-      savedQuestions = Array.isArray(data) ? data : [];
-      lastQuestionPosition = savedQuestions.length
-        ? Math.max(...savedQuestions.map((q) => Number(q.position || 0)))
-        : 0;
-
-      $("questionNoText").textContent = `Question ${lastQuestionPosition + 1}`;
-      renderSavedQuestions();
-    }
-
-    async function publishActivity() {
-      clearMsg("questionMsg");
-
-      if (!currentActivityId) {
-        showMsg("questionMsg", "Save the activity first before publishing.", "error");
-        return;
-      }
-
-      if (!savedQuestions.length) {
-        showMsg("questionMsg", "Add at least one question before publishing.", "error");
-        return;
-      }
-
-      const btn = $("btnPublishActivity");
-      btn.disabled = true;
-      const oldText = btn.textContent;
-      btn.textContent = "Publishing...";
-
-      try {
         const { error } = await supabase
           .from("class_activities")
           .update({
             is_published: true,
             status: "published"
           })
-          .eq("id", currentActivityId)
+          .eq("id", window.classesScreenState.activityId)
           .eq("created_by", currentUser.id);
 
         if (error) throw error;
 
-        showMsg("questionMsg", "Activity published successfully.", "success");
-      } catch (error) {
-        console.error(error);
-        showMsg("questionMsg", error.message || "Could not publish activity.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
+        showClassesMsg("activityQuestionMsg", "Activity published successfully.", "success");
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      } catch (err) {
+        console.error("publishActivityFromClassesScreen failed:", err);
+        showClassesMsg("activityQuestionMsg", err.message || "Could not publish activity.", "error");
+        const btn = document.getElementById("publishActivityBtn");
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Publish activity";
+        }
       }
     }
 
-    function bindTypeButtons() {
-      document.querySelectorAll(".type-btn").forEach((btn) => {
+    function bindClassesScreenEvents() {
+      document.getElementById("classesSearchInput")?.addEventListener("input", (e) => {
+        renderClassesList(e.target.value || "");
+      });
+
+      document.getElementById("activityClassSearchInput")?.addEventListener("input", (e) => {
+        renderActivityClassList(e.target.value || "");
+      });
+
+      document.querySelectorAll('#screen-classes .type-btn').forEach((btn) => {
         btn.addEventListener("click", () => {
-          currentType = btn.dataset.type || "assignment";
-          applyTypeUI();
+          window.classesScreenState.activityType = btn.dataset.type || "assignment";
+          applyActivityTypeUI();
         });
       });
-    }
 
-    function bindCorrectButtons() {
-      document.querySelectorAll(".correct-btn").forEach((btn) => {
+      document.querySelectorAll('#screen-classes .correct-btn').forEach((btn) => {
         btn.addEventListener("click", () => {
-          currentCorrectOption = btn.dataset.correct || "A";
-          applyCorrectUI();
+          window.classesScreenState.correctOption = btn.dataset.correct || "A";
+          applyCorrectOptionUI();
         });
       });
+
+      document.getElementById("saveActivityBtn")?.addEventListener("click", saveActivityFromClassesScreen);
+      document.getElementById("saveQuestionBtn")?.addEventListener("click", () => saveQuestionFromClassesScreen(false));
+      document.getElementById("saveQuestionNextBtn")?.addEventListener("click", () => saveQuestionFromClassesScreen(true));
+      document.getElementById("publishActivityBtn")?.addEventListener("click", publishActivityFromClassesScreen);
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      setAvatar();
-      applyTypeUI();
-      applyCorrectUI();
-      renderSavedQuestions();
-
-      bindTypeButtons();
-      bindCorrectButtons();
-
-      $("btnSaveActivity").addEventListener("click", saveActivity);
-      $("btnSaveQuestion").addEventListener("click", () => saveQuestion(false));
-      $("btnSaveNext").addEventListener("click", () => saveQuestion(true));
-      $("btnPublishActivity").addEventListener("click", publishActivity);
-
-      const user = await ensureUser();
-      if (!user) return;
-
-      await loadLecturerClasses();
-      await loadActivityIfEditing();
+    document.addEventListener("DOMContentLoaded", () => {
+      bindClassesScreenEvents();
+      applyActivityTypeUI();
+      applyCorrectOptionUI();
+      reloadClassesScreenData();
     });
   </script>
-</body>
-</html>
+</div>
+<!-- 🔹 CLASSES SCREEN END -->
