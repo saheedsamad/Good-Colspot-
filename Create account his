@@ -1,906 +1,721 @@
-<!-- CREATE ACCOUNT -->
-<section class="screen" id="screen-create-account">
+<section id="screen-create-account" class="screen">
   <style>
-    #screen-create-account{
-      padding:8px 6px 40px;
-      overflow-y:auto;
-      -webkit-overflow-scrolling:touch;
-    }
-
-    #screen-create-account .hero{
-      padding:4px 4px 6px;
-      margin-bottom:6px;
-    }
-
-    #screen-create-account .hero-line-1{
-      font-size:12px;
-      font-weight:500;
-      color:var(--muted);
-      margin-bottom:3px;
-    }
-
-    #screen-create-account .hero-title{
-      font-size:20px;
-      font-weight:800;
-      letter-spacing:-0.03em;
-      line-height:1.2;
-      color:var(--text);
-      margin:0;
-    }
-
-    #screen-create-account .hero-title span{
-      color:var(--blue);
-      font-weight:600;
-    }
-
-    #screen-create-account .section-title{
-      font-size:13px;
-      font-weight:600;
-      color:var(--text);
-      margin:8px 2px 4px;
-    }
-
-    #screen-create-account .section-sub{
-      font-size:12px;
-      color:var(--muted);
-      margin:0 2px 8px;
-      line-height:1.45;
-    }
-
-    #screen-create-account .card{
-      background:#f9fafb;
-      border-radius:18px;
-      padding:10px 10px;
-      border:1px solid #e5e7eb;
-      margin-bottom:14px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-    }
-
-    #screen-create-account .field-grid{
+    #screen-create-account .create-account-wrap{
       display:grid;
+      gap:18px;
+    }
+
+    #screen-create-account .create-account-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+    }
+
+    #screen-create-account .create-account-grid{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:18px;
+    }
+
+    #screen-create-account .create-panel{
+      background:#fff;
+      border:1px solid var(--line, #e5e7eb);
+      border-radius:24px;
+      box-shadow:var(--shadow-soft, 0 10px 25px rgba(37,99,235,.08));
+      overflow:hidden;
+    }
+
+    #screen-create-account .create-panel-head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line, #e5e7eb);
+      background:linear-gradient(180deg,#ffffff 0%, #fafcff 100%);
+    }
+
+    #screen-create-account .create-panel-title{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    #screen-create-account .create-panel-sub{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted, #6b7280);
+      line-height:1.5;
+    }
+
+    #screen-create-account .create-form{
+      padding:20px;
+      display:grid;
+      gap:16px;
+    }
+
+    #screen-create-account .form-row{
+      display:grid;
+      gap:14px;
+    }
+
+    #screen-create-account .form-row.two{
       grid-template-columns:1fr 1fr;
-      gap:10px;
     }
 
     #screen-create-account .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin-bottom:10px;
-    }
-
-    #screen-create-account .field.full{
-      grid-column:1 / -1;
+      display:grid;
+      gap:8px;
     }
 
     #screen-create-account .field label{
-      font-size:12px;
-      font-weight:600;
-      color:var(--text);
+      font-size:13px;
+      font-weight:800;
+      color:#0f172a;
     }
 
-    #screen-create-account .text-input,
-    #screen-create-account .select-input{
+    #screen-create-account .field input,
+    #screen-create-account .field select{
       width:100%;
-      height:46px;
-      border-radius:999px;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      padding:0 14px;
-      font-size:15px;
-      color:var(--text);
-    }
-
-    #screen-create-account .text-input:focus,
-    #screen-create-account .select-input:focus,
-    #screen-create-account .search-input:focus{
+      height:52px;
+      border:1px solid #dbe3ee;
+      border-radius:16px;
       outline:none;
-      border-color:#2563eb;
-      box-shadow:0 0 0 2px rgba(37,99,235,.18);
-    }
-
-    #screen-create-account .field-help{
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.4;
-    }
-
-    #screen-create-account .create-layout{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:14px;
-      align-items:start;
-    }
-
-    #screen-create-account .result-box{
-      border-radius:16px;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      padding:12px;
-      margin-bottom:10px;
-      display:none;
-    }
-
-    #screen-create-account .result-title{
-      font-size:13px;
-      font-weight:700;
-      color:var(--text);
-      margin-bottom:10px;
-    }
-
-    #screen-create-account .result-row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      padding:9px 0;
-      border-top:1px solid #eef2f7;
-    }
-
-    #screen-create-account .result-row:first-of-type{
-      border-top:none;
-      padding-top:0;
-    }
-
-    #screen-create-account .result-key{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:600;
-    }
-
-    #screen-create-account .result-value{
-      font-size:13px;
-      color:var(--text);
-      font-weight:700;
-      text-align:right;
-      word-break:break-word;
-    }
-
-    #screen-create-account .copy-row{
-      display:flex;
-      gap:8px;
-      margin-top:10px;
-    }
-
-    #screen-create-account .mini-btn{
-      flex:1;
-      border-radius:999px;
-      padding:9px 12px;
-      font-size:13px;
-      border:1px solid #e5e7eb;
-      background:#ffffff;
-      cursor:pointer;
-      color:var(--text);
-      font-weight:600;
-    }
-
-    #screen-create-account .secondary-btn{
-      border-radius:999px;
-      padding:9px 12px;
-      font-size:13px;
-      border:1px solid #e5e7eb;
-      background:#ffffff;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:var(--text);
-      font-weight:600;
-      width:100%;
-      margin-top:6px;
-    }
-
-    #screen-create-account .secondary-btn svg{
-      width:16px;
-      height:16px;
-    }
-
-    #screen-create-account .primary-btn{
-      width:100%;
-      margin-top:10px;
-      border-radius:999px;
-      border:none;
-      padding:12px 14px;
-      font-size:15px;
-      font-weight:600;
-      cursor:pointer;
-      color:#ffffff;
-      background:linear-gradient(135deg, var(--blue), var(--blue-dark));
-      box-shadow:0 14px 35px rgba(37,99,235,.45);
-      transition:background .15s, transform .05s, box-shadow .15s;
-    }
-
-    #screen-create-account .primary-btn:hover{
-      background:var(--blue-dark);
-    }
-
-    #screen-create-account .primary-btn:active{
-      transform:scale(.97);
-    }
-
-    #screen-create-account .primary-btn:disabled{
-      background:#93c5fd;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    #screen-create-account .message{
-      margin-top:8px;
-      font-size:12px;
-      text-align:center;
-      white-space:pre-line;
-      display:none;
-    }
-
-    #screen-create-account .message.error{
-      color:#dc2626;
-    }
-
-    #screen-create-account .message.success{
-      color:#15803d;
-    }
-
-    #screen-create-account .search-row{
-      display:flex;
-      gap:6px;
-      margin-bottom:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    #screen-create-account .search-input{
-      flex:1;
-      min-width:220px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid #e5e7eb;
+      padding:0 15px;
       font-size:14px;
+      color:#0f172a;
       background:#fff;
     }
 
-    #screen-create-account .stat-chip{
-      border-radius:999px;
-      padding:8px 10px;
-      font-size:11px;
+    #screen-create-account .field input:focus,
+    #screen-create-account .field select:focus{
+      border-color:#2563eb;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    #screen-create-account .optional-text{
       font-weight:700;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      color:#334155;
-      white-space:nowrap;
+      color:var(--muted, #6b7280);
+      font-size:12px;
     }
 
-    #screen-create-account .table-wrap{
-      width:100%;
-      overflow:auto;
+    #screen-create-account .read-only-box{
+      min-height:52px;
+      border:1px solid #dbe3ee;
       border-radius:16px;
-      border:1px solid #e5e7eb;
-      background:#fff;
+      padding:14px 15px;
+      font-size:14px;
+      color:#475569;
+      background:#f8fbff;
+      display:flex;
+      align-items:center;
     }
 
-    #screen-create-account table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:860px;
+    #screen-create-account .create-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      padding-top:4px;
     }
 
-    #screen-create-account th,
-    #screen-create-account td{
-      text-align:left;
-      padding:12px 12px;
-      border-bottom:1px solid #eef2f7;
-      font-size:13px;
-      vertical-align:top;
-    }
-
-    #screen-create-account th{
-      background:#f8fafc;
-      color:#64748b;
-      font-weight:700;
-    }
-
-    #screen-create-account td{
-      color:var(--text);
-      font-weight:500;
-    }
-
-    #screen-create-account tr:last-child td{
-      border-bottom:none;
-    }
-
-    #screen-create-account .pill{
+    #screen-create-account .primary-create-btn,
+    #screen-create-account .secondary-create-btn{
+      border:none;
+      border-radius:16px;
+      min-height:52px;
+      padding:0 18px;
+      font-size:14px;
+      font-weight:800;
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      min-width:74px;
-      padding:5px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      white-space:nowrap;
+      gap:10px;
+      cursor:pointer;
     }
 
-    #screen-create-account .pill.type{
+    #screen-create-account .primary-create-btn{
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;
+      box-shadow:0 16px 30px rgba(37,99,235,.22);
+    }
+
+    #screen-create-account .secondary-create-btn{
       background:#eff6ff;
       color:#1d4ed8;
     }
 
-    #screen-create-account .pill.status{
-      background:#ecfdf5;
-      color:#15803d;
+    #screen-create-account .primary-create-btn svg,
+    #screen-create-account .secondary-create-btn svg{
+      width:18px;
+      height:18px;
     }
 
-    #screen-create-account .empty-box{
-      padding:24px 14px;
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-      font-weight:600;
+    #screen-create-account .primary-create-btn:disabled,
+    #screen-create-account .secondary-create-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
     }
 
-    @media (max-width: 1080px){
-      #screen-create-account .create-layout{
+    #screen-create-account .mini-alert{
+      border-radius:16px;
+      padding:13px 14px;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    #screen-create-account .mini-alert.error{
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      color:#991b1b;
+    }
+
+    #screen-create-account .mini-alert.success{
+      background:#effdf4;
+      border:1px solid #bbf7d0;
+      color:#166534;
+    }
+
+    #screen-create-account .created-state{
+      padding:24px 20px;
+      color:var(--muted, #6b7280);
+      font-size:14px;
+    }
+
+    #screen-create-account .created-list{
+      padding:0 18px 18px;
+    }
+
+    #screen-create-account .created-item{
+      border:1px solid #e9eef5;
+      border-radius:18px;
+      padding:16px;
+      margin-top:14px;
+      background:#fff;
+    }
+
+    #screen-create-account .created-item:first-child{
+      margin-top:18px;
+    }
+
+    #screen-create-account .created-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    #screen-create-account .created-name{
+      font-size:15px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.35;
+    }
+
+    #screen-create-account .created-role{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:800;
+      background:#eff6ff;
+      color:#1d4ed8;
+      white-space:nowrap;
+    }
+
+    #screen-create-account .created-meta{
+      display:grid;
+      gap:8px;
+    }
+
+    #screen-create-account .created-meta-row{
+      font-size:13px;
+      color:#475569;
+      line-height:1.45;
+    }
+
+    #screen-create-account .created-meta-label{
+      font-weight:800;
+      color:#0f172a;
+    }
+
+    #screen-create-account .created-empty{
+      padding:24px 20px;
+      color:var(--muted, #6b7280);
+      font-size:14px;
+    }
+
+    @media (max-width:1180px){
+      #screen-create-account .create-account-grid{
         grid-template-columns:1fr;
       }
     }
 
-    @media (max-width: 720px){
-      #screen-create-account .field-grid{
+    @media (max-width:700px){
+      #screen-create-account .form-row.two{
         grid-template-columns:1fr;
       }
     }
   </style>
 
-  <section class="hero">
-    <div class="hero-line-1">Create Account</div>
-    <h1 class="hero-title">
-      Create admin account<br />
-      <span>Choose HOD or agent type</span>
-    </h1>
-  </section>
-
-  <section>
-    <div class="section-title">1. Enter account details</div>
-    <div class="section-sub">
-      Choose the account type, enter full name, add email if available, and create the account.
-      Department is required only for HOD.
+  <div class="create-account-wrap">
+    <div class="create-account-top">
+      <div>
+        <h2 class="holder-title">Create Account</h2>
+        <p class="holder-sub">
+          Create HOD, report agent, form agent, and announcement agent accounts from here.
+        </p>
+      </div>
     </div>
 
-    <div class="create-layout">
-      <div class="card">
-        <div class="field-grid">
-          <div class="field">
-            <label for="createAccountType">Account type</label>
-            <select id="createAccountType" class="select-input">
-              <option value="">Select account type</option>
-              <option value="hod">HOD account</option>
-              <option value="report_agent">Report agent</option>
-              <option value="form_agent">Form agent</option>
-              <option value="announcement_agent">Announcement agent</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="createFullName">Full name</label>
-            <input
-              id="createFullName"
-              type="text"
-              class="text-input"
-              placeholder="Enter full name"
-            />
-          </div>
-
-          <div class="field full">
-            <label for="createEmail">Email (optional)</label>
-            <input
-              id="createEmail"
-              type="email"
-              class="text-input"
-              placeholder="Enter email address"
-            />
-          </div>
-
-          <div class="field full" id="createDepartmentWrap">
-            <label for="createDepartment">Department</label>
-            <input
-              id="createDepartment"
-              type="text"
-              class="text-input"
-              placeholder="Enter department name"
-            />
-            <div class="field-help">Only needed when creating HOD account.</div>
-          </div>
+    <div class="create-account-grid">
+      <div class="create-panel">
+        <div class="create-panel-head">
+          <h3 class="create-panel-title">New Account</h3>
+          <p class="create-panel-sub">
+            Fill the details below and create a new account.
+          </p>
         </div>
 
-        <button id="createAccountBtn" class="primary-btn" type="button">
-          Create account
-        </button>
+        <form id="createAccountForm" class="create-form">
+          <div class="form-row two">
+            <div class="field">
+              <label for="createAccountType">Account Type</label>
+              <select id="createAccountType" required>
+                <option value="">Select account type</option>
+                <option value="hod">HOD</option>
+                <option value="report_agent">Report Agent</option>
+                <option value="form_agent">Form Agent</option>
+                <option value="announcement_agent">Announcement Agent</option>
+              </select>
+            </div>
 
-        <button id="clearCreateAccountBtn" class="secondary-btn" type="button">
-          <svg viewBox="0 0 20 20" fill="none">
-            <path
-              d="M5 5l10 10M15 5L5 15"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-            />
-          </svg>
-          <span>Clear form</span>
-        </button>
+            <div class="field">
+              <label for="createFullName">Full Name</label>
+              <input
+                type="text"
+                id="createFullName"
+                placeholder="Enter full name"
+                required
+              />
+            </div>
+          </div>
 
-        <div id="createAccountError" class="message error"></div>
-        <div id="createAccountSuccess" class="message success"></div>
+          <div class="form-row two">
+            <div class="field">
+              <label for="createEmail">Email <span class="optional-text">(optional)</span></label>
+              <input
+                type="email"
+                id="createEmail"
+                placeholder="Enter email address"
+              />
+            </div>
+
+            <div class="field" id="departmentFieldWrap" style="display:none;">
+              <label for="createDepartment">Department</label>
+              <input
+                type="text"
+                id="createDepartment"
+                placeholder="Enter department name"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>School</label>
+              <div class="read-only-box" id="createSchoolDisplay">School</div>
+            </div>
+          </div>
+
+          <div id="createAccountError" class="mini-alert error" style="display:none;"></div>
+          <div id="createAccountSuccess" class="mini-alert success" style="display:none;"></div>
+
+          <div class="create-actions">
+            <button type="submit" class="primary-create-btn" id="createAccountBtn">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span id="createAccountBtnText">Create Account</span>
+            </button>
+
+            <button type="button" class="secondary-create-btn" id="refreshCreatedAccountsBtn">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 4v6h-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Refresh List</span>
+            </button>
+          </div>
+        </form>
       </div>
 
-      <div class="card">
-        <div id="createdAccountBox" class="result-box">
-          <div class="result-title">Generated account details</div>
-
-          <div class="result-row">
-            <div class="result-key">Type</div>
-            <div id="generatedType" class="result-value">-</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-key">Full name</div>
-            <div id="generatedFullName" class="result-value">-</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-key">Login ID</div>
-            <div id="generatedLoginId" class="result-value">-</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-key">Temporary password</div>
-            <div id="generatedPassword" class="result-value">-</div>
-          </div>
-
-          <div class="copy-row">
-            <button id="copyGeneratedLoginBtn" class="mini-btn" type="button">Copy login</button>
-            <button id="copyGeneratedPasswordBtn" class="mini-btn" type="button">Copy password</button>
-          </div>
+      <div class="create-panel">
+        <div class="create-panel-head">
+          <h3 class="create-panel-title">Created Accounts</h3>
+          <p class="create-panel-sub">
+            Accounts created by this HOS will appear here.
+          </p>
         </div>
 
-        <div class="result-box" style="display:block;">
-          <div class="result-title">Notes</div>
-          <div class="field-help" style="font-size:12px;">
-            HOD account creates a department head.<br />
-            Agent account types are Report agent, Form agent, and Announcement agent.<br />
-            After creation, the generated login ID and password will appear here.
-          </div>
+        <div id="createdAccountsState" class="created-state">
+          Loading created accounts...
         </div>
+
+        <div id="createdAccountsList" class="created-list" style="display:none;"></div>
       </div>
     </div>
-  </section>
-
-  <section>
-    <div class="section-title">2. Created accounts</div>
-    <div class="section-sub">
-      View all HOD and agent accounts created under this HOS.
-    </div>
-
-    <div class="card">
-      <div class="search-row">
-        <input
-          id="createAccountSearch"
-          type="text"
-          class="search-input"
-          placeholder="Search by full name, type, login ID or email…"
-        />
-
-        <div class="stat-chip">HOD: <span id="countHodAccounts">0</span></div>
-        <div class="stat-chip">Report: <span id="countReportAgents">0</span></div>
-        <div class="stat-chip">Form: <span id="countFormAgents">0</span></div>
-        <div class="stat-chip">Announcement: <span id="countAnnouncementAgents">0</span></div>
-        <div class="stat-chip">Total: <span id="countAllHosAccounts">0</span></div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Full name</th>
-              <th>Type</th>
-              <th>Department</th>
-              <th>Login ID</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody id="hosCreatedAccountsBody">
-            <tr>
-              <td colspan="7">
-                <div class="empty-box">Loading accounts...</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <script>
-    let hosCreatedAccounts = [];
-    let lastGeneratedHosLoginId = "";
-    let lastGeneratedHosPassword = "";
+    (function () {
+      if (window.__createAccountSectionInit) return;
+      window.__createAccountSectionInit = true;
 
-    function showCreateAccountError(msg) {
-      const e = document.getElementById("createAccountError");
-      const s = document.getElementById("createAccountSuccess");
-      if (s) s.style.display = "none";
-      if (e) {
-        e.textContent = msg || "";
-        e.style.display = msg ? "block" : "none";
-      }
-    }
-
-    function showCreateAccountSuccess(msg) {
-      const e = document.getElementById("createAccountError");
-      const s = document.getElementById("createAccountSuccess");
-      if (e) e.style.display = "none";
-      if (s) {
-        s.textContent = msg || "";
-        s.style.display = msg ? "block" : "none";
-      }
-    }
-
-    function clearCreateAccountMessages() {
-      showCreateAccountError("");
-      showCreateAccountSuccess("");
-    }
-
-    function formatHosAccountType(row) {
-      if (!row) return "-";
-      if (row.account_type === "hod" || row.function_type === "hod") return "HOD";
-      if (row.function_type === "report") return "Report agent";
-      if (row.function_type === "form") return "Form agent";
-      if (row.function_type === "announcement") return "Announcement agent";
-      if (row.account_type === "agent") return "Agent";
-      return "-";
-    }
-
-    function formatHosAccountDate(value) {
-      if (!value) return "-";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "-";
-      return d.toLocaleString();
-    }
-
-    function escapeHosHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function updateCreateDepartmentVisibility() {
-      const type = document.getElementById("createAccountType")?.value || "";
-      const wrap = document.getElementById("createDepartmentWrap");
-      const input = document.getElementById("createDepartment");
-
-      if (!wrap || !input) return;
-
-      if (type === "hod") {
-        wrap.style.display = "";
-      } else {
-        wrap.style.display = "none";
-        input.value = "";
-      }
-    }
-
-    function updateHosCreateCounts(counts = {}) {
-      const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = String(value ?? 0);
-      };
-
-      setText("countHodAccounts", counts.hods || 0);
-      setText("countReportAgents", counts.report_agents || 0);
-      setText("countFormAgents", counts.form_agents || 0);
-      setText("countAnnouncementAgents", counts.announcement_agents || 0);
-      setText("countAllHosAccounts", counts.total || 0);
-    }
-
-    function renderHosCreatedAccounts() {
-      const tbody = document.getElementById("hosCreatedAccountsBody");
-      const search = (document.getElementById("createAccountSearch")?.value || "").trim().toLowerCase();
-
-      if (!tbody) return;
-
-      const filtered = hosCreatedAccounts.filter((row) => {
-        const hay = [
-          row.full_name,
-          row.account_type,
-          row.function_type,
-          row.department_name,
-          row.login_id,
-          row.linked_email
-        ]
-          .map(v => String(v || "").toLowerCase())
-          .join(" ");
-        return !search || hay.includes(search);
-      });
-
-      if (!filtered.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="empty-box">No accounts found.</div>
-            </td>
-          </tr>
-        `;
-        return;
+      function escapeHtml(value){
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
       }
 
-      tbody.innerHTML = filtered.map((row) => `
-        <tr>
-          <td>${escapeHosHtml(row.full_name || "-")}</td>
-          <td><span class="pill type">${escapeHosHtml(formatHosAccountType(row))}</span></td>
-          <td>${escapeHosHtml(row.department_name || "-")}</td>
-          <td>${escapeHosHtml(row.login_id || "-")}</td>
-          <td>${escapeHosHtml(row.linked_email || "-")}</td>
-          <td><span class="pill status">${row.is_active ? "Active" : "Inactive"}</span></td>
-          <td>${escapeHosHtml(formatHosAccountDate(row.created_at))}</td>
-        </tr>
-      `).join("");
-    }
-
-    async function loadHosCreatedAccounts() {
-      const tbody = document.getElementById("hosCreatedAccountsBody");
-      if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="empty-box">Loading accounts...</div>
-            </td>
-          </tr>
-        `;
+      function hideCreateMessages(){
+        const err = document.getElementById("createAccountError");
+        const ok = document.getElementById("createAccountSuccess");
+        if (err) {
+          err.style.display = "none";
+          err.textContent = "";
+        }
+        if (ok) {
+          ok.style.display = "none";
+          ok.textContent = "";
+        }
       }
 
-      try {
-        const hosSessionRaw = sessionStorage.getItem("colspot_hos_session");
-        if (!hosSessionRaw) {
-          throw new Error("HOS session not found. Please sign in again.");
+      function showCreateError(message){
+        const err = document.getElementById("createAccountError");
+        const ok = document.getElementById("createAccountSuccess");
+        if (ok) {
+          ok.style.display = "none";
+          ok.textContent = "";
+        }
+        if (err) {
+          err.textContent = message;
+          err.style.display = "block";
+        }
+      }
+
+      function showCreateSuccess(message){
+        const err = document.getElementById("createAccountError");
+        const ok = document.getElementById("createAccountSuccess");
+        if (err) {
+          err.style.display = "none";
+          err.textContent = "";
+        }
+        if (ok) {
+          ok.textContent = message;
+          ok.style.display = "block";
+        }
+      }
+
+      function normalizeRoleLabel(role, functionType){
+        if (role === "hod") return "HOD";
+        if (role === "report_agent") return "Report Agent";
+        if (role === "form_agent") return "Form Agent";
+        if (role === "announcement_agent") return "Announcement Agent";
+
+        if (role === "agent" && functionType === "report") return "Report Agent";
+        if (role === "agent" && functionType === "form") return "Form Agent";
+        if (role === "agent" && functionType === "announcement") return "Announcement Agent";
+
+        return role || "Account";
+      }
+
+      function getCreateFunctionName(type){
+        if (type === "hod") return "create-hod-account";
+        if (type === "report_agent") return "create-report-agent-account";
+        if (type === "form_agent") return "create-form-agent-account";
+        if (type === "announcement_agent") return "create-announcement-agent-account";
+        return "";
+      }
+
+      function setCreateLoading(isLoading){
+        const btn = document.getElementById("createAccountBtn");
+        const btnText = document.getElementById("createAccountBtnText");
+        const refreshBtn = document.getElementById("refreshCreatedAccountsBtn");
+
+        if (btn) btn.disabled = isLoading;
+        if (refreshBtn) refreshBtn.disabled = isLoading;
+        if (btnText) btnText.textContent = isLoading ? "Creating..." : "Create Account";
+      }
+
+      function setCreatedAccountsLoading(message){
+        const state = document.getElementById("createdAccountsState");
+        const list = document.getElementById("createdAccountsList");
+        if (state) {
+          state.textContent = message || "Loading...";
+          state.style.display = "block";
+        }
+        if (list) {
+          list.style.display = "none";
+          list.innerHTML = "";
+        }
+      }
+
+      function renderCreatedAccounts(items){
+        const state = document.getElementById("createdAccountsState");
+        const list = document.getElementById("createdAccountsList");
+
+        if (!list || !state) return;
+
+        if (!Array.isArray(items) || !items.length) {
+          state.style.display = "block";
+          state.innerHTML = '<div class="created-empty">No created accounts yet.</div>';
+          list.style.display = "none";
+          list.innerHTML = "";
+          return;
         }
 
-        const hosSession = JSON.parse(hosSessionRaw);
-        const hosAdminId = hosSession?.id;
+        state.style.display = "none";
+        list.style.display = "block";
+        list.innerHTML = items.map((item) => {
+          const fullName = item.full_name || "No name";
+          const role = item.account_type || "";
+          const functionType = item.function_type || "";
+          const email = item.linked_email || "—";
+          const department = item.department_name || "—";
+          const loginId = item.login_id || "—";
+          const activeText = item.is_active ? "Active" : "Disabled";
 
-        if (!hosAdminId) {
-          throw new Error("Invalid HOS session. Please sign in again.");
-        }
+          return `
+            <div class="created-item">
+              <div class="created-top">
+                <div class="created-name">${escapeHtml(fullName)}</div>
+                <div class="created-role">${escapeHtml(normalizeRoleLabel(role, functionType))}</div>
+              </div>
 
-        if (typeof supabase === "undefined") {
-          throw new Error("Supabase is not ready.");
-        }
+              <div class="created-meta">
+                <div class="created-meta-row">
+                  <span class="created-meta-label">Login ID:</span>
+                  <span>${escapeHtml(loginId)}</span>
+                </div>
 
-        const { data, error } = await supabase.functions.invoke("list-hos-created-accounts", {
-          body: { hos_admin_id: hosAdminId }
-        });
+                <div class="created-meta-row">
+                  <span class="created-meta-label">Email:</span>
+                  <span>${escapeHtml(email)}</span>
+                </div>
 
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || "Could not load accounts.");
+                <div class="created-meta-row">
+                  <span class="created-meta-label">Department:</span>
+                  <span>${escapeHtml(department)}</span>
+                </div>
 
-        hosCreatedAccounts = Array.isArray(data.accounts) ? data.accounts : [];
-        updateHosCreateCounts(data.counts || {});
-        renderHosCreatedAccounts();
-      } catch (err) {
-        console.error(err);
-        if (tbody) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="7">
-                <div class="empty-box">${escapeHosHtml(err.message || "Could not load accounts.")}</div>
-              </td>
-            </tr>
+                <div class="created-meta-row">
+                  <span class="created-meta-label">Status:</span>
+                  <span>${escapeHtml(activeText)}</span>
+                </div>
+              </div>
+            </div>
           `;
+        }).join("");
+      }
+
+      async function callHosEdgeFunction(functionName, payload){
+        if (typeof SUPABASE_URL === "undefined" || typeof SUPABASE_ANON_KEY === "undefined") {
+          throw new Error("SUPABASE_URL or SUPABASE_ANON_KEY is missing in your main script.");
+        }
+
+        const headers = {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY
+        };
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload)
+        });
+
+        let data = null;
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+
+        if (!res.ok || !data || data.ok === false) {
+          const message =
+            (data && (data.error || data.message)) ||
+            `Request failed for ${functionName}`;
+          throw new Error(message);
+        }
+
+        return data;
+      }
+
+      function getHosAdminId(){
+        if (typeof adminSession !== "undefined" && adminSession) {
+          return (adminSession.account && adminSession.account.id) || adminSession.id || "";
+        }
+        return "";
+      }
+
+      function getHosSchoolName(){
+        if (typeof adminSession !== "undefined" && adminSession) {
+          return (adminSession.account && adminSession.account.school_name) || adminSession.school_name || "School";
+        }
+        return "School";
+      }
+
+      async function loadCreatedAccounts(){
+        try {
+          setCreatedAccountsLoading("Loading created accounts...");
+
+          const hosAdminId = getHosAdminId();
+          if (!hosAdminId) {
+            throw new Error("HOS session not found.");
+          }
+
+          const data = await callHosEdgeFunction("list-hos-created-accounts", {
+            hos_admin_id: hosAdminId
+          });
+
+          renderCreatedAccounts(data.accounts || []);
+        } catch (error) {
+          const state = document.getElementById("createdAccountsState");
+          const list = document.getElementById("createdAccountsList");
+
+          if (list) {
+            list.style.display = "none";
+            list.innerHTML = "";
+          }
+
+          if (state) {
+            state.style.display = "block";
+            state.textContent = error.message || "Could not load created accounts.";
+          }
         }
       }
-    }
 
-    async function createHosManagedAccount() {
-      clearCreateAccountMessages();
+      function initCreateAccountSection(){
+        const accountType = document.getElementById("createAccountType");
+        const fullName = document.getElementById("createFullName");
+        const email = document.getElementById("createEmail");
+        const department = document.getElementById("createDepartment");
+        const departmentWrap = document.getElementById("departmentFieldWrap");
+        const schoolDisplay = document.getElementById("createSchoolDisplay");
+        const form = document.getElementById("createAccountForm");
+        const refreshBtn = document.getElementById("refreshCreatedAccountsBtn");
 
-      const type = (document.getElementById("createAccountType")?.value || "").trim();
-      const fullName = (document.getElementById("createFullName")?.value || "").trim();
-      const email = (document.getElementById("createEmail")?.value || "").trim();
-      const departmentName = (document.getElementById("createDepartment")?.value || "").trim();
-      const btn = document.getElementById("createAccountBtn");
+        if (!form) return;
 
-      if (!type) {
-        showCreateAccountError("Please choose an account type.");
-        return;
-      }
+        if (schoolDisplay) {
+          schoolDisplay.textContent = getHosSchoolName();
+        }
 
-      if (!fullName) {
-        showCreateAccountError("Please enter full name.");
-        return;
-      }
+        function updateDepartmentVisibility(){
+          const isHod = accountType.value === "hod";
+          departmentWrap.style.display = isHod ? "grid" : "none";
+          department.required = isHod;
+          if (!isHod) department.value = "";
+        }
 
-      if (type === "hod" && !departmentName) {
-        showCreateAccountError("Please enter department name for HOD account.");
-        return;
-      }
+        accountType.addEventListener("change", updateDepartmentVisibility);
+        updateDepartmentVisibility();
 
-      let hosSession;
-      try {
-        hosSession = JSON.parse(sessionStorage.getItem("colspot_hos_session") || "{}");
-      } catch {
-        hosSession = null;
-      }
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          hideCreateMessages();
 
-      if (!hosSession?.id) {
-        showCreateAccountError("HOS session not found. Please sign in again.");
-        return;
-      }
+          const type = accountType.value.trim();
+          const name = fullName.value.trim();
+          const mail = email.value.trim();
+          const dept = department.value.trim();
 
-      if (typeof supabase === "undefined") {
-        showCreateAccountError("Supabase is not ready.");
-        return;
-      }
+          if (!type) {
+            showCreateError("Select an account type.");
+            return;
+          }
 
-      let functionName = "";
-      let payload = {
-        hos_admin_id: hosSession.id,
-        full_name: fullName,
-        email: email || null,
-        linked_email: email || null
-      };
+          if (!name) {
+            showCreateError("Full name is required.");
+            return;
+          }
 
-      if (type === "hod") {
-        functionName = "create-hod-account";
-        payload.department_name = departmentName;
-      } else if (type === "report_agent") {
-        functionName = "create-report-agent-account";
-      } else if (type === "form_agent") {
-        functionName = "create-form-agent-account";
-      } else if (type === "announcement_agent") {
-        functionName = "create-announcement-agent-account";
-      }
+          if (type === "hod" && !dept) {
+            showCreateError("Department is required for HOD.");
+            return;
+          }
 
-      if (!functionName) {
-        showCreateAccountError("Invalid account type selected.");
-        return;
-      }
+          const functionName = getCreateFunctionName(type);
+          if (!functionName) {
+            showCreateError("Invalid account type selected.");
+            return;
+          }
 
-      btn.disabled = true;
-      btn.textContent = "Creating...";
+          const hosAdminId = getHosAdminId();
+          if (!hosAdminId) {
+            showCreateError("HOS session not found.");
+            return;
+          }
 
-      try {
-        const { data, error } = await supabase.functions.invoke(functionName, {
-          body: payload
+          const payload = {
+            hos_admin_id: hosAdminId,
+            full_name: name
+          };
+
+          if (type === "hod") {
+            payload.department_name = dept;
+          } else if (mail) {
+            payload.email = mail;
+          }
+
+          setCreateLoading(true);
+
+          try {
+            const data = await callHosEdgeFunction(functionName, payload);
+
+            let loginId = "";
+            const tempPassword = data.temporary_password || "";
+
+            if (type === "hod") {
+              loginId = (data.hod_account && data.hod_account.login_id) || "";
+            } else if (type === "report_agent") {
+              loginId = (data.report_agent_account && data.report_agent_account.login_id) || "";
+            } else if (type === "form_agent") {
+              loginId = (data.form_agent_account && data.form_agent_account.login_id) || "";
+            } else if (type === "announcement_agent") {
+              loginId = (data.announcement_agent_account && data.announcement_agent_account.login_id) || "";
+            }
+
+            showCreateSuccess(
+              `${normalizeRoleLabel(type)} created successfully. Login ID: ${loginId || "Generated"} | Temporary Password: ${tempPassword || "Generated"}`
+            );
+
+            form.reset();
+            updateDepartmentVisibility();
+            await loadCreatedAccounts();
+          } catch (error) {
+            showCreateError(error.message || "Could not create account.");
+          } finally {
+            setCreateLoading(false);
+          }
         });
 
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || "Could not create account.");
+        if (refreshBtn) {
+          refreshBtn.addEventListener("click", loadCreatedAccounts);
+        }
 
-        let created = null;
-        if (type === "hod") created = data.hod_account || null;
-        if (type === "report_agent") created = data.report_agent_account || null;
-        if (type === "form_agent") created = data.form_agent_account || null;
-        if (type === "announcement_agent") created = data.announcement_agent_account || null;
-
-        lastGeneratedHosLoginId = created?.login_id || "";
-        lastGeneratedHosPassword = data.temporary_password || "";
-
-        const box = document.getElementById("createdAccountBox");
-        const typeEl = document.getElementById("generatedType");
-        const nameEl = document.getElementById("generatedFullName");
-        const loginEl = document.getElementById("generatedLoginId");
-        const passEl = document.getElementById("generatedPassword");
-
-        if (typeEl) typeEl.textContent = formatHosAccountType({
-          account_type: type === "hod" ? "hod" : "agent",
-          function_type: type === "hod" ? "hod" : type.replace("_agent", "")
-        });
-        if (nameEl) nameEl.textContent = created?.full_name || fullName || "-";
-        if (loginEl) loginEl.textContent = lastGeneratedHosLoginId || "-";
-        if (passEl) passEl.textContent = lastGeneratedHosPassword || "-";
-        if (box) box.style.display = "block";
-
-        showCreateAccountSuccess("Account created successfully.");
-
-        const fullNameInput = document.getElementById("createFullName");
-        const emailInput = document.getElementById("createEmail");
-        const deptInput = document.getElementById("createDepartment");
-
-        if (fullNameInput) fullNameInput.value = "";
-        if (emailInput) emailInput.value = "";
-        if (deptInput) deptInput.value = "";
-
-        await loadHosCreatedAccounts();
-      } catch (err) {
-        console.error(err);
-        showCreateAccountError(err.message || "Could not create account.");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Create account";
-      }
-    }
-
-    function clearHosCreateForm() {
-      const type = document.getElementById("createAccountType");
-      const fullName = document.getElementById("createFullName");
-      const email = document.getElementById("createEmail");
-      const department = document.getElementById("createDepartment");
-      const box = document.getElementById("createdAccountBox");
-      const typeEl = document.getElementById("generatedType");
-      const nameEl = document.getElementById("generatedFullName");
-      const loginEl = document.getElementById("generatedLoginId");
-      const passEl = document.getElementById("generatedPassword");
-
-      if (type) type.value = "";
-      if (fullName) fullName.value = "";
-      if (email) email.value = "";
-      if (department) department.value = "";
-
-      if (box) box.style.display = "none";
-      if (typeEl) typeEl.textContent = "-";
-      if (nameEl) nameEl.textContent = "-";
-      if (loginEl) loginEl.textContent = "-";
-      if (passEl) passEl.textContent = "-";
-
-      lastGeneratedHosLoginId = "";
-      lastGeneratedHosPassword = "";
-
-      clearCreateAccountMessages();
-      updateCreateDepartmentVisibility();
-    }
-
-    async function copyHosCreateText(text, successMessage) {
-      if (!text) return;
-      try {
-        await navigator.clipboard.writeText(text);
-        showCreateAccountSuccess(successMessage);
-      } catch (err) {
-        console.error(err);
-        showCreateAccountError("Could not copy.");
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const type = document.getElementById("createAccountType");
-      const createBtn = document.getElementById("createAccountBtn");
-      const clearBtn = document.getElementById("clearCreateAccountBtn");
-      const search = document.getElementById("createAccountSearch");
-      const copyLoginBtn = document.getElementById("copyGeneratedLoginBtn");
-      const copyPasswordBtn = document.getElementById("copyGeneratedPasswordBtn");
-
-      if (type) {
-        type.addEventListener("change", updateCreateDepartmentVisibility);
-        updateCreateDepartmentVisibility();
+        loadCreatedAccounts();
       }
 
-      if (createBtn) {
-        createBtn.addEventListener("click", createHosManagedAccount);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initCreateAccountSection);
+      } else {
+        initCreateAccountSection();
       }
-
-      if (clearBtn) {
-        clearBtn.addEventListener("click", clearHosCreateForm);
-      }
-
-      if (search) {
-        search.addEventListener("input", renderHosCreatedAccounts);
-      }
-
-      if (copyLoginBtn) {
-        copyLoginBtn.addEventListener("click", () => {
-          if (!lastGeneratedHosLoginId) return;
-          copyHosCreateText(lastGeneratedHosLoginId, "Generated login ID copied");
-        });
-      }
-
-      if (copyPasswordBtn) {
-        copyPasswordBtn.addEventListener("click", () => {
-          if (!lastGeneratedHosPassword) return;
-          copyHosCreateText(lastGeneratedHosPassword, "Generated password copied");
-        });
-      }
-
-      loadHosCreatedAccounts();
-    });
+    })();
   </script>
 </section>
