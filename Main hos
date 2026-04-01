@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colspot • HOS Dashboard</title>
 
   <style>
@@ -30,7 +27,7 @@
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
     }
 
-    html,body{
+    html, body{
       height:100%;
     }
 
@@ -40,8 +37,7 @@
       overflow:hidden;
     }
 
-    button,
-    input{
+    button, input{
       font:inherit;
     }
 
@@ -110,7 +106,7 @@
       border:none;
       background:transparent;
       color:rgba(255,255,255,.92);
-      height:50px;
+      min-height:50px;
       border-radius:14px;
       display:flex;
       align-items:center;
@@ -119,8 +115,8 @@
       cursor:pointer;
       font-size:15px;
       font-weight:700;
-      transition:.18s ease;
       text-align:left;
+      transition:.18s ease;
     }
 
     .nav-btn:hover{
@@ -150,7 +146,7 @@
     }
 
     .topbar{
-      height:86px;
+      min-height:86px;
       background:#f7f9fc;
       border-bottom:1px solid var(--line);
       display:flex;
@@ -315,6 +311,39 @@
       line-height:1;
     }
 
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .quick-btn{
+      min-height:54px;
+      border:none;
+      border-radius:12px;
+      color:#fff;
+      font-size:14px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      padding:0 12px;
+    }
+
+    .quick-btn svg{
+      width:18px;
+      height:18px;
+      stroke:#fff;
+      flex-shrink:0;
+    }
+
+    .quick-blue{ background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+    .quick-green{ background:linear-gradient(135deg,#65a30d,#4d7c0f); }
+    .quick-orange{ background:linear-gradient(135deg,#f59e0b,#ea580c); }
+
     .dashboard-grid{
       display:grid;
       grid-template-columns:1.1fr .9fr;
@@ -330,7 +359,7 @@
     }
 
     .panel-header{
-      height:54px;
+      min-height:54px;
       border-bottom:1px solid var(--line);
       display:flex;
       align-items:center;
@@ -361,37 +390,6 @@
       padding:20px;
     }
 
-    .quick-grid{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:14px;
-      margin-bottom:18px;
-    }
-
-    .quick-btn{
-      height:54px;
-      border:none;
-      border-radius:12px;
-      color:#fff;
-      font-size:14px;
-      font-weight:800;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      cursor:pointer;
-    }
-
-    .quick-btn svg{
-      width:18px;
-      height:18px;
-      stroke:#fff;
-    }
-
-    .quick-blue{ background:linear-gradient(135deg,#2563eb,#1d4ed8); }
-    .quick-green{ background:linear-gradient(135deg,#65a30d,#4d7c0f); }
-    .quick-orange{ background:linear-gradient(135deg,#f59e0b,#ea580c); }
-
     /* PLACEHOLDER SCREENS */
     .page-shell{
       background:var(--card);
@@ -402,12 +400,12 @@
     }
 
     .page-top{
-      height:72px;
+      min-height:72px;
       border-bottom:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 22px;
+      padding:14px 22px;
       background:#fff;
     }
 
@@ -528,7 +526,6 @@
 <body>
   <div class="app">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-badge">
@@ -542,7 +539,7 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-btn active" type="button">
+        <button class="nav-btn active" data-screen="screen-dashboard" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M3 11.5 12 4l9 7.5"/>
             <path d="M5 10.5V20h14v-9.5"/>
@@ -551,7 +548,7 @@
           <span>Dashboard</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-create-account" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
             <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -561,7 +558,7 @@
           <span>Create Account</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-staff-roles" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
             <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
@@ -571,7 +568,7 @@
           <span>Staff &amp; Roles</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-announcements" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M4 14V10l11-4v12L4 14Z"/>
             <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
@@ -580,7 +577,7 @@
           <span>Announcements</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-reports" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M7 3h7l5 5v13H7z"/>
             <path d="M14 3v5h5"/>
@@ -590,7 +587,7 @@
           <span>Reports</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-forms" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M8 6h13"/>
             <path d="M8 12h13"/>
@@ -602,7 +599,7 @@
           <span>Forms</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-history" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M3 12a9 9 0 1 0 3-6.7"/>
             <path d="M3 4v5h5"/>
@@ -611,7 +608,7 @@
           <span>History</span>
         </button>
 
-        <button class="nav-btn" type="button">
+        <button class="nav-btn" data-screen="screen-settings" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
             <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
             <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/>
@@ -621,10 +618,9 @@
       </nav>
     </aside>
 
-    <!-- MAIN -->
     <main class="main">
       <header class="topbar">
-        <div class="topbar-title">HOS Dashboard</div>
+        <div class="topbar-title" id="topbarTitle">HOS Dashboard</div>
 
         <div class="topbar-right">
           <div class="search">
@@ -640,20 +636,19 @@
               <path d="M6 10V8a6 6 0 1 1 12 0v2"/>
               <rect x="4" y="10" width="16" height="10" rx="2"/>
             </svg>
-            <span>School</span>
+            <span id="schoolChipText">School</span>
             <div class="avatar"></div>
           </div>
         </div>
       </header>
 
-      <section class="content">
+      <section class="content" id="contentArea">
 
-        <!-- DASHBOARD -->
         <section class="screen active" id="screen-dashboard">
           <div class="welcome-card">
             <div class="welcome-label">Dashboard</div>
             <div class="welcome-title">
-              Welcome back, <span class="hos-name">HOS Name</span>
+              Welcome back, <span class="hos-name" id="dashboardHosName">HOS Name</span>
             </div>
             <div class="welcome-sub">
               Monitor your school activities, check quick summaries, and manage HODs, agents, reports, announcements, and forms from one place.
@@ -693,7 +688,7 @@
           </div>
 
           <div class="quick-grid">
-            <button class="quick-btn quick-blue" type="button">
+            <button class="quick-btn quick-blue" type="button" data-go-screen="screen-create-account">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
                 <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -703,7 +698,7 @@
               <span>Create HOD</span>
             </button>
 
-            <button class="quick-btn quick-green" type="button">
+            <button class="quick-btn quick-green" type="button" data-go-screen="screen-create-account">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
                 <path d="M5 20a7 7 0 0 1 14 0"/>
@@ -711,7 +706,7 @@
               <span>Create Agent</span>
             </button>
 
-            <button class="quick-btn quick-orange" type="button">
+            <button class="quick-btn quick-orange" type="button" data-go-screen="screen-announcements">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M4 14V10l11-4v12L4 14Z"/>
                 <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
@@ -719,7 +714,7 @@
               <span>Send Announcement</span>
             </button>
 
-            <button class="quick-btn quick-green" type="button">
+            <button class="quick-btn quick-green" type="button" data-go-screen="screen-forms">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                 <path d="M8 6h13"/>
                 <path d="M8 12h13"/>
@@ -754,7 +749,6 @@
           </div>
         </section>
 
-        <!-- CREATE ACCOUNT -->
         <section class="screen" id="screen-create-account">
           <div class="page-shell">
             <div class="page-top">
@@ -773,7 +767,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is create account screen as a placeholder
@@ -782,7 +775,6 @@
           </div>
         </section>
 
-        <!-- STAFF & ROLES -->
         <section class="screen" id="screen-staff-roles">
           <div class="page-shell">
             <div class="page-top">
@@ -801,7 +793,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is staff and roles screen as a placeholder
@@ -810,7 +801,6 @@
           </div>
         </section>
 
-        <!-- ANNOUNCEMENTS -->
         <section class="screen" id="screen-announcements">
           <div class="page-shell">
             <div class="page-top">
@@ -828,7 +818,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is announcements screen as a placeholder
@@ -837,7 +826,6 @@
           </div>
         </section>
 
-        <!-- REPORTS -->
         <section class="screen" id="screen-reports">
           <div class="page-shell">
             <div class="page-top">
@@ -856,7 +844,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is reports screen as a placeholder
@@ -865,7 +852,6 @@
           </div>
         </section>
 
-        <!-- FORMS -->
         <section class="screen" id="screen-forms">
           <div class="page-shell">
             <div class="page-top">
@@ -886,7 +872,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is forms screen as a placeholder
@@ -895,7 +880,6 @@
           </div>
         </section>
 
-        <!-- HISTORY -->
         <section class="screen" id="screen-history">
           <div class="page-shell">
             <div class="page-top">
@@ -913,7 +897,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is history screen as a placeholder
@@ -922,7 +905,6 @@
           </div>
         </section>
 
-        <!-- SETTINGS -->
         <section class="screen" id="screen-settings">
           <div class="page-shell">
             <div class="page-top">
@@ -939,7 +921,6 @@
                 </div>
               </div>
             </div>
-
             <div class="page-body">
               <div class="big-placeholder">
                 This is settings screen as a placeholder
@@ -951,5 +932,145 @@
       </section>
     </main>
   </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const sidebarButtons = Array.from(document.querySelectorAll(".sidebar .nav-btn"));
+      const screens = Array.from(document.querySelectorAll(".screen"));
+      const contentArea = document.getElementById("contentArea");
+      const topbarTitle = document.getElementById("topbarTitle");
+      const schoolChipText = document.getElementById("schoolChipText");
+      const dashboardHosName = document.getElementById("dashboardHosName");
+      const quickButtons = Array.from(document.querySelectorAll(".quick-btn"));
+
+      const titleMap = {
+        "screen-dashboard": "HOS Dashboard",
+        "screen-create-account": "Create Account",
+        "screen-staff-roles": "Staff & Roles",
+        "screen-announcements": "Announcements",
+        "screen-reports": "Reports",
+        "screen-forms": "Forms",
+        "screen-history": "History",
+        "screen-settings": "Settings"
+      };
+
+      function safeText(value, fallback = "") {
+        const text = String(value || "").trim();
+        return text || fallback;
+      }
+
+      function readJson(storage, key) {
+        try {
+          const raw = storage.getItem(key);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return parsed && typeof parsed === "object" ? parsed : null;
+        } catch (error) {
+          console.warn("Could not parse session key:", key, error);
+          return null;
+        }
+      }
+
+      function getHosSession() {
+        const candidates = [
+          readJson(sessionStorage, "colspot_hos_session"),
+          readJson(localStorage, "colspot_hos_session"),
+          readJson(sessionStorage, "colspot_admin_session"),
+          readJson(localStorage, "colspot_admin_session")
+        ].filter(Boolean);
+
+        for (const item of candidates) {
+          const role = safeText(item.role).toLowerCase();
+          if (!role || role === "hos") {
+            return item;
+          }
+        }
+
+        return candidates[0] || null;
+      }
+
+      function getHosName(session) {
+        if (!session) return "HOS Name";
+        return (
+          safeText(session.full_name) ||
+          safeText(session.name) ||
+          safeText(session.hos_name) ||
+          "HOS Name"
+        );
+      }
+
+      function getSchoolName(session) {
+        if (!session) return "School";
+        return (
+          safeText(session.school_name) ||
+          safeText(session.school) ||
+          safeText(session.schoolName) ||
+          "School"
+        );
+      }
+
+      function applyIdentity() {
+        const session = getHosSession();
+        const hosName = getHosName(session);
+        const schoolName = getSchoolName(session);
+
+        if (dashboardHosName) {
+          dashboardHosName.textContent = hosName;
+        }
+
+        if (schoolChipText) {
+          schoolChipText.textContent = schoolName;
+        }
+      }
+
+      function showScreen(screenId) {
+        screens.forEach((screen) => {
+          screen.classList.toggle("active", screen.id === screenId);
+        });
+
+        sidebarButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.screen === screenId);
+        });
+
+        if (topbarTitle) {
+          topbarTitle.textContent = titleMap[screenId] || "HOS Dashboard";
+        }
+
+        if (contentArea) {
+          contentArea.scrollTop = 0;
+        }
+      }
+
+      function bindSidebar() {
+        sidebarButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const target = button.dataset.screen;
+            if (target) showScreen(target);
+          });
+        });
+      }
+
+      function bindQuickActions() {
+        quickButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const target = button.dataset.goScreen;
+            if (target) showScreen(target);
+          });
+        });
+      }
+
+      function init() {
+        applyIdentity();
+        bindSidebar();
+        bindQuickActions();
+        showScreen("screen-dashboard");
+      }
+
+      window.showHosScreen = showScreen;
+      document.addEventListener("DOMContentLoaded", init);
+    })();
+  </script>
 </body>
 </html>
