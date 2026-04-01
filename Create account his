@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Colspot • HOS Create Account</title>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --sidebar:#102742;
+      --sidebar-2:#17385f;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --line:#e6ecf3;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --success:#15803d;
+      --success-bg:#f0fdf4;
+      --error:#dc2626;
+      --error-bg:#fef2f2;
+      --warning:#d97706;
+      --warning-bg:#fff7ed;
+      --soft:#f8fafc;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    }
+
+    html,body{
+      height:100%;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    button,input,select{
+      font:inherit;
+    }
+
+    .app{
+      display:flex;
+      min-height:100vh;
+      width:100%;
+    }
+
+    .sidebar{
+      width:250px;
+      background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      border-right:1px solid rgba(255,255,255,.06);
+      flex-shrink:0;
+    }
+
+    .brand{
+      height:86px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 22px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .brand-badge{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .brand-badge svg{
+      width:22px;
+      height:22px;
+      stroke:#fff;
+    }
+
+    .brand-name{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+
+    .sidebar-nav{
+      padding:14px 10px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .nav-btn{
+      width:100%;
+      border:none;
+      background:transparent;
+      color:rgba(255,255,255,.92);
+      height:50px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 16px;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      transition:.18s ease;
+      text-align:left;
+    }
+
+    .nav-btn:hover{
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav-btn.active{
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .nav-btn svg{
+      width:20px;
+      height:20px;
+      stroke:currentColor;
+      flex-shrink:0;
+    }
+
+    .main{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .topbar{
+      height:86px;
+      background:#f7f9fc;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 26px;
+      flex-shrink:0;
+    }
+
+    .topbar-title{
+      font-size:22px;
+      font-weight:800;
+      color:#13253d;
+    }
+
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+
+    .search{
+      width:300px;
+      height:46px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 14px;
+    }
+
+    .search svg{
+      width:18px;
+      height:18px;
+      stroke:#7b8794;
+      flex-shrink:0;
+    }
+
+    .search input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:#334155;
+      font-size:14px;
+    }
+
+    .profile-chip{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#223754;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .profile-chip svg{
+      width:18px;
+      height:18px;
+      stroke:#223754;
+    }
+
+    .avatar{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#dbeafe,#93c5fd);
+      flex-shrink:0;
+      border:2px solid #fff;
+      box-shadow:0 6px 14px rgba(15,23,42,.08);
+    }
+
+    .content{
+      flex:1;
+      overflow:auto;
+      padding:22px;
+    }
+
+    #screen-create-account{
+      padding:8px 6px 40px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    #screen-create-account .hero{
+      padding:4px 4px 8px;
+      margin-bottom:8px;
+    }
+
+    #screen-create-account .hero-line-1{
+      font-size:12px;
+      font-weight:600;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    #screen-create-account .hero-title{
+      font-size:28px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      line-height:1.15;
+      color:#13253d;
+      margin:0;
+    }
+
+    #screen-create-account .hero-title span{
+      color:var(--blue);
+      font-weight:700;
+    }
+
+    #screen-create-account .section-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+      margin:8px 2px 4px;
+    }
+
+    #screen-create-account .section-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin:0 2px 10px;
+      line-height:1.5;
+    }
+
+    #screen-create-account .card{
+      background:#f9fafb;
+      border-radius:20px;
+      padding:14px;
+      border:1px solid #e5e7eb;
+      margin-bottom:16px;
+      box-shadow:0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    #screen-create-account .grid-2{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    #screen-create-account .field-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    #screen-create-account .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-bottom:12px;
+    }
+
+    #screen-create-account .field.full{
+      grid-column:1 / -1;
+    }
+
+    #screen-create-account .field label{
+      font-size:12px;
+      font-weight:700;
+      color:#475569;
+    }
+
+    #screen-create-account .input,
+    #screen-create-account .select{
+      width:100%;
+      height:46px;
+      border-radius:14px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      padding:0 14px;
+      font-size:14px;
+      color:#0f172a;
+      outline:none;
+      transition:.15s ease;
+    }
+
+    #screen-create-account .input:focus,
+    #screen-create-account .select:focus,
+    #screen-create-account .table-search:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    #screen-create-account .help{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    #screen-create-account .primary-btn{
+      width:100%;
+      margin-top:4px;
+      border-radius:999px;
+      border:none;
+      padding:13px 16px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      box-shadow:0 14px 35px rgba(37, 99, 235, 0.35);
+      transition:transform .05s ease, opacity .15s ease;
+    }
+
+    #screen-create-account .primary-btn:active{
+      transform:scale(.985);
+    }
+
+    #screen-create-account .primary-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    #screen-create-account .secondary-btn{
+      width:100%;
+      margin-top:8px;
+      border-radius:999px;
+      border:1px solid #dbe3ef;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      color:#223754;
+      background:#fff;
+    }
+
+    #screen-create-account .result-box,
+    #screen-create-account .info-box{
+      border-radius:16px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      padding:14px;
+      margin-bottom:12px;
+    }
+
+    #screen-create-account .info-box{
+      background:#f8fbff;
+    }
+
+    #screen-create-account .result-box.hidden,
+    #screen-create-account .message.hidden{
+      display:none;
+    }
+
+    #screen-create-account .result-title{
+      font-size:14px;
+      font-weight:800;
+      color:#0f172a;
+      margin-bottom:10px;
+    }
+
+    #screen-create-account .result-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 0;
+      border-top:1px solid #eef2f7;
+    }
+
+    #screen-create-account .result-row:first-of-type{
+      border-top:none;
+      padding-top:0;
+    }
+
+    #screen-create-account .result-key{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    #screen-create-account .result-value{
+      font-size:13px;
+      color:#0f172a;
+      font-weight:800;
+      text-align:right;
+      word-break:break-word;
+    }
+
+    #screen-create-account .copy-row{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    #screen-create-account .mini-btn{
+      flex:1;
+      height:40px;
+      border-radius:999px;
+      border:1px solid #dbe3ef;
+      background:#fff;
+      color:#1e3a8a;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    #screen-create-account .message{
+      margin-top:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.5;
+    }
+
+    #screen-create-account .message.error{
+      color:var(--error);
+      background:var(--error-bg);
+      border:1px solid #fecaca;
+    }
+
+    #screen-create-account .message.success{
+      color:var(--success);
+      background:var(--success-bg);
+      border:1px solid #bbf7d0;
+    }
+
+    #screen-create-account .table-wrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+    }
+
+    #screen-create-account table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:860px;
+    }
+
+    #screen-create-account th,
+    #screen-create-account td{
+      text-align:left;
+      padding:14px 14px;
+      border-bottom:1px solid #eef2f7;
+      font-size:13px;
+      vertical-align:top;
+    }
+
+    #screen-create-account th{
+      background:#f8fafc;
+      color:#64748b;
+      font-weight:800;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    #screen-create-account td{
+      color:#0f172a;
+      font-weight:600;
+    }
+
+    #screen-create-account tr:last-child td{
+      border-bottom:none;
+    }
+
+    #screen-create-account .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:78px;
+      height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    #screen-create-account .pill.type{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    #screen-create-account .pill.status{
+      background:#ecfdf5;
+      color:#15803d;
+    }
+
+    #screen-create-account .list-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    #screen-create-account .table-search{
+      width:280px;
+      max-width:100%;
+      height:42px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      padding:0 14px;
+      font-size:14px;
+      outline:none;
+    }
+
+    #screen-create-account .count-chip{
+      display:inline-flex;
+      align-items:center;
+      height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid #dbe3ef;
+      font-size:12px;
+      font-weight:800;
+      color:#334155;
+    }
+
+    #screen-create-account .empty-box{
+      padding:26px 16px;
+      text-align:center;
+      color:#64748b;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    @media (max-width: 1220px){
+      #screen-create-account .grid-2{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 900px){
+      body{
+        overflow:auto;
+      }
+
+      .app{
+        flex-direction:column;
+      }
+
+      .sidebar{
+        width:100%;
+      }
+
+      .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+        height:auto;
+        padding:18px;
+      }
+
+      .topbar-right{
+        width:100%;
+        flex-wrap:wrap;
+      }
+
+      .search{
+        width:100%;
+      }
+
+      .content{
+        padding:16px;
+      }
+
+      #screen-create-account .field-grid{
+        grid-template-columns:1fr;
+      }
+
+      #screen-create-account .hero-title{
+        font-size:24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 8.5 12 4l10 4.5-10 4.5L2 8.5Z"/>
+            <path d="M6 10.3V15c0 1.6 3 3 6 3s6-1.4 6-3v-4.7"/>
+            <path d="M22 9v6"/>
+          </svg>
+        </div>
+        <div class="brand-name">HOS</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M3 11.5 12 4l9 7.5"/>
+            <path d="M5 10.5V20h14v-9.5"/>
+            <path d="M9 20v-5h6v5"/>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-btn active">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+            <path d="M5 20a7 7 0 0 1 14 0"/>
+            <path d="M18.5 8.5h5"/>
+            <path d="M21 6v5"/>
+          </svg>
+          <span>Create Account</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+            <path d="M17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+            <path d="M2.5 19a5.5 5.5 0 0 1 11 0"/>
+            <path d="M14 19a4.5 4.5 0 0 1 8 0"/>
+          </svg>
+          <span>Staff &amp; Roles</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M4 14V10l11-4v12L4 14Z"/>
+            <path d="M15 8h2a3 3 0 0 1 0 6h-2"/>
+            <path d="M6 14.5 7.5 20h3l-1.2-4.2"/>
+          </svg>
+          <span>Announcements</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M7 3h7l5 5v13H7z"/>
+            <path d="M14 3v5h5"/>
+            <path d="M10 13h6"/>
+            <path d="M10 17h6"/>
+          </svg>
+          <span>Reports</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M8 6h13"/>
+            <path d="M8 12h13"/>
+            <path d="M8 18h13"/>
+            <path d="M3.5 6h.01"/>
+            <path d="M3.5 12h.01"/>
+            <path d="M3.5 18h.01"/>
+          </svg>
+          <span>Forms</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 3-6.7"/>
+            <path d="M3 4v5h5"/>
+            <path d="M12 7v6l4 2"/>
+          </svg>
+          <span>History</span>
+        </button>
+
+        <button class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+            <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">Create Account</div>
+
+        <div class="topbar-right">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.2-3.2"></path>
+            </svg>
+            <input type="text" placeholder="Search..." />
+          </div>
+
+          <div class="profile-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M6 10V8a6 6 0 1 1 12 0v2"/>
+              <rect x="4" y="10" width="16" height="10" rx="2"/>
+            </svg>
+            <span id="schoolNameChip">School</span>
+            <div class="avatar"></div>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+        <div id="screen-create-account">
+          <section class="hero">
+            <div class="hero-line-1">Create Account</div>
+            <h1 class="hero-title">
+              Create HOD or agent account<br />
+              <span>Choose type and generate login details</span>
+            </h1>
+          </section>
+
+          <section>
+            <div class="section-title">1. Account details</div>
+            <div class="section-sub">
+              Choose what you want to create, enter the person’s name, and optionally add email.
+              HOD requires department. Agents do not need department in this version.
+            </div>
+
+            <div class="grid-2">
+              <div class="card">
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="accountType">What do you want to create?</label>
+                    <select id="accountType" class="select">
+                      <option value="">Select account type</option>
+                      <option value="hod">HOD account</option>
+                      <option value="report_agent">Report agent</option>
+                      <option value="form_agent">Form agent</option>
+                      <option value="announcement_agent">Announcement agent</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="fullName">Full name</label>
+                    <input id="fullName" class="input" type="text" placeholder="Enter full name" />
+                  </div>
+
+                  <div class="field full">
+                    <label for="email">Email (optional)</label>
+                    <input id="email" class="input" type="email" placeholder="Enter email address" />
+                  </div>
+
+                  <div class="field full" id="departmentField">
+                    <label for="departmentName">Department</label>
+                    <input id="departmentName" class="input" type="text" placeholder="Enter department name" />
+                    <div class="help">This is only required for HOD account.</div>
+                  </div>
+                </div>
+
+                <button id="btnCreateAccount" class="primary-btn" type="button">Create account</button>
+                <button id="btnClearForm" class="secondary-btn" type="button">Clear form</button>
+
+                <div id="createError" class="message error hidden"></div>
+                <div id="createSuccess" class="message success hidden"></div>
+              </div>
+
+              <div>
+                <div class="info-box">
+                  <div class="result-title">What this screen does</div>
+                  <div class="help" style="font-size:12px;">
+                    This screen creates one of four account types:
+                    HOD account, Report agent, Form agent, or Announcement agent.
+                    After creation, it returns the generated login ID and temporary password.
+                  </div>
+                </div>
+
+                <div id="resultBox" class="result-box hidden">
+                  <div class="result-title">Created account details</div>
+
+                  <div class="result-row">
+                    <div class="result-key">Account type</div>
+                    <div id="resultType" class="result-value">—</div>
+                  </div>
+
+                  <div class="result-row">
+                    <div class="result-key">Full name</div>
+                    <div id="resultName" class="result-value">—</div>
+                  </div>
+
+                  <div class="result-row">
+                    <div class="result-key">Login ID</div>
+                    <div id="resultLoginId" class="result-value">—</div>
+                  </div>
+
+                  <div class="result-row">
+                    <div class="result-key">Temporary password</div>
+                    <div id="resultPassword" class="result-value">—</div>
+                  </div>
+
+                  <div class="copy-row">
+                    <button id="btnCopyLogin" class="mini-btn" type="button">Copy login ID</button>
+                    <button id="btnCopyPassword" class="mini-btn" type="button">Copy password</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div class="section-title">2. Created accounts</div>
+            <div class="section-sub">
+              This list loads HOD accounts, Report agents, Form agents, and Announcement agents under the current HOS.
+            </div>
+
+            <div class="card">
+              <div class="list-toolbar">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <span class="count-chip">HODs: <strong id="countHods" style="margin-left:6px;">0</strong></span>
+                  <span class="count-chip">Report: <strong id="countReport" style="margin-left:6px;">0</strong></span>
+                  <span class="count-chip">Form: <strong id="countForm" style="margin-left:6px;">0</strong></span>
+                  <span class="count-chip">Announcement: <strong id="countAnnouncement" style="margin-left:6px;">0</strong></span>
+                  <span class="count-chip">Total: <strong id="countTotal" style="margin-left:6px;">0</strong></span>
+                </div>
+
+                <input id="accountSearch" class="table-search" type="text" placeholder="Search by name, type, login ID..." />
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Full name</th>
+                      <th>Type</th>
+                      <th>Department</th>
+                      <th>Login ID</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody id="accountsTableBody">
+                    <tr>
+                      <td colspan="7">
+                        <div class="empty-box">Loading accounts…</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    const els = {
+      schoolNameChip: document.getElementById("schoolNameChip"),
+      accountType: document.getElementById("accountType"),
+      fullName: document.getElementById("fullName"),
+      email: document.getElementById("email"),
+      departmentName: document.getElementById("departmentName"),
+      departmentField: document.getElementById("departmentField"),
+      btnCreateAccount: document.getElementById("btnCreateAccount"),
+      btnClearForm: document.getElementById("btnClearForm"),
+      createError: document.getElementById("createError"),
+      createSuccess: document.getElementById("createSuccess"),
+      resultBox: document.getElementById("resultBox"),
+      resultType: document.getElementById("resultType"),
+      resultName: document.getElementById("resultName"),
+      resultLoginId: document.getElementById("resultLoginId"),
+      resultPassword: document.getElementById("resultPassword"),
+      btnCopyLogin: document.getElementById("btnCopyLogin"),
+      btnCopyPassword: document.getElementById("btnCopyPassword"),
+      countHods: document.getElementById("countHods"),
+      countReport: document.getElementById("countReport"),
+      countForm: document.getElementById("countForm"),
+      countAnnouncement: document.getElementById("countAnnouncement"),
+      countTotal: document.getElementById("countTotal"),
+      accountSearch: document.getElementById("accountSearch"),
+      accountsTableBody: document.getElementById("accountsTableBody")
+    };
+
+    let hosSession = null;
+    let accountsCache = [];
+
+    function showError(msg) {
+      els.createSuccess.classList.add("hidden");
+      els.createError.textContent = msg;
+      els.createError.classList.remove("hidden");
+    }
+
+    function showSuccess(msg) {
+      els.createError.classList.add("hidden");
+      els.createSuccess.textContent = msg;
+      els.createSuccess.classList.remove("hidden");
+    }
+
+    function clearMessages() {
+      els.createError.classList.add("hidden");
+      els.createSuccess.classList.add("hidden");
+    }
+
+    function hideResultBox() {
+      els.resultBox.classList.add("hidden");
+      els.resultType.textContent = "—";
+      els.resultName.textContent = "—";
+      els.resultLoginId.textContent = "—";
+      els.resultPassword.textContent = "—";
+    }
+
+    function setDepartmentVisibility() {
+      const type = els.accountType.value;
+      if (type === "hod") {
+        els.departmentField.style.display = "";
+      } else {
+        els.departmentField.style.display = "none";
+        els.departmentName.value = "";
+      }
+    }
+
+    function formatTypeLabel(type) {
+      if (type === "hod") return "HOD account";
+      if (type === "report_agent" || type === "report") return "Report agent";
+      if (type === "form_agent" || type === "form") return "Form agent";
+      if (type === "announcement_agent" || type === "announcement") return "Announcement agent";
+      return type || "—";
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "—";
+      return d.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderAccounts() {
+      const q = (els.accountSearch.value || "").trim().toLowerCase();
+
+      const filtered = accountsCache.filter((row) => {
+        if (!q) return true;
+        return [
+          row.full_name,
+          row.account_type,
+          row.function_type,
+          row.department_name,
+          row.login_id,
+          row.linked_email
+        ].some(v => String(v || "").toLowerCase().includes(q));
+      });
+
+      if (!filtered.length) {
+        els.accountsTableBody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-box">No accounts found.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      els.accountsTableBody.innerHTML = filtered.map((row) => {
+        const typeLabel = row.account_type === "hod"
+          ? "HOD"
+          : formatTypeLabel(row.function_type);
+
+        return `
+          <tr>
+            <td>${escapeHtml(row.full_name || "—")}</td>
+            <td><span class="pill type">${escapeHtml(typeLabel)}</span></td>
+            <td>${escapeHtml(row.department_name || "—")}</td>
+            <td>${escapeHtml(row.login_id || "—")}</td>
+            <td>${escapeHtml(row.linked_email || "—")}</td>
+            <td><span class="pill status">${row.is_active ? "Active" : "Inactive"}</span></td>
+            <td>${escapeHtml(formatDate(row.created_at))}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function applyCounts(counts = {}) {
+      els.countHods.textContent = counts.hods ?? 0;
+      els.countReport.textContent = counts.report_agents ?? 0;
+      els.countForm.textContent = counts.form_agents ?? 0;
+      els.countAnnouncement.textContent = counts.announcement_agents ?? 0;
+      els.countTotal.textContent = counts.total ?? 0;
+    }
+
+    async function loadHosSession() {
+      try {
+        const raw = sessionStorage.getItem("colspot_hos_session");
+        if (!raw) {
+          showError("HOS session not found. Please sign in again.");
+          return false;
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.id) {
+          showError("Invalid HOS session. Please sign in again.");
+          return false;
+        }
+
+        hosSession = parsed;
+        els.schoolNameChip.textContent = parsed.school_name || "School";
+        return true;
+      } catch (e) {
+        console.error(e);
+        showError("Could not load HOS session.");
+        return false;
+      }
+    }
+
+    async function loadAccounts() {
+      if (!hosSession?.id) return;
+
+      els.accountsTableBody.innerHTML = `
+        <tr>
+          <td colspan="7">
+            <div class="empty-box">Loading accounts…</div>
+          </td>
+        </tr>
+      `;
+
+      const { data, error } = await supabase.functions.invoke("list-hos-created-accounts", {
+        body: { hos_admin_id: hosSession.id }
+      });
+
+      if (error) {
+        console.error(error);
+        els.accountsTableBody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-box">Could not load accounts.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!data?.ok) {
+        els.accountsTableBody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-box">${escapeHtml(data?.error || "Could not load accounts.")}</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      accountsCache = Array.isArray(data.accounts) ? data.accounts : [];
+      applyCounts(data.counts || {});
+      renderAccounts();
+    }
+
+    function getCreatePayload() {
+      const type = els.accountType.value;
+      const fullName = (els.fullName.value || "").trim();
+      const email = (els.email.value || "").trim();
+      const departmentName = (els.departmentName.value || "").trim();
+
+      if (!type) {
+        throw new Error("Please choose what you want to create.");
+      }
+
+      if (!fullName) {
+        throw new Error("Please enter full name.");
+      }
+
+      if (type === "hod" && !departmentName) {
+        throw new Error("Please enter department name for HOD account.");
+      }
+
+      return {
+        type,
+        payload: {
+          hos_admin_id: hosSession.id,
+          full_name: fullName,
+          email: email || null,
+          linked_email: email || null,
+          department_name: type === "hod" ? departmentName : null
+        }
+      };
+    }
+
+    async function createAccount() {
+      clearMessages();
+      hideResultBox();
+
+      if (!hosSession?.id) {
+        showError("HOS session missing. Please sign in again.");
+        return;
+      }
+
+      let request;
+      try {
+        request = getCreatePayload();
+      } catch (e) {
+        showError(e.message || "Please complete the form.");
+        return;
+      }
+
+      let functionName = "";
+      if (request.type === "hod") functionName = "create-hod-account";
+      if (request.type === "report_agent") functionName = "create-report-agent-account";
+      if (request.type === "form_agent") functionName = "create-form-agent-account";
+      if (request.type === "announcement_agent") functionName = "create-announcement-agent-account";
+
+      if (!functionName) {
+        showError("Invalid account type selected.");
+        return;
+      }
+
+      els.btnCreateAccount.disabled = true;
+      els.btnCreateAccount.textContent = "Creating...";
+
+      try {
+        const { data, error } = await supabase.functions.invoke(functionName, {
+          body: request.payload
+        });
+
+        if (error) {
+          console.error(error);
+          showError(error.message || "Could not create account.");
+          return;
+        }
+
+        if (!data?.ok) {
+          showError(data?.error || "Could not create account.");
+          return;
+        }
+
+        let loginId = "";
+        let fullName = request.payload.full_name;
+        let temporaryPassword = data.temporary_password || "";
+
+        if (request.type === "hod") {
+          loginId = data?.hod_account?.login_id || "";
+          fullName = data?.hod_account?.full_name || fullName;
+        } else if (request.type === "report_agent") {
+          loginId = data?.report_agent_account?.login_id || "";
+          fullName = data?.report_agent_account?.full_name || fullName;
+        } else if (request.type === "form_agent") {
+          loginId = data?.form_agent_account?.login_id || "";
+          fullName = data?.form_agent_account?.full_name || fullName;
+        } else if (request.type === "announcement_agent") {
+          loginId = data?.announcement_agent_account?.login_id || "";
+          fullName = data?.announcement_agent_account?.full_name || fullName;
+        }
+
+        els.resultType.textContent = formatTypeLabel(request.type);
+        els.resultName.textContent = fullName || "—";
+        els.resultLoginId.textContent = loginId || "—";
+        els.resultPassword.textContent = temporaryPassword || "—";
+        els.resultBox.classList.remove("hidden");
+
+        showSuccess("Account created successfully.");
+        await loadAccounts();
+
+        els.fullName.value = "";
+        els.email.value = "";
+        els.departmentName.value = "";
+      } catch (e) {
+        console.error(e);
+        showError("Something went wrong while creating the account.");
+      } finally {
+        els.btnCreateAccount.disabled = false;
+        els.btnCreateAccount.textContent = "Create account";
+      }
+    }
+
+    async function copyText(value, successText) {
+      if (!value || value === "—") return;
+      try {
+        await navigator.clipboard.writeText(value);
+        showSuccess(successText);
+      } catch (e) {
+        console.error(e);
+        showError("Could not copy.");
+      }
+    }
+
+    function clearForm() {
+      clearMessages();
+      hideResultBox();
+      els.accountType.value = "";
+      els.fullName.value = "";
+      els.email.value = "";
+      els.departmentName.value = "";
+      setDepartmentVisibility();
+    }
+
+    async function init() {
+      hideResultBox();
+      setDepartmentVisibility();
+
+      const ok = await loadHosSession();
+      if (!ok) return;
+
+      await loadAccounts();
+    }
+
+    els.accountType.addEventListener("change", setDepartmentVisibility);
+    els.btnCreateAccount.addEventListener("click", createAccount);
+    els.btnClearForm.addEventListener("click", clearForm);
+    els.btnCopyLogin.addEventListener("click", () => copyText(els.resultLoginId.textContent, "Login ID copied."));
+    els.btnCopyPassword.addEventListener("click", () => copyText(els.resultPassword.textContent, "Temporary password copied."));
+    els.accountSearch.addEventListener("input", renderAccounts);
+
+    init();
+  </script>
+</body>
+</html>
