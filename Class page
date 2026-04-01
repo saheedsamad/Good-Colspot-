@@ -183,10 +183,12 @@
       transform:scale(.97);
     }
 
-    #screen-classes .primary-btn:disabled{
+    #screen-classes .primary-btn:disabled,
+    #screen-classes .secondary-btn:disabled{
       background:#93c5fd;
       cursor:not-allowed;
       box-shadow:none;
+      opacity:.8;
     }
 
     #screen-classes .message{
@@ -805,7 +807,9 @@
       correctOption: "A",
       savedQuestions: [],
       lastQuestionPosition: 0,
-      activitySelectedClassId: ""
+      activitySelectedClassId: "",
+      savingQuestion: false,
+      eventsBound: false
     };
 
     function classesEscapeHtml(value) {
@@ -953,6 +957,7 @@
       try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError || !userData?.user) return;
+        currentUser = userData.user;
 
         const { data, error } = await supabase
           .from("courses")
@@ -1038,6 +1043,9 @@
       clearClassesMsg("activitySetupMsg");
       if (typeof supabase === "undefined") return;
 
+      const btn = document.getElementById("saveActivityBtn");
+      const oldText = btn?.textContent || "Save activity & continue";
+
       try {
         if (!currentUser) {
           const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -1051,8 +1059,6 @@
         const payload = getActivityPayloadFromScreen();
         if (!payload) return;
 
-        const btn = document.getElementById("saveActivityBtn");
-        const oldText = btn?.textContent || "Save activity & continue";
         if (btn) {
           btn.disabled = true;
           btn.textContent = window.classesScreenState.activityId ? "Saving..." : "Creating...";
@@ -1092,18 +1098,13 @@
         }, 180);
 
         await loadSavedQuestionsFromClassesScreen();
-
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
       } catch (err) {
         console.error("saveActivityFromClassesScreen failed:", err);
         showClassesMsg("activitySetupMsg", err.message || "Could not save activity.", "error");
-        const btn = document.getElementById("saveActivityBtn");
+      } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = "Save activity & continue";
+          btn.textContent = oldText;
         }
       }
     }
@@ -1149,9 +1150,25 @@
         option_c: optionC,
         option_d: optionD,
         correct_option: window.classesScreenState.correctOption,
-        points,
-        position: Number(window.classesScreenState.lastQuestionPosition || 0) + 1
+        points
       };
+    }
+
+    async function getNextQuestionPositionFromDb() {
+      if (typeof supabase === "undefined") return 1;
+      if (!window.classesScreenState.activityId) return 1;
+
+      const { data, error } = await supabase
+        .from("class_activity_questions")
+        .select("position")
+        .eq("activity_id", window.classesScreenState.activityId)
+        .order("position", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const last = Array.isArray(data) && data.length ? Number(data[0].position || 0) : 0;
+      return last + 1;
     }
 
     function clearQuestionFormFromClassesScreen() {
@@ -1174,16 +1191,36 @@
       clearClassesMsg("activityQuestionMsg");
       if (typeof supabase === "undefined") return;
 
-      const payload = getQuestionPayloadFromClassesScreen();
-      if (!payload) return;
+      if (window.classesScreenState.savingQuestion) return;
+
+      const payloadBase = getQuestionPayloadFromClassesScreen();
+      if (!payloadBase) return;
+
+      const saveBtn = document.getElementById("saveQuestionBtn");
+      const nextBtn = document.getElementById("saveQuestionNextBtn");
+
+      const oldSaveText = saveBtn?.textContent || "Save question";
+      const oldNextText = nextBtn?.textContent || "Save & add next";
 
       try {
-        const btn = document.getElementById(goNext ? "saveQuestionNextBtn" : "saveQuestionBtn");
-        const oldText = btn?.textContent || "Save";
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = "Saving...";
+        window.classesScreenState.savingQuestion = true;
+
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = "Saving...";
         }
+
+        if (nextBtn) {
+          nextBtn.disabled = true;
+          nextBtn.textContent = "Saving...";
+        }
+
+        const nextPosition = await getNextQuestionPositionFromDb();
+
+        const payload = {
+          ...payloadBase,
+          position: nextPosition
+        };
 
         const { error } = await supabase
           .from("class_activity_questions")
@@ -1191,26 +1228,29 @@
 
         if (error) throw error;
 
-        window.classesScreenState.lastQuestionPosition = payload.position;
-        showClassesMsg("activityQuestionMsg", `Question ${payload.position} saved successfully.`, "success");
+        window.classesScreenState.lastQuestionPosition = nextPosition;
+        showClassesMsg("activityQuestionMsg", `Question ${nextPosition} saved successfully.`, "success");
+
         await loadSavedQuestionsFromClassesScreen();
 
         if (goNext) {
           clearQuestionFormFromClassesScreen();
           document.getElementById("activityQuestionText")?.focus();
         }
-
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
       } catch (err) {
         console.error("saveQuestionFromClassesScreen failed:", err);
         showClassesMsg("activityQuestionMsg", err.message || "Could not save question.", "error");
-        const btn = document.getElementById(goNext ? "saveQuestionNextBtn" : "saveQuestionBtn");
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = goNext ? "Save & add next" : "Save question";
+      } finally {
+        window.classesScreenState.savingQuestion = false;
+
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = oldSaveText;
+        }
+
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = oldNextText;
         }
       }
     }
@@ -1312,9 +1352,10 @@
         return;
       }
 
+      const btn = document.getElementById("publishActivityBtn");
+      const oldText = btn?.textContent || "Publish activity";
+
       try {
-        const btn = document.getElementById("publishActivityBtn");
-        const oldText = btn?.textContent || "Publish activity";
         if (btn) {
           btn.disabled = true;
           btn.textContent = "Publishing...";
@@ -1332,23 +1373,21 @@
         if (error) throw error;
 
         showClassesMsg("activityQuestionMsg", "Activity published successfully.", "success");
-
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
       } catch (err) {
         console.error("publishActivityFromClassesScreen failed:", err);
         showClassesMsg("activityQuestionMsg", err.message || "Could not publish activity.", "error");
-        const btn = document.getElementById("publishActivityBtn");
+      } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = "Publish activity";
+          btn.textContent = oldText;
         }
       }
     }
 
     function bindClassesScreenEvents() {
+      if (window.classesScreenState.eventsBound) return;
+      window.classesScreenState.eventsBound = true;
+
       document.getElementById("classesSearchInput")?.addEventListener("input", (e) => {
         renderClassesList(e.target.value || "");
       });
