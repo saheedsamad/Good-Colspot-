@@ -1,0 +1,1249 @@
+<style>
+  :root{
+    --bg:#eef3ff;
+    --panel:#ffffff;
+    --panel-2:#f8faff;
+    --line:#dbe5ff;
+    --line-2:#e8eefc;
+    --text:#16213d;
+    --muted:#6d7895;
+    --blue:#2f6bff;
+    --blue-2:#5f95ff;
+    --blue-soft:#edf4ff;
+    --navy:#14245f;
+    --navy-2:#1b2f7a;
+    --green:#25b36a;
+    --green-soft:#ecfbf3;
+    --orange:#f0a63a;
+    --orange-soft:#fff8ea;
+    --red:#e26464;
+    --shadow:0 18px 50px rgba(33, 56, 120, .10);
+    --radius-xl:30px;
+    --radius-lg:22px;
+    --radius-md:18px;
+    --radius-sm:14px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,#edf2ff 0%,#eef3ff 100%);
+    color:var(--text);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+
+  .page-shell{
+    min-height:100vh;
+    padding:20px;
+  }
+
+  .export-layout{
+    display:grid;
+    grid-template-columns: 350px minmax(0,1fr);
+    gap:26px;
+    align-items:start;
+  }
+
+  .side-panel{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);
+    border-radius:34px;
+    overflow:hidden;
+    color:#fff;
+    box-shadow:var(--shadow);
+    position:sticky;
+    top:20px;
+  }
+
+  .brand-box{
+    padding:24px 26px 22px;
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+
+  .brand-top{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .brand-icon{
+    width:54px;
+    height:54px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.06);
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+  }
+
+  .brand-icon svg{
+    width:26px;
+    height:26px;
+    stroke:#fff;
+    opacity:.96;
+  }
+
+  .brand-name{
+    font-size:22px;
+    line-height:1;
+    font-weight:900;
+    letter-spacing:.02em;
+  }
+
+  .brand-sub{
+    margin-top:6px;
+    font-size:15px;
+    color:rgba(255,255,255,.78);
+    font-weight:700;
+  }
+
+  .side-nav{
+    padding:22px 18px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+
+  .side-link{
+    border:none;
+    background:transparent;
+    color:rgba(255,255,255,.84);
+    border-radius:22px;
+    min-height:64px;
+    padding:0 20px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    font-size:17px;
+    font-weight:800;
+    text-align:left;
+    cursor:pointer;
+    transition:.18s ease;
+  }
+
+  .side-link:hover{
+    background:rgba(255,255,255,.06);
+    color:#fff;
+  }
+
+  .side-link.active{
+    color:#fff;
+    background:linear-gradient(90deg,var(--blue) 0%, var(--blue-2) 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .side-link svg{
+    width:22px;
+    height:22px;
+    stroke:currentColor;
+    flex:0 0 auto;
+  }
+
+  .school-card{
+    margin:18px;
+    padding:18px 18px 20px;
+    border-radius:24px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .school-label{
+    font-size:14px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:rgba(255,255,255,.72);
+    margin-bottom:8px;
+  }
+
+  .school-name{
+    font-size:18px;
+    font-weight:900;
+    line-height:1.25;
+    color:#fff;
+  }
+
+  .main-panel{
+    min-width:0;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .topbar-left{
+    min-width:0;
+  }
+
+  .page-title{
+    font-size:32px;
+    line-height:1.05;
+    font-weight:950;
+    margin:0;
+    letter-spacing:-.03em;
+  }
+
+  .page-sub{
+    margin:8px 0 0;
+    font-size:16px;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .topbar-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .ghost-btn,
+  .solid-btn{
+    min-height:52px;
+    border-radius:18px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--text);
+    font-size:16px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .ghost-btn svg,
+  .solid-btn svg{
+    width:18px;
+    height:18px;
+    stroke:currentColor;
+  }
+
+  .solid-btn{
+    background:linear-gradient(90deg,var(--blue) 0%, var(--blue-2) 100%);
+    color:#fff;
+    border:none;
+    box-shadow:0 14px 30px rgba(47,107,255,.24);
+  }
+
+  .export-screen{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+
+  .hero-card,
+  .content-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow);
+  }
+
+  .hero-card{
+    padding:28px 28px 24px;
+  }
+
+  .hero-label{
+    font-size:15px;
+    color:var(--muted);
+    font-weight:900;
+    margin-bottom:8px;
+  }
+
+  .hero-title{
+    font-size:28px;
+    line-height:1.05;
+    font-weight:950;
+    margin:0;
+    letter-spacing:-.03em;
+  }
+
+  .hero-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+    font-size:15px;
+    color:var(--muted);
+    font-weight:800;
+  }
+
+  .hero-dot::before{
+    content:"•";
+    margin-right:10px;
+  }
+
+  .section-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:18px;
+  }
+
+  .section-title{
+    margin:0;
+    font-size:24px;
+    line-height:1.1;
+    font-weight:950;
+    letter-spacing:-.02em;
+  }
+
+  .section-sub{
+    margin:8px 0 0;
+    color:var(--muted);
+    font-size:16px;
+    font-weight:700;
+  }
+
+  .choice-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+  }
+
+  .choice-card{
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:24px;
+    padding:18px 18px 16px;
+    min-height:160px;
+    cursor:pointer;
+    transition:.18s ease;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .choice-card:hover{
+    transform:translateY(-1px);
+    border-color:#bdd1ff;
+    box-shadow:0 10px 24px rgba(54,89,173,.08);
+  }
+
+  .choice-card.active{
+    border-color:#7ba6ff;
+    background:var(--blue-soft);
+    box-shadow:inset 0 0 0 1px rgba(47,107,255,.10);
+  }
+
+  .choice-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .choice-icon{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    background:#eef4ff;
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+  }
+
+  .choice-card.active .choice-icon{
+    background:#dfeaff;
+  }
+
+  .choice-icon svg{
+    width:22px;
+    height:22px;
+    stroke:#4d73d9;
+  }
+
+  .choice-name{
+    font-size:17px;
+    font-weight:950;
+    line-height:1.15;
+  }
+
+  .choice-desc{
+    font-size:15px;
+    line-height:1.5;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .format-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+  }
+
+  .format-card{
+    min-height:66px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 18px;
+    cursor:pointer;
+    transition:.18s ease;
+  }
+
+  .format-card:hover{
+    border-color:#bdd1ff;
+    box-shadow:0 8px 20px rgba(54,89,173,.06);
+  }
+
+  .format-card.active{
+    border-color:#7ba6ff;
+    background:var(--blue-soft);
+  }
+
+  .format-badge{
+    width:34px;
+    height:34px;
+    border-radius:11px;
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+    font-size:11px;
+    font-weight:1000;
+    letter-spacing:.02em;
+    color:#fff;
+  }
+
+  .format-badge.excel{background:#1e9a59}
+  .format-badge.csv{background:#3b8cff}
+  .format-badge.pdf{background:#e36a6a}
+  .format-badge.word{background:#4d73d9}
+
+  .format-name{
+    font-size:16px;
+    font-weight:900;
+  }
+
+  .filters-wrap{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+  }
+
+  .input-shell,
+  .select-shell{
+    min-width:0;
+  }
+
+  .field-label{
+    display:block;
+    margin:0 0 8px;
+    font-size:14px;
+    font-weight:900;
+    color:var(--muted);
+  }
+
+  .field-input,
+  .field-select{
+    width:100%;
+    min-height:58px;
+    border-radius:18px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    padding:0 18px;
+    font-size:16px;
+    font-weight:800;
+    color:var(--text);
+    outline:none;
+  }
+
+  .field-input:focus,
+  .field-select:focus{
+    border-color:#89afff;
+    box-shadow:0 0 0 4px rgba(47,107,255,.08);
+  }
+
+  .preview-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:18px;
+  }
+
+  .preview-file{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    min-width:0;
+  }
+
+  .preview-file-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    background:var(--green-soft);
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+    border:1px solid #d8f3e5;
+  }
+
+  .preview-file-icon svg{
+    width:26px;
+    height:26px;
+    stroke:var(--green);
+  }
+
+  .preview-file-title{
+    font-size:22px;
+    line-height:1.1;
+    font-weight:950;
+    margin:0;
+  }
+
+  .preview-file-sub{
+    margin:6px 0 0;
+    font-size:15px;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .preview-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .stat-pills{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+    margin-bottom:18px;
+  }
+
+  .stat-pill{
+    border:1px solid var(--line-2);
+    background:var(--panel-2);
+    border-radius:22px;
+    padding:18px 18px 16px;
+  }
+
+  .stat-pill-label{
+    font-size:13px;
+    color:var(--muted);
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+
+  .stat-pill-value{
+    font-size:34px;
+    line-height:1;
+    font-weight:950;
+    letter-spacing:-.04em;
+  }
+
+  .columns-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:18px;
+  }
+
+  .col-chip{
+    min-height:38px;
+    padding:0 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:900;
+    color:var(--text);
+  }
+
+  .col-chip svg{
+    width:14px;
+    height:14px;
+    stroke:#6d85d9;
+  }
+
+  .export-table-wrap{
+    width:100%;
+    overflow:auto;
+    border:1px solid var(--line);
+    border-radius:22px;
+    background:#fff;
+  }
+
+  .export-table{
+    width:100%;
+    min-width:980px;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .export-table thead th{
+    background:#f4f7ff;
+    color:#5f6f96;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:950;
+    padding:18px 16px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+
+  .export-table tbody td{
+    padding:18px 16px;
+    border-bottom:1px solid #eef2fb;
+    font-size:15px;
+    font-weight:800;
+    color:var(--text);
+    vertical-align:top;
+  }
+
+  .export-table tbody tr:last-child td{
+    border-bottom:none;
+  }
+
+  .answer-cell{
+    color:#5f6f96;
+    font-weight:700;
+    line-height:1.45;
+  }
+
+  .mini-badge{
+    display:inline-flex;
+    align-items:center;
+    min-height:30px;
+    padding:0 12px;
+    border-radius:999px;
+    background:#eef4ff;
+    color:#4d73d9;
+    font-size:13px;
+    font-weight:900;
+  }
+
+  .custom-builder{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:18px;
+  }
+
+  .builder-box{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:24px;
+    padding:20px;
+  }
+
+  .builder-title{
+    font-size:20px;
+    line-height:1.1;
+    font-weight:950;
+    margin:0 0 8px;
+  }
+
+  .builder-sub{
+    font-size:15px;
+    line-height:1.5;
+    color:var(--muted);
+    font-weight:700;
+    margin:0 0 18px;
+  }
+
+  .builder-group{
+    margin-bottom:18px;
+  }
+
+  .builder-group:last-child{
+    margin-bottom:0;
+  }
+
+  .builder-group-label{
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    font-weight:950;
+    margin-bottom:12px;
+  }
+
+  .checkbox-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+
+  .check-tile{
+    min-height:56px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:#fff;
+    padding:0 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .check-tile input{
+    width:18px;
+    height:18px;
+    accent-color:var(--blue);
+    flex:0 0 auto;
+  }
+
+  .check-tile span{
+    font-size:15px;
+    font-weight:850;
+    line-height:1.25;
+    color:var(--text);
+  }
+
+  .builder-preview-card{
+    border:1px dashed #d9e4ff;
+    background:#fbfcff;
+    border-radius:22px;
+    padding:20px;
+  }
+
+  .builder-preview-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+  }
+
+  .builder-preview-title{
+    font-size:19px;
+    font-weight:950;
+    margin:0;
+  }
+
+  .builder-preview-note{
+    margin:0;
+    color:var(--muted);
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .selected-columns{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:16px 0 18px;
+  }
+
+  .placeholder-note{
+    margin-top:16px;
+    min-height:52px;
+    border-radius:18px;
+    background:var(--orange-soft);
+    border:1px solid #f7dfb0;
+    color:#8a661d;
+    display:flex;
+    align-items:center;
+    padding:0 16px;
+    font-size:14px;
+    font-weight:900;
+  }
+
+  @media (max-width: 1320px){
+    .choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .format-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .filters-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .custom-builder{grid-template-columns:1fr}
+  }
+
+  @media (max-width: 1080px){
+    .export-layout{grid-template-columns:1fr}
+    .side-panel{position:relative;top:auto}
+  }
+
+  @media (max-width: 760px){
+    .page-shell{padding:14px}
+    .topbar{flex-direction:column;align-items:flex-start}
+    .topbar-actions{justify-content:flex-start}
+    .hero-card,.section-card{padding:20px}
+    .choice-grid,
+    .format-grid,
+    .filters-wrap,
+    .stat-pills,
+    .checkbox-grid{
+      grid-template-columns:1fr;
+    }
+    .preview-head,
+    .builder-preview-top{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .page-title{font-size:28px}
+    .hero-title{font-size:24px}
+  }
+</style>
+
+<div class="page-shell">
+  <div class="export-layout">
+    <aside class="side-panel">
+      <div class="brand-box">
+        <div class="brand-top">
+          <div class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="3.5" width="16" height="17" rx="4" stroke-width="2"></rect>
+              <path d="M8 8.5h8M8 12h5M8.5 16l2.2 2.2L15.7 13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-name">COLSPOT</div>
+            <div class="brand-sub">Form response panel</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <button class="side-link" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 6.5h16M4 12h16M4 17.5h10" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span>Summary</span>
+        </button>
+
+        <button class="side-link" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="3.5" width="14" height="17" rx="3" stroke-width="2"></rect>
+            <path d="M8 8h8M8 12h8M8 16h5" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span>Questions</span>
+        </button>
+
+        <button class="side-link" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2.2"></path>
+            <path d="M4 20a8 8 0 0 1 16 0" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span>Individual</span>
+        </button>
+
+        <button class="side-link active" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
+            <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span>Export</span>
+        </button>
+      </nav>
+
+      <div class="school-card">
+        <div class="school-label">School</div>
+        <div class="school-name" id="exportSchoolName">EKITI STATE UNIVERSITY</div>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">Export Responses</h1>
+          <p class="page-sub">Download the exact response data you want from this form.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="ghost-btn" type="button" id="exportHistoryBtn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 8v5l3 2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span>Export History</span>
+          </button>
+
+          <button class="solid-btn" type="button" id="quickExportTopBtn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
+              <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
+            </svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <section class="export-screen" id="exportPlaceholder">
+        <section class="hero-card">
+          <div class="hero-label">Exporting this form</div>
+          <h2 class="hero-title" id="exportFormTitle">hqsj</h2>
+          <div class="hero-meta">
+            <span id="exportAudienceMeta">Entrepreneurship 300</span>
+            <span class="hero-dot" id="exportResponsesMeta">3 responses</span>
+            <span class="hero-dot" id="exportIdentityMeta">Use login identity</span>
+            <span class="hero-dot" id="exportLastSubmissionMeta">Last submission: Apr 3, 2026</span>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">What do you want to export?</h3>
+              <p class="section-sub">Choose the exact response view you want to download.</p>
+            </div>
+          </div>
+
+          <div class="choice-grid">
+            <article class="choice-card active" data-export-choice="all">
+              <div class="choice-top">
+                <div class="choice-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M8 7h8M8 11h8M8 15h5" stroke-width="2.2" stroke-linecap="round"></path>
+                    <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z" stroke-width="2"></path>
+                  </svg>
+                </div>
+                <div class="choice-name">All responses</div>
+              </div>
+              <div class="choice-desc">Export every submitted response for this form in one table.</div>
+            </article>
+
+            <article class="choice-card" data-export-choice="filtered">
+              <div class="choice-top">
+                <div class="choice-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" stroke-width="2.2" stroke-linejoin="round"></path>
+                  </svg>
+                </div>
+                <div class="choice-name">Filtered responses</div>
+              </div>
+              <div class="choice-desc">Export only matching responses by programme, level, identity, or search.</div>
+            </article>
+
+            <article class="choice-card" data-export-choice="single">
+              <div class="choice-top">
+                <div class="choice-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2.2"></path>
+                    <path d="M4 20a8 8 0 0 1 16 0" stroke-width="2.2" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <div class="choice-name">Single respondent</div>
+              </div>
+              <div class="choice-desc">Preview and export one person’s full response details.</div>
+            </article>
+
+            <article class="choice-card" data-export-choice="summary">
+              <div class="choice-top">
+                <div class="choice-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12V3a9 9 0 1 1-6.36 2.64L12 12Z" stroke-width="2.2" stroke-linejoin="round"></path>
+                    <path d="M12 12h9" stroke-width="2.2" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <div class="choice-name">Question summary</div>
+              </div>
+              <div class="choice-desc">Export grouped answer breakdowns and summary counts for this form.</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">Select file format</h3>
+              <p class="section-sub">Choose the file type for the response preview below.</p>
+            </div>
+          </div>
+
+          <div class="format-grid">
+            <article class="format-card active" data-format="excel">
+              <div class="format-badge excel">XLSX</div>
+              <div class="format-name">Excel (.xlsx)</div>
+            </article>
+
+            <article class="format-card" data-format="csv">
+              <div class="format-badge csv">CSV</div>
+              <div class="format-name">CSV (.csv)</div>
+            </article>
+
+            <article class="format-card" data-format="pdf">
+              <div class="format-badge pdf">PDF</div>
+              <div class="format-name">PDF (.pdf)</div>
+            </article>
+
+            <article class="format-card" data-format="word">
+              <div class="format-badge word">DOCX</div>
+              <div class="format-name">Word (.docx)</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">Filters</h3>
+              <p class="section-sub">These filters apply when you export filtered responses or build a custom table.</p>
+            </div>
+          </div>
+
+          <div class="filters-wrap">
+            <div class="input-shell">
+              <label class="field-label" for="exportSearchInput">Search</label>
+              <input class="field-input" id="exportSearchInput" type="text" placeholder="Search by name, matric number or answer">
+            </div>
+
+            <div class="select-shell">
+              <label class="field-label" for="exportProgrammeSelect">Programme</label>
+              <select class="field-select" id="exportProgrammeSelect">
+                <option>All programmes</option>
+              </select>
+            </div>
+
+            <div class="select-shell">
+              <label class="field-label" for="exportLevelSelect">Level</label>
+              <select class="field-select" id="exportLevelSelect">
+                <option>All levels</option>
+              </select>
+            </div>
+
+            <div class="select-shell">
+              <label class="field-label" for="exportIdentitySelect">Identity</label>
+              <select class="field-select" id="exportIdentitySelect">
+                <option>All responses</option>
+                <option>Identified only</option>
+                <option>Anonymous only</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="preview-head">
+            <div class="preview-file">
+              <div class="preview-file-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5A1.5 1.5 0 0 1 6.5 3.5Z" stroke-width="2"></path>
+                  <path d="M8 12h8M8 16h6" stroke-width="2.2" stroke-linecap="round"></path>
+                </svg>
+              </div>
+
+              <div>
+                <h3 class="preview-file-title" id="exportPreviewTitle">All responses export preview</h3>
+                <p class="preview-file-sub" id="exportPreviewSubtitle">This preview shows exactly what will be exported for the selected option.</p>
+              </div>
+            </div>
+
+            <div class="preview-actions">
+              <button class="ghost-btn" type="button" id="refreshExportPreviewBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M20 4v4h-4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span>Refresh</span>
+              </button>
+
+              <button class="solid-btn" type="button" id="downloadExportBtn">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
+                  <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
+                </svg>
+                <span>Export</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="stat-pills">
+            <div class="stat-pill">
+              <div class="stat-pill-label">Responses to export</div>
+              <div class="stat-pill-value" id="exportRowsCount">3</div>
+            </div>
+
+            <div class="stat-pill">
+              <div class="stat-pill-label">Columns selected</div>
+              <div class="stat-pill-value" id="exportColumnsCount">8</div>
+            </div>
+
+            <div class="stat-pill">
+              <div class="stat-pill-label">Export type</div>
+              <div class="stat-pill-value" id="exportTypeLabel">All</div>
+            </div>
+          </div>
+
+          <div class="columns-chip-row" id="exportColumnsChips">
+            <span class="col-chip">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
+              Student Name
+            </span>
+            <span class="col-chip">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
+              Matric Number
+            </span>
+            <span class="col-chip">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
+              Programme
+            </span>
+            <span class="col-chip">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
+              Level
+            </span>
+            <span class="col-chip">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
+              Submitted At
+            </span>
+          </div>
+
+          <div class="export-table-wrap">
+            <table class="export-table">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Matric Number</th>
+                  <th>Programme</th>
+                  <th>Level</th>
+                  <th>Submitted At</th>
+                  <th>Question 1</th>
+                  <th>Question 2</th>
+                  <th>Question 3</th>
+                </tr>
+              </thead>
+              <tbody id="exportPreviewTableBody">
+                <tr>
+                  <td>Preview will load here</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td class="answer-cell">—</td>
+                  <td class="answer-cell">—</td>
+                  <td class="answer-cell">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">Build a custom table export</h3>
+              <p class="section-sub">Choose the exact columns you want inside your exported file.</p>
+            </div>
+          </div>
+
+          <div class="custom-builder">
+            <div class="builder-box">
+              <h4 class="builder-title">Choose export columns</h4>
+              <p class="builder-sub">Select identity fields and form question fields to build your own response table.</p>
+
+              <div class="builder-group">
+                <div class="builder-group-label">Student details</div>
+                <div class="checkbox-grid">
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>Student Name</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>Matric Number</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>Programme</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>Level</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox">
+                    <span>Submission Date</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox">
+                    <span>Response ID</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="builder-group">
+                <div class="builder-group-label">Form questions</div>
+                <div class="checkbox-grid">
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>What is your experience so far?</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox" checked>
+                    <span>Any bad experience in this school?</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox">
+                    <span>What should the school improve?</span>
+                  </label>
+
+                  <label class="check-tile">
+                    <input type="checkbox">
+                    <span>Would you recommend this school?</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="builder-box">
+              <div class="builder-preview-card">
+                <div class="builder-preview-top">
+                  <div>
+                    <h4 class="builder-preview-title">Custom table preview</h4>
+                    <p class="builder-preview-note">Your exported table will contain only the selected columns.</p>
+                  </div>
+
+                  <button class="solid-btn" type="button" id="createCustomExportBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
+                      <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
+                    </svg>
+                    <span>Export Table</span>
+                  </button>
+                </div>
+
+                <div class="selected-columns">
+                  <span class="mini-badge">Student Name</span>
+                  <span class="mini-badge">Matric Number</span>
+                  <span class="mini-badge">Programme</span>
+                  <span class="mini-badge">Level</span>
+                  <span class="mini-badge">Experience So Far</span>
+                  <span class="mini-badge">Bad Experience</span>
+                </div>
+
+                <div class="placeholder-note">
+                  Export preview and table rows will appear here after the JavaScript is connected.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+</div>
