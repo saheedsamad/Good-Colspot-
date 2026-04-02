@@ -345,7 +345,7 @@
 
     const account = session.account || {};
 
-    return normalizeText(
+    return normalizeUpper(
       account.school_name ||
       session.school_name ||
       session.school ||
@@ -382,7 +382,7 @@
   }
 
   function getStatusClass(activityType) {
-    const type = String(activityType || "").toUpperCase();
+    const type = normalizeUpper(activityType);
 
     if (type === "FORM_DELETED") return "danger";
     if (type === "FORM_ARCHIVED" || type === "FORM_CLOSED") return "warn";
@@ -391,7 +391,7 @@
   }
 
   function getHistoryIcon(activityType) {
-    const type = String(activityType || "").toUpperCase();
+    const type = normalizeUpper(activityType);
 
     if (type === "FORM_DELETED") {
       return `
@@ -428,7 +428,7 @@
   }
 
   function getHistoryUrl(row) {
-    const entityType = String(row.entity_type || "").toLowerCase();
+    const entityType = normalizeText(row.entity_type).toLowerCase();
     const entityId = row.entity_id || row?.meta_json?.form_id || "";
 
     if (!entityId) return "";
@@ -448,7 +448,7 @@
   }
 
   function getButtonLabel(row) {
-    const type = String(row.activity_type || "").toUpperCase();
+    const type = normalizeUpper(row.activity_type);
 
     if (type === "FORM_PUBLISHED" || type === "FORM_SUBMITTED") {
       return "View Responses";
@@ -505,14 +505,14 @@
   }
 
   function applyHistoryFilters() {
-    const searchValue = String(historySearchInput?.value || "").trim().toLowerCase();
-    const filterValue = String(historyFilterSelect?.value || "all");
-    const sortValue = String(historySortSelect?.value || "recent");
+    const searchValue = normalizeText(historySearchInput?.value || "").toLowerCase();
+    const filterValue = normalizeUpper(historyFilterSelect?.value || "all");
+    const sortValue = normalizeText(historySortSelect?.value || "recent");
 
     let rows = [...historyRows];
 
-    if (filterValue !== "all") {
-      rows = rows.filter((row) => String(row.activity_type || "").toUpperCase() === filterValue);
+    if (filterValue !== "ALL") {
+      rows = rows.filter((row) => normalizeUpper(row.activity_type) === filterValue);
     }
 
     if (searchValue) {
@@ -525,8 +525,10 @@
           row.actor_name,
           row.target_name,
           row?.meta_json?.form_title,
+          row?.meta_json?.programme,
+          row?.meta_json?.level
         ]
-          .map((v) => String(v || "").toLowerCase())
+          .map((v) => normalizeText(v).toLowerCase())
           .join(" ");
 
         return haystack.includes(searchValue);
@@ -550,7 +552,7 @@
     const schoolName = getSchoolNameFromSession(adminSession);
 
     console.log("History admin session:", adminSession);
-    console.log("History school name:", schoolName);
+    console.log("History school name normalized:", schoolName);
 
     if (!schoolName) {
       historyBox.innerHTML = `
@@ -564,15 +566,21 @@
     historyBox.innerHTML = `<div class="history-loading">Loading history...</div>`;
 
     try {
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        throw new Error("Supabase browser library is not loaded.");
+      }
+
       historySb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const { data, error } = await historySb
         .from("hos_history")
         .select("id, school_name, activity_type, title, description, entity_type, entity_id, actor_name, actor_role, target_name, meta_json, created_at")
-        .eq("school_name", schoolName)
+        .ilike("school_name", schoolName)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
+
+      console.log("History rows loaded:", data);
 
       historyRows = Array.isArray(data) ? data : [];
       applyHistoryFilters();
