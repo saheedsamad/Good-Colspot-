@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Form Responses</title>
+
+  <style>
+    :root{
+      --bg:#eef4ff;
+      --panel:#ffffff;
+      --panel-2:#f8fbff;
+      --line:#e5edf8;
+      --line-strong:#d9e6f7;
+      --text:#0f172a;
+      --muted:#64748b;
+      --muted-2:#94a3b8;
+      --navy:#0f2350;
+      --navy-2:#122b63;
+      --blue:#2563eb;
+      --blue-2:#3b82f6;
+      --blue-3:#eaf2ff;
+      --green:#16a34a;
+      --green-soft:#eafaf0;
+      --amber:#d97706;
+      --amber-soft:#fff7ed;
+      --red:#dc2626;
+      --red-soft:#fef2f2;
+      --shadow:0 20px 50px rgba(15, 23, 42, 0.10);
+      --shadow-soft:0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --radius-sm:12px;
+      --sidebar:320px;
+      --topbar-h:86px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,
+    body{
+      margin:0;
+      padding:0;
+      background:linear-gradient(180deg,#f4f8ff 0%, #edf4ff 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height:100%;
+    }
+
+    button,
+    input,
+    textarea,
+    select{
+      font:inherit;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .app-shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:var(--sidebar) 1fr;
+      background:var(--bg);
+    }
+
+    .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      padding:16px;
+      background:linear-gradient(180deg, #0d1e47 0%, #10285d 52%, #0b1c42 100%);
+      color:#fff;
+      overflow:auto;
+      border-right:1px solid rgba(255,255,255,.08);
+    }
+
+    .sidebar-card{
+      min-height:calc(100vh - 32px);
+      display:flex;
+      flex-direction:column;
+      border-radius:30px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+      overflow:hidden;
+    }
+
+    .brand-block{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:18px 18px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .brand-badge{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      flex-shrink:0;
+    }
+
+    .brand-badge svg{
+      width:24px;
+      height:24px;
+      color:#fff;
+    }
+
+    .brand-copy{
+      min-width:0;
+    }
+
+    .brand-copy .small{
+      display:block;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.12em;
+      color:rgba(255,255,255,.72);
+      text-transform:uppercase;
+      margin-bottom:2px;
+    }
+
+    .brand-copy .big{
+      display:block;
+      font-size:17px;
+      line-height:1.15;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .brand-copy .sub{
+      display:block;
+      font-size:12px;
+      color:rgba(255,255,255,.72);
+      margin-top:4px;
+    }
+
+    .sidebar-nav{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .nav-link{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-height:56px;
+      padding:0 16px;
+      border-radius:18px;
+      color:rgba(255,255,255,.90);
+      transition:background .18s ease, transform .18s ease, color .18s ease;
+    }
+
+    .nav-link:hover{
+      background:rgba(255,255,255,.06);
+      transform:translateY(-1px);
+    }
+
+    .nav-link.active{
+      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
+      box-shadow:0 16px 28px rgba(37,99,235,.28);
+      color:#fff;
+    }
+
+    .nav-link svg{
+      width:20px;
+      height:20px;
+      flex-shrink:0;
+    }
+
+    .nav-copy{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .nav-title{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.15;
+    }
+
+    .nav-sub{
+      font-size:12px;
+      color:rgba(255,255,255,.62);
+    }
+
+    .nav-link.active .nav-sub{
+      color:rgba(255,255,255,.82);
+    }
+
+    .sidebar-foot{
+      margin-top:auto;
+      padding:14px 14px 16px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+
+    .school-badge{
+      border-radius:22px;
+      padding:16px;
+      background:rgba(255,255,255,.07);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .school-badge .label{
+      display:block;
+      font-size:11px;
+      letter-spacing:.1em;
+      font-weight:800;
+      color:rgba(255,255,255,.62);
+      text-transform:uppercase;
+      margin-bottom:5px;
+    }
+
+    .school-badge .value{
+      display:block;
+      font-size:17px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.2;
+      word-break:break-word;
+    }
+
+    .main{
+      min-width:0;
+      padding:18px;
+    }
+
+    .main-card{
+      min-height:calc(100vh - 36px);
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(255,255,255,.6);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      min-height:var(--topbar-h);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 22px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.72);
+      backdrop-filter:blur(8px);
+    }
+
+    .topbar-left{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .back-btn{
+      width:50px;
+      height:50px;
+      border:none;
+      border-radius:16px;
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease;
+      flex-shrink:0;
+    }
+
+    .back-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .back-btn svg{
+      width:22px;
+      height:22px;
+      color:#0f172a;
+    }
+
+    .page-head{
+      min-width:0;
+    }
+
+    .page-title{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.08;
+      margin:0;
+      color:#0f172a;
+    }
+
+    .page-sub{
+      margin:6px 0 0;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-shrink:0;
+    }
+
+    .top-chip{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:#0f172a;
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .top-chip svg{
+      width:16px;
+      height:16px;
+    }
+
+    .content{
+      min-width:0;
+      flex:1;
+      display:grid;
+      grid-template-columns:280px minmax(0, 1fr);
+      gap:18px;
+      padding:18px;
+    }
+
+    .left-col,
+    .right-col{
+      min-width:0;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:18px 18px 14px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .card-title{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.15;
+      margin:0;
+      color:#0f172a;
+    }
+
+    .card-sub{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .card-body{
+      padding:18px;
+    }
+
+    .overview-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .overview-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-bottom:1px dashed var(--line);
+    }
+
+    .overview-item:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    .overview-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    .overview-value{
+      font-size:14px;
+      color:#0f172a;
+      font-weight:800;
+      text-align:right;
+      line-height:1.4;
+      max-width:58%;
+      word-break:break-word;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .status-pill svg{
+      width:14px;
+      height:14px;
+    }
+
+    .status-pill.published{
+      background:var(--green-soft);
+      color:var(--green);
+    }
+
+    .status-pill.draft{
+      background:var(--amber-soft);
+      color:var(--amber);
+    }
+
+    .status-pill.closed{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .status-pill.archived{
+      background:#f1f5f9;
+      color:#475569;
+    }
+
+    .side-nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .side-link{
+      min-height:52px;
+      padding:0 16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:#0f172a;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .side-link:hover{
+      transform:translateY(-1px);
+      border-color:#cfe0fb;
+      background:#f9fbff;
+    }
+
+    .side-link.active{
+      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 14px 28px rgba(37,99,235,.24);
+    }
+
+    .side-link svg{
+      width:18px;
+      height:18px;
+      flex-shrink:0;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .stat-card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
+      border-radius:20px;
+      padding:16px;
+      min-height:120px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      line-height:1.35;
+    }
+
+    .stat-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:var(--blue-3);
+      color:var(--blue);
+      flex-shrink:0;
+    }
+
+    .stat-icon svg{
+      width:20px;
+      height:20px;
+    }
+
+    .stat-value{
+      font-size:28px;
+      font-weight:900;
+      line-height:1;
+      color:#0f172a;
+      margin-top:18px;
+    }
+
+    .stat-foot{
+      margin-top:8px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .section-block{
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .section-head{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .section-title{
+      font-size:20px;
+      font-weight:900;
+      line-height:1.15;
+      margin:0;
+    }
+
+    .section-sub{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .head-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      flex-shrink:0;
+    }
+
+    .btn{
+      min-height:44px;
+      border:none;
+      border-radius:14px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .18s ease, opacity .18s ease, box-shadow .18s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
+      color:#fff;
+      box-shadow:0 12px 24px rgba(37,99,235,.22);
+    }
+
+    .btn-soft{
+      background:#f8fbff;
+      color:#0f172a;
+      border:1px solid var(--line);
+    }
+
+    .btn-danger{
+      background:#fff5f5;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+    }
+
+    .btn.is-disabled{
+      opacity:.48;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .filters-wrap{
+      padding:18px;
+      display:grid;
+      grid-template-columns:1.3fr repeat(4, minmax(0,1fr));
+      gap:12px;
+      border-bottom:1px solid var(--line);
+      background:#fbfdff;
+    }
+
+    .field{
+      min-width:0;
+    }
+
+    .field-label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      margin:0 0 8px;
+    }
+
+    .field-input,
+    .field-select{
+      width:100%;
+      min-height:48px;
+      border:1px solid var(--line-strong);
+      background:#fff;
+      border-radius:14px;
+      padding:0 14px;
+      outline:none;
+      color:#0f172a;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .field-input:focus,
+    .field-select:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 4px rgba(59,130,246,.10);
+    }
+
+    .responses-layout{
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      min-height:760px;
+    }
+
+    .responses-list{
+      border-right:1px solid var(--line);
+      background:#fcfdff;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .responses-list-head{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .responses-list-title{
+      font-size:17px;
+      font-weight:900;
+      color:#0f172a;
+      margin:0;
+    }
+
+    .responses-list-sub{
+      margin:5px 0 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .responses-count{
+      min-width:42px;
+      height:42px;
+      border-radius:14px;
+      background:var(--blue-3);
+      color:var(--blue);
+      font-size:14px;
+      font-weight:900;
+      display:grid;
+      place-items:center;
+      flex-shrink:0;
+    }
+
+    .response-items{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .response-item{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      cursor:pointer;
+      transition:background .18s ease, border-color .18s ease;
+    }
+
+    .response-item:hover{
+      background:#f8fbff;
+    }
+
+    .response-item.active{
+      background:#edf5ff;
+      box-shadow:inset 3px 0 0 #2563eb;
+    }
+
+    .response-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+
+    .response-name{
+      font-size:15px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.25;
+      margin:0;
+      word-break:break-word;
+    }
+
+    .response-tag{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4338ca;
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+
+    .response-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 10px;
+      margin-bottom:8px;
+    }
+
+    .meta-chip{
+      min-height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#475569;
+      font-size:11px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+    }
+
+    .response-time{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .response-detail{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      background:#fff;
+    }
+
+    .response-detail-head{
+      padding:22px 22px 18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .response-detail-title{
+      font-size:22px;
+      font-weight:900;
+      line-height:1.12;
+      margin:0;
+      color:#0f172a;
+    }
+
+    .response-detail-sub{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .response-detail-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .respondent-summary{
+      padding:18px 22px;
+      border-bottom:1px solid var(--line);
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      background:#fbfdff;
+    }
+
+    .respondent-box{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .respondent-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      margin-bottom:7px;
+    }
+
+    .respondent-value{
+      font-size:14px;
+      color:#0f172a;
+      font-weight:900;
+      line-height:1.35;
+      word-break:break-word;
+    }
+
+    .answers-wrap{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .answer-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .answer-head{
+      padding:16px 18px 14px;
+      border-bottom:1px solid var(--line);
+      background:#fbfdff;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .answer-title-wrap{
+      min-width:0;
+    }
+
+    .answer-question{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      line-height:1.3;
+      color:#0f172a;
+      word-break:break-word;
+    }
+
+    .answer-helper{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .answer-type{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4338ca;
+      font-size:11px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+
+    .answer-body{
+      padding:18px;
+    }
+
+    .answer-value{
+      font-size:15px;
+      color:#0f172a;
+      line-height:1.65;
+      word-break:break-word;
+      white-space:pre-wrap;
+    }
+
+    .answer-empty{
+      color:var(--muted-2);
+      font-style:italic;
+    }
+
+    .choice-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .choice-pill{
+      min-height:34px;
+      padding:0 14px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      border:1px solid #dbeafe;
+      font-size:13px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .file-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .file-row{
+      min-height:52px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .file-name{
+      min-width:0;
+      font-size:14px;
+      font-weight:800;
+      color:#0f172a;
+      word-break:break-word;
+    }
+
+    .file-action{
+      min-height:34px;
+      padding:0 12px;
+      border-radius:10px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:12px;
+      font-weight:900;
+      border:none;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+
+    .summary-panels{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .mini-panel{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      padding:16px;
+    }
+
+    .mini-title{
+      font-size:14px;
+      font-weight:900;
+      margin:0 0 10px;
+      color:#0f172a;
+    }
+
+    .mini-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .mini-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;
+      color:#475569;
+      line-height:1.45;
+    }
+
+    .mini-row strong{
+      color:#0f172a;
+      font-weight:900;
+      text-align:right;
+    }
+
+    .empty-state{
+      min-height:320px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      text-align:center;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.6;
+    }
+
+    .empty-state-box{
+      max-width:420px;
+    }
+
+    .empty-state-icon{
+      width:74px;
+      height:74px;
+      border-radius:24px;
+      margin:0 auto 16px;
+      background:#eff6ff;
+      color:#2563eb;
+      display:grid;
+      place-items:center;
+    }
+
+    .empty-state-icon svg{
+      width:34px;
+      height:34px;
+    }
+
+    .empty-state-title{
+      margin:0 0 8px;
+      font-size:20px;
+      font-weight:900;
+      color:#0f172a;
+    }
+
+    .empty-state-text{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .mobile-anchor-bar{
+      display:none;
+    }
+
+    .js-placeholder{
+      display:none;
+    }
+
+    @media (max-width: 1400px){
+      .summary-grid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+
+      .respondent-summary{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+
+      .summary-panels{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 1180px){
+      .content{
+        grid-template-columns:1fr;
+      }
+
+      .sidebar{
+        display:none;
+      }
+
+      .app-shell{
+        grid-template-columns:1fr;
+      }
+
+      .main{
+        padding:12px;
+      }
+
+      .main-card{
+        min-height:calc(100vh - 24px);
+        border-radius:24px;
+      }
+
+      .left-col{
+        order:2;
+      }
+
+      .right-col{
+        order:1;
+      }
+
+      .mobile-anchor-bar{
+        display:flex;
+        gap:10px;
+        overflow:auto;
+        padding:2px 2px 2px 0;
+      }
+
+      .mobile-anchor{
+        min-height:42px;
+        padding:0 14px;
+        border-radius:999px;
+        border:1px solid var(--line);
+        background:#fff;
+        color:#0f172a;
+        font-size:13px;
+        font-weight:800;
+        white-space:nowrap;
+      }
+    }
+
+    @media (max-width: 980px){
+      .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .topbar-right{
+        width:100%;
+        flex-wrap:wrap;
+      }
+
+      .filters-wrap{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .responses-layout{
+        grid-template-columns:1fr;
+      }
+
+      .responses-list{
+        border-right:none;
+        border-bottom:1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 720px){
+      .page-title{
+        font-size:24px;
+      }
+
+      .summary-grid{
+        grid-template-columns:1fr;
+      }
+
+      .respondent-summary{
+        grid-template-columns:1fr;
+      }
+
+      .filters-wrap{
+        grid-template-columns:1fr;
+      }
+
+      .response-detail-head{
+        padding:18px;
+      }
+
+      .answers-wrap{
+        padding:16px;
+      }
+
+      .card-body,
+      .card-head{
+        padding-left:16px;
+        padding-right:16px;
+      }
+
+      .section-head{
+        padding:16px;
+      }
+
+      .responses-list-head{
+        padding:16px;
+      }
+
+      .response-item{
+        padding:14px 16px;
+      }
+    }
+
+    @media (max-width: 560px){
+      .main{
+        padding:0;
+      }
+
+      .main-card{
+        min-height:100vh;
+        border-radius:0;
+        border:none;
+      }
+
+      .topbar{
+        padding:16px;
+      }
+
+      .content{
+        padding:12px;
+      }
+
+      .top-chip{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .head-actions{
+        width:100%;
+      }
+
+      .head-actions .btn{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="brand-block">
+          <div class="brand-badge">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3 4 7.5 12 12l8-4.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M6.5 10.4V15L12 18l5.5-3v-4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="brand-copy">
+            <span class="small">Colspot</span>
+            <span class="big">Form Responses</span>
+            <span class="sub">School control center</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="hos.html" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.8 12 3l9 7.8V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Back to HOS</div>
+              <div class="nav-sub">Return to dashboard</div>
+            </div>
+          </a>
+
+          <button class="nav-link active" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Responses</div>
+              <div class="nav-sub">Submitted details</div>
+            </div>
+          </button>
+
+          <button class="nav-link" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 16V9M12 16V5M18 16v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Summary</div>
+              <div class="nav-sub">Quick statistics</div>
+            </div>
+          </button>
+
+          <button class="nav-link" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Filters</div>
+              <div class="nav-sub">Search and narrow</div>
+            </div>
+          </button>
+
+          <button class="nav-link" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 15l4-4M12 15l-4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Export</div>
+              <div class="nav-sub">Download later</div>
+            </div>
+          </button>
+
+          <button class="nav-link" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="nav-copy">
+              <div class="nav-title">Activity Trail</div>
+              <div class="nav-sub">Recent movement</div>
+            </div>
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="school-badge">
+            <span class="label">School</span>
+            <span class="value" id="responseSchoolName">Ekiti State University</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-card">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="back-btn" type="button" onclick="window.location.href='hos.html'">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <div class="page-head">
+              <h1 class="page-title">Form Response Details</h1>
+              <p class="page-sub">
+                View all submitted entries, summary, respondent details, and full answers for this form.
+              </p>
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <div class="top-chip">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h5M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+              <span id="topChipFormCode">FORM DETAILS</span>
+            </div>
+
+            <div class="top-chip">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              <span id="topChipStatus">Published</span>
+            </div>
+
+            <div class="top-chip">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span id="topChipTime">Updated recently</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="content">
+          <aside class="left-col">
+            <div class="stack">
+              <div class="mobile-anchor-bar">
+                <button class="mobile-anchor" type="button">Overview</button>
+                <button class="mobile-anchor" type="button">Summary</button>
+                <button class="mobile-anchor" type="button">Responses</button>
+                <button class="mobile-anchor" type="button">Export</button>
+              </div>
+
+              <section class="card">
+                <div class="card-head">
+                  <h2 class="card-title">Form Overview</h2>
+                  <p class="card-sub">Quick information about the selected form.</p>
+                </div>
+                <div class="card-body">
+                  <div class="overview-list">
+                    <div class="overview-item">
+                      <div class="overview-label">Form Title</div>
+                      <div class="overview-value" id="overviewFormTitle">Entrepreneurship Skills Form</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Status</div>
+                      <div class="overview-value">
+                        <span class="status-pill published" id="overviewStatusPill">
+                          <svg viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          Published
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Audience</div>
+                      <div class="overview-value" id="overviewAudience">All Students</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Identity</div>
+                      <div class="overview-value" id="overviewIdentity">Use login identity</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Responses</div>
+                      <div class="overview-value" id="overviewResponses">0</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Created</div>
+                      <div class="overview-value" id="overviewCreatedAt">—</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Published</div>
+                      <div class="overview-value" id="overviewPublishedAt">—</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Open Date</div>
+                      <div class="overview-value" id="overviewOpenAt">Immediately</div>
+                    </div>
+
+                    <div class="overview-item">
+                      <div class="overview-label">Close Date</div>
+                      <div class="overview-value" id="overviewCloseAt">Not set</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <h2 class="card-title">Page Sections</h2>
+                  <p class="card-sub">Move quickly between the main areas of this response page.</p>
+                </div>
+                <div class="card-body">
+                  <div class="side-nav">
+                    <button class="side-link active" type="button">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>Response Summary</span>
+                    </button>
+
+                    <button class="side-link" type="button">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                      <span>All Responses</span>
+                    </button>
+
+                    <button class="side-link" type="button">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                      <span>Filter Responses</span>
+                    </button>
+
+                    <button class="side-link" type="button">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 15l4-4M12 15l-4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>Export Data</span>
+                    </button>
+
+                    <button class="side-link" type="button">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>Activity Trail</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <h2 class="card-title">Quick Actions</h2>
+                  <p class="card-sub">Helpful actions for this form.</p>
+                </div>
+                <div class="card-body">
+                  <div class="stack">
+                    <button class="btn btn-primary" type="button" id="previewFormBtn">Preview Form</button>
+                    <button class="btn btn-soft" type="button" id="openFormBtn">Open in Builder</button>
+                    <button class="btn btn-soft" type="button" id="exportCsvBtn">Export CSV</button>
+                    <button class="btn btn-danger" type="button" id="closeFormBtn">Close Form</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </aside>
+
+          <section class="right-col">
+            <div class="stack">
+              <section class="section-block">
+                <div class="section-head">
+                  <div>
+                    <h2 class="section-title">Response Summary</h2>
+                    <p class="section-sub">
+                      High-level statistics for this form and the people who have submitted it.
+                    </p>
+                  </div>
+
+                  <div class="head-actions">
+                    <button class="btn btn-soft" type="button" id="refreshResponsesBtn">Refresh</button>
+                    <button class="btn btn-primary" type="button" id="downloadResponsesBtn">Download Report</button>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div class="summary-grid">
+                    <article class="stat-card">
+                      <div class="stat-top">
+                        <div class="stat-label">Total Responses</div>
+                        <div class="stat-icon">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="stat-value" id="statTotalResponses">0</div>
+                      <div class="stat-foot">All submitted entries for this form.</div>
+                    </article>
+
+                    <article class="stat-card">
+                      <div class="stat-top">
+                        <div class="stat-label">Latest Submission</div>
+                        <div class="stat-icon">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="stat-value" id="statLatestSubmission">—</div>
+                      <div class="stat-foot">Most recent person who submitted this form.</div>
+                    </article>
+
+                    <article class="stat-card">
+                      <div class="stat-top">
+                        <div class="stat-label">Anonymous Entries</div>
+                        <div class="stat-icon">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3c4.5 0 8.4 2.88 9.75 6.95C20.4 14.02 16.5 16.9 12 16.9S3.6 14.02 2.25 9.95C3.6 5.88 7.5 3 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M12 13.6a3.65 3.65 0 1 0 0-7.3 3.65 3.65 0 0 0 0 7.3Z" stroke="currentColor" stroke-width="1.8"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="stat-value" id="statAnonymousCount">0</div>
+                      <div class="stat-foot">Responses without visible respondent identity.</div>
+                    </article>
+
+                    <article class="stat-card">
+                      <div class="stat-top">
+                        <div class="stat-label">Completion Rate</div>
+                        <div class="stat-icon">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 19h16M6 16V9M12 16V5M18 16v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="stat-value" id="statCompletionRate">100%</div>
+                      <div class="stat-foot">Submitted records that completed all required questions.</div>
+                    </article>
+                  </div>
+
+                  <div style="height:14px;"></div>
+
+                  <div class="summary-panels">
+                    <article class="mini-panel">
+                      <h3 class="mini-title">Programme Breakdown</h3>
+                      <div class="mini-list" id="programmeBreakdownList">
+                        <div class="mini-row"><span>Entrepreneurship</span><strong>0</strong></div>
+                        <div class="mini-row"><span>Computer Science</span><strong>0</strong></div>
+                        <div class="mini-row"><span>Accounting</span><strong>0</strong></div>
+                      </div>
+                    </article>
+
+                    <article class="mini-panel">
+                      <h3 class="mini-title">Level Breakdown</h3>
+                      <div class="mini-list" id="levelBreakdownList">
+                        <div class="mini-row"><span>100 Level</span><strong>0</strong></div>
+                        <div class="mini-row"><span>200 Level</span><strong>0</strong></div>
+                        <div class="mini-row"><span>300 Level</span><strong>0</strong></div>
+                      </div>
+                    </article>
+
+                    <article class="mini-panel">
+                      <h3 class="mini-title">Quick Notes</h3>
+                      <div class="mini-list" id="quickNotesList">
+                        <div class="mini-row"><span>Form Type</span><strong id="quickFormType">School Form</strong></div>
+                        <div class="mini-row"><span>Response Rule</span><strong id="quickResponseRule">One response</strong></div>
+                        <div class="mini-row"><span>Questions</span><strong id="quickQuestionCount">0</strong></div>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="section-head">
+                  <div>
+                    <h2 class="section-title">Responses</h2>
+                    <p class="section-sub">
+                      Search, filter, and open the full details of each submitted response.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="filters-wrap">
+                  <div class="field">
+                    <label class="field-label" for="responseSearchInput">Search</label>
+                    <input
+                      id="responseSearchInput"
+                      class="field-input"
+                      type="text"
+                      placeholder="Search by name, matric, programme, level"
+                    />
+                  </div>
+
+                  <div class="field">
+                    <label class="field-label" for="responseProgrammeFilter">Programme</label>
+                    <select id="responseProgrammeFilter" class="field-select">
+                      <option value="">All Programmes</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label class="field-label" for="responseLevelFilter">Level</label>
+                    <select id="responseLevelFilter" class="field-select">
+                      <option value="">All Levels</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label class="field-label" for="responseSortFilter">Sort By</label>
+                    <select id="responseSortFilter" class="field-select">
+                      <option value="latest">Latest Submission</option>
+                      <option value="oldest">Oldest Submission</option>
+                      <option value="name_asc">Name A–Z</option>
+                      <option value="name_desc">Name Z–A</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label class="field-label" for="responseIdentityFilter">Identity</label>
+                    <select id="responseIdentityFilter" class="field-select">
+                      <option value="">All</option>
+                      <option value="identified">Identified</option>
+                      <option value="anonymous">Anonymous</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="responses-layout">
+                  <aside class="responses-list">
+                    <div class="responses-list-head">
+                      <div>
+                        <h3 class="responses-list-title">Submitted Entries</h3>
+                        <p class="responses-list-sub">Tap any response to see full answers.</p>
+                      </div>
+                      <div class="responses-count" id="responseCountBadge">0</div>
+                    </div>
+
+                    <div class="response-items" id="responseItemsList">
+                      <div class="empty-state" style="min-height:220px;">
+                        <div class="empty-state-box">
+                          <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            </svg>
+                          </div>
+                          <h3 class="empty-state-title">No responses yet</h3>
+                          <p class="empty-state-text">
+                            Submitted responses will appear here after students start filling the form.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <section class="response-detail">
+                    <div class="response-detail-head">
+                      <div>
+                        <h3 class="response-detail-title" id="respondentNameTitle">Select a response</h3>
+                        <p class="response-detail-sub" id="respondentNameSub">
+                          The full respondent details and answers will show here.
+                        </p>
+                      </div>
+
+                      <div class="response-detail-actions">
+                        <button class="btn btn-soft" type="button" id="prevResponseBtn">Previous</button>
+                        <button class="btn btn-soft" type="button" id="nextResponseBtn">Next</button>
+                        <button class="btn btn-primary" type="button" id="printResponseBtn">Print</button>
+                      </div>
+                    </div>
+
+                    <div class="respondent-summary">
+                      <div class="respondent-box">
+                        <div class="respondent-label">Full Name</div>
+                        <div class="respondent-value" id="respondentFullName">—</div>
+                      </div>
+
+                      <div class="respondent-box">
+                        <div class="respondent-label">Matric / Staff ID</div>
+                        <div class="respondent-value" id="respondentMatric">—</div>
+                      </div>
+
+                      <div class="respondent-box">
+                        <div class="respondent-label">Programme / Department</div>
+                        <div class="respondent-value" id="respondentProgramme">—</div>
+                      </div>
+
+                      <div class="respondent-box">
+                        <div class="respondent-label">Level</div>
+                        <div class="respondent-value" id="respondentLevel">—</div>
+                      </div>
+                    </div>
+
+                    <div class="answers-wrap" id="responseAnswersWrap">
+                      <div class="empty-state">
+                        <div class="empty-state-box">
+                          <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            </svg>
+                          </div>
+                          <h3 class="empty-state-title">No response selected</h3>
+                          <p class="empty-state-text">
+                            Choose a response from the left side to see the respondent details and every submitted answer.
+                          </p>
+                        </div>
+                      </div>
+
+                      <!-- Example answer cards -->
+                      <article class="answer-card" style="display:none;">
+                        <div class="answer-head">
+                          <div class="answer-title-wrap">
+                            <h4 class="answer-question">Question title will show here</h4>
+                            <p class="answer-helper">Optional helper text will show here.</p>
+                          </div>
+                          <div class="answer-type">Short Answer</div>
+                        </div>
+                        <div class="answer-body">
+                          <div class="answer-value">Submitted answer value will show here.</div>
+                        </div>
+                      </article>
+                    </div>
+                  </section>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PASTE YOUR JS BELOW THIS PLACEHOLDER                      -->
+  <!-- ========================================================= -->
+  <script>
+    /*
+      FORM_RESPONSE PAGE JS GOES HERE
+
+      Suggested responsibilities for the JS:
+      1. Read form_id from URL
+      2. Load form details
+      3. Load form questions
+      4. Load form responses
+      5. Load response answers
+      6. Build left response list
+      7. Build summary cards
+      8. Build programme and level filters
+      9. Open clicked response
+      10. Render all answer types:
+          - short_answer
+          - paragraph
+          - multiple_choice
+          - checkboxes
+          - dropdown
+          - date
+          - file_upload
+          - yes_no
+    */
+  </script>
+</body>
+</html>
