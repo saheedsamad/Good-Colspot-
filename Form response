@@ -1800,30 +1800,1150 @@
   <!-- ========================================================= -->
   <!-- PASTE YOUR JS BELOW THIS PLACEHOLDER                      -->
   <!-- ========================================================= -->
-  <script>
-    /*
-      FORM_RESPONSE PAGE JS GOES HERE
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-      Suggested responsibilities for the JS:
-      1. Read form_id from URL
-      2. Load form details
-      3. Load form questions
-      4. Load form responses
-      5. Load response answers
-      6. Build left response list
-      7. Build summary cards
-      8. Build programme and level filters
-      9. Open clicked response
-      10. Render all answer types:
-          - short_answer
-          - paragraph
-          - multiple_choice
-          - checkboxes
-          - dropdown
-          - date
-          - file_upload
-          - yes_no
-    */
-  </script>
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+
+  const els = {
+    responseSchoolName: document.getElementById("responseSchoolName"),
+
+    topChipFormCode: document.getElementById("topChipFormCode"),
+    topChipStatus: document.getElementById("topChipStatus"),
+    topChipTime: document.getElementById("topChipTime"),
+
+    overviewFormTitle: document.getElementById("overviewFormTitle"),
+    overviewStatusPill: document.getElementById("overviewStatusPill"),
+    overviewAudience: document.getElementById("overviewAudience"),
+    overviewIdentity: document.getElementById("overviewIdentity"),
+    overviewResponses: document.getElementById("overviewResponses"),
+    overviewCreatedAt: document.getElementById("overviewCreatedAt"),
+    overviewPublishedAt: document.getElementById("overviewPublishedAt"),
+    overviewOpenAt: document.getElementById("overviewOpenAt"),
+    overviewCloseAt: document.getElementById("overviewCloseAt"),
+
+    statTotalResponses: document.getElementById("statTotalResponses"),
+    statLatestSubmission: document.getElementById("statLatestSubmission"),
+    statAnonymousCount: document.getElementById("statAnonymousCount"),
+    statCompletionRate: document.getElementById("statCompletionRate"),
+
+    programmeBreakdownList: document.getElementById("programmeBreakdownList"),
+    levelBreakdownList: document.getElementById("levelBreakdownList"),
+    quickFormType: document.getElementById("quickFormType"),
+    quickResponseRule: document.getElementById("quickResponseRule"),
+    quickQuestionCount: document.getElementById("quickQuestionCount"),
+
+    responseSearchInput: document.getElementById("responseSearchInput"),
+    responseProgrammeFilter: document.getElementById("responseProgrammeFilter"),
+    responseLevelFilter: document.getElementById("responseLevelFilter"),
+    responseSortFilter: document.getElementById("responseSortFilter"),
+    responseIdentityFilter: document.getElementById("responseIdentityFilter"),
+
+    responseCountBadge: document.getElementById("responseCountBadge"),
+    responseItemsList: document.getElementById("responseItemsList"),
+
+    respondentNameTitle: document.getElementById("respondentNameTitle"),
+    respondentNameSub: document.getElementById("respondentNameSub"),
+    respondentFullName: document.getElementById("respondentFullName"),
+    respondentMatric: document.getElementById("respondentMatric"),
+    respondentProgramme: document.getElementById("respondentProgramme"),
+    respondentLevel: document.getElementById("respondentLevel"),
+    responseAnswersWrap: document.getElementById("responseAnswersWrap"),
+
+    previewFormBtn: document.getElementById("previewFormBtn"),
+    openFormBtn: document.getElementById("openFormBtn"),
+    exportCsvBtn: document.getElementById("exportCsvBtn"),
+    closeFormBtn: document.getElementById("closeFormBtn"),
+    refreshResponsesBtn: document.getElementById("refreshResponsesBtn"),
+    downloadResponsesBtn: document.getElementById("downloadResponsesBtn"),
+    prevResponseBtn: document.getElementById("prevResponseBtn"),
+    nextResponseBtn: document.getElementById("nextResponseBtn"),
+    printResponseBtn: document.getElementById("printResponseBtn"),
+  };
+
+  const state = {
+    actor: null,
+    formId: "",
+    form: null,
+    questions: [],
+    responses: [],
+    filteredResponses: [],
+    selectedResponseId: null,
+  };
+
+  function qs(name) {
+    return new URLSearchParams(window.location.search).get(name) || "";
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function normalizeText(value) {
+    return String(value ?? "").trim().replace(/\s+/g, " ");
+  }
+
+  function normalizeUpper(value) {
+    return normalizeText(value).toUpperCase();
+  }
+
+  function normalizeLevelValue(value) {
+    return normalizeUpper(value)
+      .replace(/\bLEVEL\b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function formatAudience(value, form) {
+    const mode = String(form?.audience_mode || value || "").trim();
+
+    if (mode === "all_students") return "All Students";
+    if (mode === "programme_filter") return "Programme Filter";
+    if (value === "all_students") return "All Students";
+    if (value === "all_staff") return "All Staff";
+    if (value === "lecturers") return "Lecturers";
+    if (value === "department_students") return "Department Students";
+    if (value === "specific_group") return "Specific Group";
+    return value ? titleCase(value.replaceAll("_", " ")) : "—";
+  }
+
+  function formatIdentity(value) {
+    if (value === "anonymous") return "Anonymous";
+    if (value === "auto") return "Use login identity";
+    return value ? titleCase(value.replaceAll("_", " ")) : "Use login identity";
+  }
+
+  function formatStatus(value) {
+    if (!value) return "—";
+    return titleCase(String(value).replaceAll("_", " "));
+  }
+
+  function titleCase(value) {
+    return String(value || "")
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  function formatRelativeOrDate(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+
+    if (diff < minute) return "Just now";
+    if (diff < hour) return `${Math.floor(diff / minute)} min ago`;
+    if (diff < day) return `${Math.floor(diff / hour)} hr ago`;
+    if (diff < 7 * day) return `${Math.floor(diff / day)} day(s) ago`;
+
+    return formatDateTime(value);
+  }
+
+  function setButtonBusy(btn, busy, textWhenBusy = "Loading...") {
+    if (!btn) return;
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent || "";
+    btn.disabled = busy;
+    btn.classList.toggle("is-disabled", busy);
+    btn.textContent = busy ? textWhenBusy : btn.dataset.originalText;
+  }
+
+  function getStoredJson(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function getActorFromStorage() {
+    const candidates = [
+      "colspot_hos_session",
+      "hos_session",
+      "colspotHosSession",
+      "main_hos_session",
+      "colspot_form_agent_session",
+      "form_agent_session",
+      "colspotFormAgentSession",
+    ];
+
+    for (const key of candidates) {
+      const parsed = getStoredJson(key);
+      if (parsed && typeof parsed === "object") {
+        const hosId =
+          parsed.hos_admin_id ||
+          parsed.id ||
+          parsed.admin_id ||
+          parsed.hosId ||
+          parsed.hos_admin_uuid ||
+          "";
+
+        const formAgentId =
+          parsed.form_agent_id ||
+          parsed.agent_id ||
+          parsed.formAgentId ||
+          "";
+
+        const schoolName =
+          parsed.school_name ||
+          parsed.school ||
+          parsed.schoolName ||
+          "";
+
+        if (hosId || formAgentId || schoolName) {
+          return {
+            hos_admin_id: hosId || "",
+            form_agent_id: formAgentId || "",
+            school_name: schoolName || "",
+            raw: parsed,
+          };
+        }
+      }
+    }
+
+    return {
+      hos_admin_id: "",
+      form_agent_id: "",
+      school_name: "",
+      raw: null,
+    };
+  }
+
+  function getActorPayload() {
+    const fromStorage = getActorFromStorage();
+
+    const hos_admin_id = qs("hos_admin_id") || fromStorage.hos_admin_id || "";
+    const form_agent_id = qs("form_agent_id") || fromStorage.form_agent_id || "";
+    const school_name = qs("school_name") || fromStorage.school_name || "";
+
+    return {
+      hos_admin_id,
+      form_agent_id,
+      school_name,
+    };
+  }
+
+  async function ensureSignedIn() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      throw new Error(error.message || "Unable to check session.");
+    }
+    if (!data.session) {
+      throw new Error("Session not found. Please sign in again.");
+    }
+    return data.session;
+  }
+
+  async function invokeFormsManager(payload) {
+    const { data, error } = await supabase.functions.invoke("forms-manager", {
+      body: payload,
+    });
+
+    if (error) {
+      throw new Error(error.message || "Edge Function returned a non-2xx status code");
+    }
+
+    if (!data?.ok) {
+      throw new Error(data?.error || "Request failed.");
+    }
+
+    return data;
+  }
+
+  async function loadFormDetails() {
+    const payload = getActorPayload();
+
+    if (!payload.hos_admin_id && !payload.form_agent_id) {
+      throw new Error("HOS or form agent session not found. Please sign in again.");
+    }
+
+    state.actor = payload;
+    state.formId = qs("form_id") || "";
+
+    if (!state.formId) {
+      throw new Error("form_id not found in URL.");
+    }
+
+    const formData = await invokeFormsManager({
+      action: "get_form",
+      form_id: state.formId,
+      ...(payload.hos_admin_id ? { hos_admin_id: payload.hos_admin_id } : {}),
+      ...(payload.form_agent_id ? { form_agent_id: payload.form_agent_id } : {}),
+    });
+
+    state.form = formData.form || null;
+    state.questions = Array.isArray(formData.questions) ? formData.questions : [];
+
+    const responsesData = await invokeFormsManager({
+      action: "list_form_responses",
+      form_id: state.formId,
+      ...(payload.hos_admin_id ? { hos_admin_id: payload.hos_admin_id } : {}),
+      ...(payload.form_agent_id ? { form_agent_id: payload.form_agent_id } : {}),
+    });
+
+    state.responses = Array.isArray(responsesData.responses)
+      ? responsesData.responses
+      : [];
+  }
+
+  function buildQuestionMap() {
+    const map = new Map();
+    for (const q of state.questions) {
+      if (q?.id) map.set(String(q.id), q);
+    }
+    return map;
+  }
+
+  function getResponseIdentityType(response) {
+    const fullName =
+      response?.full_name ||
+      response?.respondent_name ||
+      response?.student_name ||
+      response?.name ||
+      "";
+
+    const userId =
+      response?.user_id ||
+      response?.respondent_user_id ||
+      "";
+
+    if (normalizeText(fullName) || normalizeText(userId)) return "identified";
+    return "anonymous";
+  }
+
+  function getResponseDisplayName(response) {
+    return (
+      response?.full_name ||
+      response?.respondent_name ||
+      response?.student_name ||
+      response?.name ||
+      (getResponseIdentityType(response) === "anonymous" ? "Anonymous Respondent" : "Unnamed Respondent")
+    );
+  }
+
+  function getResponseMatric(response) {
+    return (
+      response?.matric_number ||
+      response?.matric_no ||
+      response?.student_id ||
+      response?.staff_id ||
+      response?.identity_number ||
+      "—"
+    );
+  }
+
+  function getResponseProgramme(response) {
+    return (
+      response?.programme ||
+      response?.department ||
+      response?.programme_name ||
+      "—"
+    );
+  }
+
+  function getResponseLevel(response) {
+    return (
+      response?.level ||
+      response?.current_level ||
+      "—"
+    );
+  }
+
+  function getResponseSubmittedAt(response) {
+    return (
+      response?.submitted_at ||
+      response?.created_at ||
+      response?.updated_at ||
+      null
+    );
+  }
+
+  function responseMatchesSearch(response, searchText) {
+    if (!searchText) return true;
+
+    const haystack = [
+      getResponseDisplayName(response),
+      getResponseMatric(response),
+      getResponseProgramme(response),
+      getResponseLevel(response),
+      response?.email || "",
+      ...(Array.isArray(response?.answers)
+        ? response.answers.map((a) => {
+            if (Array.isArray(a?.answer_value)) return a.answer_value.join(" ");
+            if (Array.isArray(a?.answer_json)) return JSON.stringify(a.answer_json);
+            return a?.answer_text || a?.answer_value || "";
+          })
+        : []),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(searchText.toLowerCase());
+  }
+
+  function applyResponseFilters() {
+    const search = normalizeText(els.responseSearchInput?.value || "");
+    const programme = normalizeUpper(els.responseProgrammeFilter?.value || "");
+    const level = normalizeLevelValue(els.responseLevelFilter?.value || "");
+    const identity = normalizeText(els.responseIdentityFilter?.value || "");
+    const sort = normalizeText(els.responseSortFilter?.value || "latest");
+
+    let rows = [...state.responses].filter((response) => {
+      if (!responseMatchesSearch(response, search)) return false;
+
+      if (programme) {
+        const rowProgramme = normalizeUpper(getResponseProgramme(response));
+        if (rowProgramme !== programme) return false;
+      }
+
+      if (level) {
+        const rowLevel = normalizeLevelValue(getResponseLevel(response));
+        if (rowLevel !== level) return false;
+      }
+
+      if (identity) {
+        if (getResponseIdentityType(response) !== identity) return false;
+      }
+
+      return true;
+    });
+
+    rows.sort((a, b) => {
+      const aName = getResponseDisplayName(a).toLowerCase();
+      const bName = getResponseDisplayName(b).toLowerCase();
+      const aTime = new Date(getResponseSubmittedAt(a) || 0).getTime();
+      const bTime = new Date(getResponseSubmittedAt(b) || 0).getTime();
+
+      if (sort === "oldest") return aTime - bTime;
+      if (sort === "name_asc") return aName.localeCompare(bName);
+      if (sort === "name_desc") return bName.localeCompare(aName);
+      return bTime - aTime;
+    });
+
+    state.filteredResponses = rows;
+
+    if (!rows.length) {
+      state.selectedResponseId = null;
+    } else if (!rows.some((row) => String(row.id) === String(state.selectedResponseId))) {
+      state.selectedResponseId = String(rows[0].id);
+    }
+  }
+
+  function renderFormOverview() {
+    const form = state.form || {};
+
+    const status = String(form.status || "draft").toLowerCase();
+    const statusClass =
+      status === "published"
+        ? "published"
+        : status === "closed"
+        ? "closed"
+        : status === "archived"
+        ? "archived"
+        : "draft";
+
+    els.responseSchoolName.textContent = form.school_name || state.actor?.school_name || "—";
+    els.topChipFormCode.textContent = form.title || "Form Details";
+    els.topChipStatus.textContent = formatStatus(form.status || "draft");
+    els.topChipTime.textContent = formatRelativeOrDate(form.updated_at || form.created_at);
+
+    els.overviewFormTitle.textContent = form.title || "—";
+    els.overviewAudience.textContent = formatAudience(form.target_audience, form);
+    els.overviewIdentity.textContent = formatIdentity(form.identity_mode);
+    els.overviewResponses.textContent = String(state.responses.length);
+    els.overviewCreatedAt.textContent = formatDateTime(form.created_at);
+    els.overviewPublishedAt.textContent = formatDateTime(form.published_at);
+    els.overviewOpenAt.textContent = form.open_at ? formatDateTime(form.open_at) : "Immediately";
+    els.overviewCloseAt.textContent = form.close_at ? formatDateTime(form.close_at) : "Not set";
+
+    els.overviewStatusPill.className = `status-pill ${statusClass}`;
+    els.overviewStatusPill.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      ${escapeHtml(formatStatus(form.status || "draft"))}
+    `;
+
+    els.quickFormType.textContent =
+      form.audience_mode === "programme_filter" ? "Programme Filter Form" : "School Form";
+
+    els.quickResponseRule.textContent =
+      form.response_rule === "many" ? "Many responses" : "One response";
+
+    els.quickQuestionCount.textContent = String(state.questions.length);
+  }
+
+  function renderSummary() {
+    els.statTotalResponses.textContent = String(state.responses.length);
+
+    const latest = [...state.responses].sort((a, b) => {
+      const at = new Date(getResponseSubmittedAt(a) || 0).getTime();
+      const bt = new Date(getResponseSubmittedAt(b) || 0).getTime();
+      return bt - at;
+    })[0];
+
+    els.statLatestSubmission.textContent = latest
+      ? getResponseDisplayName(latest)
+      : "—";
+
+    const anonymousCount = state.responses.filter(
+      (row) => getResponseIdentityType(row) === "anonymous"
+    ).length;
+
+    els.statAnonymousCount.textContent = String(anonymousCount);
+
+    const requiredQuestions = state.questions.filter((q) => !!q.is_required);
+    let completed = 0;
+
+    if (!requiredQuestions.length) {
+      completed = state.responses.length;
+    } else {
+      for (const response of state.responses) {
+        const answers = Array.isArray(response.answers) ? response.answers : [];
+        const answerMap = new Map(answers.map((a) => [String(a.question_id), a]));
+
+        const ok = requiredQuestions.every((q) => {
+          const ans = answerMap.get(String(q.id));
+          return hasMeaningfulAnswer(ans);
+        });
+
+        if (ok) completed++;
+      }
+    }
+
+    const completionRate = state.responses.length
+      ? Math.round((completed / state.responses.length) * 100)
+      : 0;
+
+    els.statCompletionRate.textContent = `${completionRate}%`;
+
+    renderBreakdownLists();
+  }
+
+  function renderBreakdownLists() {
+    const programmeMap = new Map();
+    const levelMap = new Map();
+
+    for (const response of state.responses) {
+      const programme = normalizeText(getResponseProgramme(response));
+      const level = normalizeText(getResponseLevel(response));
+
+      if (programme && programme !== "—") {
+        programmeMap.set(programme, (programmeMap.get(programme) || 0) + 1);
+      }
+
+      if (level && level !== "—") {
+        levelMap.set(level, (levelMap.get(level) || 0) + 1);
+      }
+    }
+
+    const programmeRows = [...programmeMap.entries()].sort((a, b) => b[1] - a[1]);
+    const levelRows = [...levelMap.entries()].sort((a, b) => b[1] - a[1]);
+
+    els.programmeBreakdownList.innerHTML = programmeRows.length
+      ? programmeRows
+          .map(
+            ([label, count]) => `
+              <div class="mini-row">
+                <span>${escapeHtml(label)}</span>
+                <strong>${count}</strong>
+              </div>
+            `
+          )
+          .join("")
+      : `<div class="mini-row"><span>No programme data</span><strong>0</strong></div>`;
+
+    els.levelBreakdownList.innerHTML = levelRows.length
+      ? levelRows
+          .map(
+            ([label, count]) => `
+              <div class="mini-row">
+                <span>${escapeHtml(label)}</span>
+                <strong>${count}</strong>
+              </div>
+            `
+          )
+          .join("")
+      : `<div class="mini-row"><span>No level data</span><strong>0</strong></div>`;
+  }
+
+  function renderFilterOptions() {
+    const programmeSet = new Set();
+    const levelSet = new Set();
+
+    for (const response of state.responses) {
+      const programme = normalizeText(getResponseProgramme(response));
+      const level = normalizeText(getResponseLevel(response));
+
+      if (programme && programme !== "—") programmeSet.add(programme);
+      if (level && level !== "—") levelSet.add(level);
+    }
+
+    const currentProgramme = els.responseProgrammeFilter.value;
+    const currentLevel = els.responseLevelFilter.value;
+
+    els.responseProgrammeFilter.innerHTML =
+      `<option value="">All Programmes</option>` +
+      [...programmeSet]
+        .sort((a, b) => a.localeCompare(b))
+        .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+        .join("");
+
+    els.responseLevelFilter.innerHTML =
+      `<option value="">All Levels</option>` +
+      [...levelSet]
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+        .join("");
+
+    els.responseProgrammeFilter.value =
+      [...programmeSet].includes(currentProgramme) ? currentProgramme : "";
+
+    els.responseLevelFilter.value =
+      [...levelSet].includes(currentLevel) ? currentLevel : "";
+  }
+
+  function renderResponseList() {
+    els.responseCountBadge.textContent = String(state.filteredResponses.length);
+
+    if (!state.filteredResponses.length) {
+      els.responseItemsList.innerHTML = `
+        <div class="empty-state" style="min-height:220px;">
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">No matching responses</h3>
+            <p class="empty-state-text">Try changing your search or filter values.</p>
+          </div>
+        </div>
+      `;
+      renderSelectedResponse();
+      return;
+    }
+
+    els.responseItemsList.innerHTML = state.filteredResponses
+      .map((response) => {
+        const id = String(response.id);
+        const active = id === String(state.selectedResponseId);
+        const submittedAt = getResponseSubmittedAt(response);
+        const identityType = getResponseIdentityType(response);
+        const programme = getResponseProgramme(response);
+        const level = getResponseLevel(response);
+
+        return `
+          <article class="response-item ${active ? "active" : ""}" data-response-id="${escapeHtml(id)}">
+            <div class="response-top">
+              <h4 class="response-name">${escapeHtml(getResponseDisplayName(response))}</h4>
+              <div class="response-tag">${identityType === "anonymous" ? "Anonymous" : "Identified"}</div>
+            </div>
+
+            <div class="response-meta">
+              <span class="meta-chip">${escapeHtml(programme || "No programme")}</span>
+              <span class="meta-chip">${escapeHtml(level || "No level")}</span>
+            </div>
+
+            <div class="response-time">${escapeHtml(formatDateTime(submittedAt))}</div>
+          </article>
+        `;
+      })
+      .join("");
+
+    els.responseItemsList.querySelectorAll(".response-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        state.selectedResponseId = item.dataset.responseId || null;
+        renderResponseList();
+        renderSelectedResponse();
+      });
+    });
+
+    renderSelectedResponse();
+  }
+
+  function getSelectedResponse() {
+    return state.filteredResponses.find(
+      (row) => String(row.id) === String(state.selectedResponseId)
+    ) || null;
+  }
+
+  function renderSelectedResponse() {
+    const response = getSelectedResponse();
+
+    if (!response) {
+      els.respondentNameTitle.textContent = "Select a response";
+      els.respondentNameSub.textContent =
+        "The full respondent details and answers will show here.";
+      els.respondentFullName.textContent = "—";
+      els.respondentMatric.textContent = "—";
+      els.respondentProgramme.textContent = "—";
+      els.respondentLevel.textContent = "—";
+
+      els.responseAnswersWrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">No response selected</h3>
+            <p class="empty-state-text">Choose a response from the left side to see every answer.</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const submittedAt = getResponseSubmittedAt(response);
+
+    els.respondentNameTitle.textContent = getResponseDisplayName(response);
+    els.respondentNameSub.textContent = `Submitted ${formatDateTime(submittedAt)}`;
+    els.respondentFullName.textContent = getResponseDisplayName(response);
+    els.respondentMatric.textContent = getResponseMatric(response);
+    els.respondentProgramme.textContent = getResponseProgramme(response);
+    els.respondentLevel.textContent = getResponseLevel(response);
+
+    const questionMap = buildQuestionMap();
+    const answerMap = new Map(
+      (Array.isArray(response.answers) ? response.answers : []).map((a) => [String(a.question_id), a])
+    );
+
+    const html = state.questions.length
+      ? state.questions
+          .map((question) => {
+            const answer = answerMap.get(String(question.id));
+            return renderAnswerCard(question, answer);
+          })
+          .join("")
+      : `
+        <div class="empty-state">
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">Questions not found</h3>
+            <p class="empty-state-text">This form has no visible questions.</p>
+          </div>
+        </div>
+      `;
+
+    els.responseAnswersWrap.innerHTML = html;
+
+    els.responseAnswersWrap.querySelectorAll("[data-file-url]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const url = btn.getAttribute("data-file-url");
+        if (url) window.open(url, "_blank");
+      });
+    });
+  }
+
+  function hasMeaningfulAnswer(answer) {
+    if (!answer) return false;
+
+    const candidates = [
+      answer.answer_text,
+      answer.answer_value,
+      answer.value_text,
+      answer.response_text,
+    ];
+
+    for (const value of candidates) {
+      if (Array.isArray(value) && value.length) return true;
+      if (normalizeText(value)) return true;
+    }
+
+    if (Array.isArray(answer.answer_json) && answer.answer_json.length) return true;
+    if (answer.answer_json && typeof answer.answer_json === "object" && Object.keys(answer.answer_json).length) return true;
+
+    return false;
+  }
+
+  function getQuestionTypeLabel(type) {
+    const map = {
+      short_answer: "Short Answer",
+      paragraph: "Paragraph",
+      multiple_choice: "Multiple Choice",
+      checkboxes: "Checkboxes",
+      dropdown: "Dropdown",
+      date: "Date",
+      file_upload: "File Upload",
+      yes_no: "Yes / No",
+    };
+    return map[type] || titleCase(String(type || "").replaceAll("_", " "));
+  }
+
+  function readAnswerValue(answer, questionType) {
+    if (!answer) return null;
+
+    if (questionType === "checkboxes") {
+      const raw =
+        answer.answer_json ||
+        answer.answer_value ||
+        answer.answer_text ||
+        [];
+
+      if (Array.isArray(raw)) return raw.filter(Boolean);
+
+      if (typeof raw === "string") {
+        return raw
+          .split(",")
+          .map((v) => normalizeText(v))
+          .filter(Boolean);
+      }
+
+      return [];
+    }
+
+    if (questionType === "file_upload") {
+      const raw =
+        answer.answer_json ||
+        answer.answer_value ||
+        [];
+
+      if (Array.isArray(raw)) return raw;
+
+      if (raw && typeof raw === "object") return [raw];
+
+      if (typeof raw === "string" && raw.startsWith("http")) {
+        return [{ url: raw, name: "Uploaded file" }];
+      }
+
+      return [];
+    }
+
+    return (
+      answer.answer_text ??
+      answer.answer_value ??
+      answer.value_text ??
+      answer.response_text ??
+      null
+    );
+  }
+
+  function renderAnswerCard(question, answer) {
+    const type = String(question?.question_type || "");
+    const helper = normalizeText(question?.help_text || "");
+    const rawValue = readAnswerValue(answer, type);
+    let bodyHtml = "";
+
+    if (!hasMeaningfulAnswer(answer)) {
+      bodyHtml = `<div class="answer-value answer-empty">No answer submitted.</div>`;
+    } else if (type === "checkboxes") {
+      const items = Array.isArray(rawValue) ? rawValue : [];
+      bodyHtml = items.length
+        ? `<div class="choice-list">
+            ${items.map((item) => `<div class="choice-pill">${escapeHtml(item)}</div>`).join("")}
+          </div>`
+        : `<div class="answer-value answer-empty">No options selected.</div>`;
+    } else if (type === "multiple_choice" || type === "dropdown" || type === "yes_no") {
+      bodyHtml = `<div class="choice-list">
+        <div class="choice-pill">${escapeHtml(rawValue)}</div>
+      </div>`;
+    } else if (type === "file_upload") {
+      const files = Array.isArray(rawValue) ? rawValue : [];
+      bodyHtml = files.length
+        ? `<div class="file-list">
+            ${files
+              .map((file) => {
+                const url = file?.url || file?.publicUrl || file?.path || "";
+                const name = file?.name || file?.file_name || file?.filename || "Uploaded file";
+                return `
+                  <div class="file-row">
+                    <div class="file-name">${escapeHtml(name)}</div>
+                    <button class="file-action" type="button" data-file-url="${escapeHtml(url)}">Open</button>
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>`
+        : `<div class="answer-value answer-empty">No uploaded file found.</div>`;
+    } else {
+      bodyHtml = `<div class="answer-value">${escapeHtml(rawValue)}</div>`;
+    }
+
+    return `
+      <article class="answer-card">
+        <div class="answer-head">
+          <div class="answer-title-wrap">
+            <h4 class="answer-question">${escapeHtml(question?.question_text || "Untitled question")}</h4>
+            ${helper ? `<p class="answer-helper">${escapeHtml(helper)}</p>` : ""}
+          </div>
+          <div class="answer-type">${escapeHtml(getQuestionTypeLabel(type))}</div>
+        </div>
+        <div class="answer-body">
+          ${bodyHtml}
+        </div>
+      </article>
+    `;
+  }
+
+  function downloadCsv() {
+    const questionMap = buildQuestionMap();
+
+    const headers = [
+      "Response ID",
+      "Submitted At",
+      "Full Name",
+      "Matric/Staff ID",
+      "Programme",
+      "Level",
+      ...state.questions.map((q) => q.question_text || `Question ${q.sort_order || ""}`),
+    ];
+
+    const rows = state.responses.map((response) => {
+      const answerMap = new Map(
+        (Array.isArray(response.answers) ? response.answers : []).map((a) => [String(a.question_id), a])
+      );
+
+      const fixed = [
+        response.id || "",
+        getResponseSubmittedAt(response) || "",
+        getResponseDisplayName(response),
+        getResponseMatric(response),
+        getResponseProgramme(response),
+        getResponseLevel(response),
+      ];
+
+      const dynamic = state.questions.map((q) => {
+        const answer = answerMap.get(String(q.id));
+        const value = readAnswerValue(answer, q.question_type);
+
+        if (Array.isArray(value)) {
+          return value
+            .map((item) => {
+              if (typeof item === "object") return item?.name || item?.url || "";
+              return String(item ?? "");
+            })
+            .join(" | ");
+        }
+
+        if (value && typeof value === "object") {
+          return JSON.stringify(value);
+        }
+
+        return String(value ?? "");
+      });
+
+      return [...fixed, ...dynamic];
+    });
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`)
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const safeTitle = normalizeText(state.form?.title || "form-responses").replace(/[^\w\-]+/g, "_");
+    a.href = url;
+    a.download = `${safeTitle || "form_responses"}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function closeForm() {
+    if (!state.formId) return;
+    if (!confirm("Close this form now? Students will no longer be able to submit.")) return;
+
+    setButtonBusy(els.closeFormBtn, true, "Closing...");
+
+    try {
+      const payload = {
+        action: "close_form",
+        form_id: state.formId,
+        ...(state.actor?.hos_admin_id ? { hos_admin_id: state.actor.hos_admin_id } : {}),
+        ...(state.actor?.form_agent_id ? { form_agent_id: state.actor.form_agent_id } : {}),
+      };
+
+      await invokeFormsManager(payload);
+      alert("Form closed successfully.");
+      await boot();
+    } catch (error) {
+      console.error("Close form error:", error);
+      alert(error.message || "Unable to close form.");
+    } finally {
+      setButtonBusy(els.closeFormBtn, false);
+    }
+  }
+
+  function goToBuilder() {
+    if (!state.formId) return;
+    const params = new URLSearchParams();
+    params.set("screen", "forms");
+    params.set("form_id", state.formId);
+    if (state.actor?.hos_admin_id) params.set("hos_admin_id", state.actor.hos_admin_id);
+    if (state.actor?.form_agent_id) params.set("form_agent_id", state.actor.form_agent_id);
+    window.location.href = `hos.html?${params.toString()}`;
+  }
+
+  function goToPreview() {
+    if (!state.formId) return;
+    const params = new URLSearchParams();
+    params.set("form_id", state.formId);
+    if (state.actor?.hos_admin_id) params.set("hos_admin_id", state.actor.hos_admin_id);
+    if (state.actor?.form_agent_id) params.set("form_agent_id", state.actor.form_agent_id);
+    window.open(`form_preview.html?${params.toString()}`, "_blank");
+  }
+
+  function moveSelection(step) {
+    if (!state.filteredResponses.length) return;
+
+    const index = state.filteredResponses.findIndex(
+      (row) => String(row.id) === String(state.selectedResponseId)
+    );
+
+    const currentIndex = index >= 0 ? index : 0;
+    let nextIndex = currentIndex + step;
+
+    if (nextIndex < 0) nextIndex = 0;
+    if (nextIndex >= state.filteredResponses.length) nextIndex = state.filteredResponses.length - 1;
+
+    state.selectedResponseId = String(state.filteredResponses[nextIndex].id);
+    renderResponseList();
+  }
+
+  function bindEvents() {
+    els.responseSearchInput?.addEventListener("input", () => {
+      applyResponseFilters();
+      renderResponseList();
+    });
+
+    els.responseProgrammeFilter?.addEventListener("change", () => {
+      applyResponseFilters();
+      renderResponseList();
+    });
+
+    els.responseLevelFilter?.addEventListener("change", () => {
+      applyResponseFilters();
+      renderResponseList();
+    });
+
+    els.responseSortFilter?.addEventListener("change", () => {
+      applyResponseFilters();
+      renderResponseList();
+    });
+
+    els.responseIdentityFilter?.addEventListener("change", () => {
+      applyResponseFilters();
+      renderResponseList();
+    });
+
+    els.refreshResponsesBtn?.addEventListener("click", async () => {
+      setButtonBusy(els.refreshResponsesBtn, true, "Refreshing...");
+      try {
+        await boot();
+      } catch (error) {
+        console.error("Refresh error:", error);
+        alert(error.message || "Unable to refresh.");
+      } finally {
+        setButtonBusy(els.refreshResponsesBtn, false);
+      }
+    });
+
+    els.downloadResponsesBtn?.addEventListener("click", downloadCsv);
+    els.exportCsvBtn?.addEventListener("click", downloadCsv);
+    els.closeFormBtn?.addEventListener("click", closeForm);
+    els.openFormBtn?.addEventListener("click", goToBuilder);
+    els.previewFormBtn?.addEventListener("click", goToPreview);
+    els.prevResponseBtn?.addEventListener("click", () => moveSelection(-1));
+    els.nextResponseBtn?.addEventListener("click", () => moveSelection(1));
+    els.printResponseBtn?.addEventListener("click", () => window.print());
+  }
+
+  async function boot() {
+    try {
+      if (
+        SUPABASE_URL === "YOUR_SUPABASE_URL" ||
+        SUPABASE_ANON_KEY === "YOUR_SUPABASE_ANON_KEY"
+      ) {
+        throw new Error("Add your real Supabase URL and anon key inside form_response.html.");
+      }
+
+      await ensureSignedIn();
+      await loadFormDetails();
+      renderFormOverview();
+      renderSummary();
+      renderFilterOptions();
+      applyResponseFilters();
+      renderResponseList();
+    } catch (error) {
+      console.error("Form response page error:", error);
+
+      els.responseItemsList.innerHTML = `
+        <div class="empty-state" style="min-height:280px;">
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94A2 2 0 0 0 22.18 18L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">Unable to load responses</h3>
+            <p class="empty-state-text">${escapeHtml(error.message || "Something went wrong.")}</p>
+          </div>
+        </div>
+      `;
+
+      els.responseAnswersWrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94A2 2 0 0 0 22.18 18L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">Page not ready</h3>
+            <p class="empty-state-text">${escapeHtml(error.message || "Please try again.")}</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  bindEvents();
+  boot();
+</script>
 </body>
 </html>
