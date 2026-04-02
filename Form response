@@ -1244,14 +1244,15 @@
 const SUPABASE_URL = "YOUR_SUPABASE_URL";
 const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-const FUNCTION_NAME = "forms-manager";
+const FUNCTION_NAME = "form-response-manager";
+const FORMS_MANAGER_FUNCTION = "forms-manager";
 
 let supabaseClient = null;
 let currentForm = null;
 let currentQuestions = [];
 let currentResponses = [];
-let currentAnswers = [];
-let currentAudienceStudents = [];
+let currentQuestionSummaries = [];
+let currentSummary = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   initFormResponsePage().catch((err) => {
@@ -1449,8 +1450,7 @@ function wireTopButtons() {
         }
 
         currentForm.status = "closed";
-        setText("summaryStatusChip", "Closed");
-        setText("infoIdentityMode", formatIdentityMode(currentForm.identity_mode));
+        renderSummary();
         alert("Form closed successfully.");
       } catch (err) {
         console.error("close form error:", err);
@@ -1463,123 +1463,66 @@ function wireTopButtons() {
 }
 
 async function loadSummaryPage(formId) {
-  const [form, questions, responses] = await Promise.all([
-    fetchForm(formId),
-    fetchQuestions(formId),
-    fetchResponses(formId)
-  ]);
+  const result = await invokeFormResponseManager({
+    action: "get_form_response_bundle",
+    form_id: formId,
+    ...getActorPayloadFromSession()
+  });
 
-  currentForm = form;
-  currentQuestions = questions;
-  currentResponses = responses;
+  if (!result?.ok) {
+    throw new Error(result?.error || "Failed to load form response bundle.");
+  }
 
-  const responseIds = responses.map((row) => row.id).filter(Boolean);
-  currentAnswers = responseIds.length ? await fetchAnswers(responseIds) : [];
-
-  currentAudienceStudents = await fetchAudienceStudentsForForm(form);
+  currentForm = result.form || null;
+  currentQuestions = Array.isArray(result.questions) ? result.questions : [];
+  currentResponses = Array.isArray(result.individual_responses) ? result.individual_responses : [];
+  currentQuestionSummaries = Array.isArray(result.question_summaries) ? result.question_summaries : [];
+  currentSummary = result.summary || null;
 
   renderSummary();
 }
 
-async function fetchForm(formId) {
-  const { data, error } = await supabaseClient
-    .from("forms")
-    .select("*")
-    .eq("id", formId)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Form not found.");
-
-  return data;
-}
-
-async function fetchQuestions(formId) {
-  const { data, error } = await supabaseClient
-    .from("form_questions")
-    .select("*")
-    .eq("form_id", formId)
-    .order("sort_order", { ascending: true });
-
-  if (error) throw new Error(error.message);
-  return data || [];
-}
-
-async function fetchResponses(formId) {
-  const { data, error } = await supabaseClient
-    .from("form_responses")
-    .select("*")
-    .eq("form_id", formId)
-    .order("submitted_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-  return data || [];
-}
-
-async function fetchAnswers(responseIds) {
-  const { data, error } = await supabaseClient
-    .from("form_answers")
-    .select("*")
-    .in("response_id", responseIds);
-
-  if (error) throw new Error(error.message);
-  return data || [];
-}
-
-async function fetchAudienceStudentsForForm(form) {
-  const { data, error } = await supabaseClient
-    .from("student_accounts")
-    .select("user_id, full_name, school_name, programme, level");
-
-  if (error) throw new Error(error.message);
-
-  const allStudents = (data || []).filter((row) => {
-    return normalizeUpper(row.school_name) === normalizeUpper(form.school_name) && !!row.user_id;
-  });
-
-  if (cleanText(form.audience_mode || "all_students") !== "programme_filter") {
-    return allStudents;
-  }
-
-  const programmeTargets = normalizeProgrammeTargets(form.programme_targets);
-
-  return allStudents.filter((row) => {
-    const studentProgramme = normalizeUpper(row.programme);
-    const studentLevel = normalizeLevelValue(row.level);
-
-    return programmeTargets.some((target) => {
-      if (target.programme_name !== studentProgramme) return false;
-      if (!Array.isArray(target.levels) || !target.levels.length) return false;
-      return target.levels.includes(studentLevel);
-    });
-  });
-}
-
 function renderSummary() {
-  if (!currentForm) return;
+  if (!currentForm || !currentSummary) return;
 
-  const totalResponses = currentResponses.length;
-  const expectedStudents = currentAudienceStudents.length;
-  const responseRate = expectedStudents > 0 ? Math.round((totalResponses / expectedStudents) * 100) : 0;
-  const latestSubmission = getLatestSubmission(currentResponses);
-  const completionRate = getCompletionRate(currentQuestions, currentResponses, currentAnswers);
+  const totalResponses = Number(currentSummary.total_responses || 0);
+  const expectedStudents = Number(currentSummary.expected_students || 0);
+  const responseRate = Number(currentSummary.response_rate || 0);
+  const latestSubmission = currentSummary.latest_submission || null;
 
-  const responseIdentity = getIdentityBreakdown(currentForm, currentResponses);
-  const programmeBreakdown = getProgrammeBreakdown(currentResponses, currentAudienceStudents);
-  const levelBreakdown = getLevelBreakdown(currentResponses, currentAudienceStudents);
+  const identifiedRow = Array.isArray(currentSummary.identity_breakdown)
+    ? currentSummary.identity_breakdown.find((row) => cleanText(row.label).toLowerCase() === "identified")
+    : null;
+
+  const anonymousRow = Array.isArray(currentSummary.identity_breakdown)
+    ? currentSummary.identity_breakdown.find((row) => cleanText(row.label).toLowerCase() === "anonymous")
+    : null;
+
+  const identifiedCount = Number(identifiedRow?.count || 0);
+  const anonymousCount = Number(anonymousRow?.count || 0);
+
+  const completionRate = getCompletionRateFromSummary(currentQuestionSummaries, totalResponses);
+  const programmeBreakdown = Array.isArray(currentSummary.programme_breakdown)
+    ? currentSummary.programme_breakdown.map((row) => ({
+        name: row.label,
+        count: Number(row.count || 0)
+      }))
+    : [];
+
+  const levelBreakdown = Array.isArray(currentSummary.level_breakdown)
+    ? currentSummary.level_breakdown.map((row) => ({
+        name: row.label,
+        count: Number(row.count || 0)
+      }))
+    : [];
 
   setText("summarySchoolName", currentForm.school_name || "—");
   setText("summaryFormTitle", currentForm.title || "Untitled Form");
   setText("summaryFormAudience", buildAudienceText(currentForm));
-  setText(
-    "summaryFormCreator",
-    currentForm.created_by_admin_name
-      ? `By ${currentForm.created_by_admin_name}`
-      : "Created by admin"
-  );
+  setText("summaryFormCreator", "Form response summary");
 
-  setText("summaryStatusChip", formatStatus(currentForm.status));
-  setText("summaryIdentityChip", formatIdentityMode(currentForm.identity_mode));
+  setChipText("summaryStatusChip", formatStatus(currentForm.status));
+  setChipText("summaryIdentityChip", formatIdentityMode(currentForm.identity_mode));
 
   setText("statTotalResponses", String(totalResponses));
   setText("statResponseRate", `${responseRate}%`);
@@ -1590,9 +1533,9 @@ function renderSummary() {
   renderProgrammeLegend(programmeBreakdown);
   renderLevelBreakdown(levelBreakdown);
 
-  setText("identityBreakdownPercent", `${responseIdentity.identifiedPercent}%`);
-  setText("identityIdentifiedCount", String(responseIdentity.identified));
-  setText("identityAnonymousCount", String(responseIdentity.anonymous));
+  setText("identityBreakdownPercent", `${totalResponses ? Math.round((identifiedCount / totalResponses) * 100) : 0}%`);
+  setText("identityIdentifiedCount", String(identifiedCount));
+  setText("identityAnonymousCount", String(anonymousCount));
 
   setText("infoQuestionCount", String(currentQuestions.length));
   setText("infoOpenDate", formatDate(currentForm.open_at));
@@ -1605,145 +1548,22 @@ function renderSummary() {
   setText("questionCountBadge", `${currentQuestions.length} Question${currentQuestions.length === 1 ? "" : "s"}`);
 }
 
-function getLatestSubmission(responses) {
-  return responses
-    .map((row) => row.submitted_at)
-    .filter(Boolean)
-    .sort((a, b) => new Date(b) - new Date(a))[0] || null;
-}
+function getCompletionRateFromSummary(questionSummaries, totalResponses) {
+  if (!totalResponses) return 0;
 
-function getCompletionRate(questions, responses, answers) {
-  const requiredQuestionIds = questions
-    .filter((q) => !!q.is_required)
-    .map((q) => q.id);
+  const requiredQuestions = currentQuestions.filter((q) => !!q.is_required);
+  if (!requiredQuestions.length) return 100;
 
-  if (!responses.length) return 0;
-  if (!requiredQuestionIds.length) return 100;
+  const requiredIds = new Set(requiredQuestions.map((q) => String(q.id)));
+  const requiredSummaries = (questionSummaries || []).filter((q) => requiredIds.has(String(q.question_id)));
 
-  const answersByResponse = new Map();
+  if (!requiredSummaries.length) return 0;
 
-  for (const ans of answers) {
-    const responseId = ans.response_id;
-    if (!responseId) continue;
-    if (!answersByResponse.has(responseId)) answersByResponse.set(responseId, []);
-    answersByResponse.get(responseId).push(ans);
-  }
+  const minimumAnswered = Math.min(
+    ...requiredSummaries.map((q) => Number(q.answered_count || 0))
+  );
 
-  let completedCount = 0;
-
-  for (const response of responses) {
-    const rowAnswers = answersByResponse.get(response.id) || [];
-
-    const allRequiredAnswered = requiredQuestionIds.every((questionId) => {
-      const answer = rowAnswers.find((a) => a.question_id === questionId);
-      return hasUsefulAnswer(answer);
-    });
-
-    if (allRequiredAnswered) completedCount += 1;
-  }
-
-  return Math.round((completedCount / responses.length) * 100);
-}
-
-function hasUsefulAnswer(answer) {
-  if (!answer) return false;
-
-  const valuesToCheck = [
-    answer.answer_text,
-    answer.answer_value,
-    answer.value,
-    answer.option_text,
-    answer.selected_option,
-    answer.file_url
-  ];
-
-  if (valuesToCheck.some((v) => cleanText(v))) return true;
-
-  if (Array.isArray(answer.selected_options_json) && answer.selected_options_json.length) return true;
-  if (Array.isArray(answer.file_urls) && answer.file_urls.length) return true;
-
-  return false;
-}
-
-function getIdentityBreakdown(form, responses) {
-  if (!responses.length) {
-    return {
-      identified: 0,
-      anonymous: 0,
-      identifiedPercent: 0
-    };
-  }
-
-  let identified = 0;
-  let anonymous = 0;
-
-  if (cleanText(form.identity_mode) === "anonymous") {
-    anonymous = responses.length;
-  } else {
-    responses.forEach((row) => {
-      if (row.user_id) identified += 1;
-      else anonymous += 1;
-    });
-  }
-
-  const identifiedPercent = responses.length
-    ? Math.round((identified / responses.length) * 100)
-    : 0;
-
-  return { identified, anonymous, identifiedPercent };
-}
-
-function getProgrammeBreakdown(responses, students) {
-  const studentMap = new Map();
-  students.forEach((row) => {
-    if (row.user_id) studentMap.set(row.user_id, row);
-  });
-
-  const counts = new Map();
-
-  responses.forEach((row) => {
-    const inferredProgramme =
-      cleanText(row.programme) ||
-      cleanText(row.responder_programme) ||
-      cleanText(row.respondent_programme) ||
-      cleanText(studentMap.get(row.user_id)?.programme) ||
-      "Unknown";
-
-    counts.set(inferredProgramme, (counts.get(inferredProgramme) || 0) + 1);
-  });
-
-  return [...counts.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
-}
-
-function getLevelBreakdown(responses, students) {
-  const studentMap = new Map();
-  students.forEach((row) => {
-    if (row.user_id) studentMap.set(row.user_id, row);
-  });
-
-  const counts = new Map();
-
-  responses.forEach((row) => {
-    const inferredLevelRaw =
-      cleanText(row.level) ||
-      cleanText(row.responder_level) ||
-      cleanText(row.respondent_level) ||
-      cleanText(studentMap.get(row.user_id)?.level) ||
-      "Unknown";
-
-    const inferredLevel = inferredLevelRaw === "Unknown"
-      ? "Unknown"
-      : normalizeLevelValue(inferredLevelRaw);
-
-    counts.set(inferredLevel, (counts.get(inferredLevel) || 0) + 1);
-  });
-
-  return [...counts.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
+  return Math.round((minimumAnswered / totalResponses) * 100);
 }
 
 function renderProgrammeLegend(items) {
@@ -1879,6 +1699,15 @@ function setText(id, value) {
   if (el) el.textContent = value ?? "";
 }
 
+function setChipText(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const span = el.querySelector("span");
+  if (span) span.textContent = value ?? "";
+  else el.textContent = value ?? "";
+}
+
 function normalizeUpper(value) {
   return cleanText(value).replace(/\s+/g, " ").toUpperCase();
 }
@@ -1961,6 +1790,14 @@ function getActorPayloadFromSession() {
     return { form_agent_id: session.id };
   }
 
+  if (session?.account?.id && cleanText(session?.role || session?.account?.role).toLowerCase() === "hos") {
+    return { hos_admin_id: session.account.id };
+  }
+
+  if (session?.account?.id && cleanText(session?.role || session?.account?.role).toLowerCase() === "form_agent") {
+    return { form_agent_id: session.account.id };
+  }
+
   throw new Error("Admin session not found. Please sign in again.");
 }
 
@@ -1988,8 +1825,34 @@ function getAnyStoredSession() {
   return null;
 }
 
-async function invokeFormsManager(payload) {
+async function invokeFormResponseManager(payload) {
   const url = `${SUPABASE_URL}/functions/v1/${FUNCTION_NAME}`;
+
+  console.log("FORM RESPONSE BODY SENT:", JSON.stringify(payload, null, 2));
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  console.log("FORM RESPONSE RAW RESULT:", result);
+
+  if (!response.ok) {
+    throw new Error(result?.error || "Edge Function returned a non-2xx status code");
+  }
+
+  return result;
+}
+
+async function invokeFormsManager(payload) {
+  const url = `${SUPABASE_URL}/functions/v1/${FORMS_MANAGER_FUNCTION}`;
 
   const response = await fetch(url, {
     method: "POST",
