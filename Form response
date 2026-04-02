@@ -4,116 +4,103 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
-  <title>Colspot • Form Responses</title>
+  <title>Colspot • Form Response Summary</title>
 
   <style>
     :root{
-      --bg:#eef4ff;
+      --bg:#eef3ff;
       --panel:#ffffff;
-      --panel-2:#f8fbff;
-      --line:#e5edf8;
-      --line-strong:#d9e6f7;
-      --text:#0f172a;
-      --muted:#64748b;
-      --muted-2:#94a3b8;
-      --navy:#0f2350;
-      --navy-2:#122b63;
-      --blue:#2563eb;
-      --blue-2:#3b82f6;
-      --blue-3:#eaf2ff;
-      --green:#16a34a;
-      --green-soft:#eafaf0;
-      --amber:#d97706;
-      --amber-soft:#fff7ed;
-      --red:#dc2626;
-      --red-soft:#fef2f2;
-      --shadow:0 20px 50px rgba(15, 23, 42, 0.10);
-      --shadow-soft:0 10px 30px rgba(15, 23, 42, 0.08);
+      --panel-2:#f7f9ff;
+      --line:#dfe7fb;
+      --line-soft:#e9efff;
+      --text:#16213d;
+      --muted:#6d7895;
+      --blue:#2962ff;
+      --blue-2:#4d7dff;
+      --blue-3:#e9f0ff;
+      --nav:#0d1c4c;
+      --nav-2:#132863;
+      --shadow:0 18px 45px rgba(29, 53, 120, .12);
       --radius-xl:28px;
       --radius-lg:22px;
       --radius-md:16px;
       --radius-sm:12px;
-      --sidebar:320px;
-      --topbar-h:86px;
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{ box-sizing:border-box; }
 
-    html,
-    body{
+    html,body{
       margin:0;
       padding:0;
-      background:linear-gradient(180deg,#f4f8ff 0%, #edf4ff 100%);
+      background:
+        radial-gradient(circle at top left, rgba(92,126,255,.20), transparent 28%),
+        linear-gradient(180deg, #edf2ff 0%, #eef3ff 100%);
       color:var(--text);
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height:100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      padding:28px;
     }
 
     button,
     input,
-    textarea,
     select{
       font:inherit;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    .app-shell{
-      min-height:100vh;
+    .page-shell{
+      width:min(1440px, 100%);
+      margin:0 auto;
       display:grid;
-      grid-template-columns:var(--sidebar) 1fr;
-      background:var(--bg);
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap:22px;
+      align-items:start;
     }
 
     .sidebar{
-      position:sticky;
-      top:0;
-      height:100vh;
-      padding:16px;
-      background:linear-gradient(180deg, #0d1e47 0%, #10285d 52%, #0b1c42 100%);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)),
+        linear-gradient(180deg, var(--nav) 0%, var(--nav-2) 100%);
       color:#fff;
-      overflow:auto;
-      border-right:1px solid rgba(255,255,255,.08);
-    }
-
-    .sidebar-card{
-      min-height:calc(100vh - 32px);
+      border-radius:30px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      min-height:calc(100vh - 56px);
       display:flex;
       flex-direction:column;
-      border-radius:30px;
-      background:linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
-      overflow:hidden;
+      position:sticky;
+      top:28px;
     }
 
-    .brand-block{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:18px 18px 16px;
+    .sidebar-top{
+      padding:24px 20px 20px;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
     .brand-badge{
-      width:48px;
-      height:48px;
-      border-radius:16px;
+      width:42px;
+      height:42px;
+      border-radius:14px;
       display:grid;
       place-items:center;
-      background:rgba(255,255,255,.08);
-      flex-shrink:0;
+      background:rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+      flex:0 0 auto;
     }
 
     .brand-badge svg{
-      width:24px;
-      height:24px;
+      width:22px;
+      height:22px;
       color:#fff;
     }
 
@@ -121,2829 +108,1137 @@
       min-width:0;
     }
 
-    .brand-copy .small{
-      display:block;
-      font-size:11px;
-      font-weight:800;
-      letter-spacing:.12em;
-      color:rgba(255,255,255,.72);
-      text-transform:uppercase;
-      margin-bottom:2px;
-    }
-
-    .brand-copy .big{
-      display:block;
-      font-size:17px;
-      line-height:1.15;
+    .brand-copy h1{
+      margin:0;
+      font-size:18px;
+      line-height:1;
+      letter-spacing:.02em;
       font-weight:900;
-      color:#fff;
     }
 
-    .brand-copy .sub{
-      display:block;
-      font-size:12px;
+    .brand-copy p{
+      margin:4px 0 0;
       color:rgba(255,255,255,.72);
-      margin-top:4px;
+      font-size:12px;
+      font-weight:600;
     }
 
-    .sidebar-nav{
-      padding:12px;
+    .side-nav{
+      padding:18px 14px;
       display:flex;
       flex-direction:column;
       gap:8px;
     }
 
-    .nav-link{
+    .side-link{
+      width:100%;
+      border:0;
+      background:transparent;
+      color:rgba(255,255,255,.84);
       display:flex;
       align-items:center;
       gap:12px;
-      min-height:56px;
-      padding:0 16px;
-      border-radius:18px;
-      color:rgba(255,255,255,.90);
-      transition:background .18s ease, transform .18s ease, color .18s ease;
+      text-align:left;
+      padding:14px 14px;
+      border-radius:16px;
+      cursor:default;
+      font-weight:700;
+      transition:.18s ease;
     }
 
-    .nav-link:hover{
-      background:rgba(255,255,255,.06);
-      transform:translateY(-1px);
-    }
-
-    .nav-link.active{
-      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
-      box-shadow:0 16px 28px rgba(37,99,235,.28);
-      color:#fff;
-    }
-
-    .nav-link svg{
+    .side-link svg{
       width:20px;
       height:20px;
-      flex-shrink:0;
+      flex:0 0 auto;
     }
 
-    .nav-copy{
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      gap:2px;
+    .side-link.active{
+      background:linear-gradient(90deg, rgba(56,104,255,.95), rgba(73,145,255,.98));
+      color:#fff;
+      box-shadow:0 10px 25px rgba(41,98,255,.28);
     }
 
-    .nav-title{
-      font-size:15px;
-      font-weight:800;
-      line-height:1.15;
+    .side-link.placeholder{
+      opacity:.88;
     }
 
-    .nav-sub{
-      font-size:12px;
-      color:rgba(255,255,255,.62);
-    }
-
-    .nav-link.active .nav-sub{
-      color:rgba(255,255,255,.82);
-    }
-
-    .sidebar-foot{
+    .sidebar-bottom{
       margin-top:auto;
-      padding:14px 14px 16px;
+      padding:18px 14px 16px;
       border-top:1px solid rgba(255,255,255,.08);
     }
 
-    .school-badge{
-      border-radius:22px;
-      padding:16px;
-      background:rgba(255,255,255,.07);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    .school-card{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:14px 14px 16px;
     }
 
-    .school-badge .label{
+    .school-card span{
       display:block;
+      color:rgba(255,255,255,.64);
       font-size:11px;
-      letter-spacing:.1em;
+      letter-spacing:.08em;
       font-weight:800;
-      color:rgba(255,255,255,.62);
       text-transform:uppercase;
-      margin-bottom:5px;
+      margin-bottom:6px;
     }
 
-    .school-badge .value{
+    .school-card strong{
       display:block;
-      font-size:17px;
-      font-weight:900;
+      font-size:18px;
+      line-height:1.25;
       color:#fff;
-      line-height:1.2;
+      font-weight:900;
       word-break:break-word;
     }
 
     .main{
       min-width:0;
-      padding:18px;
-    }
-
-    .main-card{
-      min-height:calc(100vh - 36px);
-      background:rgba(255,255,255,.55);
-      border:1px solid rgba(255,255,255,.6);
-      border-radius:32px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-      overflow:hidden;
       display:flex;
       flex-direction:column;
+      gap:18px;
     }
 
     .topbar{
-      min-height:var(--topbar-h);
+      background:rgba(255,255,255,.74);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(223,231,251,.95);
+      border-radius:24px;
+      padding:16px 18px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:16px;
-      padding:18px 22px;
-      border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.72);
-      backdrop-filter:blur(8px);
+      box-shadow:var(--shadow);
     }
 
     .topbar-left{
-      min-width:0;
       display:flex;
       align-items:center;
       gap:14px;
-    }
-
-    .back-btn{
-      width:50px;
-      height:50px;
-      border:none;
-      border-radius:16px;
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      transition:transform .18s ease, box-shadow .18s ease;
-      flex-shrink:0;
-    }
-
-    .back-btn:hover{
-      transform:translateY(-1px);
-    }
-
-    .back-btn svg{
-      width:22px;
-      height:22px;
-      color:#0f172a;
-    }
-
-    .page-head{
       min-width:0;
     }
 
-    .page-title{
-      font-size:28px;
-      font-weight:900;
-      line-height:1.08;
+    .back-btn{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      color:var(--text);
+      flex:0 0 auto;
+    }
+
+    .back-btn svg{
+      width:18px;
+      height:18px;
+    }
+
+    .topbar-title{
+      min-width:0;
+    }
+
+    .topbar-title h2{
       margin:0;
-      color:#0f172a;
+      font-size:19px;
+      line-height:1.1;
+      font-weight:900;
+      color:var(--text);
     }
 
-    .page-sub{
-      margin:6px 0 0;
-      font-size:14px;
+    .topbar-title p{
+      margin:5px 0 0;
+      font-size:13px;
       color:var(--muted);
-      line-height:1.45;
+      font-weight:600;
     }
 
-    .topbar-right{
+    .topbar-actions{
       display:flex;
       align-items:center;
-      gap:12px;
-      flex-shrink:0;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
-    .top-chip{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:999px;
+    .action-btn{
+      height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-weight:800;
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      gap:8px;
-      background:#fff;
-      border:1px solid var(--line);
-      color:#0f172a;
-      font-size:13px;
-      font-weight:800;
-      white-space:nowrap;
+      gap:10px;
     }
 
-    .top-chip svg{
+    .action-btn svg{
+      width:18px;
+      height:18px;
+    }
+
+    .action-btn.danger{
+      color:#c24b4b;
+      border-color:#f1cccc;
+      background:#fff;
+    }
+
+    .content-card{
+      background:rgba(255,255,255,.80);
+      border:1px solid rgba(223,231,251,.96);
+      border-radius:30px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      padding:22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.90), rgba(246,249,255,.98));
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .hero-copy{
+      min-width:0;
+    }
+
+    .hero-copy h3{
+      margin:0;
+      font-size:18px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .hero-copy h1{
+      margin:8px 0 0;
+      font-size:40px;
+      line-height:1.05;
+      letter-spacing:-.02em;
+      font-weight:900;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .hero-copy .sub{
+      margin:10px 0 0;
+      font-size:18px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .hero-copy .byline{
+      margin:8px 0 0;
+      font-size:16px;
+      color:#7180a7;
+      font-weight:700;
+    }
+
+    .hero-meta{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .meta-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#41506f;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .meta-chip svg{
       width:16px;
       height:16px;
     }
 
-    .content{
-      min-width:0;
-      flex:1;
+    .stats-grid{
       display:grid;
-      grid-template-columns:280px minmax(0, 1fr);
-      gap:18px;
-      padding:18px;
-    }
-
-    .left-col,
-    .right-col{
-      min-width:0;
-    }
-
-    .stack{
-      display:flex;
-      flex-direction:column;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
       gap:16px;
-    }
-
-    .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:24px;
-      box-shadow:var(--shadow-soft);
-      overflow:hidden;
-    }
-
-    .card-head{
-      padding:18px 18px 14px;
-      border-bottom:1px solid var(--line);
-    }
-
-    .card-title{
-      font-size:18px;
-      font-weight:900;
-      line-height:1.15;
-      margin:0;
-      color:#0f172a;
-    }
-
-    .card-sub{
-      margin:6px 0 0;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    .card-body{
-      padding:18px;
-    }
-
-    .overview-list{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-
-    .overview-item{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      padding:12px 0;
-      border-bottom:1px dashed var(--line);
-    }
-
-    .overview-item:last-child{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .overview-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-    }
-
-    .overview-value{
-      font-size:14px;
-      color:#0f172a;
-      font-weight:800;
-      text-align:right;
-      line-height:1.4;
-      max-width:58%;
-      word-break:break-word;
-    }
-
-    .status-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      min-height:34px;
-      padding:0 12px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:900;
-      white-space:nowrap;
-    }
-
-    .status-pill svg{
-      width:14px;
-      height:14px;
-    }
-
-    .status-pill.published{
-      background:var(--green-soft);
-      color:var(--green);
-    }
-
-    .status-pill.draft{
-      background:var(--amber-soft);
-      color:var(--amber);
-    }
-
-    .status-pill.closed{
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
-
-    .status-pill.archived{
-      background:#f1f5f9;
-      color:#475569;
-    }
-
-    .side-nav{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .side-link{
-      min-height:52px;
-      padding:0 16px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#fff;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      color:#0f172a;
-      font-weight:800;
-      cursor:pointer;
-      transition:transform .18s ease, border-color .18s ease, background .18s ease;
-    }
-
-    .side-link:hover{
-      transform:translateY(-1px);
-      border-color:#cfe0fb;
-      background:#f9fbff;
-    }
-
-    .side-link.active{
-      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
-      color:#fff;
-      border-color:transparent;
-      box-shadow:0 14px 28px rgba(37,99,235,.24);
-    }
-
-    .side-link svg{
-      width:18px;
-      height:18px;
-      flex-shrink:0;
-    }
-
-    .summary-grid{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:14px;
     }
 
     .stat-card{
+      background:#fff;
       border:1px solid var(--line);
-      background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
-      border-radius:20px;
-      padding:16px;
-      min-height:120px;
+      border-radius:22px;
+      padding:18px;
+      min-height:154px;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-    }
-
-    .stat-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .stat-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-      line-height:1.35;
+      box-shadow:0 10px 25px rgba(55, 84, 170, .05);
     }
 
     .stat-icon{
-      width:42px;
-      height:42px;
+      width:44px;
+      height:44px;
       border-radius:14px;
-      display:grid;
-      place-items:center;
       background:var(--blue-3);
       color:var(--blue);
-      flex-shrink:0;
+      display:grid;
+      place-items:center;
     }
 
     .stat-icon svg{
-      width:20px;
-      height:20px;
+      width:22px;
+      height:22px;
     }
 
     .stat-value{
-      font-size:28px;
-      font-weight:900;
+      font-size:44px;
       line-height:1;
-      color:#0f172a;
+      font-weight:900;
+      letter-spacing:-.03em;
+      color:var(--text);
       margin-top:18px;
-    }
-
-    .stat-foot{
-      margin-top:8px;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    .section-block{
-      border:1px solid var(--line);
-      border-radius:24px;
-      background:#fff;
-      overflow:hidden;
-    }
-
-    .section-head{
-      padding:18px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-    }
-
-    .section-title{
-      font-size:20px;
-      font-weight:900;
-      line-height:1.15;
-      margin:0;
-    }
-
-    .section-sub{
-      margin:6px 0 0;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    .head-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      flex-shrink:0;
-    }
-
-    .btn{
-      min-height:44px;
-      border:none;
-      border-radius:14px;
-      padding:0 16px;
-      font-size:14px;
-      font-weight:900;
-      cursor:pointer;
-      transition:transform .18s ease, opacity .18s ease, box-shadow .18s ease;
-    }
-
-    .btn:hover{
-      transform:translateY(-1px);
-    }
-
-    .btn-primary{
-      background:linear-gradient(135deg,#2563eb 0%, #3b82f6 100%);
-      color:#fff;
-      box-shadow:0 12px 24px rgba(37,99,235,.22);
-    }
-
-    .btn-soft{
-      background:#f8fbff;
-      color:#0f172a;
-      border:1px solid var(--line);
-    }
-
-    .btn-danger{
-      background:#fff5f5;
-      color:#b91c1c;
-      border:1px solid #fecaca;
-    }
-
-    .btn.is-disabled{
-      opacity:.48;
-      cursor:not-allowed;
-      transform:none;
-      box-shadow:none;
-    }
-
-    .filters-wrap{
-      padding:18px;
-      display:grid;
-      grid-template-columns:1.3fr repeat(4, minmax(0,1fr));
-      gap:12px;
-      border-bottom:1px solid var(--line);
-      background:#fbfdff;
-    }
-
-    .field{
-      min-width:0;
-    }
-
-    .field-label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-      margin:0 0 8px;
-    }
-
-    .field-input,
-    .field-select{
-      width:100%;
-      min-height:48px;
-      border:1px solid var(--line-strong);
-      background:#fff;
-      border-radius:14px;
-      padding:0 14px;
-      outline:none;
-      color:#0f172a;
-      transition:border-color .18s ease, box-shadow .18s ease;
-    }
-
-    .field-input:focus,
-    .field-select:focus{
-      border-color:#3b82f6;
-      box-shadow:0 0 0 4px rgba(59,130,246,.10);
-    }
-
-    .responses-layout{
-      display:grid;
-      grid-template-columns:360px minmax(0,1fr);
-      min-height:760px;
-    }
-
-    .responses-list{
-      border-right:1px solid var(--line);
-      background:#fcfdff;
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
-
-    .responses-list-head{
-      padding:18px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .responses-list-title{
-      font-size:17px;
-      font-weight:900;
-      color:#0f172a;
-      margin:0;
-    }
-
-    .responses-list-sub{
-      margin:5px 0 0;
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .responses-count{
-      min-width:42px;
-      height:42px;
-      border-radius:14px;
-      background:var(--blue-3);
-      color:var(--blue);
-      font-size:14px;
-      font-weight:900;
-      display:grid;
-      place-items:center;
-      flex-shrink:0;
-    }
-
-    .response-items{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
-
-    .response-item{
-      padding:16px 18px;
-      border-bottom:1px solid var(--line);
-      cursor:pointer;
-      transition:background .18s ease, border-color .18s ease;
-    }
-
-    .response-item:hover{
-      background:#f8fbff;
-    }
-
-    .response-item.active{
-      background:#edf5ff;
-      box-shadow:inset 3px 0 0 #2563eb;
-    }
-
-    .response-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:8px;
-    }
-
-    .response-name{
-      font-size:15px;
-      font-weight:900;
-      color:#0f172a;
-      line-height:1.25;
-      margin:0;
       word-break:break-word;
     }
 
-    .response-tag{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:26px;
-      padding:0 10px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#4338ca;
-      font-size:11px;
-      font-weight:900;
-      white-space:nowrap;
-      flex-shrink:0;
+    .stat-value.smaller{
+      font-size:34px;
+      line-height:1.05;
     }
 
-    .response-meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px 10px;
-      margin-bottom:8px;
-    }
-
-    .meta-chip{
-      min-height:26px;
-      padding:0 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:#475569;
-      font-size:11px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-    }
-
-    .response-time{
-      font-size:12px;
+    .stat-label{
+      margin-top:10px;
       color:var(--muted);
-      line-height:1.45;
+      font-size:15px;
+      font-weight:800;
     }
 
-    .response-detail{
-      min-width:0;
-      display:flex;
-      flex-direction:column;
+    .row-grid{
+      display:grid;
+      grid-template-columns:1.35fr 1fr 1fr;
+      gap:18px;
+    }
+
+    .box-card{
       background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:20px;
+      box-shadow:0 10px 25px rgba(55, 84, 170, .05);
+      min-width:0;
     }
 
-    .response-detail-head{
-      padding:22px 22px 18px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-
-    .response-detail-title{
-      font-size:22px;
-      font-weight:900;
-      line-height:1.12;
+    .box-title{
       margin:0;
-      color:#0f172a;
+      font-size:28px;
+      line-height:1.05;
+      font-weight:900;
+      color:var(--text);
     }
 
-    .response-detail-sub{
+    .box-sub{
       margin:8px 0 0;
       color:var(--muted);
       font-size:14px;
-      line-height:1.5;
+      font-weight:700;
     }
 
-    .response-detail-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .respondent-summary{
-      padding:18px 22px;
-      border-bottom:1px solid var(--line);
+    .donut-wrap{
+      margin-top:22px;
       display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:12px;
-      background:#fbfdff;
+      grid-template-columns:220px minmax(0, 1fr);
+      gap:20px;
+      align-items:center;
     }
 
-    .respondent-box{
-      border:1px solid var(--line);
+    .donut{
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      position:relative;
+      background:
+        conic-gradient(
+          #6f95ff 0 21%,
+          #9dd7c4 21% 39%,
+          #f0b07b 39% 51%,
+          #e37784 51% 61%,
+          #7eacf0 61% 69%,
+          #b3c8f6 69% 100%
+        );
+      display:grid;
+      place-items:center;
+      margin:0 auto;
+    }
+
+    .donut::before{
+      content:"";
+      width:124px;
+      height:124px;
+      border-radius:50%;
       background:#fff;
-      border-radius:16px;
-      padding:14px;
+      box-shadow:inset 0 0 0 1px var(--line-soft);
+      position:absolute;
     }
 
-    .respondent-label{
-      font-size:11px;
+    .donut-center{
+      position:relative;
+      z-index:1;
+      text-align:center;
+      padding:0 16px;
+    }
+
+    .donut-center strong{
+      display:block;
+      font-size:42px;
+      line-height:1;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .donut-center span{
+      display:block;
+      margin-top:8px;
+      font-size:13px;
       color:var(--muted);
       font-weight:800;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-      margin-bottom:7px;
     }
 
-    .respondent-value{
-      font-size:14px;
-      color:#0f172a;
-      font-weight:900;
-      line-height:1.35;
-      word-break:break-word;
-    }
-
-    .answers-wrap{
-      padding:22px;
+    .legend{
       display:flex;
       flex-direction:column;
       gap:14px;
-    }
-
-    .answer-card{
-      border:1px solid var(--line);
-      border-radius:20px;
-      background:#fff;
-      overflow:hidden;
-    }
-
-    .answer-head{
-      padding:16px 18px 14px;
-      border-bottom:1px solid var(--line);
-      background:#fbfdff;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-    }
-
-    .answer-title-wrap{
       min-width:0;
     }
 
-    .answer-question{
-      margin:0;
+    .legend-row{
+      display:grid;
+      grid-template-columns:auto minmax(0, 1fr) auto;
+      align-items:center;
+      gap:12px;
+      font-size:15px;
+      font-weight:800;
+      color:#41506f;
+    }
+
+    .legend-dot{
+      width:13px;
+      height:13px;
+      border-radius:50%;
+      flex:0 0 auto;
+    }
+
+    .legend-dot.blue{ background:#6f95ff; }
+    .legend-dot.mint{ background:#9dd7c4; }
+    .legend-dot.orange{ background:#f0b07b; }
+    .legend-dot.red{ background:#e37784; }
+    .legend-dot.sky{ background:#7eacf0; }
+    .legend-dot.soft{ background:#b3c8f6; }
+
+    .legend-name{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .legend-count{
+      color:var(--text);
+      font-weight:900;
+    }
+
+    .breakdown-list{
+      margin-top:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .breakdown-row{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    .breakdown-left{
+      min-width:0;
+    }
+
+    .breakdown-name{
+      font-size:15px;
+      font-weight:800;
+      color:#3f4e6d;
+      margin-bottom:7px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .bar{
+      height:10px;
+      background:#edf2ff;
+      border-radius:999px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .bar > span{
+      display:block;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg, #6b8fff, #8fb0ff);
+      width:0;
+    }
+
+    .bar.w16 > span{ width:16%; }
+    .bar.w28 > span{ width:28%; }
+    .bar.w42 > span{ width:42%; }
+    .bar.w61 > span{ width:61%; }
+    .bar.w73 > span{ width:73%; }
+    .bar.w88 > span{ width:88%; }
+    .bar.w97 > span{ width:97%; }
+
+    .breakdown-value{
+      font-size:18px;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .info-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .info-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:20px;
+      box-shadow:0 10px 25px rgba(55, 84, 170, .05);
+      min-width:0;
+    }
+
+    .info-title{
+      margin:0 0 16px;
+      font-size:26px;
+      line-height:1.05;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .info-list{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .info-row{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) auto;
+      gap:14px;
+      align-items:center;
+      padding:14px 0;
+      border-top:1px solid var(--line-soft);
+    }
+
+    .info-row:first-child{
+      border-top:0;
+      padding-top:0;
+    }
+
+    .info-key{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      color:#4a5878;
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .info-key svg{
+      width:18px;
+      height:18px;
+      color:#6f83ba;
+      flex:0 0 auto;
+    }
+
+    .info-value{
+      min-width:0;
+      color:var(--text);
       font-size:16px;
       font-weight:900;
-      line-height:1.3;
-      color:#0f172a;
+      text-align:right;
       word-break:break-word;
     }
 
-    .answer-helper{
-      margin:6px 0 0;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    .answer-type{
-      min-height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#4338ca;
-      font-size:11px;
-      font-weight:900;
-      display:inline-flex;
-      align-items:center;
-      white-space:nowrap;
-      flex-shrink:0;
-    }
-
-    .answer-body{
-      padding:18px;
-    }
-
-    .answer-value{
-      font-size:15px;
-      color:#0f172a;
-      line-height:1.65;
-      word-break:break-word;
-      white-space:pre-wrap;
-    }
-
-    .answer-empty{
-      color:var(--muted-2);
-      font-style:italic;
-    }
-
-    .choice-list{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .choice-pill{
-      min-height:34px;
-      padding:0 14px;
-      border-radius:999px;
-      background:#eff6ff;
-      color:#1d4ed8;
-      border:1px solid #dbeafe;
-      font-size:13px;
-      font-weight:800;
+    .pill{
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:var(--blue-3);
+      color:#4c67c6;
+      font-size:13px;
+      font-weight:900;
+      border:1px solid #dce6ff;
     }
 
-    .file-list{
+    .question-count-card{
+      margin-top:18px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px 20px;
+      box-shadow:0 10px 25px rgba(55, 84, 170, .05);
       display:flex;
-      flex-direction:column;
-      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      min-width:0;
     }
 
-    .file-row{
-      min-height:52px;
+    .question-count-card h4{
+      margin:0;
+      font-size:24px;
+      line-height:1.05;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .question-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:0 15px;
+      min-height:44px;
       border:1px solid var(--line);
       border-radius:14px;
       background:#fff;
-      padding:10px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .file-name{
-      min-width:0;
-      font-size:14px;
-      font-weight:800;
-      color:#0f172a;
-      word-break:break-word;
-    }
-
-    .file-action{
-      min-height:34px;
-      padding:0 12px;
-      border-radius:10px;
-      background:#eff6ff;
-      color:#1d4ed8;
-      font-size:12px;
       font-weight:900;
-      border:none;
+      color:#42506f;
       white-space:nowrap;
-      flex-shrink:0;
     }
 
-    .summary-panels{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:14px;
+    .question-badge svg{
+      width:18px;
+      height:18px;
     }
 
-    .mini-panel{
-      border:1px solid var(--line);
-      border-radius:20px;
+    .placeholder-card{
+      margin-top:18px;
       background:#fff;
-      padding:16px;
-    }
-
-    .mini-title{
-      font-size:14px;
-      font-weight:900;
-      margin:0 0 10px;
-      color:#0f172a;
-    }
-
-    .mini-list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .mini-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      font-size:13px;
-      color:#475569;
-      line-height:1.45;
-    }
-
-    .mini-row strong{
-      color:#0f172a;
-      font-weight:900;
-      text-align:right;
-    }
-
-    .empty-state{
-      min-height:320px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      border:1px dashed #cad6f6;
+      border-radius:24px;
       padding:24px;
       text-align:center;
       color:var(--muted);
-      font-size:15px;
-      line-height:1.6;
-    }
-
-    .empty-state-box{
-      max-width:420px;
-    }
-
-    .empty-state-icon{
-      width:74px;
-      height:74px;
-      border-radius:24px;
-      margin:0 auto 16px;
-      background:#eff6ff;
-      color:#2563eb;
-      display:grid;
-      place-items:center;
-    }
-
-    .empty-state-icon svg{
-      width:34px;
-      height:34px;
-    }
-
-    .empty-state-title{
-      margin:0 0 8px;
-      font-size:20px;
-      font-weight:900;
-      color:#0f172a;
-    }
-
-    .empty-state-text{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .mobile-anchor-bar{
+      font-weight:800;
       display:none;
     }
 
-    .js-placeholder{
+    .mobile-note{
       display:none;
     }
 
-    @media (max-width: 1400px){
-      .summary-grid{
-        grid-template-columns:repeat(2, minmax(0,1fr));
+    @media (max-width: 1260px){
+      .stats-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
       }
 
-      .respondent-summary{
-        grid-template-columns:repeat(2, minmax(0,1fr));
+      .row-grid{
+        grid-template-columns:1fr;
       }
 
-      .summary-panels{
+      .info-grid{
         grid-template-columns:1fr;
       }
     }
 
-    @media (max-width: 1180px){
-      .content{
+    @media (max-width: 960px){
+      body{
+        padding:16px;
+      }
+
+      .page-shell{
         grid-template-columns:1fr;
       }
 
       .sidebar{
+        min-height:auto;
+        position:relative;
+        top:0;
+      }
+
+      .side-nav{
+        flex-direction:row;
+        overflow:auto;
+        padding-top:14px;
+      }
+
+      .side-link{
+        min-width:170px;
+      }
+
+      .sidebar-bottom{
         display:none;
       }
 
-      .app-shell{
+      .hero-copy h1{
+        font-size:32px;
+      }
+
+      .donut-wrap{
         grid-template-columns:1fr;
-      }
-
-      .main{
-        padding:12px;
-      }
-
-      .main-card{
-        min-height:calc(100vh - 24px);
-        border-radius:24px;
-      }
-
-      .left-col{
-        order:2;
-      }
-
-      .right-col{
-        order:1;
-      }
-
-      .mobile-anchor-bar{
-        display:flex;
-        gap:10px;
-        overflow:auto;
-        padding:2px 2px 2px 0;
-      }
-
-      .mobile-anchor{
-        min-height:42px;
-        padding:0 14px;
-        border-radius:999px;
-        border:1px solid var(--line);
-        background:#fff;
-        color:#0f172a;
-        font-size:13px;
-        font-weight:800;
-        white-space:nowrap;
       }
     }
 
-    @media (max-width: 980px){
+    @media (max-width: 680px){
       .topbar{
+        padding:14px;
+        border-radius:18px;
+      }
+
+      .topbar-title h2{
+        font-size:17px;
+      }
+
+      .topbar-actions{
+        width:100%;
+        justify-content:stretch;
+      }
+
+      .action-btn{
+        flex:1 1 auto;
+        justify-content:center;
+      }
+
+      .content-card{
+        border-radius:22px;
+        padding:14px;
+      }
+
+      .hero-card{
+        padding:16px;
+      }
+
+      .hero-copy h1{
+        font-size:27px;
+      }
+
+      .hero-copy .sub{
+        font-size:16px;
+      }
+
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
+
+      .stat-card{
+        min-height:132px;
+      }
+
+      .stat-value{
+        font-size:38px;
+      }
+
+      .stat-value.smaller{
+        font-size:28px;
+      }
+
+      .box-card,
+      .info-card{
+        border-radius:20px;
+        padding:16px;
+      }
+
+      .box-title,
+      .info-title,
+      .question-count-card h4{
+        font-size:22px;
+      }
+
+      .donut{
+        width:190px;
+        height:190px;
+      }
+
+      .donut::before{
+        width:108px;
+        height:108px;
+      }
+
+      .donut-center strong{
+        font-size:34px;
+      }
+
+      .question-count-card{
         flex-direction:column;
         align-items:flex-start;
-      }
-
-      .topbar-right{
-        width:100%;
-        flex-wrap:wrap;
-      }
-
-      .filters-wrap{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .responses-layout{
-        grid-template-columns:1fr;
-      }
-
-      .responses-list{
-        border-right:none;
-        border-bottom:1px solid var(--line);
-      }
-    }
-
-    @media (max-width: 720px){
-      .page-title{
-        font-size:24px;
-      }
-
-      .summary-grid{
-        grid-template-columns:1fr;
-      }
-
-      .respondent-summary{
-        grid-template-columns:1fr;
-      }
-
-      .filters-wrap{
-        grid-template-columns:1fr;
-      }
-
-      .response-detail-head{
-        padding:18px;
-      }
-
-      .answers-wrap{
-        padding:16px;
-      }
-
-      .card-body,
-      .card-head{
-        padding-left:16px;
-        padding-right:16px;
-      }
-
-      .section-head{
-        padding:16px;
-      }
-
-      .responses-list-head{
-        padding:16px;
-      }
-
-      .response-item{
-        padding:14px 16px;
-      }
-    }
-
-    @media (max-width: 560px){
-      .main{
-        padding:0;
-      }
-
-      .main-card{
-        min-height:100vh;
-        border-radius:0;
-        border:none;
-      }
-
-      .topbar{
-        padding:16px;
-      }
-
-      .content{
-        padding:12px;
-      }
-
-      .top-chip{
-        width:100%;
-        justify-content:flex-start;
-      }
-
-      .head-actions{
-        width:100%;
-      }
-
-      .head-actions .btn{
-        width:100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="page-shell">
     <aside class="sidebar">
-      <div class="sidebar-card">
-        <div class="brand-block">
+      <div class="sidebar-top">
+        <div class="brand">
           <div class="brand-badge">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3 4 7.5 12 12l8-4.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M6.5 10.4V15L12 18l5.5-3v-4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8 12.5 11 15.5 17 8.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.7"/>
             </svg>
           </div>
           <div class="brand-copy">
-            <span class="small">Colspot</span>
-            <span class="big">Form Responses</span>
-            <span class="sub">School control center</span>
+            <h1>COLSPOT</h1>
+            <p>Form response panel</p>
           </div>
         </div>
+      </div>
 
-        <nav class="sidebar-nav">
-          <a href="hos.html" class="nav-link">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.8 12 3l9 7.8V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Back to HOS</div>
-              <div class="nav-sub">Return to dashboard</div>
-            </div>
-          </a>
+      <nav class="side-nav">
+        <button class="side-link active" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 6.5h16M7 12h10M9 17.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Summary</span>
+        </button>
 
-          <button class="nav-link active" type="button">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Responses</div>
-              <div class="nav-sub">Submitted details</div>
-            </div>
-          </button>
+        <button class="side-link placeholder" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M8 8h8M8 12h8M8 16h5M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+          </svg>
+          <span>Questions</span>
+        </button>
 
-          <button class="nav-link" type="button">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 16V9M12 16V5M18 16v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Summary</div>
-              <div class="nav-sub">Quick statistics</div>
-            </div>
-          </button>
+        <button class="side-link placeholder" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 7a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          <span>Individual</span>
+        </button>
 
-          <button class="nav-link" type="button">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Filters</div>
-              <div class="nav-sub">Search and narrow</div>
-            </div>
-          </button>
+        <button class="side-link placeholder" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Export</span>
+        </button>
+      </nav>
 
-          <button class="nav-link" type="button">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 15l4-4M12 15l-4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Export</div>
-              <div class="nav-sub">Download later</div>
-            </div>
-          </button>
-
-          <button class="nav-link" type="button">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div class="nav-copy">
-              <div class="nav-title">Activity Trail</div>
-              <div class="nav-sub">Recent movement</div>
-            </div>
-          </button>
-        </nav>
-
-        <div class="sidebar-foot">
-          <div class="school-badge">
-            <span class="label">School</span>
-            <span class="value" id="responseSchoolName">Ekiti State University</span>
-          </div>
+      <div class="sidebar-bottom">
+        <div class="school-card">
+          <span>School</span>
+          <strong id="summarySchoolName">School name here</strong>
         </div>
       </div>
     </aside>
 
     <main class="main">
-      <div class="main-card">
-        <header class="topbar">
-          <div class="topbar-left">
-            <button class="back-btn" type="button" onclick="window.location.href='hos.html'">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="back-btn" type="button" aria-label="Back">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
 
-            <div class="page-head">
-              <h1 class="page-title">Form Response Details</h1>
-              <p class="page-sub">
-                View all submitted entries, summary, respondent details, and full answers for this form.
-              </p>
-            </div>
+          <div class="topbar-title">
+            <h2>Summary</h2>
+            <p>Form response overview</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="action-btn" id="previewFormBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.9"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.9"/>
+            </svg>
+            <span>Preview Form</span>
+          </button>
+
+          <button class="action-btn danger" id="closeFormBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>Close Form</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="content-card hero-card">
+        <div class="hero-top">
+          <div class="hero-copy">
+            <h3>Form Summary</h3>
+            <h1 id="summaryFormTitle">Form title here</h1>
+            <p class="sub" id="summaryFormAudience">Audience here</p>
+            <p class="byline" id="summaryFormCreator">Created by lecturer / HOS here</p>
           </div>
 
-          <div class="topbar-right">
-            <div class="top-chip">
+          <div class="hero-meta">
+            <div class="meta-chip" id="summaryStatusChip">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 7h8M8 12h8M8 17h5M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span id="topChipFormCode">FORM DETAILS</span>
+              <span>Status</span>
             </div>
 
-            <div class="top-chip">
+            <div class="meta-chip" id="summaryIdentityChip">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 7a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
               </svg>
-              <span id="topChipStatus">Published</span>
-            </div>
-
-            <div class="top-chip">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span id="topChipTime">Updated recently</span>
+              <span>Identity mode</span>
             </div>
           </div>
-        </header>
+        </div>
 
-        <div class="content">
-          <aside class="left-col">
-            <div class="stack">
-              <div class="mobile-anchor-bar">
-                <button class="mobile-anchor" type="button">Overview</button>
-                <button class="mobile-anchor" type="button">Summary</button>
-                <button class="mobile-anchor" type="button">Responses</button>
-                <button class="mobile-anchor" type="button">Export</button>
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm11 14v-2a4 4 0 0 0-3-3.87M14 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-value" id="statTotalResponses">0</div>
+            <div class="stat-label">Total Responses</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 20V10M12 10l-4 4M12 10l4 4M5 4h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-value" id="statResponseRate">0%</div>
+            <div class="stat-label">Response Rate</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-value smaller" id="statLatestSubmission">—</div>
+            <div class="stat-label">Latest Submission</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-value" id="statCompletionRate">0%</div>
+            <div class="stat-label">Completion Rate</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="row-grid">
+        <article class="box-card">
+          <h3 class="box-title">Programme Breakdown</h3>
+          <p class="box-sub">Submitted responses grouped by programme.</p>
+
+          <div class="donut-wrap">
+            <div class="donut">
+              <div class="donut-center">
+                <strong id="programmeBreakdownTotal">0</strong>
+                <span>responses</span>
+              </div>
+            </div>
+
+            <div class="legend" id="programmeLegendList">
+              <div class="legend-row">
+                <span class="legend-dot blue"></span>
+                <span class="legend-name">No programme data yet</span>
+                <span class="legend-count">0</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="box-card">
+          <h3 class="box-title">Level Breakdown</h3>
+          <p class="box-sub">Submitted responses grouped by level.</p>
+
+          <div class="breakdown-list" id="levelBreakdownList">
+            <div class="breakdown-row">
+              <div class="breakdown-left">
+                <div class="breakdown-name">No level data yet</div>
+                <div class="bar w16"><span></span></div>
+              </div>
+              <div class="breakdown-value">0</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="box-card">
+          <h3 class="box-title">Identity Breakdown</h3>
+          <p class="box-sub">How responses were submitted.</p>
+
+          <div class="donut-wrap" style="grid-template-columns:1fr;">
+            <div class="donut" style="background:conic-gradient(#5f86ff 0 50%, #c9d7ff 50% 100%);">
+              <div class="donut-center">
+                <strong id="identityBreakdownPercent">0%</strong>
+                <span>identified</span>
+              </div>
+            </div>
+
+            <div class="legend" id="identityLegendList">
+              <div class="legend-row">
+                <span class="legend-dot blue"></span>
+                <span class="legend-name">Identified</span>
+                <span class="legend-count" id="identityIdentifiedCount">0</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot soft"></span>
+                <span class="legend-name">Anonymous</span>
+                <span class="legend-count" id="identityAnonymousCount">0</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <h3 class="info-title">Form Information</h3>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-key">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M8 7h8M8 12h8M8 17h5M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+                <span>Questions</span>
+              </div>
+              <div class="info-value" id="infoQuestionCount">0</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-key">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M8 2v4M16 2v4M4 10h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+                <span>Open Date</span>
+              </div>
+              <div class="info-value" id="infoOpenDate">—</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-key">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M8 2v4M16 2v4M4 10h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+                <span>Close Date</span>
+              </div>
+              <div class="info-value" id="infoCloseDate">—</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-key">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 7a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                </svg>
+                <span>Identity</span>
+              </div>
+              <div class="info-value">
+                <span class="pill" id="infoIdentityMode">—</span>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-key">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm3 3.5v4.5L12 19l6-3.5V11" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Audience</span>
+              </div>
+              <div class="info-value" id="infoAudience">—</div>
+            </div>
+          </div>
+        </article>
+
+        <div>
+          <article class="info-card">
+            <h3 class="info-title">Audience Information</h3>
+
+            <div class="info-list">
+              <div class="info-row">
+                <div class="info-key">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M16 3.13a4 4 0 0 1 0 7.75M22 21v-2a4 4 0 0 0-3-3.87M10 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Expected Students</span>
+                </div>
+                <div class="info-value" id="audienceExpectedStudents">0</div>
               </div>
 
-              <section class="card">
-                <div class="card-head">
-                  <h2 class="card-title">Form Overview</h2>
-                  <p class="card-sub">Quick information about the selected form.</p>
+              <div class="info-row">
+                <div class="info-key">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Actual Submissions</span>
                 </div>
-                <div class="card-body">
-                  <div class="overview-list">
-                    <div class="overview-item">
-                      <div class="overview-label">Form Title</div>
-                      <div class="overview-value" id="overviewFormTitle">Entrepreneurship Skills Form</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Status</div>
-                      <div class="overview-value">
-                        <span class="status-pill published" id="overviewStatusPill">
-                          <svg viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          Published
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Audience</div>
-                      <div class="overview-value" id="overviewAudience">All Students</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Identity</div>
-                      <div class="overview-value" id="overviewIdentity">Use login identity</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Responses</div>
-                      <div class="overview-value" id="overviewResponses">0</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Created</div>
-                      <div class="overview-value" id="overviewCreatedAt">—</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Published</div>
-                      <div class="overview-value" id="overviewPublishedAt">—</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Open Date</div>
-                      <div class="overview-value" id="overviewOpenAt">Immediately</div>
-                    </div>
-
-                    <div class="overview-item">
-                      <div class="overview-label">Close Date</div>
-                      <div class="overview-value" id="overviewCloseAt">Not set</div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="card">
-                <div class="card-head">
-                  <h2 class="card-title">Page Sections</h2>
-                  <p class="card-sub">Move quickly between the main areas of this response page.</p>
-                </div>
-                <div class="card-body">
-                  <div class="side-nav">
-                    <button class="side-link active" type="button">
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      <span>Response Summary</span>
-                    </button>
-
-                    <button class="side-link" type="button">
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-                      <span>All Responses</span>
-                    </button>
-
-                    <button class="side-link" type="button">
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                      <span>Filter Responses</span>
-                    </button>
-
-                    <button class="side-link" type="button">
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 15l4-4M12 15l-4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      <span>Export Data</span>
-                    </button>
-
-                    <button class="side-link" type="button">
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      <span>Activity Trail</span>
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <section class="card">
-                <div class="card-head">
-                  <h2 class="card-title">Quick Actions</h2>
-                  <p class="card-sub">Helpful actions for this form.</p>
-                </div>
-                <div class="card-body">
-                  <div class="stack">
-                    <button class="btn btn-primary" type="button" id="previewFormBtn">Preview Form</button>
-                    <button class="btn btn-soft" type="button" id="openFormBtn">Open in Builder</button>
-                    <button class="btn btn-soft" type="button" id="exportCsvBtn">Export CSV</button>
-                    <button class="btn btn-danger" type="button" id="closeFormBtn">Close Form</button>
-                  </div>
-                </div>
-              </section>
+                <div class="info-value" id="audienceActualSubmissions">0</div>
+              </div>
             </div>
-          </aside>
+          </article>
 
-          <section class="right-col">
-            <div class="stack">
-              <section class="section-block">
-                <div class="section-head">
-                  <div>
-                    <h2 class="section-title">Response Summary</h2>
-                    <p class="section-sub">
-                      High-level statistics for this form and the people who have submitted it.
-                    </p>
-                  </div>
-
-                  <div class="head-actions">
-                    <button class="btn btn-soft" type="button" id="refreshResponsesBtn">Refresh</button>
-                    <button class="btn btn-primary" type="button" id="downloadResponsesBtn">Download Report</button>
-                  </div>
-                </div>
-
-                <div class="card-body">
-                  <div class="summary-grid">
-                    <article class="stat-card">
-                      <div class="stat-top">
-                        <div class="stat-label">Total Responses</div>
-                        <div class="stat-icon">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                          </svg>
-                        </div>
-                      </div>
-                      <div class="stat-value" id="statTotalResponses">0</div>
-                      <div class="stat-foot">All submitted entries for this form.</div>
-                    </article>
-
-                    <article class="stat-card">
-                      <div class="stat-top">
-                        <div class="stat-label">Latest Submission</div>
-                        <div class="stat-icon">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                          </svg>
-                        </div>
-                      </div>
-                      <div class="stat-value" id="statLatestSubmission">—</div>
-                      <div class="stat-foot">Most recent person who submitted this form.</div>
-                    </article>
-
-                    <article class="stat-card">
-                      <div class="stat-top">
-                        <div class="stat-label">Anonymous Entries</div>
-                        <div class="stat-icon">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M12 3c4.5 0 8.4 2.88 9.75 6.95C20.4 14.02 16.5 16.9 12 16.9S3.6 14.02 2.25 9.95C3.6 5.88 7.5 3 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                            <path d="M12 13.6a3.65 3.65 0 1 0 0-7.3 3.65 3.65 0 0 0 0 7.3Z" stroke="currentColor" stroke-width="1.8"/>
-                          </svg>
-                        </div>
-                      </div>
-                      <div class="stat-value" id="statAnonymousCount">0</div>
-                      <div class="stat-foot">Responses without visible respondent identity.</div>
-                    </article>
-
-                    <article class="stat-card">
-                      <div class="stat-top">
-                        <div class="stat-label">Completion Rate</div>
-                        <div class="stat-icon">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M4 19h16M6 16V9M12 16V5M18 16v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                          </svg>
-                        </div>
-                      </div>
-                      <div class="stat-value" id="statCompletionRate">100%</div>
-                      <div class="stat-foot">Submitted records that completed all required questions.</div>
-                    </article>
-                  </div>
-
-                  <div style="height:14px;"></div>
-
-                  <div class="summary-panels">
-                    <article class="mini-panel">
-                      <h3 class="mini-title">Programme Breakdown</h3>
-                      <div class="mini-list" id="programmeBreakdownList">
-                        <div class="mini-row"><span>Entrepreneurship</span><strong>0</strong></div>
-                        <div class="mini-row"><span>Computer Science</span><strong>0</strong></div>
-                        <div class="mini-row"><span>Accounting</span><strong>0</strong></div>
-                      </div>
-                    </article>
-
-                    <article class="mini-panel">
-                      <h3 class="mini-title">Level Breakdown</h3>
-                      <div class="mini-list" id="levelBreakdownList">
-                        <div class="mini-row"><span>100 Level</span><strong>0</strong></div>
-                        <div class="mini-row"><span>200 Level</span><strong>0</strong></div>
-                        <div class="mini-row"><span>300 Level</span><strong>0</strong></div>
-                      </div>
-                    </article>
-
-                    <article class="mini-panel">
-                      <h3 class="mini-title">Quick Notes</h3>
-                      <div class="mini-list" id="quickNotesList">
-                        <div class="mini-row"><span>Form Type</span><strong id="quickFormType">School Form</strong></div>
-                        <div class="mini-row"><span>Response Rule</span><strong id="quickResponseRule">One response</strong></div>
-                        <div class="mini-row"><span>Questions</span><strong id="quickQuestionCount">0</strong></div>
-                      </div>
-                    </article>
-                  </div>
-                </div>
-              </section>
-
-              <section class="section-block">
-                <div class="section-head">
-                  <div>
-                    <h2 class="section-title">Responses</h2>
-                    <p class="section-sub">
-                      Search, filter, and open the full details of each submitted response.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="filters-wrap">
-                  <div class="field">
-                    <label class="field-label" for="responseSearchInput">Search</label>
-                    <input
-                      id="responseSearchInput"
-                      class="field-input"
-                      type="text"
-                      placeholder="Search by name, matric, programme, level"
-                    />
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="responseProgrammeFilter">Programme</label>
-                    <select id="responseProgrammeFilter" class="field-select">
-                      <option value="">All Programmes</option>
-                    </select>
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="responseLevelFilter">Level</label>
-                    <select id="responseLevelFilter" class="field-select">
-                      <option value="">All Levels</option>
-                    </select>
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="responseSortFilter">Sort By</label>
-                    <select id="responseSortFilter" class="field-select">
-                      <option value="latest">Latest Submission</option>
-                      <option value="oldest">Oldest Submission</option>
-                      <option value="name_asc">Name A–Z</option>
-                      <option value="name_desc">Name Z–A</option>
-                    </select>
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="responseIdentityFilter">Identity</label>
-                    <select id="responseIdentityFilter" class="field-select">
-                      <option value="">All</option>
-                      <option value="identified">Identified</option>
-                      <option value="anonymous">Anonymous</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="responses-layout">
-                  <aside class="responses-list">
-                    <div class="responses-list-head">
-                      <div>
-                        <h3 class="responses-list-title">Submitted Entries</h3>
-                        <p class="responses-list-sub">Tap any response to see full answers.</p>
-                      </div>
-                      <div class="responses-count" id="responseCountBadge">0</div>
-                    </div>
-
-                    <div class="response-items" id="responseItemsList">
-                      <div class="empty-state" style="min-height:220px;">
-                        <div class="empty-state-box">
-                          <div class="empty-state-icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                            </svg>
-                          </div>
-                          <h3 class="empty-state-title">No responses yet</h3>
-                          <p class="empty-state-text">
-                            Submitted responses will appear here after students start filling the form.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </aside>
-
-                  <section class="response-detail">
-                    <div class="response-detail-head">
-                      <div>
-                        <h3 class="response-detail-title" id="respondentNameTitle">Select a response</h3>
-                        <p class="response-detail-sub" id="respondentNameSub">
-                          The full respondent details and answers will show here.
-                        </p>
-                      </div>
-
-                      <div class="response-detail-actions">
-                        <button class="btn btn-soft" type="button" id="prevResponseBtn">Previous</button>
-                        <button class="btn btn-soft" type="button" id="nextResponseBtn">Next</button>
-                        <button class="btn btn-primary" type="button" id="printResponseBtn">Print</button>
-                      </div>
-                    </div>
-
-                    <div class="respondent-summary">
-                      <div class="respondent-box">
-                        <div class="respondent-label">Full Name</div>
-                        <div class="respondent-value" id="respondentFullName">—</div>
-                      </div>
-
-                      <div class="respondent-box">
-                        <div class="respondent-label">Matric / Staff ID</div>
-                        <div class="respondent-value" id="respondentMatric">—</div>
-                      </div>
-
-                      <div class="respondent-box">
-                        <div class="respondent-label">Programme / Department</div>
-                        <div class="respondent-value" id="respondentProgramme">—</div>
-                      </div>
-
-                      <div class="respondent-box">
-                        <div class="respondent-label">Level</div>
-                        <div class="respondent-value" id="respondentLevel">—</div>
-                      </div>
-                    </div>
-
-                    <div class="answers-wrap" id="responseAnswersWrap">
-                      <div class="empty-state">
-                        <div class="empty-state-box">
-                          <div class="empty-state-icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                            </svg>
-                          </div>
-                          <h3 class="empty-state-title">No response selected</h3>
-                          <p class="empty-state-text">
-                            Choose a response from the left side to see the respondent details and every submitted answer.
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- Example answer cards -->
-                      <article class="answer-card" style="display:none;">
-                        <div class="answer-head">
-                          <div class="answer-title-wrap">
-                            <h4 class="answer-question">Question title will show here</h4>
-                            <p class="answer-helper">Optional helper text will show here.</p>
-                          </div>
-                          <div class="answer-type">Short Answer</div>
-                        </div>
-                        <div class="answer-body">
-                          <div class="answer-value">Submitted answer value will show here.</div>
-                        </div>
-                      </article>
-                    </div>
-                  </section>
-                </div>
-              </section>
+          <article class="question-count-card">
+            <h4>Question Count</h4>
+            <div class="question-badge">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h5M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              <span id="questionCountBadge">0 Questions</span>
             </div>
-          </section>
+          </article>
         </div>
-      </div>
+      </section>
+
+      <section class="placeholder-card" id="questionsPlaceholder">
+        This is question
+      </section>
+
+      <section class="placeholder-card" id="individualPlaceholder">
+        This is individual
+      </section>
+
+      <section class="placeholder-card" id="exportPlaceholder">
+        This is export
+      </section>
     </main>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- PASTE YOUR JS BELOW THIS PLACEHOLDER                      -->
-  <!-- ========================================================= -->
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-  const SUPABASE_URL = "YOUR_SUPABASE_URL";
-  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-
-  const els = {
-    responseSchoolName: document.getElementById("responseSchoolName"),
-
-    topChipFormCode: document.getElementById("topChipFormCode"),
-    topChipStatus: document.getElementById("topChipStatus"),
-    topChipTime: document.getElementById("topChipTime"),
-
-    overviewFormTitle: document.getElementById("overviewFormTitle"),
-    overviewStatusPill: document.getElementById("overviewStatusPill"),
-    overviewAudience: document.getElementById("overviewAudience"),
-    overviewIdentity: document.getElementById("overviewIdentity"),
-    overviewResponses: document.getElementById("overviewResponses"),
-    overviewCreatedAt: document.getElementById("overviewCreatedAt"),
-    overviewPublishedAt: document.getElementById("overviewPublishedAt"),
-    overviewOpenAt: document.getElementById("overviewOpenAt"),
-    overviewCloseAt: document.getElementById("overviewCloseAt"),
-
-    statTotalResponses: document.getElementById("statTotalResponses"),
-    statLatestSubmission: document.getElementById("statLatestSubmission"),
-    statAnonymousCount: document.getElementById("statAnonymousCount"),
-    statCompletionRate: document.getElementById("statCompletionRate"),
-
-    programmeBreakdownList: document.getElementById("programmeBreakdownList"),
-    levelBreakdownList: document.getElementById("levelBreakdownList"),
-    quickFormType: document.getElementById("quickFormType"),
-    quickResponseRule: document.getElementById("quickResponseRule"),
-    quickQuestionCount: document.getElementById("quickQuestionCount"),
-
-    responseSearchInput: document.getElementById("responseSearchInput"),
-    responseProgrammeFilter: document.getElementById("responseProgrammeFilter"),
-    responseLevelFilter: document.getElementById("responseLevelFilter"),
-    responseSortFilter: document.getElementById("responseSortFilter"),
-    responseIdentityFilter: document.getElementById("responseIdentityFilter"),
-
-    responseCountBadge: document.getElementById("responseCountBadge"),
-    responseItemsList: document.getElementById("responseItemsList"),
-
-    respondentNameTitle: document.getElementById("respondentNameTitle"),
-    respondentNameSub: document.getElementById("respondentNameSub"),
-    respondentFullName: document.getElementById("respondentFullName"),
-    respondentMatric: document.getElementById("respondentMatric"),
-    respondentProgramme: document.getElementById("respondentProgramme"),
-    respondentLevel: document.getElementById("respondentLevel"),
-    responseAnswersWrap: document.getElementById("responseAnswersWrap"),
-
-    previewFormBtn: document.getElementById("previewFormBtn"),
-    openFormBtn: document.getElementById("openFormBtn"),
-    exportCsvBtn: document.getElementById("exportCsvBtn"),
-    closeFormBtn: document.getElementById("closeFormBtn"),
-    refreshResponsesBtn: document.getElementById("refreshResponsesBtn"),
-    downloadResponsesBtn: document.getElementById("downloadResponsesBtn"),
-    prevResponseBtn: document.getElementById("prevResponseBtn"),
-    nextResponseBtn: document.getElementById("nextResponseBtn"),
-    printResponseBtn: document.getElementById("printResponseBtn"),
-  };
-
-  const state = {
-    actor: null,
-    formId: "",
-    form: null,
-    questions: [],
-    responses: [],
-    filteredResponses: [],
-    selectedResponseId: null,
-  };
-
-  function qs(name) {
-    return new URLSearchParams(window.location.search).get(name) || "";
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function normalizeText(value) {
-    return String(value ?? "").trim().replace(/\s+/g, " ");
-  }
-
-  function normalizeUpper(value) {
-    return normalizeText(value).toUpperCase();
-  }
-
-  function normalizeLevelValue(value) {
-    return normalizeUpper(value)
-      .replace(/\bLEVEL\b/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function formatAudience(value, form) {
-    const mode = String(form?.audience_mode || value || "").trim();
-
-    if (mode === "all_students") return "All Students";
-    if (mode === "programme_filter") return "Programme Filter";
-    if (value === "all_students") return "All Students";
-    if (value === "all_staff") return "All Staff";
-    if (value === "lecturers") return "Lecturers";
-    if (value === "department_students") return "Department Students";
-    if (value === "specific_group") return "Specific Group";
-    return value ? titleCase(value.replaceAll("_", " ")) : "—";
-  }
-
-  function formatIdentity(value) {
-    if (value === "anonymous") return "Anonymous";
-    if (value === "auto") return "Use login identity";
-    return value ? titleCase(value.replaceAll("_", " ")) : "Use login identity";
-  }
-
-  function formatStatus(value) {
-    if (!value) return "—";
-    return titleCase(String(value).replaceAll("_", " "));
-  }
-
-  function titleCase(value) {
-    return String(value || "")
-      .toLowerCase()
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
-
-  function formatDateTime(value) {
-    if (!value) return "—";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "—";
-    return d.toLocaleString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  function formatRelativeOrDate(value) {
-    if (!value) return "—";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "—";
-
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const minute = 60 * 1000;
-    const hour = 60 * minute;
-    const day = 24 * hour;
-
-    if (diff < minute) return "Just now";
-    if (diff < hour) return `${Math.floor(diff / minute)} min ago`;
-    if (diff < day) return `${Math.floor(diff / hour)} hr ago`;
-    if (diff < 7 * day) return `${Math.floor(diff / day)} day(s) ago`;
-
-    return formatDateTime(value);
-  }
-
-  function setButtonBusy(btn, busy, textWhenBusy = "Loading...") {
-    if (!btn) return;
-    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent || "";
-    btn.disabled = busy;
-    btn.classList.toggle("is-disabled", busy);
-    btn.textContent = busy ? textWhenBusy : btn.dataset.originalText;
-  }
-
-  function getStoredJson(key) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function getActorFromStorage() {
-    const candidates = [
-      "colspot_hos_session",
-      "hos_session",
-      "colspotHosSession",
-      "main_hos_session",
-      "colspot_form_agent_session",
-      "form_agent_session",
-      "colspotFormAgentSession",
-    ];
-
-    for (const key of candidates) {
-      const parsed = getStoredJson(key);
-      if (parsed && typeof parsed === "object") {
-        const hosId =
-          parsed.hos_admin_id ||
-          parsed.id ||
-          parsed.admin_id ||
-          parsed.hosId ||
-          parsed.hos_admin_uuid ||
-          "";
-
-        const formAgentId =
-          parsed.form_agent_id ||
-          parsed.agent_id ||
-          parsed.formAgentId ||
-          "";
-
-        const schoolName =
-          parsed.school_name ||
-          parsed.school ||
-          parsed.schoolName ||
-          "";
-
-        if (hosId || formAgentId || schoolName) {
-          return {
-            hos_admin_id: hosId || "",
-            form_agent_id: formAgentId || "",
-            school_name: schoolName || "",
-            raw: parsed,
-          };
-        }
-      }
-    }
-
-    return {
-      hos_admin_id: "",
-      form_agent_id: "",
-      school_name: "",
-      raw: null,
-    };
-  }
-
-  function getActorPayload() {
-    const fromStorage = getActorFromStorage();
-
-    const hos_admin_id = qs("hos_admin_id") || fromStorage.hos_admin_id || "";
-    const form_agent_id = qs("form_agent_id") || fromStorage.form_agent_id || "";
-    const school_name = qs("school_name") || fromStorage.school_name || "";
-
-    return {
-      hos_admin_id,
-      form_agent_id,
-      school_name,
-    };
-  }
-
-  async function ensureSignedIn() {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      throw new Error(error.message || "Unable to check session.");
-    }
-    if (!data.session) {
-      throw new Error("Session not found. Please sign in again.");
-    }
-    return data.session;
-  }
-
-  async function invokeFormsManager(payload) {
-    const { data, error } = await supabase.functions.invoke("forms-manager", {
-      body: payload,
-    });
-
-    if (error) {
-      throw new Error(error.message || "Edge Function returned a non-2xx status code");
-    }
-
-    if (!data?.ok) {
-      throw new Error(data?.error || "Request failed.");
-    }
-
-    return data;
-  }
-
-  async function loadFormDetails() {
-    const payload = getActorPayload();
-
-    if (!payload.hos_admin_id && !payload.form_agent_id) {
-      throw new Error("HOS or form agent session not found. Please sign in again.");
-    }
-
-    state.actor = payload;
-    state.formId = qs("form_id") || "";
-
-    if (!state.formId) {
-      throw new Error("form_id not found in URL.");
-    }
-
-    const formData = await invokeFormsManager({
-      action: "get_form",
-      form_id: state.formId,
-      ...(payload.hos_admin_id ? { hos_admin_id: payload.hos_admin_id } : {}),
-      ...(payload.form_agent_id ? { form_agent_id: payload.form_agent_id } : {}),
-    });
-
-    state.form = formData.form || null;
-    state.questions = Array.isArray(formData.questions) ? formData.questions : [];
-
-    const responsesData = await invokeFormsManager({
-      action: "list_form_responses",
-      form_id: state.formId,
-      ...(payload.hos_admin_id ? { hos_admin_id: payload.hos_admin_id } : {}),
-      ...(payload.form_agent_id ? { form_agent_id: payload.form_agent_id } : {}),
-    });
-
-    state.responses = Array.isArray(responsesData.responses)
-      ? responsesData.responses
-      : [];
-  }
-
-  function buildQuestionMap() {
-    const map = new Map();
-    for (const q of state.questions) {
-      if (q?.id) map.set(String(q.id), q);
-    }
-    return map;
-  }
-
-  function getResponseIdentityType(response) {
-    const fullName =
-      response?.full_name ||
-      response?.respondent_name ||
-      response?.student_name ||
-      response?.name ||
-      "";
-
-    const userId =
-      response?.user_id ||
-      response?.respondent_user_id ||
-      "";
-
-    if (normalizeText(fullName) || normalizeText(userId)) return "identified";
-    return "anonymous";
-  }
-
-  function getResponseDisplayName(response) {
-    return (
-      response?.full_name ||
-      response?.respondent_name ||
-      response?.student_name ||
-      response?.name ||
-      (getResponseIdentityType(response) === "anonymous" ? "Anonymous Respondent" : "Unnamed Respondent")
-    );
-  }
-
-  function getResponseMatric(response) {
-    return (
-      response?.matric_number ||
-      response?.matric_no ||
-      response?.student_id ||
-      response?.staff_id ||
-      response?.identity_number ||
-      "—"
-    );
-  }
-
-  function getResponseProgramme(response) {
-    return (
-      response?.programme ||
-      response?.department ||
-      response?.programme_name ||
-      "—"
-    );
-  }
-
-  function getResponseLevel(response) {
-    return (
-      response?.level ||
-      response?.current_level ||
-      "—"
-    );
-  }
-
-  function getResponseSubmittedAt(response) {
-    return (
-      response?.submitted_at ||
-      response?.created_at ||
-      response?.updated_at ||
-      null
-    );
-  }
-
-  function responseMatchesSearch(response, searchText) {
-    if (!searchText) return true;
-
-    const haystack = [
-      getResponseDisplayName(response),
-      getResponseMatric(response),
-      getResponseProgramme(response),
-      getResponseLevel(response),
-      response?.email || "",
-      ...(Array.isArray(response?.answers)
-        ? response.answers.map((a) => {
-            if (Array.isArray(a?.answer_value)) return a.answer_value.join(" ");
-            if (Array.isArray(a?.answer_json)) return JSON.stringify(a.answer_json);
-            return a?.answer_text || a?.answer_value || "";
-          })
-        : []),
-    ]
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(searchText.toLowerCase());
-  }
-
-  function applyResponseFilters() {
-    const search = normalizeText(els.responseSearchInput?.value || "");
-    const programme = normalizeUpper(els.responseProgrammeFilter?.value || "");
-    const level = normalizeLevelValue(els.responseLevelFilter?.value || "");
-    const identity = normalizeText(els.responseIdentityFilter?.value || "");
-    const sort = normalizeText(els.responseSortFilter?.value || "latest");
-
-    let rows = [...state.responses].filter((response) => {
-      if (!responseMatchesSearch(response, search)) return false;
-
-      if (programme) {
-        const rowProgramme = normalizeUpper(getResponseProgramme(response));
-        if (rowProgramme !== programme) return false;
-      }
-
-      if (level) {
-        const rowLevel = normalizeLevelValue(getResponseLevel(response));
-        if (rowLevel !== level) return false;
-      }
-
-      if (identity) {
-        if (getResponseIdentityType(response) !== identity) return false;
-      }
-
-      return true;
-    });
-
-    rows.sort((a, b) => {
-      const aName = getResponseDisplayName(a).toLowerCase();
-      const bName = getResponseDisplayName(b).toLowerCase();
-      const aTime = new Date(getResponseSubmittedAt(a) || 0).getTime();
-      const bTime = new Date(getResponseSubmittedAt(b) || 0).getTime();
-
-      if (sort === "oldest") return aTime - bTime;
-      if (sort === "name_asc") return aName.localeCompare(bName);
-      if (sort === "name_desc") return bName.localeCompare(aName);
-      return bTime - aTime;
-    });
-
-    state.filteredResponses = rows;
-
-    if (!rows.length) {
-      state.selectedResponseId = null;
-    } else if (!rows.some((row) => String(row.id) === String(state.selectedResponseId))) {
-      state.selectedResponseId = String(rows[0].id);
-    }
-  }
-
-  function renderFormOverview() {
-    const form = state.form || {};
-
-    const status = String(form.status || "draft").toLowerCase();
-    const statusClass =
-      status === "published"
-        ? "published"
-        : status === "closed"
-        ? "closed"
-        : status === "archived"
-        ? "archived"
-        : "draft";
-
-    els.responseSchoolName.textContent = form.school_name || state.actor?.school_name || "—";
-    els.topChipFormCode.textContent = form.title || "Form Details";
-    els.topChipStatus.textContent = formatStatus(form.status || "draft");
-    els.topChipTime.textContent = formatRelativeOrDate(form.updated_at || form.created_at);
-
-    els.overviewFormTitle.textContent = form.title || "—";
-    els.overviewAudience.textContent = formatAudience(form.target_audience, form);
-    els.overviewIdentity.textContent = formatIdentity(form.identity_mode);
-    els.overviewResponses.textContent = String(state.responses.length);
-    els.overviewCreatedAt.textContent = formatDateTime(form.created_at);
-    els.overviewPublishedAt.textContent = formatDateTime(form.published_at);
-    els.overviewOpenAt.textContent = form.open_at ? formatDateTime(form.open_at) : "Immediately";
-    els.overviewCloseAt.textContent = form.close_at ? formatDateTime(form.close_at) : "Not set";
-
-    els.overviewStatusPill.className = `status-pill ${statusClass}`;
-    els.overviewStatusPill.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>
-      ${escapeHtml(formatStatus(form.status || "draft"))}
-    `;
-
-    els.quickFormType.textContent =
-      form.audience_mode === "programme_filter" ? "Programme Filter Form" : "School Form";
-
-    els.quickResponseRule.textContent =
-      form.response_rule === "many" ? "Many responses" : "One response";
-
-    els.quickQuestionCount.textContent = String(state.questions.length);
-  }
-
-  function renderSummary() {
-    els.statTotalResponses.textContent = String(state.responses.length);
-
-    const latest = [...state.responses].sort((a, b) => {
-      const at = new Date(getResponseSubmittedAt(a) || 0).getTime();
-      const bt = new Date(getResponseSubmittedAt(b) || 0).getTime();
-      return bt - at;
-    })[0];
-
-    els.statLatestSubmission.textContent = latest
-      ? getResponseDisplayName(latest)
-      : "—";
-
-    const anonymousCount = state.responses.filter(
-      (row) => getResponseIdentityType(row) === "anonymous"
-    ).length;
-
-    els.statAnonymousCount.textContent = String(anonymousCount);
-
-    const requiredQuestions = state.questions.filter((q) => !!q.is_required);
-    let completed = 0;
-
-    if (!requiredQuestions.length) {
-      completed = state.responses.length;
-    } else {
-      for (const response of state.responses) {
-        const answers = Array.isArray(response.answers) ? response.answers : [];
-        const answerMap = new Map(answers.map((a) => [String(a.question_id), a]));
-
-        const ok = requiredQuestions.every((q) => {
-          const ans = answerMap.get(String(q.id));
-          return hasMeaningfulAnswer(ans);
-        });
-
-        if (ok) completed++;
-      }
-    }
-
-    const completionRate = state.responses.length
-      ? Math.round((completed / state.responses.length) * 100)
-      : 0;
-
-    els.statCompletionRate.textContent = `${completionRate}%`;
-
-    renderBreakdownLists();
-  }
-
-  function renderBreakdownLists() {
-    const programmeMap = new Map();
-    const levelMap = new Map();
-
-    for (const response of state.responses) {
-      const programme = normalizeText(getResponseProgramme(response));
-      const level = normalizeText(getResponseLevel(response));
-
-      if (programme && programme !== "—") {
-        programmeMap.set(programme, (programmeMap.get(programme) || 0) + 1);
-      }
-
-      if (level && level !== "—") {
-        levelMap.set(level, (levelMap.get(level) || 0) + 1);
-      }
-    }
-
-    const programmeRows = [...programmeMap.entries()].sort((a, b) => b[1] - a[1]);
-    const levelRows = [...levelMap.entries()].sort((a, b) => b[1] - a[1]);
-
-    els.programmeBreakdownList.innerHTML = programmeRows.length
-      ? programmeRows
-          .map(
-            ([label, count]) => `
-              <div class="mini-row">
-                <span>${escapeHtml(label)}</span>
-                <strong>${count}</strong>
-              </div>
-            `
-          )
-          .join("")
-      : `<div class="mini-row"><span>No programme data</span><strong>0</strong></div>`;
-
-    els.levelBreakdownList.innerHTML = levelRows.length
-      ? levelRows
-          .map(
-            ([label, count]) => `
-              <div class="mini-row">
-                <span>${escapeHtml(label)}</span>
-                <strong>${count}</strong>
-              </div>
-            `
-          )
-          .join("")
-      : `<div class="mini-row"><span>No level data</span><strong>0</strong></div>`;
-  }
-
-  function renderFilterOptions() {
-    const programmeSet = new Set();
-    const levelSet = new Set();
-
-    for (const response of state.responses) {
-      const programme = normalizeText(getResponseProgramme(response));
-      const level = normalizeText(getResponseLevel(response));
-
-      if (programme && programme !== "—") programmeSet.add(programme);
-      if (level && level !== "—") levelSet.add(level);
-    }
-
-    const currentProgramme = els.responseProgrammeFilter.value;
-    const currentLevel = els.responseLevelFilter.value;
-
-    els.responseProgrammeFilter.innerHTML =
-      `<option value="">All Programmes</option>` +
-      [...programmeSet]
-        .sort((a, b) => a.localeCompare(b))
-        .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
-        .join("");
-
-    els.responseLevelFilter.innerHTML =
-      `<option value="">All Levels</option>` +
-      [...levelSet]
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-        .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
-        .join("");
-
-    els.responseProgrammeFilter.value =
-      [...programmeSet].includes(currentProgramme) ? currentProgramme : "";
-
-    els.responseLevelFilter.value =
-      [...levelSet].includes(currentLevel) ? currentLevel : "";
-  }
-
-  function renderResponseList() {
-    els.responseCountBadge.textContent = String(state.filteredResponses.length);
-
-    if (!state.filteredResponses.length) {
-      els.responseItemsList.innerHTML = `
-        <div class="empty-state" style="min-height:220px;">
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <h3 class="empty-state-title">No matching responses</h3>
-            <p class="empty-state-text">Try changing your search or filter values.</p>
-          </div>
-        </div>
-      `;
-      renderSelectedResponse();
-      return;
-    }
-
-    els.responseItemsList.innerHTML = state.filteredResponses
-      .map((response) => {
-        const id = String(response.id);
-        const active = id === String(state.selectedResponseId);
-        const submittedAt = getResponseSubmittedAt(response);
-        const identityType = getResponseIdentityType(response);
-        const programme = getResponseProgramme(response);
-        const level = getResponseLevel(response);
-
-        return `
-          <article class="response-item ${active ? "active" : ""}" data-response-id="${escapeHtml(id)}">
-            <div class="response-top">
-              <h4 class="response-name">${escapeHtml(getResponseDisplayName(response))}</h4>
-              <div class="response-tag">${identityType === "anonymous" ? "Anonymous" : "Identified"}</div>
-            </div>
-
-            <div class="response-meta">
-              <span class="meta-chip">${escapeHtml(programme || "No programme")}</span>
-              <span class="meta-chip">${escapeHtml(level || "No level")}</span>
-            </div>
-
-            <div class="response-time">${escapeHtml(formatDateTime(submittedAt))}</div>
-          </article>
-        `;
-      })
-      .join("");
-
-    els.responseItemsList.querySelectorAll(".response-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        state.selectedResponseId = item.dataset.responseId || null;
-        renderResponseList();
-        renderSelectedResponse();
-      });
-    });
-
-    renderSelectedResponse();
-  }
-
-  function getSelectedResponse() {
-    return state.filteredResponses.find(
-      (row) => String(row.id) === String(state.selectedResponseId)
-    ) || null;
-  }
-
-  function renderSelectedResponse() {
-    const response = getSelectedResponse();
-
-    if (!response) {
-      els.respondentNameTitle.textContent = "Select a response";
-      els.respondentNameSub.textContent =
-        "The full respondent details and answers will show here.";
-      els.respondentFullName.textContent = "—";
-      els.respondentMatric.textContent = "—";
-      els.respondentProgramme.textContent = "—";
-      els.respondentLevel.textContent = "—";
-
-      els.responseAnswersWrap.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <h3 class="empty-state-title">No response selected</h3>
-            <p class="empty-state-text">Choose a response from the left side to see every answer.</p>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    const submittedAt = getResponseSubmittedAt(response);
-
-    els.respondentNameTitle.textContent = getResponseDisplayName(response);
-    els.respondentNameSub.textContent = `Submitted ${formatDateTime(submittedAt)}`;
-    els.respondentFullName.textContent = getResponseDisplayName(response);
-    els.respondentMatric.textContent = getResponseMatric(response);
-    els.respondentProgramme.textContent = getResponseProgramme(response);
-    els.respondentLevel.textContent = getResponseLevel(response);
-
-    const questionMap = buildQuestionMap();
-    const answerMap = new Map(
-      (Array.isArray(response.answers) ? response.answers : []).map((a) => [String(a.question_id), a])
-    );
-
-    const html = state.questions.length
-      ? state.questions
-          .map((question) => {
-            const answer = answerMap.get(String(question.id));
-            return renderAnswerCard(question, answer);
-          })
-          .join("")
-      : `
-        <div class="empty-state">
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 7h8M8 12h8M8 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <h3 class="empty-state-title">Questions not found</h3>
-            <p class="empty-state-text">This form has no visible questions.</p>
-          </div>
-        </div>
-      `;
-
-    els.responseAnswersWrap.innerHTML = html;
-
-    els.responseAnswersWrap.querySelectorAll("[data-file-url]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const url = btn.getAttribute("data-file-url");
-        if (url) window.open(url, "_blank");
-      });
-    });
-  }
-
-  function hasMeaningfulAnswer(answer) {
-    if (!answer) return false;
-
-    const candidates = [
-      answer.answer_text,
-      answer.answer_value,
-      answer.value_text,
-      answer.response_text,
-    ];
-
-    for (const value of candidates) {
-      if (Array.isArray(value) && value.length) return true;
-      if (normalizeText(value)) return true;
-    }
-
-    if (Array.isArray(answer.answer_json) && answer.answer_json.length) return true;
-    if (answer.answer_json && typeof answer.answer_json === "object" && Object.keys(answer.answer_json).length) return true;
-
-    return false;
-  }
-
-  function getQuestionTypeLabel(type) {
-    const map = {
-      short_answer: "Short Answer",
-      paragraph: "Paragraph",
-      multiple_choice: "Multiple Choice",
-      checkboxes: "Checkboxes",
-      dropdown: "Dropdown",
-      date: "Date",
-      file_upload: "File Upload",
-      yes_no: "Yes / No",
-    };
-    return map[type] || titleCase(String(type || "").replaceAll("_", " "));
-  }
-
-  function readAnswerValue(answer, questionType) {
-    if (!answer) return null;
-
-    if (questionType === "checkboxes") {
-      const raw =
-        answer.answer_json ||
-        answer.answer_value ||
-        answer.answer_text ||
-        [];
-
-      if (Array.isArray(raw)) return raw.filter(Boolean);
-
-      if (typeof raw === "string") {
-        return raw
-          .split(",")
-          .map((v) => normalizeText(v))
-          .filter(Boolean);
-      }
-
-      return [];
-    }
-
-    if (questionType === "file_upload") {
-      const raw =
-        answer.answer_json ||
-        answer.answer_value ||
-        [];
-
-      if (Array.isArray(raw)) return raw;
-
-      if (raw && typeof raw === "object") return [raw];
-
-      if (typeof raw === "string" && raw.startsWith("http")) {
-        return [{ url: raw, name: "Uploaded file" }];
-      }
-
-      return [];
-    }
-
-    return (
-      answer.answer_text ??
-      answer.answer_value ??
-      answer.value_text ??
-      answer.response_text ??
-      null
-    );
-  }
-
-  function renderAnswerCard(question, answer) {
-    const type = String(question?.question_type || "");
-    const helper = normalizeText(question?.help_text || "");
-    const rawValue = readAnswerValue(answer, type);
-    let bodyHtml = "";
-
-    if (!hasMeaningfulAnswer(answer)) {
-      bodyHtml = `<div class="answer-value answer-empty">No answer submitted.</div>`;
-    } else if (type === "checkboxes") {
-      const items = Array.isArray(rawValue) ? rawValue : [];
-      bodyHtml = items.length
-        ? `<div class="choice-list">
-            ${items.map((item) => `<div class="choice-pill">${escapeHtml(item)}</div>`).join("")}
-          </div>`
-        : `<div class="answer-value answer-empty">No options selected.</div>`;
-    } else if (type === "multiple_choice" || type === "dropdown" || type === "yes_no") {
-      bodyHtml = `<div class="choice-list">
-        <div class="choice-pill">${escapeHtml(rawValue)}</div>
-      </div>`;
-    } else if (type === "file_upload") {
-      const files = Array.isArray(rawValue) ? rawValue : [];
-      bodyHtml = files.length
-        ? `<div class="file-list">
-            ${files
-              .map((file) => {
-                const url = file?.url || file?.publicUrl || file?.path || "";
-                const name = file?.name || file?.file_name || file?.filename || "Uploaded file";
-                return `
-                  <div class="file-row">
-                    <div class="file-name">${escapeHtml(name)}</div>
-                    <button class="file-action" type="button" data-file-url="${escapeHtml(url)}">Open</button>
-                  </div>
-                `;
-              })
-              .join("")}
-          </div>`
-        : `<div class="answer-value answer-empty">No uploaded file found.</div>`;
-    } else {
-      bodyHtml = `<div class="answer-value">${escapeHtml(rawValue)}</div>`;
-    }
-
-    return `
-      <article class="answer-card">
-        <div class="answer-head">
-          <div class="answer-title-wrap">
-            <h4 class="answer-question">${escapeHtml(question?.question_text || "Untitled question")}</h4>
-            ${helper ? `<p class="answer-helper">${escapeHtml(helper)}</p>` : ""}
-          </div>
-          <div class="answer-type">${escapeHtml(getQuestionTypeLabel(type))}</div>
-        </div>
-        <div class="answer-body">
-          ${bodyHtml}
-        </div>
-      </article>
-    `;
-  }
-
-  function downloadCsv() {
-    const questionMap = buildQuestionMap();
-
-    const headers = [
-      "Response ID",
-      "Submitted At",
-      "Full Name",
-      "Matric/Staff ID",
-      "Programme",
-      "Level",
-      ...state.questions.map((q) => q.question_text || `Question ${q.sort_order || ""}`),
-    ];
-
-    const rows = state.responses.map((response) => {
-      const answerMap = new Map(
-        (Array.isArray(response.answers) ? response.answers : []).map((a) => [String(a.question_id), a])
-      );
-
-      const fixed = [
-        response.id || "",
-        getResponseSubmittedAt(response) || "",
-        getResponseDisplayName(response),
-        getResponseMatric(response),
-        getResponseProgramme(response),
-        getResponseLevel(response),
-      ];
-
-      const dynamic = state.questions.map((q) => {
-        const answer = answerMap.get(String(q.id));
-        const value = readAnswerValue(answer, q.question_type);
-
-        if (Array.isArray(value)) {
-          return value
-            .map((item) => {
-              if (typeof item === "object") return item?.name || item?.url || "";
-              return String(item ?? "");
-            })
-            .join(" | ");
-        }
-
-        if (value && typeof value === "object") {
-          return JSON.stringify(value);
-        }
-
-        return String(value ?? "");
-      });
-
-      return [...fixed, ...dynamic];
-    });
-
-    const csv = [headers, ...rows]
-      .map((row) =>
-        row
-          .map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`)
-          .join(",")
-      )
-      .join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const safeTitle = normalizeText(state.form?.title || "form-responses").replace(/[^\w\-]+/g, "_");
-    a.href = url;
-    a.download = `${safeTitle || "form_responses"}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  async function closeForm() {
-    if (!state.formId) return;
-    if (!confirm("Close this form now? Students will no longer be able to submit.")) return;
-
-    setButtonBusy(els.closeFormBtn, true, "Closing...");
-
-    try {
-      const payload = {
-        action: "close_form",
-        form_id: state.formId,
-        ...(state.actor?.hos_admin_id ? { hos_admin_id: state.actor.hos_admin_id } : {}),
-        ...(state.actor?.form_agent_id ? { form_agent_id: state.actor.form_agent_id } : {}),
-      };
-
-      await invokeFormsManager(payload);
-      alert("Form closed successfully.");
-      await boot();
-    } catch (error) {
-      console.error("Close form error:", error);
-      alert(error.message || "Unable to close form.");
-    } finally {
-      setButtonBusy(els.closeFormBtn, false);
-    }
-  }
-
-  function goToBuilder() {
-    if (!state.formId) return;
-    const params = new URLSearchParams();
-    params.set("screen", "forms");
-    params.set("form_id", state.formId);
-    if (state.actor?.hos_admin_id) params.set("hos_admin_id", state.actor.hos_admin_id);
-    if (state.actor?.form_agent_id) params.set("form_agent_id", state.actor.form_agent_id);
-    window.location.href = `hos.html?${params.toString()}`;
-  }
-
-  function goToPreview() {
-    if (!state.formId) return;
-    const params = new URLSearchParams();
-    params.set("form_id", state.formId);
-    if (state.actor?.hos_admin_id) params.set("hos_admin_id", state.actor.hos_admin_id);
-    if (state.actor?.form_agent_id) params.set("form_agent_id", state.actor.form_agent_id);
-    window.open(`form_preview.html?${params.toString()}`, "_blank");
-  }
-
-  function moveSelection(step) {
-    if (!state.filteredResponses.length) return;
-
-    const index = state.filteredResponses.findIndex(
-      (row) => String(row.id) === String(state.selectedResponseId)
-    );
-
-    const currentIndex = index >= 0 ? index : 0;
-    let nextIndex = currentIndex + step;
-
-    if (nextIndex < 0) nextIndex = 0;
-    if (nextIndex >= state.filteredResponses.length) nextIndex = state.filteredResponses.length - 1;
-
-    state.selectedResponseId = String(state.filteredResponses[nextIndex].id);
-    renderResponseList();
-  }
-
-  function bindEvents() {
-    els.responseSearchInput?.addEventListener("input", () => {
-      applyResponseFilters();
-      renderResponseList();
-    });
-
-    els.responseProgrammeFilter?.addEventListener("change", () => {
-      applyResponseFilters();
-      renderResponseList();
-    });
-
-    els.responseLevelFilter?.addEventListener("change", () => {
-      applyResponseFilters();
-      renderResponseList();
-    });
-
-    els.responseSortFilter?.addEventListener("change", () => {
-      applyResponseFilters();
-      renderResponseList();
-    });
-
-    els.responseIdentityFilter?.addEventListener("change", () => {
-      applyResponseFilters();
-      renderResponseList();
-    });
-
-    els.refreshResponsesBtn?.addEventListener("click", async () => {
-      setButtonBusy(els.refreshResponsesBtn, true, "Refreshing...");
-      try {
-        await boot();
-      } catch (error) {
-        console.error("Refresh error:", error);
-        alert(error.message || "Unable to refresh.");
-      } finally {
-        setButtonBusy(els.refreshResponsesBtn, false);
-      }
-    });
-
-    els.downloadResponsesBtn?.addEventListener("click", downloadCsv);
-    els.exportCsvBtn?.addEventListener("click", downloadCsv);
-    els.closeFormBtn?.addEventListener("click", closeForm);
-    els.openFormBtn?.addEventListener("click", goToBuilder);
-    els.previewFormBtn?.addEventListener("click", goToPreview);
-    els.prevResponseBtn?.addEventListener("click", () => moveSelection(-1));
-    els.nextResponseBtn?.addEventListener("click", () => moveSelection(1));
-    els.printResponseBtn?.addEventListener("click", () => window.print());
-  }
-
-  async function boot() {
-    try {
-      if (
-        SUPABASE_URL === "YOUR_SUPABASE_URL" ||
-        SUPABASE_ANON_KEY === "YOUR_SUPABASE_ANON_KEY"
-      ) {
-        throw new Error("Add your real Supabase URL and anon key inside form_response.html.");
-      }
-
-      await ensureSignedIn();
-      await loadFormDetails();
-      renderFormOverview();
-      renderSummary();
-      renderFilterOptions();
-      applyResponseFilters();
-      renderResponseList();
-    } catch (error) {
-      console.error("Form response page error:", error);
-
-      els.responseItemsList.innerHTML = `
-        <div class="empty-state" style="min-height:280px;">
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94A2 2 0 0 0 22.18 18L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <h3 class="empty-state-title">Unable to load responses</h3>
-            <p class="empty-state-text">${escapeHtml(error.message || "Something went wrong.")}</p>
-          </div>
-        </div>
-      `;
-
-      els.responseAnswersWrap.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94A2 2 0 0 0 22.18 18L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <h3 class="empty-state-title">Page not ready</h3>
-            <p class="empty-state-text">${escapeHtml(error.message || "Please try again.")}</p>
-          </div>
-        </div>
-      `;
-    }
-  }
-
-  bindEvents();
-  boot();
-</script>
+  <!-- PASTE YOUR JS BELOW -->
+  <script>
+    // Paste your JS here
+  </script>
 </body>
 </html>
