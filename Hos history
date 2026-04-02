@@ -1,42 +1,44 @@
 <section id="screen-history" class="screen">
   <div class="section-shell">
     <article class="panel history-panel">
-      <div class="panel-head history-head">
+      <div class="panel-head history-panel-head">
         <div>
           <div class="panel-title">Activity History</div>
-          <div class="panel-sub">Recent form activities.</div>
+          <div class="panel-sub">Recent form and school activities.</div>
         </div>
       </div>
 
-      <div class="panel-body history-body">
+      <div class="panel-body history-panel-body">
         <div class="history-toolbar">
           <div class="history-search-wrap">
-            <svg viewBox="0 0 24 24" fill="none" class="history-search-icon" aria-hidden="true">
+            <svg class="history-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M21 21L16.65 16.65M10.8 18.6A7.8 7.8 0 1 0 10.8 3a7.8 7.8 0 0 0 0 15.6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <input
-              type="text"
               id="historySearchInput"
               class="history-search-input"
+              type="text"
               placeholder="Search history"
+              autocomplete="off"
             />
           </div>
 
-          <div class="history-filter-group">
-            <label class="history-filter-label" for="historyFilterSelect">Filter by:</label>
+          <div class="history-select-group">
+            <span class="history-select-label">Filter by:</span>
             <select id="historyFilterSelect" class="history-select">
               <option value="all">All Activities</option>
-              <option value="published">Published Forms</option>
-              <option value="created">Created Forms</option>
-              <option value="updated">Updated Forms</option>
-              <option value="closed">Closed Forms</option>
-              <option value="archived">Archived Forms</option>
-              <option value="deleted">Deleted Forms</option>
+              <option value="FORM_CREATED">Form Created</option>
+              <option value="FORM_UPDATED">Form Updated</option>
+              <option value="FORM_PUBLISHED">Form Published</option>
+              <option value="FORM_CLOSED">Form Closed</option>
+              <option value="FORM_ARCHIVED">Form Archived</option>
+              <option value="FORM_DELETED">Form Deleted</option>
+              <option value="FORM_SUBMITTED">Form Submitted</option>
             </select>
           </div>
 
-          <div class="history-filter-group">
-            <label class="history-filter-label" for="historySortSelect">Sort by:</label>
+          <div class="history-select-group">
+            <span class="history-select-label">Sort by:</span>
             <select id="historySortSelect" class="history-select">
               <option value="recent">Most Recent</option>
               <option value="oldest">Oldest First</option>
@@ -44,9 +46,11 @@
           </div>
         </div>
 
-        <div class="history-list" id="historyLiveBox">
-          <div class="history-empty">
-            Live history will show here when connected.
+        <div class="history-list-wrap">
+          <div class="history-list" id="historyLiveBox">
+            <div class="history-empty">
+              Live history will show here when connected.
+            </div>
           </div>
         </div>
       </div>
@@ -59,11 +63,11 @@
     overflow:hidden;
   }
 
-  .history-head{
+  .history-panel-head{
     padding-bottom:18px;
   }
 
-  .history-body{
+  .history-panel-body{
     display:flex;
     flex-direction:column;
     gap:18px;
@@ -71,7 +75,7 @@
 
   .history-toolbar{
     display:grid;
-    grid-template-columns:minmax(240px,1fr) auto auto;
+    grid-template-columns:minmax(260px,1fr) auto auto;
     gap:14px;
     align-items:center;
   }
@@ -94,49 +98,55 @@
   .history-search-input,
   .history-select{
     width:100%;
-    min-height:52px;
-    border:1px solid #dbe5f2;
+    min-height:50px;
+    border:1px solid #dbe4f0;
     border-radius:14px;
     background:#fff;
     color:#0f172a;
-    padding:0 14px;
-    outline:none;
     font-size:15px;
+    outline:none;
+    transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
   }
 
   .history-search-input{
-    padding-left:42px;
+    padding:0 14px 0 42px;
+  }
+
+  .history-select{
+    padding:0 42px 0 14px;
+    min-width:190px;
+    cursor:pointer;
   }
 
   .history-search-input:focus,
   .history-select:focus{
     border-color:#3b82f6;
-    box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    box-shadow:0 0 0 4px rgba(59,130,246,.10);
   }
 
-  .history-filter-group{
+  .history-select-group{
     display:flex;
     align-items:center;
     gap:10px;
     white-space:nowrap;
   }
 
-  .history-filter-label{
+  .history-select-label{
     font-size:14px;
     font-weight:700;
-    color:#334155;
+    color:#475569;
   }
 
-  .history-select{
-    min-width:190px;
-    padding-right:38px;
+  .history-list-wrap{
+    border:1px solid #e5ebf5;
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
   }
 
   .history-list{
-    border:1px solid #e5eaf3;
-    border-radius:18px;
-    background:#fff;
-    overflow:hidden;
+    display:flex;
+    flex-direction:column;
   }
 
   .history-item{
@@ -146,8 +156,7 @@
     align-items:center;
     padding:20px 22px;
     border-bottom:1px solid #edf2f7;
-    cursor:pointer;
-    transition:background .18s ease, transform .18s ease;
+    transition:background .18s ease;
   }
 
   .history-item:last-child{
@@ -159,14 +168,29 @@
   }
 
   .history-status{
-    width:42px;
-    height:42px;
+    width:44px;
+    height:44px;
     border-radius:999px;
-    background:#22c55e;
     display:grid;
     place-items:center;
-    color:#fff;
     flex-shrink:0;
+    color:#fff;
+  }
+
+  .history-status.success{
+    background:linear-gradient(135deg,#22c55e 0%, #16a34a 100%);
+  }
+
+  .history-status.info{
+    background:linear-gradient(135deg,#3b82f6 0%, #2563eb 100%);
+  }
+
+  .history-status.warn{
+    background:linear-gradient(135deg,#f59e0b 0%, #d97706 100%);
+  }
+
+  .history-status.danger{
+    background:linear-gradient(135deg,#ef4444 0%, #dc2626 100%);
   }
 
   .history-status svg{
@@ -178,77 +202,75 @@
     min-width:0;
   }
 
-  .history-title{
-    margin:0 0 4px;
+  .history-title-text{
     font-size:17px;
     font-weight:800;
     color:#1e293b;
-    line-height:1.25;
+    line-height:1.28;
+    margin:0 0 4px;
   }
 
-  .history-sub{
-    margin:0;
+  .history-sub-text{
     font-size:14px;
     color:#64748b;
     line-height:1.45;
+    margin:0;
   }
 
   .history-time{
-    font-size:15px;
+    font-size:14px;
     color:#475569;
     white-space:nowrap;
   }
 
-  .history-btn{
+  .history-action-btn{
+    min-height:42px;
     border:none;
     border-radius:12px;
-    min-height:42px;
     padding:0 16px;
     background:linear-gradient(135deg,#635bff 0%, #4f46e5 100%);
     color:#fff;
     font-weight:800;
     cursor:pointer;
-    box-shadow:0 8px 20px rgba(79,70,229,.24);
+    box-shadow:0 8px 20px rgba(79,70,229,.20);
     transition:transform .18s ease, opacity .18s ease;
   }
 
-  .history-btn:hover{
+  .history-action-btn:hover{
     transform:translateY(-1px);
   }
 
-  .history-btn:active{
-    transform:translateY(0);
+  .history-action-btn.is-disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    box-shadow:none;
   }
 
-  .history-empty{
+  .history-empty,
+  .history-loading,
+  .history-error{
     padding:34px 18px;
     text-align:center;
-    color:#64748b;
     font-size:15px;
   }
 
+  .history-empty,
   .history-loading{
-    padding:30px 18px;
-    text-align:center;
-    color:#475569;
-    font-size:15px;
+    color:#64748b;
   }
 
   .history-error{
-    padding:24px 18px;
-    text-align:center;
     color:#b91c1c;
-    font-size:15px;
   }
 
-  @media (max-width: 980px){
+  @media (max-width: 960px){
     .history-toolbar{
       grid-template-columns:1fr;
     }
 
-    .history-filter-group{
-      width:100%;
+    .history-select-group{
       justify-content:space-between;
+      width:100%;
     }
 
     .history-select{
@@ -259,47 +281,42 @@
 
   @media (max-width: 720px){
     .history-item{
-      grid-template-columns:auto 1fr;
-      gap:14px;
+      grid-template-columns:auto minmax(0,1fr);
+      gap:12px;
     }
 
     .history-time{
       grid-column:2;
-      margin-top:-4px;
-      font-size:13px;
+      margin-top:-2px;
     }
 
-    .history-btn{
+    .history-action-btn{
       grid-column:2;
       justify-self:start;
-      margin-top:4px;
+      margin-top:2px;
     }
   }
 </style>
 
 <script>
 (function () {
-  if (window.__hosHistoryInitialized) return;
-  window.__hosHistoryInitialized = true;
+  if (window.__hosHistoryScreenReady) return;
+  window.__hosHistoryScreenReady = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-  const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-  const state = {
-    sb: null,
-    allItems: [],
-    filteredItems: [],
-    search: "",
-    filter: "all",
-    sort: "recent",
-  };
+  let historySb = null;
+  let historyRows = [];
+  let filteredHistoryRows = [];
 
-  function historyEl(id) {
-    return document.getElementById(id);
-  }
+  const historyBox = document.getElementById("historyLiveBox");
+  const historySearchInput = document.getElementById("historySearchInput");
+  const historyFilterSelect = document.getElementById("historyFilterSelect");
+  const historySortSelect = document.getElementById("historySortSelect");
 
   function escapeHtml(value) {
-    return String(value || "")
+    return String(value ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -311,25 +328,31 @@
     return String(value || "").trim().replace(/\s+/g, " ");
   }
 
-  function getAdminSession() {
+  function normalizeUpper(value) {
+    return normalizeText(value).toUpperCase();
+  }
+
+  function getHosSession() {
     try {
-      return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+      return JSON.parse(localStorage.getItem("colspot_hos_session") || "null");
     } catch {
       return null;
     }
   }
 
-  function getHosAdminId() {
-    const session = getAdminSession();
+  function getSchoolNameFromSession() {
+    const session = getHosSession();
     if (!session) return "";
 
-    if (session?.account?.id) return session.account.id;
-    if (session?.id) return session.id;
-
-    return "";
+    return (
+      session?.school_name ||
+      session?.admin?.school_name ||
+      session?.account?.school_name ||
+      ""
+    );
   }
 
-  function formatHistoryTime(value) {
+  function formatHistoryDate(value) {
     if (!value) return "";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
@@ -356,196 +379,232 @@
     })}, ${timeText}`;
   }
 
-  function getHistoryType(item) {
-    const actionType = String(item.action_type || "").toUpperCase();
+  function getStatusClass(activityType) {
+    const type = String(activityType || "").toUpperCase();
 
-    if (actionType === "FORM_PUBLISHED") return "published";
-    if (actionType === "FORM_CREATED") return "created";
-    if (actionType === "FORM_UPDATED") return "updated";
-    if (actionType === "FORM_CLOSED") return "closed";
-    if (actionType === "FORM_ARCHIVED") return "archived";
-    if (actionType === "FORM_DELETED") return "deleted";
-
-    return "other";
+    if (type === "FORM_DELETED") return "danger";
+    if (type === "FORM_ARCHIVED" || type === "FORM_CLOSED") return "warn";
+    if (type === "FORM_UPDATED" || type === "FORM_CREATED") return "info";
+    return "success";
   }
 
-  function getHistorySubtitle(item) {
-    const type = getHistoryType(item);
+  function getHistoryIcon(activityType) {
+    const type = String(activityType || "").toUpperCase();
 
-    if (type === "published") return "Form published successfully.";
-    if (type === "created") return "Form created successfully.";
-    if (type === "updated") return "Form updated successfully.";
-    if (type === "closed") return "Form closed successfully.";
-    if (type === "archived") return "Form archived successfully.";
-    if (type === "deleted") return "Form deleted successfully.";
+    if (type === "FORM_DELETED") {
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
 
-    return item.description || "Recent form activity.";
+    if (type === "FORM_UPDATED" || type === "FORM_CREATED") {
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 20h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+
+    if (type === "FORM_ARCHIVED" || type === "FORM_CLOSED") {
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M23 3H1v5h22V3Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 12h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+
+    return `
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
   }
 
-  function getResponseUrl(item) {
-    const formId =
-      item?.entity_id ||
-      item?.payload?.form_id ||
-      item?.payload?.entity_id ||
-      "";
+  function getHistoryUrl(row) {
+    const entityType = String(row.entity_type || "").toLowerCase();
+    const entityId = row.entity_id || row?.meta_json?.form_id || "";
 
-    if (!formId) return "";
-    return `form_response.html?form_id=${encodeURIComponent(formId)}`;
+    if (!entityId) return "";
+
+    if (entityType === "form") {
+      return `form_response.html?form_id=${encodeURIComponent(entityId)}`;
+    }
+
+    if (entityType === "form_submission") {
+      const formId = row?.meta_json?.form_id || "";
+      if (formId) {
+        return `form_response.html?form_id=${encodeURIComponent(formId)}`;
+      }
+    }
+
+    return "";
   }
 
-  function canViewResponses(item) {
-    return getHistoryType(item) === "published" && !!getResponseUrl(item);
+  function getButtonLabel(row) {
+    const type = String(row.activity_type || "").toUpperCase();
+
+    if (type === "FORM_PUBLISHED" || type === "FORM_SUBMITTED") {
+      return "View Responses";
+    }
+
+    if (type === "FORM_CREATED" || type === "FORM_UPDATED") {
+      return "Open Form";
+    }
+
+    return "Open";
   }
 
-  function renderHistoryList() {
-    const box = historyEl("historyLiveBox");
-    if (!box) return;
+  function renderHistoryRows() {
+    if (!historyBox) return;
 
-    if (!state.filteredItems.length) {
-      box.innerHTML = `
+    if (!filteredHistoryRows.length) {
+      historyBox.innerHTML = `
         <div class="history-empty">
-          No history found for this filter.
+          No history found for this school yet.
         </div>
       `;
       return;
     }
 
-    box.innerHTML = state.filteredItems.map((item) => {
-      const buttonHtml = canViewResponses(item)
-        ? `<button type="button" class="history-btn" data-view-history-response="${escapeHtml(getResponseUrl(item))}">View Responses</button>`
-        : `<button type="button" class="history-btn" style="opacity:.45;pointer-events:none;">No Response Page</button>`;
+    historyBox.innerHTML = filteredHistoryRows.map((row) => {
+      const buttonUrl = getHistoryUrl(row);
+      const buttonLabel = getButtonLabel(row);
+      const buttonDisabled = !buttonUrl;
 
       return `
-        <div class="history-item" data-history-response-url="${escapeHtml(getResponseUrl(item))}">
-          <div class="history-status" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <div class="history-item" data-history-url="${escapeHtml(buttonUrl)}">
+          <div class="history-status ${escapeHtml(getStatusClass(row.activity_type))}">
+            ${getHistoryIcon(row.activity_type)}
           </div>
 
           <div class="history-main">
-            <h3 class="history-title">${escapeHtml(item.title || "Form Activity")}</h3>
-            <p class="history-sub">${escapeHtml(getHistorySubtitle(item))}</p>
+            <h3 class="history-title-text">${escapeHtml(row.title || "Activity")}</h3>
+            <p class="history-sub-text">${escapeHtml(row.description || "Recent school activity.")}</p>
           </div>
 
-          <div class="history-time">${escapeHtml(formatHistoryTime(item.created_at))}</div>
+          <div class="history-time">${escapeHtml(formatHistoryDate(row.created_at))}</div>
 
-          ${buttonHtml}
+          <button
+            type="button"
+            class="history-action-btn ${buttonDisabled ? "is-disabled" : ""}"
+            data-history-btn-url="${escapeHtml(buttonUrl)}"
+            ${buttonDisabled ? "disabled" : ""}
+          >
+            ${escapeHtml(buttonLabel)}
+          </button>
         </div>
       `;
     }).join("");
   }
 
   function applyHistoryFilters() {
-    const search = state.search.toLowerCase();
+    const searchValue = String(historySearchInput?.value || "").trim().toLowerCase();
+    const filterValue = String(historyFilterSelect?.value || "all");
+    const sortValue = String(historySortSelect?.value || "recent");
 
-    let items = [...state.allItems];
+    let rows = [...historyRows];
 
-    if (state.filter !== "all") {
-      items = items.filter((item) => getHistoryType(item) === state.filter);
+    if (filterValue !== "all") {
+      rows = rows.filter((row) => String(row.activity_type || "").toUpperCase() === filterValue);
     }
 
-    if (search) {
-      items = items.filter((item) => {
-        const title = String(item.title || "").toLowerCase();
-        const description = String(item.description || "").toLowerCase();
-        const actionType = String(item.action_type || "").toLowerCase();
-        return (
-          title.includes(search) ||
-          description.includes(search) ||
-          actionType.includes(search)
-        );
+    if (searchValue) {
+      rows = rows.filter((row) => {
+        const haystack = [
+          row.title,
+          row.description,
+          row.activity_type,
+          row.entity_type,
+          row.actor_name,
+          row.target_name,
+          row?.meta_json?.form_title,
+        ]
+          .map((v) => String(v || "").toLowerCase())
+          .join(" ");
+
+        return haystack.includes(searchValue);
       });
     }
 
-    items.sort((a, b) => {
+    rows.sort((a, b) => {
       const aTime = new Date(a.created_at || 0).getTime();
       const bTime = new Date(b.created_at || 0).getTime();
-      return state.sort === "oldest" ? aTime - bTime : bTime - aTime;
+      return sortValue === "oldest" ? aTime - bTime : bTime - aTime;
     });
 
-    state.filteredItems = items;
-    renderHistoryList();
+    filteredHistoryRows = rows;
+    renderHistoryRows();
   }
 
-  async function loadHistory() {
-    const box = historyEl("historyLiveBox");
-    if (!box) return;
+  async function loadHosHistory() {
+    if (!historyBox) return;
 
-    const hosAdminId = getHosAdminId();
-    if (!hosAdminId) {
-      box.innerHTML = `
+    const schoolName = getSchoolNameFromSession();
+    if (!schoolName) {
+      historyBox.innerHTML = `
         <div class="history-error">
-          HOS session not found. Please sign in again.
+          School session not found. Please sign in again.
         </div>
       `;
       return;
     }
 
-    box.innerHTML = `<div class="history-loading">Loading history...</div>`;
+    historyBox.innerHTML = `<div class="history-loading">Loading history...</div>`;
 
     try {
-      state.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      historySb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const { data, error } = await state.sb
-        .from("hos_activity_history")
-        .select("id, title, description, action_type, entity_type, entity_id, payload, created_at")
-        .eq("hos_admin_id", hosAdminId)
-        .eq("entity_type", "form")
+      const { data, error } = await historySb
+        .from("hos_history")
+        .select("id, school_name, activity_type, title, description, entity_type, entity_id, actor_name, actor_role, target_name, meta_json, created_at")
+        .eq("school_name", schoolName)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      state.allItems = Array.isArray(data) ? data : [];
+      historyRows = Array.isArray(data) ? data : [];
       applyHistoryFilters();
-    } catch (err) {
-      console.error("History load error:", err);
-      box.innerHTML = `
+    } catch (error) {
+      console.error("History load error:", error);
+      historyBox.innerHTML = `
         <div class="history-error">
-          Could not load history.
+          Could not load history right now.
         </div>
       `;
     }
   }
 
   function bindHistoryEvents() {
-    const searchInput = historyEl("historySearchInput");
-    const filterSelect = historyEl("historyFilterSelect");
-    const sortSelect = historyEl("historySortSelect");
-    const listBox = historyEl("historyLiveBox");
+    historySearchInput?.addEventListener("input", applyHistoryFilters);
+    historyFilterSelect?.addEventListener("change", applyHistoryFilters);
+    historySortSelect?.addEventListener("change", applyHistoryFilters);
 
-    searchInput?.addEventListener("input", function () {
-      state.search = this.value || "";
-      applyHistoryFilters();
-    });
-
-    filterSelect?.addEventListener("change", function () {
-      state.filter = this.value || "all";
-      applyHistoryFilters();
-    });
-
-    sortSelect?.addEventListener("change", function () {
-      state.sort = this.value || "recent";
-      applyHistoryFilters();
-    });
-
-    listBox?.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-view-history-response]");
+    historyBox?.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-history-btn-url]");
       if (button) {
-        const url = button.getAttribute("data-view-history-response");
-        if (url) window.location.href = url;
+        const url = button.getAttribute("data-history-btn-url");
+        if (url) {
+          window.location.href = url;
+        }
         return;
       }
 
-      const card = event.target.closest(".history-item");
-      if (!card) return;
+      const row = event.target.closest(".history-item");
+      if (!row) return;
 
-      const url = card.getAttribute("data-history-response-url");
-      if (url) window.location.href = url;
+      const url = row.getAttribute("data-history-url");
+      if (url) {
+        window.location.href = url;
+      }
     });
   }
 
   bindHistoryEvents();
-  loadHistory();
+  loadHosHistory();
 })();
 </script>
