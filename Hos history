@@ -332,22 +332,24 @@
     return normalizeText(value).toUpperCase();
   }
 
-  function getHosSession() {
+  function getAdminSession() {
     try {
-      return JSON.parse(localStorage.getItem("colspot_hos_session") || "null");
+      return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
     } catch {
       return null;
     }
   }
 
-  function getSchoolNameFromSession() {
-    const session = getHosSession();
+  function getSchoolNameFromSession(session) {
     if (!session) return "";
 
-    return (
-      session?.school_name ||
-      session?.admin?.school_name ||
-      session?.account?.school_name ||
+    const account = session.account || {};
+
+    return normalizeText(
+      account.school_name ||
+      session.school_name ||
+      session.school ||
+      session.schoolName ||
       ""
     );
   }
@@ -544,7 +546,12 @@
   async function loadHosHistory() {
     if (!historyBox) return;
 
-    const schoolName = getSchoolNameFromSession();
+    const adminSession = getAdminSession();
+    const schoolName = getSchoolNameFromSession(adminSession);
+
+    console.log("History admin session:", adminSession);
+    console.log("History school name:", schoolName);
+
     if (!schoolName) {
       historyBox.innerHTML = `
         <div class="history-error">
