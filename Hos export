@@ -1247,3 +1247,874 @@
     </main>
   </div>
 </div>
+<script>
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const FORM_RESPONSE_FUNCTION = "form-response-manager";
+
+let exportSupabase = null;
+let exportFormId = null;
+let exportBundle = null;
+let exportChoice = "all";
+let exportFormat = "excel";
+let exportSelectedResponseId = null;
+let exportCustomSelectedColumns = new Set();
+
+document.addEventListener("DOMContentLoaded", () => {
+  initExportPage().catch((err) => {
+    console.error("export page init error:", err);
+    alert(err?.message || "Failed to load export page.");
+  });
+});
+
+async function initExportPage() {
+  ensureSupabaseReady();
+  exportSupabase = getExportSupabaseClient();
+  exportFormId = getFormIdFromUrl();
+
+  if (!exportFormId) {
+    throw new Error("form_id is missing in the URL.");
+  }
+
+  wireSidebarLinks();
+  wireChoiceCards();
+  wireFormatCards();
+  wireFilterControls();
+  wireActionButtons();
+  wireCustomBuilder();
+
+  await loadExportBundle();
+}
+
+function ensureSupabaseReady() {
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    throw new Error("Supabase browser library is not loaded.");
+  }
+}
+
+function getExportSupabaseClient() {
+  if (window.__colspotExportSupabase) {
+    return window.__colspotExportSupabase;
+  }
+
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_ANON_KEY ||
+    SUPABASE_URL.includes("YOUR_SUPABASE_URL") ||
+    SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
+  ) {
+    throw new Error("Set your real SUPABASE_URL and SUPABASE_ANON_KEY.");
+  }
+
+  window.__colspotExportSupabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  return window.__colspotExportSupabase;
+}
+
+function getFormIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return cleanText(params.get("form_id"));
+}
+
+function wireSidebarLinks() {
+  const links = Array.from(document.querySelectorAll(".side-link"));
+  if (links.length < 4) return;
+
+  links[0].addEventListener("click", () => goToFormResponseTab("summary"));
+  links[1].addEventListener("click", () => goToFormResponseTab("questions"));
+  links[2].addEventListener("click", () => goToFormResponseTab("individual"));
+  links[3].addEventListener("click", () => goToFormResponseTab("export"));
+}
+
+function goToFormResponseTab(tab) {
+  const url = new URL(window.location.href);
+
+  if (tab === "export") {
+    return;
+  }
+
+  const target = new URL("form_response.html", window.location.href);
+  target.searchParams.set("form_id", exportFormId);
+  target.searchParams.set("tab", tab);
+  window.location.href = target.toString();
+}
+
+function wireChoiceCards() {
+  document.querySelectorAll(".choice-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      exportChoice = cleanText(card.dataset.exportChoice || "all").toLowerCase();
+      setActiveChoiceCard();
+      renderExportPreview();
+    });
+  });
+}
+
+function setActiveChoiceCard() {
+  document.querySelectorAll(".choice-card").forEach((card) => {
+    const isActive = cleanText(card.dataset.exportChoice).toLowerCase() === exportChoice;
+    card.classList.toggle("active", isActive);
+  });
+}
+
+function wireFormatCards() {
+  document.querySelectorAll(".format-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      exportFormat = cleanText(card.dataset.format || "excel").toLowerCase();
+      setActiveFormatCard();
+      renderExportPreview();
+    });
+  });
+}
+
+function setActiveFormatCard() {
+  document.querySelectorAll(".format-card").forEach((card) => {
+    const isActive = cleanText(card.dataset.format).toLowerCase() === exportFormat;
+    card.classList.toggle("active", isActive);
+  });
+}
+
+function wireFilterControls() {
+  const searchInput = document.getElementById("exportSearchInput");
+  const programmeSelect = document.getElementById("exportProgrammeSelect");
+  const levelSelect = document.getElementById("exportLevelSelect");
+  const identitySelect = document.getElementById("exportIdentitySelect");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", debounce(() => {
+      renderExportPreview();
+    }, 180));
+  }
+
+  if (programmeSelect) {
+    programmeSelect.addEventListener("change", () => renderExportPreview());
+  }
+
+  if (levelSelect) {
+    levelSelect.addEventListener("change", () => renderExportPreview());
+  }
+
+  if (identitySelect) {
+    identitySelect.addEventListener("change", () => renderExportPreview());
+  }
+}
+
+function wireActionButtons() {
+  const refreshBtn = document.getElementById("refreshExportPreviewBtn");
+  const exportBtn = document.getElementById("downloadExportBtn");
+  const topExportBtn = document.getElementById("quickExportTopBtn");
+  const historyBtn = document.getElementById("exportHistoryBtn");
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      try {
+        await loadExportBundle();
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    });
+  }
+
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      exportCurrentPreview();
+    });
+  }
+
+  if (topExportBtn) {
+    topExportBtn.addEventListener("click", () => {
+      exportCurrentPreview();
+    });
+  }
+
+  if (historyBtn) {
+    historyBtn.addEventListener("click", () => {
+      alert("Export history UI can be connected next.");
+    });
+  }
+}
+
+function wireCustomBuilder() {
+  const checkboxes = Array.from(document.querySelectorAll(".check-tile input[type='checkbox']"));
+
+  checkboxes.forEach((input) => {
+    const label = input.closest(".check-tile")?.querySelector("span");
+    const key = cleanText(label?.textContent);
+
+    if (input.checked && key) {
+      exportCustomSelectedColumns.add(key);
+    }
+
+    input.addEventListener("change", () => {
+      if (!key) return;
+      if (input.checked) exportCustomSelectedColumns.add(key);
+      else exportCustomSelectedColumns.delete(key);
+      renderCustomSelectedColumns();
+    });
+  });
+
+  const createBtn = document.getElementById("createCustomExportBtn");
+  if (createBtn) {
+    createBtn.addEventListener("click", () => {
+      exportCustomTable();
+    });
+  }
+
+  renderCustomSelectedColumns();
+}
+
+async function loadExportBundle() {
+  const result = await invokeFormResponseManager({
+    action: "get_form_response_bundle",
+    form_id: exportFormId,
+    ...getActorPayloadFromSession()
+  });
+
+  if (!result?.ok) {
+    throw new Error(result?.error || "Failed to load export data.");
+  }
+
+  exportBundle = result;
+  hydrateExportHeader();
+  hydrateFilterOptions();
+  setActiveChoiceCard();
+  setActiveFormatCard();
+  renderExportPreview();
+}
+
+function hydrateExportHeader() {
+  const form = exportBundle?.form || {};
+  const summary = exportBundle?.summary || {};
+
+  setText("exportSchoolName", form.school_name || "—");
+  setText("exportFormTitle", form.title || "Untitled Form");
+  setText("exportAudienceMeta", buildAudienceText(form));
+  setText(
+    "exportResponsesMeta",
+    `${Number(summary.total_responses || 0)} response${Number(summary.total_responses || 0) === 1 ? "" : "s"}`
+  );
+  setText("exportIdentityMeta", formatIdentityMode(form.identity_mode));
+  setText(
+    "exportLastSubmissionMeta",
+    summary.latest_submission
+      ? `Last submission: ${formatDateTime(summary.latest_submission)}`
+      : "Last submission: —"
+  );
+}
+
+function hydrateFilterOptions() {
+  const programmeSelect = document.getElementById("exportProgrammeSelect");
+  const levelSelect = document.getElementById("exportLevelSelect");
+
+  const rows = Array.isArray(exportBundle?.individual_responses)
+    ? exportBundle.individual_responses
+    : [];
+
+  const programmes = uniqueValues(
+    rows.map((row) => cleanText(row.programme)).filter(Boolean)
+  ).sort((a, b) => a.localeCompare(b));
+
+  const levels = uniqueValues(
+    rows.map((row) => cleanText(row.level)).filter(Boolean)
+  ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+  if (programmeSelect) {
+    const current = programmeSelect.value;
+    programmeSelect.innerHTML = `<option value="">All programmes</option>` +
+      programmes.map((p) => `<option value="${escapeHtmlAttr(p)}">${escapeHtml(p)}</option>`).join("");
+    if (programmes.includes(current)) programmeSelect.value = current;
+  }
+
+  if (levelSelect) {
+    const current = levelSelect.value;
+    levelSelect.innerHTML = `<option value="">All levels</option>` +
+      levels.map((l) => `<option value="${escapeHtmlAttr(l)}">${escapeHtml(l)}</option>`).join("");
+    if (levels.includes(current)) levelSelect.value = current;
+  }
+}
+
+function renderExportPreview() {
+  if (!exportBundle) return;
+
+  const form = exportBundle.form || {};
+  const allRows = Array.isArray(exportBundle.individual_responses)
+    ? exportBundle.individual_responses
+    : [];
+  const questions = Array.isArray(exportBundle.questions)
+    ? exportBundle.questions
+    : [];
+  const questionSummaries = Array.isArray(exportBundle.question_summaries)
+    ? exportBundle.question_summaries
+    : [];
+
+  let previewTitle = "";
+  let previewSubtitle = "";
+  let tableColumns = [];
+  let tableRows = [];
+
+  if (exportChoice === "all") {
+    const rows = allRows.slice();
+    tableColumns = buildAllResponseColumns(questions);
+    tableRows = buildAllResponseRows(rows, questions);
+
+    previewTitle = "All responses export preview";
+    previewSubtitle = "This preview shows every response that will be exported for this form.";
+
+    toggleFiltersSection(false);
+  } else if (exportChoice === "filtered") {
+    const rows = getFilteredRows(allRows);
+    tableColumns = buildAllResponseColumns(questions);
+    tableRows = buildAllResponseRows(rows, questions);
+
+    previewTitle = "Filtered responses export preview";
+    previewSubtitle = `This preview shows ${rows.length} matching response${rows.length === 1 ? "" : "s"} for the selected filters.`;
+
+    toggleFiltersSection(true);
+  } else if (exportChoice === "single") {
+    const rows = getFilteredRows(allRows);
+    const selected = resolveSingleRespondent(rows);
+    tableColumns = buildSingleResponseColumns();
+    tableRows = selected ? [buildSingleResponseRow(selected)] : [];
+
+    previewTitle = "Single respondent export preview";
+    previewSubtitle = selected
+      ? `This preview shows the selected respondent that will be exported.`
+      : "No matching respondent found for the current filters.";
+
+    toggleFiltersSection(true);
+  } else {
+    const rows = questionSummaries.slice();
+    tableColumns = buildQuestionSummaryColumns();
+    tableRows = buildQuestionSummaryRows(rows);
+
+    previewTitle = "Question summary export preview";
+    previewSubtitle = "This preview shows grouped question statistics that will be exported.";
+
+    toggleFiltersSection(false);
+  }
+
+  setText("exportPreviewTitle", previewTitle);
+  setText("exportPreviewSubtitle", previewSubtitle);
+  setText("exportRowsCount", String(tableRows.length));
+  setText("exportColumnsCount", String(tableColumns.length));
+  setText("exportTypeLabel", toTitleCase(exportChoice));
+
+  renderColumnsChips(tableColumns);
+  renderPreviewTable(tableColumns, tableRows);
+  updateDownloadButtons();
+}
+
+function toggleFiltersSection(show) {
+  const filtersSection = document.getElementById("exportSearchInput")?.closest(".section-card");
+  if (!filtersSection) return;
+
+  filtersSection.style.display = show ? "" : "none";
+}
+
+function buildAllResponseColumns(questions) {
+  const base = [
+    { key: "full_name", label: "Student Name" },
+    { key: "matric_number", label: "Matric Number" },
+    { key: "programme", label: "Programme" },
+    { key: "level", label: "Level" },
+    { key: "submitted_at", label: "Submitted At" }
+  ];
+
+  const questionCols = questions.map((q, index) => ({
+    key: `q_${q.id}`,
+    label: q.question_text || `Question ${index + 1}`
+  }));
+
+  return [...base, ...questionCols];
+}
+
+function buildAllResponseRows(rows, questions) {
+  return rows.map((row) => {
+    const out = {
+      full_name: row.full_name || "—",
+      matric_number: row.matric_number || "—",
+      programme: row.programme || "—",
+      level: row.level || "—",
+      submitted_at: row.submitted_at ? formatDateTime(row.submitted_at) : "—"
+    };
+
+    questions.forEach((q) => {
+      out[`q_${q.id}`] = "Will load from backend detail export";
+    });
+
+    return out;
+  });
+}
+
+function buildSingleResponseColumns() {
+  return [
+    { key: "full_name", label: "Student Name" },
+    { key: "matric_number", label: "Matric Number" },
+    { key: "programme", label: "Programme" },
+    { key: "level", label: "Level" },
+    { key: "submitted_at", label: "Submitted At" }
+  ];
+}
+
+function buildSingleResponseRow(row) {
+  return {
+    full_name: row.full_name || "—",
+    matric_number: row.matric_number || "—",
+    programme: row.programme || "—",
+    level: row.level || "—",
+    submitted_at: row.submitted_at ? formatDateTime(row.submitted_at) : "—"
+  };
+}
+
+function buildQuestionSummaryColumns() {
+  return [
+    { key: "question_text", label: "Question" },
+    { key: "question_type", label: "Type" },
+    { key: "answered_count", label: "Answered" },
+    { key: "total_answers", label: "Total Answers" },
+    { key: "top_options", label: "Top Options" }
+  ];
+}
+
+function buildQuestionSummaryRows(rows) {
+  return rows.map((row) => ({
+    question_text: row.question_text || "—",
+    question_type: formatQuestionType(row.question_type),
+    answered_count: String(Number(row.answered_count || 0)),
+    total_answers: String(Number(row.total_answers || 0)),
+    top_options: Array.isArray(row.options) && row.options.length
+      ? row.options.slice(0, 3).map((opt) => `${opt.label} (${opt.count})`).join(", ")
+      : "—"
+  }));
+}
+
+function renderColumnsChips(columns) {
+  const wrap = document.getElementById("exportColumnsChips");
+  if (!wrap) return;
+
+  wrap.innerHTML = columns.map((col) => `
+    <span class="col-chip">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path>
+      </svg>
+      ${escapeHtml(col.label)}
+    </span>
+  `).join("");
+}
+
+function renderPreviewTable(columns, rows) {
+  const table = document.querySelector(".export-table");
+  const theadRow = table?.querySelector("thead tr");
+  const tbody = document.getElementById("exportPreviewTableBody");
+  if (!theadRow || !tbody) return;
+
+  theadRow.innerHTML = columns.map((col) => `<th>${escapeHtml(col.label)}</th>`).join("");
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="${columns.length}" class="answer-cell">No matching rows found for this export view.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((row) => {
+    return `<tr>${
+      columns.map((col) => {
+        const value = row[col.key];
+        return `<td class="${col.key.startsWith("q_") || col.key === "top_options" ? "answer-cell" : ""}">${escapeHtml(String(value ?? "—"))}</td>`;
+      }).join("")
+    }</tr>`;
+  }).join("");
+}
+
+function getFilteredRows(rows) {
+  const search = cleanText(document.getElementById("exportSearchInput")?.value).toLowerCase();
+  const programme = cleanText(document.getElementById("exportProgrammeSelect")?.value);
+  const level = cleanText(document.getElementById("exportLevelSelect")?.value);
+  const identity = cleanText(document.getElementById("exportIdentitySelect")?.value).toLowerCase();
+
+  return rows.filter((row) => {
+    const name = cleanText(row.full_name);
+    const matric = cleanText(row.matric_number);
+    const programmeOk = !programme || cleanText(row.programme) === programme;
+    const levelOk = !level || cleanText(row.level) === level;
+
+    let identityOk = true;
+    if (identity === "identified only") identityOk = !row.is_anonymous;
+    if (identity === "anonymous only") identityOk = !!row.is_anonymous;
+
+    let searchOk = true;
+    if (search) {
+      const hay = [
+        cleanText(row.full_name),
+        cleanText(row.matric_number),
+        cleanText(row.programme),
+        cleanText(row.level)
+      ].join(" ").toLowerCase();
+      searchOk = hay.includes(search);
+    }
+
+    return programmeOk && levelOk && identityOk && searchOk && (name || matric || row.response_id);
+  });
+}
+
+function resolveSingleRespondent(rows) {
+  if (!rows.length) {
+    exportSelectedResponseId = null;
+    return null;
+  }
+
+  if (exportSelectedResponseId) {
+    const found = rows.find((row) => String(row.response_id) === String(exportSelectedResponseId));
+    if (found) return found;
+  }
+
+  exportSelectedResponseId = rows[0].response_id;
+  return rows[0];
+}
+
+function updateDownloadButtons() {
+  const exportBtn = document.getElementById("downloadExportBtn");
+  const topBtn = document.getElementById("quickExportTopBtn");
+  const text = getDownloadButtonText();
+
+  if (exportBtn) {
+    const span = exportBtn.querySelector("span");
+    if (span) span.textContent = text;
+  }
+
+  if (topBtn) {
+    const span = topBtn.querySelector("span");
+    if (span) span.textContent = text;
+  }
+}
+
+function getDownloadButtonText() {
+  if (exportFormat === "excel") return "Export Excel";
+  if (exportFormat === "csv") return "Export CSV";
+  if (exportFormat === "pdf") return "Export PDF";
+  if (exportFormat === "word") return "Export Word";
+  return "Export";
+}
+
+function renderCustomSelectedColumns() {
+  const selectedWrap = document.querySelector(".selected-columns");
+  if (!selectedWrap) return;
+
+  const values = Array.from(exportCustomSelectedColumns);
+
+  selectedWrap.innerHTML = values.length
+    ? values.map((label) => `<span class="mini-badge">${escapeHtml(label)}</span>`).join("")
+    : `<span class="mini-badge">No column selected</span>`;
+}
+
+function exportCustomTable() {
+  const rows = getFilteredRows(Array.isArray(exportBundle?.individual_responses) ? exportBundle.individual_responses : []);
+  const selected = Array.from(exportCustomSelectedColumns);
+
+  if (!selected.length) {
+    alert("Select at least one column for your custom table.");
+    return;
+  }
+
+  if (!rows.length) {
+    alert("No matching responses to export.");
+    return;
+  }
+
+  const csv = buildCustomCsv(selected, rows);
+  downloadBlob(csv, buildDownloadName("custom-table", "csv"), "text/csv;charset=utf-8;");
+}
+
+function buildCustomCsv(selectedLabels, rows) {
+  const labelToValue = (row, label) => {
+    const key = cleanText(label).toLowerCase();
+
+    if (key === "student name") return row.full_name || "";
+    if (key === "matric number") return row.matric_number || "";
+    if (key === "programme") return row.programme || "";
+    if (key === "level") return row.level || "";
+    if (key === "submission date") return row.submitted_at ? formatDateTime(row.submitted_at) : "";
+    if (key === "response id") return row.response_id || "";
+
+    return "";
+  };
+
+  const header = selectedLabels.map(csvEscape).join(",");
+  const body = rows.map((row) => selectedLabels.map((label) => csvEscape(labelToValue(row, label))).join(",")).join("\n");
+  return `${header}\n${body}`;
+}
+
+function exportCurrentPreview() {
+  const rows = getPreviewRowsForExport();
+  const columns = getPreviewColumnsForExport();
+
+  if (!rows.length) {
+    alert("No rows available to export.");
+    return;
+  }
+
+  if (exportFormat === "csv") {
+    const csv = buildCsv(columns, rows);
+    downloadBlob(csv, buildDownloadName(exportChoice, "csv"), "text/csv;charset=utf-8;");
+    return;
+  }
+
+  if (exportFormat === "excel") {
+    const csv = buildCsv(columns, rows);
+    downloadBlob(csv, buildDownloadName(exportChoice, "csv"), "text/csv;charset=utf-8;");
+    return;
+  }
+
+  if (exportFormat === "pdf" || exportFormat === "word") {
+    const text = buildPlainTextExport(columns, rows);
+    const ext = exportFormat === "pdf" ? "txt" : "txt";
+    downloadBlob(text, buildDownloadName(exportChoice, ext), "text/plain;charset=utf-8;");
+    return;
+  }
+
+  alert("Unsupported export format.");
+}
+
+function getPreviewColumnsForExport() {
+  if (exportChoice === "summary") return buildQuestionSummaryColumns();
+  if (exportChoice === "single") return buildSingleResponseColumns();
+
+  const questions = Array.isArray(exportBundle?.questions) ? exportBundle.questions : [];
+  return buildAllResponseColumns(questions);
+}
+
+function getPreviewRowsForExport() {
+  const allRows = Array.isArray(exportBundle?.individual_responses)
+    ? exportBundle.individual_responses
+    : [];
+  const questions = Array.isArray(exportBundle?.questions)
+    ? exportBundle.questions
+    : [];
+  const questionSummaries = Array.isArray(exportBundle?.question_summaries)
+    ? exportBundle.question_summaries
+    : [];
+
+  if (exportChoice === "all") {
+    return buildAllResponseRows(allRows.slice(), questions);
+  }
+
+  if (exportChoice === "filtered") {
+    return buildAllResponseRows(getFilteredRows(allRows), questions);
+  }
+
+  if (exportChoice === "single") {
+    const selected = resolveSingleRespondent(getFilteredRows(allRows));
+    return selected ? [buildSingleResponseRow(selected)] : [];
+  }
+
+  return buildQuestionSummaryRows(questionSummaries);
+}
+
+function buildCsv(columns, rows) {
+  const header = columns.map((c) => csvEscape(c.label)).join(",");
+  const body = rows
+    .map((row) => columns.map((c) => csvEscape(row[c.key] ?? "")).join(","))
+    .join("\n");
+
+  return `${header}\n${body}`;
+}
+
+function buildPlainTextExport(columns, rows) {
+  const lines = [];
+  lines.push(`Export Type: ${toTitleCase(exportChoice)}`);
+  lines.push(`Form: ${cleanText(exportBundle?.form?.title) || "Untitled Form"}`);
+  lines.push(`Rows: ${rows.length}`);
+  lines.push("");
+
+  rows.forEach((row, index) => {
+    lines.push(`Row ${index + 1}`);
+    columns.forEach((col) => {
+      lines.push(`${col.label}: ${row[col.key] ?? ""}`);
+    });
+    lines.push("");
+  });
+
+  return lines.join("\n");
+}
+
+function buildDownloadName(type, ext) {
+  const formName = slugify(cleanText(exportBundle?.form?.title) || "form-responses");
+  return `${formName}-${type}.${ext}`;
+}
+
+function downloadBlob(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function invokeFormResponseManager(payload) {
+  console.log("EXPORT BODY SENT:", JSON.stringify(payload, null, 2));
+
+  const { data, error } = await exportSupabase.functions.invoke(
+    FORM_RESPONSE_FUNCTION,
+    { body: payload }
+  );
+
+  console.log("EXPORT RAW DATA:", data);
+  console.log("EXPORT RAW ERROR:", error);
+
+  if (error) {
+    throw new Error(error.message || "Edge function request failed.");
+  }
+
+  if (!data?.ok) {
+    throw new Error(data?.error || "Could not load export preview.");
+  }
+
+  return data;
+}
+
+function getActorPayloadFromSession() {
+  const keys = [
+    "colspot_hos_session",
+    "colspot_admin_session",
+    "hos_session",
+    "admin_session",
+    "colspot_session"
+  ];
+
+  for (const key of keys) {
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
+
+    try {
+      const parsed = JSON.parse(raw);
+
+      if (parsed?.hos_admin_id) return { hos_admin_id: parsed.hos_admin_id };
+      if (parsed?.form_agent_id) return { form_agent_id: parsed.form_agent_id };
+
+      if (parsed?.id && cleanText(parsed.role).toLowerCase() === "hos") {
+        return { hos_admin_id: parsed.id };
+      }
+
+      if (parsed?.id && cleanText(parsed.role).toLowerCase() === "form_agent") {
+        return { form_agent_id: parsed.id };
+      }
+
+      if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "hos") {
+        return { hos_admin_id: parsed.account.id };
+      }
+
+      if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "form_agent") {
+        return { form_agent_id: parsed.account.id };
+      }
+    } catch (_) {}
+  }
+
+  throw new Error("Admin session not found. Please sign in again.");
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value ?? "";
+}
+
+function buildAudienceText(form) {
+  const audienceMode = cleanText(form.audience_mode || "all_students");
+
+  if (audienceMode !== "programme_filter") {
+    return "All students";
+  }
+
+  const targets = Array.isArray(form.programme_targets) ? form.programme_targets : [];
+  if (!targets.length) return "Programme filter";
+
+  const first = targets[0];
+  const programme = toTitleCase(cleanText(first.programme_name));
+  const levels = Array.isArray(first.levels) ? first.levels.join(", ") : "";
+  return `${programme} ${levels}`.trim();
+}
+
+function formatIdentityMode(mode) {
+  return cleanText(mode) === "anonymous" ? "Anonymous" : "Use login identity";
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString([], {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function formatQuestionType(value) {
+  const v = cleanText(value).replaceAll("_", " ");
+  return toTitleCase(v);
+}
+
+function cleanText(value) {
+  return String(value ?? "").trim();
+}
+
+function toTitleCase(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function uniqueValues(arr) {
+  return [...new Set(arr)];
+}
+
+function csvEscape(value) {
+  const s = String(value ?? "");
+  if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+    return `"${s.replaceAll('"', '""')}"`;
+  }
+  return s;
+}
+
+function slugify(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "export";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeHtmlAttr(value) {
+  return escapeHtml(value);
+}
+
+function debounce(fn, wait) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+</script>
