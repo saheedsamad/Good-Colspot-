@@ -1,294 +1,58 @@
 <style>
-  :root{
-    --bg:#eef3ff;
-    --panel:#ffffff;
-    --panel-2:#f8faff;
-    --line:#dbe5ff;
-    --line-2:#e8eefc;
-    --text:#16213d;
-    --muted:#6d7895;
-    --blue:#2f6bff;
-    --blue-2:#5f95ff;
-    --blue-soft:#edf4ff;
-    --navy:#14245f;
-    --navy-2:#1b2f7a;
-    --green:#25b36a;
-    --green-soft:#ecfbf3;
-    --orange:#f0a63a;
-    --orange-soft:#fff8ea;
-    --red:#e26464;
-    --shadow:0 18px 50px rgba(33, 56, 120, .10);
-    --radius-xl:30px;
-    --radius-lg:22px;
-    --radius-md:18px;
-    --radius-sm:14px;
-  }
-
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    background:linear-gradient(180deg,#edf2ff 0%,#eef3ff 100%);
-    color:var(--text);
-    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  }
-
-  .page-shell{
-    min-height:100vh;
-    padding:20px;
-  }
-
-  .export-layout{
-    display:grid;
-    grid-template-columns: 350px minmax(0,1fr);
-    gap:26px;
-    align-items:start;
-  }
-
-  .side-panel{
-    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);
-    border-radius:34px;
-    overflow:hidden;
-    color:#fff;
-    box-shadow:var(--shadow);
-    position:sticky;
-    top:20px;
-  }
-
-  .brand-box{
-    padding:24px 26px 22px;
-    border-bottom:1px solid rgba(255,255,255,.09);
-  }
-
-  .brand-top{
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
-
-  .brand-icon{
-    width:54px;
-    height:54px;
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.06);
-    display:grid;
-    place-items:center;
-    flex:0 0 auto;
-  }
-
-  .brand-icon svg{
-    width:26px;
-    height:26px;
-    stroke:#fff;
-    opacity:.96;
-  }
-
-  .brand-name{
-    font-size:22px;
-    line-height:1;
-    font-weight:900;
-    letter-spacing:.02em;
-  }
-
-  .brand-sub{
-    margin-top:6px;
-    font-size:15px;
-    color:rgba(255,255,255,.78);
-    font-weight:700;
-  }
-
-  .side-nav{
-    padding:22px 18px 18px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    border-bottom:1px solid rgba(255,255,255,.09);
-  }
-
-  .side-link{
-    border:none;
-    background:transparent;
-    color:rgba(255,255,255,.84);
-    border-radius:22px;
-    min-height:64px;
-    padding:0 20px;
-    display:flex;
-    align-items:center;
-    gap:15px;
-    font-size:17px;
-    font-weight:800;
-    text-align:left;
-    cursor:pointer;
-    transition:.18s ease;
-  }
-
-  .side-link:hover{
-    background:rgba(255,255,255,.06);
-    color:#fff;
-  }
-
-  .side-link.active{
-    color:#fff;
-    background:linear-gradient(90deg,var(--blue) 0%, var(--blue-2) 100%);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
-  }
-
-  .side-link svg{
-    width:22px;
-    height:22px;
-    stroke:currentColor;
-    flex:0 0 auto;
-  }
-
-  .school-card{
-    margin:18px;
-    padding:18px 18px 20px;
-    border-radius:24px;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.06);
-  }
-
-  .school-label{
-    font-size:14px;
-    font-weight:900;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    color:rgba(255,255,255,.72);
-    margin-bottom:8px;
-  }
-
-  .school-name{
-    font-size:18px;
-    font-weight:900;
-    line-height:1.25;
-    color:#fff;
-  }
-
-  .main-panel{
-    min-width:0;
-  }
-
-  .topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:18px;
-    margin-bottom:22px;
-  }
-
-  .topbar-left{
-    min-width:0;
-  }
-
-  .page-title{
-    font-size:32px;
-    line-height:1.05;
-    font-weight:950;
-    margin:0;
-    letter-spacing:-.03em;
-  }
-
-  .page-sub{
-    margin:8px 0 0;
-    font-size:16px;
-    color:var(--muted);
-    font-weight:700;
-  }
-
-  .topbar-actions{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-  }
-
-  .ghost-btn,
-  .solid-btn{
-    min-height:52px;
-    border-radius:18px;
-    padding:0 18px;
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    border:1px solid var(--line);
-    background:#fff;
-    color:var(--text);
-    font-size:16px;
-    font-weight:900;
-    cursor:pointer;
-  }
-
-  .ghost-btn svg,
-  .solid-btn svg{
-    width:18px;
-    height:18px;
-    stroke:currentColor;
-  }
-
-  .solid-btn{
-    background:linear-gradient(90deg,var(--blue) 0%, var(--blue-2) 100%);
-    color:#fff;
-    border:none;
-    box-shadow:0 14px 30px rgba(47,107,255,.24);
-  }
-
   .export-screen{
     display:flex;
     flex-direction:column;
     gap:22px;
   }
 
-  .hero-card,
-  .content-card{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius-xl);
-    box-shadow:var(--shadow);
+  .export-hero,
+  .export-card{
+    background:#fff;
+    border:1px solid #dfe7fb;
+    border-radius:28px;
+    box-shadow:0 18px 50px rgba(33,56,120,.08);
   }
 
-  .hero-card{
-    padding:28px 28px 24px;
+  .export-hero{
+    padding:28px;
   }
 
-  .hero-label{
+  .export-kicker{
     font-size:15px;
-    color:var(--muted);
     font-weight:900;
+    color:#6d7895;
     margin-bottom:8px;
   }
 
-  .hero-title{
+  .export-title{
+    margin:0;
     font-size:28px;
     line-height:1.05;
     font-weight:950;
-    margin:0;
+    color:#16213d;
     letter-spacing:-.03em;
   }
 
-  .hero-meta{
+  .export-meta{
+    margin-top:14px;
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-top:14px;
+    color:#6d7895;
     font-size:15px;
-    color:var(--muted);
     font-weight:800;
   }
 
-  .hero-dot::before{
+  .export-meta .dot::before{
     content:"•";
     margin-right:10px;
   }
 
-  .section-card{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius-xl);
-    box-shadow:var(--shadow);
+  .export-card{
     padding:24px;
   }
 
-  .section-head{
+  .export-card-head{
     display:flex;
     align-items:flex-start;
     justify-content:space-between;
@@ -296,32 +60,73 @@
     margin-bottom:18px;
   }
 
-  .section-title{
+  .export-card-title{
     margin:0;
     font-size:24px;
     line-height:1.1;
     font-weight:950;
+    color:#16213d;
     letter-spacing:-.02em;
   }
 
-  .section-sub{
+  .export-card-sub{
     margin:8px 0 0;
-    color:var(--muted);
-    font-size:16px;
+    font-size:15px;
+    line-height:1.5;
+    color:#6d7895;
     font-weight:700;
   }
 
-  .choice-grid{
+  .export-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .export-btn,
+  .export-btn-outline{
+    min-height:52px;
+    border-radius:18px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-size:16px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .export-btn{
+    border:none;
+    background:linear-gradient(90deg,#2f6bff 0%,#5f95ff 100%);
+    color:#fff;
+    box-shadow:0 14px 30px rgba(47,107,255,.22);
+  }
+
+  .export-btn-outline{
+    border:1px solid #dfe7fb;
+    background:#fff;
+    color:#16213d;
+  }
+
+  .export-btn svg,
+  .export-btn-outline svg{
+    width:18px;
+    height:18px;
+    stroke:currentColor;
+  }
+
+  .export-choice-grid{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
     gap:16px;
   }
 
-  .choice-card{
-    border:1.5px solid var(--line);
+  .export-choice{
+    border:1.5px solid #dfe7fb;
     background:#fff;
     border-radius:24px;
-    padding:18px 18px 16px;
+    padding:18px;
     min-height:160px;
     cursor:pointer;
     transition:.18s ease;
@@ -330,25 +135,25 @@
     gap:12px;
   }
 
-  .choice-card:hover{
+  .export-choice:hover{
+    border-color:#bcd0ff;
+    box-shadow:0 10px 22px rgba(47,107,255,.08);
     transform:translateY(-1px);
-    border-color:#bdd1ff;
-    box-shadow:0 10px 24px rgba(54,89,173,.08);
   }
 
-  .choice-card.active{
-    border-color:#7ba6ff;
-    background:var(--blue-soft);
-    box-shadow:inset 0 0 0 1px rgba(47,107,255,.10);
+  .export-choice.active{
+    border-color:#7ca6ff;
+    background:#eef4ff;
+    box-shadow:inset 0 0 0 1px rgba(47,107,255,.08);
   }
 
-  .choice-top{
+  .export-choice-top{
     display:flex;
     align-items:center;
     gap:12px;
   }
 
-  .choice-icon{
+  .export-choice-icon{
     width:42px;
     height:42px;
     border-radius:14px;
@@ -358,39 +163,40 @@
     flex:0 0 auto;
   }
 
-  .choice-card.active .choice-icon{
-    background:#dfeaff;
+  .export-choice.active .export-choice-icon{
+    background:#dce8ff;
   }
 
-  .choice-icon svg{
+  .export-choice-icon svg{
     width:22px;
     height:22px;
-    stroke:#4d73d9;
+    stroke:#5577db;
   }
 
-  .choice-name{
+  .export-choice-name{
     font-size:17px;
-    font-weight:950;
     line-height:1.15;
+    font-weight:950;
+    color:#16213d;
   }
 
-  .choice-desc{
+  .export-choice-desc{
     font-size:15px;
-    line-height:1.5;
-    color:var(--muted);
+    line-height:1.55;
+    color:#6d7895;
     font-weight:700;
   }
 
-  .format-grid{
+  .export-format-grid{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
     gap:14px;
   }
 
-  .format-card{
+  .export-format{
     min-height:66px;
     border-radius:20px;
-    border:1.5px solid var(--line);
+    border:1.5px solid #dfe7fb;
     background:#fff;
     display:flex;
     align-items:center;
@@ -400,192 +206,184 @@
     transition:.18s ease;
   }
 
-  .format-card:hover{
-    border-color:#bdd1ff;
-    box-shadow:0 8px 20px rgba(54,89,173,.06);
+  .export-format:hover{
+    border-color:#bcd0ff;
+    box-shadow:0 8px 18px rgba(47,107,255,.06);
   }
 
-  .format-card.active{
-    border-color:#7ba6ff;
-    background:var(--blue-soft);
+  .export-format.active{
+    border-color:#7ca6ff;
+    background:#eef4ff;
   }
 
   .format-badge{
-    width:34px;
+    min-width:40px;
     height:34px;
     border-radius:11px;
+    padding:0 8px;
     display:grid;
     place-items:center;
-    flex:0 0 auto;
+    color:#fff;
     font-size:11px;
     font-weight:1000;
-    letter-spacing:.02em;
-    color:#fff;
+    letter-spacing:.04em;
+    flex:0 0 auto;
   }
 
   .format-badge.excel{background:#1e9a59}
-  .format-badge.csv{background:#3b8cff}
-  .format-badge.pdf{background:#e36a6a}
-  .format-badge.word{background:#4d73d9}
+  .format-badge.csv{background:#3385ff}
+  .format-badge.pdf{background:#df6666}
+  .format-badge.word{background:#4f74e2}
 
-  .format-name{
+  .export-format-name{
     font-size:16px;
     font-weight:900;
+    color:#16213d;
   }
 
-  .filters-wrap{
+  .export-filter-grid{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
     gap:14px;
   }
 
-  .input-shell,
-  .select-shell{
-    min-width:0;
-  }
-
-  .field-label{
+  .export-field-label{
     display:block;
     margin:0 0 8px;
     font-size:14px;
     font-weight:900;
-    color:var(--muted);
+    color:#6d7895;
   }
 
-  .field-input,
-  .field-select{
+  .export-input,
+  .export-select{
     width:100%;
     min-height:58px;
     border-radius:18px;
-    border:1.5px solid var(--line);
+    border:1.5px solid #dfe7fb;
     background:#fff;
     padding:0 18px;
     font-size:16px;
     font-weight:800;
-    color:var(--text);
+    color:#16213d;
     outline:none;
   }
 
-  .field-input:focus,
-  .field-select:focus{
-    border-color:#89afff;
+  .export-input:focus,
+  .export-select:focus{
+    border-color:#8db1ff;
     box-shadow:0 0 0 4px rgba(47,107,255,.08);
   }
 
-  .preview-head{
+  .export-preview-top{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:space-between;
-    gap:14px;
+    gap:18px;
     margin-bottom:18px;
   }
 
-  .preview-file{
+  .export-preview-file{
     display:flex;
     align-items:flex-start;
     gap:14px;
-    min-width:0;
   }
 
-  .preview-file-icon{
+  .export-preview-icon{
     width:52px;
     height:52px;
     border-radius:16px;
-    background:var(--green-soft);
+    background:#edf8f1;
+    border:1px solid #d5efde;
     display:grid;
     place-items:center;
     flex:0 0 auto;
-    border:1px solid #d8f3e5;
   }
 
-  .preview-file-icon svg{
+  .export-preview-icon svg{
     width:26px;
     height:26px;
-    stroke:var(--green);
+    stroke:#1e9a59;
   }
 
-  .preview-file-title{
+  .export-preview-title{
+    margin:0;
     font-size:22px;
     line-height:1.1;
     font-weight:950;
-    margin:0;
+    color:#16213d;
   }
 
-  .preview-file-sub{
+  .export-preview-sub{
     margin:6px 0 0;
     font-size:15px;
-    color:var(--muted);
+    color:#6d7895;
     font-weight:700;
+    line-height:1.5;
   }
 
-  .preview-actions{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-  }
-
-  .stat-pills{
+  .export-preview-stats{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
     gap:14px;
     margin-bottom:18px;
   }
 
-  .stat-pill{
-    border:1px solid var(--line-2);
-    background:var(--panel-2);
+  .export-stat{
+    border:1px solid #ebf0fb;
+    background:#f8faff;
     border-radius:22px;
-    padding:18px 18px 16px;
+    padding:18px;
   }
 
-  .stat-pill-label{
+  .export-stat-label{
     font-size:13px;
-    color:var(--muted);
-    font-weight:900;
     text-transform:uppercase;
     letter-spacing:.04em;
+    color:#6d7895;
+    font-weight:950;
     margin-bottom:8px;
   }
 
-  .stat-pill-value{
+  .export-stat-value{
     font-size:34px;
     line-height:1;
     font-weight:950;
+    color:#16213d;
     letter-spacing:-.04em;
   }
 
-  .columns-chip-row{
+  .export-chip-row{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
     margin-bottom:18px;
   }
 
-  .col-chip{
+  .export-chip{
     min-height:38px;
-    padding:0 14px;
     border-radius:999px;
-    border:1px solid var(--line);
+    border:1px solid #dfe7fb;
     background:#fff;
+    padding:0 14px;
     display:inline-flex;
     align-items:center;
     gap:8px;
     font-size:14px;
     font-weight:900;
-    color:var(--text);
+    color:#16213d;
   }
 
-  .col-chip svg{
+  .export-chip svg{
     width:14px;
     height:14px;
-    stroke:#6d85d9;
+    stroke:#5d7bdb;
   }
 
   .export-table-wrap{
     width:100%;
     overflow:auto;
-    border:1px solid var(--line);
+    border:1px solid #dfe7fb;
     border-radius:22px;
     background:#fff;
   }
@@ -598,24 +396,24 @@
   }
 
   .export-table thead th{
-    background:#f4f7ff;
-    color:#5f6f96;
+    background:#f5f8ff;
+    color:#627297;
     font-size:13px;
     text-transform:uppercase;
     letter-spacing:.04em;
     font-weight:950;
     padding:18px 16px;
     text-align:left;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid #dfe7fb;
     white-space:nowrap;
   }
 
   .export-table tbody td{
     padding:18px 16px;
-    border-bottom:1px solid #eef2fb;
+    border-bottom:1px solid #edf2fb;
     font-size:15px;
     font-weight:800;
-    color:var(--text);
+    color:#16213d;
     vertical-align:top;
   }
 
@@ -623,13 +421,119 @@
     border-bottom:none;
   }
 
-  .answer-cell{
-    color:#5f6f96;
+  .export-answer{
+    color:#6d7895;
     font-weight:700;
-    line-height:1.45;
+    line-height:1.5;
   }
 
-  .mini-badge{
+  .export-custom-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:18px;
+  }
+
+  .export-builder-box{
+    border:1px solid #dfe7fb;
+    border-radius:24px;
+    background:#fff;
+    padding:20px;
+  }
+
+  .export-builder-title{
+    margin:0 0 8px;
+    font-size:20px;
+    line-height:1.1;
+    font-weight:950;
+    color:#16213d;
+  }
+
+  .export-builder-sub{
+    margin:0 0 18px;
+    font-size:15px;
+    line-height:1.5;
+    color:#6d7895;
+    font-weight:700;
+  }
+
+  .export-builder-group{
+    margin-bottom:18px;
+  }
+
+  .export-builder-group:last-child{
+    margin-bottom:0;
+  }
+
+  .export-builder-label{
+    margin-bottom:12px;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:#6d7895;
+    font-weight:950;
+  }
+
+  .export-check-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+
+  .export-check{
+    min-height:56px;
+    border:1px solid #dfe7fb;
+    border-radius:18px;
+    background:#fff;
+    padding:0 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .export-check input{
+    width:18px;
+    height:18px;
+    accent-color:#2f6bff;
+    flex:0 0 auto;
+  }
+
+  .export-check span{
+    font-size:15px;
+    line-height:1.25;
+    font-weight:850;
+    color:#16213d;
+  }
+
+  .export-custom-preview{
+    border:1px dashed #d7e2ff;
+    background:#fbfcff;
+    border-radius:22px;
+    padding:20px;
+  }
+
+  .export-custom-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+  }
+
+  .export-custom-title{
+    margin:0;
+    font-size:19px;
+    font-weight:950;
+    color:#16213d;
+  }
+
+  .export-custom-note{
+    margin:0;
+    color:#6d7895;
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .export-mini-chip{
     display:inline-flex;
     align-items:center;
     min-height:30px;
@@ -639,126 +543,16 @@
     color:#4d73d9;
     font-size:13px;
     font-weight:900;
+    margin:0 8px 8px 0;
   }
 
-  .custom-builder{
-    display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:18px;
-  }
-
-  .builder-box{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:24px;
-    padding:20px;
-  }
-
-  .builder-title{
-    font-size:20px;
-    line-height:1.1;
-    font-weight:950;
-    margin:0 0 8px;
-  }
-
-  .builder-sub{
-    font-size:15px;
-    line-height:1.5;
-    color:var(--muted);
-    font-weight:700;
-    margin:0 0 18px;
-  }
-
-  .builder-group{
-    margin-bottom:18px;
-  }
-
-  .builder-group:last-child{
-    margin-bottom:0;
-  }
-
-  .builder-group-label{
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    color:var(--muted);
-    font-weight:950;
-    margin-bottom:12px;
-  }
-
-  .checkbox-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
-  }
-
-  .check-tile{
-    min-height:56px;
-    border:1px solid var(--line);
-    border-radius:18px;
-    background:#fff;
-    padding:0 14px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-
-  .check-tile input{
-    width:18px;
-    height:18px;
-    accent-color:var(--blue);
-    flex:0 0 auto;
-  }
-
-  .check-tile span{
-    font-size:15px;
-    font-weight:850;
-    line-height:1.25;
-    color:var(--text);
-  }
-
-  .builder-preview-card{
-    border:1px dashed #d9e4ff;
-    background:#fbfcff;
-    border-radius:22px;
-    padding:20px;
-  }
-
-  .builder-preview-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    margin-bottom:14px;
-  }
-
-  .builder-preview-title{
-    font-size:19px;
-    font-weight:950;
-    margin:0;
-  }
-
-  .builder-preview-note{
-    margin:0;
-    color:var(--muted);
-    font-size:15px;
-    font-weight:700;
-  }
-
-  .selected-columns{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin:16px 0 18px;
-  }
-
-  .placeholder-note{
+  .export-warm-note{
     margin-top:16px;
     min-height:52px;
     border-radius:18px;
-    background:var(--orange-soft);
-    border:1px solid #f7dfb0;
-    color:#8a661d;
+    background:#fff8ea;
+    border:1px solid #f6dfb6;
+    color:#8b671a;
     display:flex;
     align-items:center;
     padding:0 16px;
@@ -766,1073 +560,874 @@
     font-weight:900;
   }
 
-  @media (max-width: 1320px){
-    .choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .format-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .filters-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .custom-builder{grid-template-columns:1fr}
+  @media (max-width:1320px){
+    .export-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .export-format-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .export-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .export-custom-grid{grid-template-columns:1fr}
   }
 
-  @media (max-width: 1080px){
-    .export-layout{grid-template-columns:1fr}
-    .side-panel{position:relative;top:auto}
-  }
-
-  @media (max-width: 760px){
-    .page-shell{padding:14px}
-    .topbar{flex-direction:column;align-items:flex-start}
-    .topbar-actions{justify-content:flex-start}
-    .hero-card,.section-card{padding:20px}
-    .choice-grid,
-    .format-grid,
-    .filters-wrap,
-    .stat-pills,
-    .checkbox-grid{
-      grid-template-columns:1fr;
-    }
-    .preview-head,
-    .builder-preview-top{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .page-title{font-size:28px}
-    .hero-title{font-size:24px}
+  @media (max-width:760px){
+    .export-card,
+    .export-hero{padding:20px}
+    .export-choice-grid,
+    .export-format-grid,
+    .export-filter-grid,
+    .export-preview-stats,
+    .export-check-grid{grid-template-columns:1fr}
+    .export-preview-top,
+    .export-custom-top,
+    .export-card-head{flex-direction:column;align-items:flex-start}
+    .export-title{font-size:24px}
   }
 </style>
 
-<div class="page-shell">
-  <div class="export-layout">
-    <aside class="side-panel">
-      <div class="brand-box">
-        <div class="brand-top">
-          <div class="brand-icon" aria-hidden="true">
+<section class="export-screen" id="exportPlaceholder">
+  <section class="export-hero">
+    <div class="export-kicker">Exporting this form</div>
+    <h2 class="export-title" id="exportFormTitle">Form</h2>
+    <div class="export-meta">
+      <span id="exportAudienceMeta">—</span>
+      <span class="dot" id="exportResponsesMeta">0 responses</span>
+      <span class="dot" id="exportIdentityMeta">Use login identity</span>
+      <span class="dot" id="exportLastSubmissionMeta">Last submission: —</span>
+    </div>
+  </section>
+
+  <section class="export-card">
+    <div class="export-card-head">
+      <div>
+        <h3 class="export-card-title">What do you want to export?</h3>
+        <p class="export-card-sub">Choose the exact response view you want to download.</p>
+      </div>
+    </div>
+
+    <div class="export-choice-grid">
+      <article class="export-choice active" data-export-choice="all">
+        <div class="export-choice-top">
+          <div class="export-choice-icon">
             <svg viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="3.5" width="16" height="17" rx="4" stroke-width="2"></rect>
-              <path d="M8 8.5h8M8 12h5M8.5 16l2.2 2.2L15.7 13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M8 7h8M8 11h8M8 15h5" stroke-width="2.2" stroke-linecap="round"></path>
+              <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z" stroke-width="2"></path>
             </svg>
           </div>
-          <div>
-            <div class="brand-name">COLSPOT</div>
-            <div class="brand-sub">Form response panel</div>
+          <div class="export-choice-name">All responses</div>
+        </div>
+        <div class="export-choice-desc">Export every submitted response for this form in one table.</div>
+      </article>
+
+      <article class="export-choice" data-export-choice="filtered">
+        <div class="export-choice-top">
+          <div class="export-choice-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" stroke-width="2.2" stroke-linejoin="round"></path>
+            </svg>
           </div>
+          <div class="export-choice-name">Filtered responses</div>
+        </div>
+        <div class="export-choice-desc">Export only matching responses by programme, level, identity, or search.</div>
+      </article>
+
+      <article class="export-choice" data-export-choice="single">
+        <div class="export-choice-top">
+          <div class="export-choice-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2.2"></path>
+              <path d="M4 20a8 8 0 0 1 16 0" stroke-width="2.2" stroke-linecap="round"></path>
+            </svg>
+          </div>
+          <div class="export-choice-name">Single respondent</div>
+        </div>
+        <div class="export-choice-desc">Preview and export one person’s full response details.</div>
+      </article>
+
+      <article class="export-choice" data-export-choice="summary">
+        <div class="export-choice-top">
+          <div class="export-choice-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 12V3a9 9 0 1 1-6.36 2.64L12 12Z" stroke-width="2.2" stroke-linejoin="round"></path>
+              <path d="M12 12h9" stroke-width="2.2" stroke-linecap="round"></path>
+            </svg>
+          </div>
+          <div class="export-choice-name">Question summary</div>
+        </div>
+        <div class="export-choice-desc">Export grouped answer breakdowns and summary counts for this form.</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="export-card">
+    <div class="export-card-head">
+      <div>
+        <h3 class="export-card-title">Select file format</h3>
+        <p class="export-card-sub">Choose the file type for the preview below.</p>
+      </div>
+    </div>
+
+    <div class="export-format-grid">
+      <article class="export-format active" data-format="excel">
+        <div class="format-badge excel">XLSX</div>
+        <div class="export-format-name">Excel (.xlsx)</div>
+      </article>
+
+      <article class="export-format" data-format="csv">
+        <div class="format-badge csv">CSV</div>
+        <div class="export-format-name">CSV (.csv)</div>
+      </article>
+
+      <article class="export-format" data-format="pdf">
+        <div class="format-badge pdf">PDF</div>
+        <div class="export-format-name">PDF (.pdf)</div>
+      </article>
+
+      <article class="export-format" data-format="word">
+        <div class="format-badge word">DOCX</div>
+        <div class="export-format-name">Word (.docx)</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="export-card" id="exportFiltersCard">
+    <div class="export-card-head">
+      <div>
+        <h3 class="export-card-title">Filters</h3>
+        <p class="export-card-sub">These filters apply when you export filtered responses or select one respondent.</p>
+      </div>
+    </div>
+
+    <div class="export-filter-grid">
+      <div>
+        <label class="export-field-label" for="exportSearchInput">Search</label>
+        <input class="export-input" id="exportSearchInput" type="text" placeholder="Search by name, matric number, programme or level">
+      </div>
+
+      <div>
+        <label class="export-field-label" for="exportProgrammeSelect">Programme</label>
+        <select class="export-select" id="exportProgrammeSelect">
+          <option value="">All programmes</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="export-field-label" for="exportLevelSelect">Level</label>
+        <select class="export-select" id="exportLevelSelect">
+          <option value="">All levels</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="export-field-label" for="exportIdentitySelect">Identity</label>
+        <select class="export-select" id="exportIdentitySelect">
+          <option value="">All responses</option>
+          <option value="identified">Identified only</option>
+          <option value="anonymous">Anonymous only</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="export-card">
+    <div class="export-preview-top">
+      <div class="export-preview-file">
+        <div class="export-preview-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5A1.5 1.5 0 0 1 6.5 3.5Z" stroke-width="2"></path>
+            <path d="M8 12h8M8 16h6" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+        </div>
+
+        <div>
+          <h3 class="export-preview-title" id="exportPreviewTitle">Export preview</h3>
+          <p class="export-preview-sub" id="exportPreviewSubtitle">This preview shows exactly what will be exported for the selected option.</p>
         </div>
       </div>
 
-      <nav class="side-nav">
-        <button class="side-link" type="button">
+      <div class="export-actions">
+        <button class="export-btn-outline" type="button" id="refreshExportPreviewBtn">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M4 6.5h16M4 12h16M4 17.5h10" stroke-width="2.2" stroke-linecap="round"></path>
+            <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M20 4v4h-4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
-          <span>Summary</span>
+          <span>Refresh</span>
         </button>
 
-        <button class="side-link" type="button">
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect x="5" y="3.5" width="14" height="17" rx="3" stroke-width="2"></rect>
-            <path d="M8 8h8M8 12h8M8 16h5" stroke-width="2.2" stroke-linecap="round"></path>
-          </svg>
-          <span>Questions</span>
-        </button>
-
-        <button class="side-link" type="button">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2.2"></path>
-            <path d="M4 20a8 8 0 0 1 16 0" stroke-width="2.2" stroke-linecap="round"></path>
-          </svg>
-          <span>Individual</span>
-        </button>
-
-        <button class="side-link active" type="button">
+        <button class="export-btn" type="button" id="downloadExportBtn">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
             <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
             <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
           </svg>
-          <span>Export</span>
+          <span>Export Excel</span>
         </button>
-      </nav>
-
-      <div class="school-card">
-        <div class="school-label">School</div>
-        <div class="school-name" id="exportSchoolName">EKITI STATE UNIVERSITY</div>
       </div>
-    </aside>
+    </div>
 
-    <main class="main-panel">
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title">Export Responses</h1>
-          <p class="page-sub">Download the exact response data you want from this form.</p>
-        </div>
-
-        <div class="topbar-actions">
-          <button class="ghost-btn" type="button" id="exportHistoryBtn">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 8v5l3 2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-              <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-            <span>Export History</span>
-          </button>
-
-          <button class="solid-btn" type="button" id="quickExportTopBtn">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
-              <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-              <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
-            </svg>
-            <span>Export</span>
-          </button>
-        </div>
+    <div class="export-preview-stats">
+      <div class="export-stat">
+        <div class="export-stat-label">Rows to export</div>
+        <div class="export-stat-value" id="exportRowsCount">0</div>
       </div>
 
-      <section class="export-screen" id="exportPlaceholder">
-        <section class="hero-card">
-          <div class="hero-label">Exporting this form</div>
-          <h2 class="hero-title" id="exportFormTitle">hqsj</h2>
-          <div class="hero-meta">
-            <span id="exportAudienceMeta">Entrepreneurship 300</span>
-            <span class="hero-dot" id="exportResponsesMeta">3 responses</span>
-            <span class="hero-dot" id="exportIdentityMeta">Use login identity</span>
-            <span class="hero-dot" id="exportLastSubmissionMeta">Last submission: Apr 3, 2026</span>
-          </div>
-        </section>
+      <div class="export-stat">
+        <div class="export-stat-label">Columns selected</div>
+        <div class="export-stat-value" id="exportColumnsCount">0</div>
+      </div>
 
-        <section class="section-card">
-          <div class="section-head">
+      <div class="export-stat">
+        <div class="export-stat-label">Export type</div>
+        <div class="export-stat-value" id="exportTypeLabel">All</div>
+      </div>
+    </div>
+
+    <div class="export-chip-row" id="exportColumnsChips"></div>
+
+    <div class="export-table-wrap">
+      <table class="export-table">
+        <thead>
+          <tr id="exportTableHeadRow"></tr>
+        </thead>
+        <tbody id="exportPreviewTableBody">
+          <tr>
+            <td class="export-answer">Preview will load here</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="export-card">
+    <div class="export-card-head">
+      <div>
+        <h3 class="export-card-title">Build a custom table export</h3>
+        <p class="export-card-sub">Choose the exact columns you want inside your exported file.</p>
+      </div>
+    </div>
+
+    <div class="export-custom-grid">
+      <div class="export-builder-box">
+        <h4 class="export-builder-title">Choose export columns</h4>
+        <p class="export-builder-sub">Select student details and form question columns for your custom export table.</p>
+
+        <div class="export-builder-group">
+          <div class="export-builder-label">Student details</div>
+          <div class="export-check-grid">
+            <label class="export-check"><input type="checkbox" value="Student Name" checked><span>Student Name</span></label>
+            <label class="export-check"><input type="checkbox" value="Matric Number" checked><span>Matric Number</span></label>
+            <label class="export-check"><input type="checkbox" value="Programme" checked><span>Programme</span></label>
+            <label class="export-check"><input type="checkbox" value="Level" checked><span>Level</span></label>
+            <label class="export-check"><input type="checkbox" value="Submission Date"><span>Submission Date</span></label>
+            <label class="export-check"><input type="checkbox" value="Response ID"><span>Response ID</span></label>
+          </div>
+        </div>
+
+        <div class="export-builder-group">
+          <div class="export-builder-label">Form questions</div>
+          <div class="export-check-grid" id="exportQuestionCheckboxes">
+            <label class="export-check"><input type="checkbox" disabled><span>Questions will load here</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-builder-box">
+        <div class="export-custom-preview">
+          <div class="export-custom-top">
             <div>
-              <h3 class="section-title">What do you want to export?</h3>
-              <p class="section-sub">Choose the exact response view you want to download.</p>
+              <h4 class="export-custom-title">Custom table preview</h4>
+              <p class="export-custom-note">Your exported table will contain only the selected columns.</p>
             </div>
+
+            <button class="export-btn" type="button" id="createCustomExportBtn">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
+                <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
+              </svg>
+              <span>Export Table</span>
+            </button>
           </div>
 
-          <div class="choice-grid">
-            <article class="choice-card active" data-export-choice="all">
-              <div class="choice-top">
-                <div class="choice-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M8 7h8M8 11h8M8 15h5" stroke-width="2.2" stroke-linecap="round"></path>
-                    <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z" stroke-width="2"></path>
-                  </svg>
-                </div>
-                <div class="choice-name">All responses</div>
-              </div>
-              <div class="choice-desc">Export every submitted response for this form in one table.</div>
-            </article>
+          <div id="exportCustomSelectedWrap"></div>
 
-            <article class="choice-card" data-export-choice="filtered">
-              <div class="choice-top">
-                <div class="choice-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" stroke-width="2.2" stroke-linejoin="round"></path>
-                  </svg>
-                </div>
-                <div class="choice-name">Filtered responses</div>
-              </div>
-              <div class="choice-desc">Export only matching responses by programme, level, identity, or search.</div>
-            </article>
-
-            <article class="choice-card" data-export-choice="single">
-              <div class="choice-top">
-                <div class="choice-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2.2"></path>
-                    <path d="M4 20a8 8 0 0 1 16 0" stroke-width="2.2" stroke-linecap="round"></path>
-                  </svg>
-                </div>
-                <div class="choice-name">Single respondent</div>
-              </div>
-              <div class="choice-desc">Preview and export one person’s full response details.</div>
-            </article>
-
-            <article class="choice-card" data-export-choice="summary">
-              <div class="choice-top">
-                <div class="choice-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 12V3a9 9 0 1 1-6.36 2.64L12 12Z" stroke-width="2.2" stroke-linejoin="round"></path>
-                    <path d="M12 12h9" stroke-width="2.2" stroke-linecap="round"></path>
-                  </svg>
-                </div>
-                <div class="choice-name">Question summary</div>
-              </div>
-              <div class="choice-desc">Export grouped answer breakdowns and summary counts for this form.</div>
-            </article>
+          <div class="export-warm-note" id="exportCustomNote">
+            Export preview and table rows will appear here after JavaScript loads the real form data.
           </div>
-        </section>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
 
-        <section class="section-card">
-          <div class="section-head">
-            <div>
-              <h3 class="section-title">Select file format</h3>
-              <p class="section-sub">Choose the file type for the response preview below.</p>
-            </div>
-          </div>
-
-          <div class="format-grid">
-            <article class="format-card active" data-format="excel">
-              <div class="format-badge excel">XLSX</div>
-              <div class="format-name">Excel (.xlsx)</div>
-            </article>
-
-            <article class="format-card" data-format="csv">
-              <div class="format-badge csv">CSV</div>
-              <div class="format-name">CSV (.csv)</div>
-            </article>
-
-            <article class="format-card" data-format="pdf">
-              <div class="format-badge pdf">PDF</div>
-              <div class="format-name">PDF (.pdf)</div>
-            </article>
-
-            <article class="format-card" data-format="word">
-              <div class="format-badge word">DOCX</div>
-              <div class="format-name">Word (.docx)</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="section-card">
-          <div class="section-head">
-            <div>
-              <h3 class="section-title">Filters</h3>
-              <p class="section-sub">These filters apply when you export filtered responses or build a custom table.</p>
-            </div>
-          </div>
-
-          <div class="filters-wrap">
-            <div class="input-shell">
-              <label class="field-label" for="exportSearchInput">Search</label>
-              <input class="field-input" id="exportSearchInput" type="text" placeholder="Search by name, matric number or answer">
-            </div>
-
-            <div class="select-shell">
-              <label class="field-label" for="exportProgrammeSelect">Programme</label>
-              <select class="field-select" id="exportProgrammeSelect">
-                <option>All programmes</option>
-              </select>
-            </div>
-
-            <div class="select-shell">
-              <label class="field-label" for="exportLevelSelect">Level</label>
-              <select class="field-select" id="exportLevelSelect">
-                <option>All levels</option>
-              </select>
-            </div>
-
-            <div class="select-shell">
-              <label class="field-label" for="exportIdentitySelect">Identity</label>
-              <select class="field-select" id="exportIdentitySelect">
-                <option>All responses</option>
-                <option>Identified only</option>
-                <option>Anonymous only</option>
-              </select>
-            </div>
-          </div>
-        </section>
-
-        <section class="section-card">
-          <div class="preview-head">
-            <div class="preview-file">
-              <div class="preview-file-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 20V5A1.5 1.5 0 0 1 6.5 3.5Z" stroke-width="2"></path>
-                  <path d="M8 12h8M8 16h6" stroke-width="2.2" stroke-linecap="round"></path>
-                </svg>
-              </div>
-
-              <div>
-                <h3 class="preview-file-title" id="exportPreviewTitle">All responses export preview</h3>
-                <p class="preview-file-sub" id="exportPreviewSubtitle">This preview shows exactly what will be exported for the selected option.</p>
-              </div>
-            </div>
-
-            <div class="preview-actions">
-              <button class="ghost-btn" type="button" id="refreshExportPreviewBtn">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-                  <path d="M20 4v4h-4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-                <span>Refresh</span>
-              </button>
-
-              <button class="solid-btn" type="button" id="downloadExportBtn">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
-                  <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-                  <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
-                </svg>
-                <span>Export</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="stat-pills">
-            <div class="stat-pill">
-              <div class="stat-pill-label">Responses to export</div>
-              <div class="stat-pill-value" id="exportRowsCount">3</div>
-            </div>
-
-            <div class="stat-pill">
-              <div class="stat-pill-label">Columns selected</div>
-              <div class="stat-pill-value" id="exportColumnsCount">8</div>
-            </div>
-
-            <div class="stat-pill">
-              <div class="stat-pill-label">Export type</div>
-              <div class="stat-pill-value" id="exportTypeLabel">All</div>
-            </div>
-          </div>
-
-          <div class="columns-chip-row" id="exportColumnsChips">
-            <span class="col-chip">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
-              Student Name
-            </span>
-            <span class="col-chip">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
-              Matric Number
-            </span>
-            <span class="col-chip">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
-              Programme
-            </span>
-            <span class="col-chip">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
-              Level
-            </span>
-            <span class="col-chip">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path></svg>
-              Submitted At
-            </span>
-          </div>
-
-          <div class="export-table-wrap">
-            <table class="export-table">
-              <thead>
-                <tr>
-                  <th>Student Name</th>
-                  <th>Matric Number</th>
-                  <th>Programme</th>
-                  <th>Level</th>
-                  <th>Submitted At</th>
-                  <th>Question 1</th>
-                  <th>Question 2</th>
-                  <th>Question 3</th>
-                </tr>
-              </thead>
-              <tbody id="exportPreviewTableBody">
-                <tr>
-                  <td>Preview will load here</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td class="answer-cell">—</td>
-                  <td class="answer-cell">—</td>
-                  <td class="answer-cell">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="section-card">
-          <div class="section-head">
-            <div>
-              <h3 class="section-title">Build a custom table export</h3>
-              <p class="section-sub">Choose the exact columns you want inside your exported file.</p>
-            </div>
-          </div>
-
-          <div class="custom-builder">
-            <div class="builder-box">
-              <h4 class="builder-title">Choose export columns</h4>
-              <p class="builder-sub">Select identity fields and form question fields to build your own response table.</p>
-
-              <div class="builder-group">
-                <div class="builder-group-label">Student details</div>
-                <div class="checkbox-grid">
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>Student Name</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>Matric Number</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>Programme</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>Level</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox">
-                    <span>Submission Date</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox">
-                    <span>Response ID</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="builder-group">
-                <div class="builder-group-label">Form questions</div>
-                <div class="checkbox-grid">
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>What is your experience so far?</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox" checked>
-                    <span>Any bad experience in this school?</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox">
-                    <span>What should the school improve?</span>
-                  </label>
-
-                  <label class="check-tile">
-                    <input type="checkbox">
-                    <span>Would you recommend this school?</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div class="builder-box">
-              <div class="builder-preview-card">
-                <div class="builder-preview-top">
-                  <div>
-                    <h4 class="builder-preview-title">Custom table preview</h4>
-                    <p class="builder-preview-note">Your exported table will contain only the selected columns.</p>
-                  </div>
-
-                  <button class="solid-btn" type="button" id="createCustomExportBtn">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 4v10" stroke-width="2.2" stroke-linecap="round"></path>
-                      <path d="m8.5 10.5 3.5 3.5 3.5-3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path d="M5 20h14" stroke-width="2.2" stroke-linecap="round"></path>
-                    </svg>
-                    <span>Export Table</span>
-                  </button>
-                </div>
-
-                <div class="selected-columns">
-                  <span class="mini-badge">Student Name</span>
-                  <span class="mini-badge">Matric Number</span>
-                  <span class="mini-badge">Programme</span>
-                  <span class="mini-badge">Level</span>
-                  <span class="mini-badge">Experience So Far</span>
-                  <span class="mini-badge">Bad Experience</span>
-                </div>
-
-                <div class="placeholder-note">
-                  Export preview and table rows will appear here after the JavaScript is connected.
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </section>
-    </main>
-  </div>
-</div>
 <script>
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-const FORM_RESPONSE_FUNCTION = "form-response-manager";
+(function () {
+  const FORM_RESPONSE_FUNCTION = "form-response-manager";
 
-let exportSupabase = null;
-let exportFormId = null;
-let exportBundle = null;
-let exportChoice = "all";
-let exportFormat = "excel";
-let exportSelectedResponseId = null;
-let exportCustomSelectedColumns = new Set();
+  let exportSupabase = null;
+  let exportFormId = null;
+  let exportBundle = null;
+  let exportChoice = "all";
+  let exportFormat = "excel";
+  let exportSelectedResponseId = null;
+  let exportCustomSelectedColumns = new Set();
 
-document.addEventListener("DOMContentLoaded", () => {
-  initExportPage().catch((err) => {
-    console.error("export page init error:", err);
-    alert(err?.message || "Failed to load export page.");
+  document.addEventListener("DOMContentLoaded", () => {
+    initExportPage().catch((err) => {
+      console.error("export page init error:", err);
+      alert(err?.message || "Failed to load export page.");
+    });
   });
-});
 
-async function initExportPage() {
-  ensureSupabaseReady();
-  exportSupabase = getExportSupabaseClient();
-  exportFormId = getFormIdFromUrl();
+  async function initExportPage() {
+    ensureSupabaseReady();
+    exportSupabase = getExportSupabaseClient();
+    exportFormId = getFormIdFromUrl();
 
-  if (!exportFormId) {
-    throw new Error("form_id is missing in the URL.");
+    if (!exportFormId) {
+      throw new Error("form_id is missing in the URL.");
+    }
+
+    wireExportChoiceCards();
+    wireExportFormatCards();
+    wireExportFilters();
+    wireExportButtons();
+    wireCustomBuilder();
+
+    await loadExportBundle();
   }
 
-  wireSidebarLinks();
-  wireChoiceCards();
-  wireFormatCards();
-  wireFilterControls();
-  wireActionButtons();
-  wireCustomBuilder();
-
-  await loadExportBundle();
-}
-
-function ensureSupabaseReady() {
-  if (!window.supabase || typeof window.supabase.createClient !== "function") {
-    throw new Error("Supabase browser library is not loaded.");
+  function ensureSupabaseReady() {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("Supabase browser library is not loaded.");
+    }
   }
-}
 
-function getExportSupabaseClient() {
-  if (window.__colspotExportSupabase) {
+  function getExportSupabaseClient() {
+    if (window.__colspotExportSupabase) return window.__colspotExportSupabase;
+
+    const url = window.SUPABASE_URL || "YOUR_SUPABASE_URL";
+    const key = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+
+    if (
+      !url ||
+      !key ||
+      String(url).includes("YOUR_SUPABASE_URL") ||
+      String(key).includes("YOUR_SUPABASE_ANON_KEY")
+    ) {
+      throw new Error("Set your real SUPABASE_URL and SUPABASE_ANON_KEY once in the page.");
+    }
+
+    window.__colspotExportSupabase = window.supabase.createClient(url, key);
     return window.__colspotExportSupabase;
   }
 
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_ANON_KEY ||
-    SUPABASE_URL.includes("YOUR_SUPABASE_URL") ||
-    SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
-  ) {
-    throw new Error("Set your real SUPABASE_URL and SUPABASE_ANON_KEY.");
+  function getFormIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return cleanText(params.get("form_id"));
   }
 
-  window.__colspotExportSupabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
-
-  return window.__colspotExportSupabase;
-}
-
-function getFormIdFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return cleanText(params.get("form_id"));
-}
-
-function wireSidebarLinks() {
-  const links = Array.from(document.querySelectorAll(".side-link"));
-  if (links.length < 4) return;
-
-  links[0].addEventListener("click", () => goToFormResponseTab("summary"));
-  links[1].addEventListener("click", () => goToFormResponseTab("questions"));
-  links[2].addEventListener("click", () => goToFormResponseTab("individual"));
-  links[3].addEventListener("click", () => goToFormResponseTab("export"));
-}
-
-function goToFormResponseTab(tab) {
-  const url = new URL(window.location.href);
-
-  if (tab === "export") {
-    return;
-  }
-
-  const target = new URL("form_response.html", window.location.href);
-  target.searchParams.set("form_id", exportFormId);
-  target.searchParams.set("tab", tab);
-  window.location.href = target.toString();
-}
-
-function wireChoiceCards() {
-  document.querySelectorAll(".choice-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      exportChoice = cleanText(card.dataset.exportChoice || "all").toLowerCase();
-      setActiveChoiceCard();
-      renderExportPreview();
-    });
-  });
-}
-
-function setActiveChoiceCard() {
-  document.querySelectorAll(".choice-card").forEach((card) => {
-    const isActive = cleanText(card.dataset.exportChoice).toLowerCase() === exportChoice;
-    card.classList.toggle("active", isActive);
-  });
-}
-
-function wireFormatCards() {
-  document.querySelectorAll(".format-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      exportFormat = cleanText(card.dataset.format || "excel").toLowerCase();
-      setActiveFormatCard();
-      renderExportPreview();
-    });
-  });
-}
-
-function setActiveFormatCard() {
-  document.querySelectorAll(".format-card").forEach((card) => {
-    const isActive = cleanText(card.dataset.format).toLowerCase() === exportFormat;
-    card.classList.toggle("active", isActive);
-  });
-}
-
-function wireFilterControls() {
-  const searchInput = document.getElementById("exportSearchInput");
-  const programmeSelect = document.getElementById("exportProgrammeSelect");
-  const levelSelect = document.getElementById("exportLevelSelect");
-  const identitySelect = document.getElementById("exportIdentitySelect");
-
-  if (searchInput) {
-    searchInput.addEventListener("input", debounce(() => {
-      renderExportPreview();
-    }, 180));
-  }
-
-  if (programmeSelect) {
-    programmeSelect.addEventListener("change", () => renderExportPreview());
-  }
-
-  if (levelSelect) {
-    levelSelect.addEventListener("change", () => renderExportPreview());
-  }
-
-  if (identitySelect) {
-    identitySelect.addEventListener("change", () => renderExportPreview());
-  }
-}
-
-function wireActionButtons() {
-  const refreshBtn = document.getElementById("refreshExportPreviewBtn");
-  const exportBtn = document.getElementById("downloadExportBtn");
-  const topExportBtn = document.getElementById("quickExportTopBtn");
-  const historyBtn = document.getElementById("exportHistoryBtn");
-
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", async () => {
-      refreshBtn.disabled = true;
-      try {
-        await loadExportBundle();
-      } finally {
-        refreshBtn.disabled = false;
-      }
+  function wireExportChoiceCards() {
+    document.querySelectorAll(".export-choice").forEach((card) => {
+      card.addEventListener("click", () => {
+        exportChoice = cleanText(card.dataset.exportChoice || "all").toLowerCase();
+        setActiveChoiceCard();
+        renderExportPreview();
+      });
     });
   }
 
-  if (exportBtn) {
-    exportBtn.addEventListener("click", () => {
-      exportCurrentPreview();
+  function setActiveChoiceCard() {
+    document.querySelectorAll(".export-choice").forEach((card) => {
+      const isActive = cleanText(card.dataset.exportChoice).toLowerCase() === exportChoice;
+      card.classList.toggle("active", isActive);
     });
   }
 
-  if (topExportBtn) {
-    topExportBtn.addEventListener("click", () => {
-      exportCurrentPreview();
+  function wireExportFormatCards() {
+    document.querySelectorAll(".export-format").forEach((card) => {
+      card.addEventListener("click", () => {
+        exportFormat = cleanText(card.dataset.format || "excel").toLowerCase();
+        setActiveFormatCard();
+        updateDownloadButtons();
+      });
     });
   }
 
-  if (historyBtn) {
-    historyBtn.addEventListener("click", () => {
-      alert("Export history UI can be connected next.");
+  function setActiveFormatCard() {
+    document.querySelectorAll(".export-format").forEach((card) => {
+      const isActive = cleanText(card.dataset.format).toLowerCase() === exportFormat;
+      card.classList.toggle("active", isActive);
     });
   }
-}
 
-function wireCustomBuilder() {
-  const checkboxes = Array.from(document.querySelectorAll(".check-tile input[type='checkbox']"));
+  function wireExportFilters() {
+    const searchInput = document.getElementById("exportSearchInput");
+    const programmeSelect = document.getElementById("exportProgrammeSelect");
+    const levelSelect = document.getElementById("exportLevelSelect");
+    const identitySelect = document.getElementById("exportIdentitySelect");
 
-  checkboxes.forEach((input) => {
-    const label = input.closest(".check-tile")?.querySelector("span");
-    const key = cleanText(label?.textContent);
+    if (searchInput) searchInput.addEventListener("input", debounce(renderExportPreview, 180));
+    if (programmeSelect) programmeSelect.addEventListener("change", renderExportPreview);
+    if (levelSelect) levelSelect.addEventListener("change", renderExportPreview);
+    if (identitySelect) identitySelect.addEventListener("change", renderExportPreview);
+  }
 
-    if (input.checked && key) {
-      exportCustomSelectedColumns.add(key);
+  function wireExportButtons() {
+    const refreshBtn = document.getElementById("refreshExportPreviewBtn");
+    const exportBtn = document.getElementById("downloadExportBtn");
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", async () => {
+        refreshBtn.disabled = true;
+        try {
+          await loadExportBundle();
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      });
     }
 
-    input.addEventListener("change", () => {
-      if (!key) return;
-      if (input.checked) exportCustomSelectedColumns.add(key);
-      else exportCustomSelectedColumns.delete(key);
-      renderCustomSelectedColumns();
+    if (exportBtn) {
+      exportBtn.addEventListener("click", exportCurrentPreview);
+    }
+  }
+
+  function wireCustomBuilder() {
+    const createBtn = document.getElementById("createCustomExportBtn");
+    const studentChecks = Array.from(document.querySelectorAll(".export-check input[type='checkbox']"));
+
+    studentChecks.forEach((input) => {
+      const value = cleanText(input.value);
+      if (input.checked && value) exportCustomSelectedColumns.add(value);
+
+      input.addEventListener("change", () => {
+        if (input.checked) exportCustomSelectedColumns.add(value);
+        else exportCustomSelectedColumns.delete(value);
+        renderCustomSelectedColumns();
+      });
     });
-  });
 
-  const createBtn = document.getElementById("createCustomExportBtn");
-  if (createBtn) {
-    createBtn.addEventListener("click", () => {
-      exportCustomTable();
+    if (createBtn) {
+      createBtn.addEventListener("click", exportCustomTable);
+    }
+
+    renderCustomSelectedColumns();
+  }
+
+  async function loadExportBundle() {
+    const result = await invokeFormResponseManager({
+      action: "get_form_response_bundle",
+      form_id: exportFormId,
+      ...getActorPayloadFromSession()
+    });
+
+    if (!result?.ok) {
+      throw new Error(result?.error || "Failed to load export data.");
+    }
+
+    exportBundle = result;
+    hydrateExportHero();
+    hydrateExportFilters();
+    hydrateExportQuestionsForBuilder();
+    setActiveChoiceCard();
+    setActiveFormatCard();
+    updateDownloadButtons();
+    renderExportPreview();
+  }
+
+  function hydrateExportHero() {
+    const form = exportBundle?.form || {};
+    const summary = exportBundle?.summary || {};
+
+    setText("exportFormTitle", form.title || "Form");
+    setText("exportAudienceMeta", buildAudienceText(form));
+    setText("exportResponsesMeta", `${Number(summary.total_responses || 0)} response${Number(summary.total_responses || 0) === 1 ? "" : "s"}`);
+    setText("exportIdentityMeta", formatIdentityMode(form.identity_mode));
+    setText(
+      "exportLastSubmissionMeta",
+      summary.latest_submission
+        ? `Last submission: ${formatDateTime(summary.latest_submission)}`
+        : "Last submission: —"
+    );
+  }
+
+  function hydrateExportFilters() {
+    const rows = Array.isArray(exportBundle?.individual_responses) ? exportBundle.individual_responses : [];
+    const programmeSelect = document.getElementById("exportProgrammeSelect");
+    const levelSelect = document.getElementById("exportLevelSelect");
+
+    const programmes = uniqueValues(rows.map((r) => cleanText(r.programme)).filter(Boolean)).sort();
+    const levels = uniqueValues(rows.map((r) => cleanText(r.level)).filter(Boolean)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    if (programmeSelect) {
+      programmeSelect.innerHTML = `<option value="">All programmes</option>` + programmes.map((p) => `<option value="${escapeHtmlAttr(p)}">${escapeHtml(p)}</option>`).join("");
+    }
+
+    if (levelSelect) {
+      levelSelect.innerHTML = `<option value="">All levels</option>` + levels.map((l) => `<option value="${escapeHtmlAttr(l)}">${escapeHtml(l)}</option>`).join("");
+    }
+  }
+
+  function hydrateExportQuestionsForBuilder() {
+    const wrap = document.getElementById("exportQuestionCheckboxes");
+    const questions = Array.isArray(exportBundle?.questions) ? exportBundle.questions : [];
+    if (!wrap) return;
+
+    if (!questions.length) {
+      wrap.innerHTML = `<label class="export-check"><input type="checkbox" disabled><span>No questions found</span></label>`;
+      return;
+    }
+
+    wrap.innerHTML = questions.map((q) => {
+      const label = cleanText(q.question_text) || "Untitled question";
+      return `
+        <label class="export-check">
+          <input type="checkbox" value="${escapeHtmlAttr(label)}">
+          <span>${escapeHtml(label)}</span>
+        </label>
+      `;
+    }).join("");
+
+    wrap.querySelectorAll("input[type='checkbox']").forEach((input) => {
+      input.addEventListener("change", () => {
+        const value = cleanText(input.value);
+        if (input.checked) exportCustomSelectedColumns.add(value);
+        else exportCustomSelectedColumns.delete(value);
+        renderCustomSelectedColumns();
+      });
     });
   }
 
-  renderCustomSelectedColumns();
-}
+  function renderExportPreview() {
+    if (!exportBundle) return;
 
-async function loadExportBundle() {
-  const result = await invokeFormResponseManager({
-    action: "get_form_response_bundle",
-    form_id: exportFormId,
-    ...getActorPayloadFromSession()
-  });
+    const form = exportBundle.form || {};
+    const allRows = Array.isArray(exportBundle.individual_responses) ? exportBundle.individual_responses : [];
+    const questions = Array.isArray(exportBundle.questions) ? exportBundle.questions : [];
+    const questionSummaries = Array.isArray(exportBundle.question_summaries) ? exportBundle.question_summaries : [];
 
-  if (!result?.ok) {
-    throw new Error(result?.error || "Failed to load export data.");
+    let columns = [];
+    let rows = [];
+    let previewTitle = "";
+    let previewSubtitle = "";
+
+    if (exportChoice === "all") {
+      columns = buildAllColumns(questions);
+      rows = buildAllRows(allRows, questions);
+      previewTitle = "All responses export preview";
+      previewSubtitle = "This preview shows every submitted response that will be exported.";
+      toggleFilters(false);
+    } else if (exportChoice === "filtered") {
+      const filtered = getFilteredRows(allRows);
+      columns = buildAllColumns(questions);
+      rows = buildAllRows(filtered, questions);
+      previewTitle = "Filtered responses export preview";
+      previewSubtitle = `This preview shows ${filtered.length} matching response${filtered.length === 1 ? "" : "s"} for the selected filters.`;
+      toggleFilters(true);
+    } else if (exportChoice === "single") {
+      const filtered = getFilteredRows(allRows);
+      const selected = resolveSingleRow(filtered);
+      columns = buildSingleColumns();
+      rows = selected ? [buildSingleRow(selected)] : [];
+      previewTitle = "Single respondent export preview";
+      previewSubtitle = selected ? "This preview shows the selected respondent that will be exported." : "No matching respondent found for the current filters.";
+      toggleFilters(true);
+    } else {
+      columns = buildSummaryColumns();
+      rows = buildSummaryRows(questionSummaries);
+      previewTitle = "Question summary export preview";
+      previewSubtitle = "This preview shows grouped answer statistics that will be exported.";
+      toggleFilters(false);
+    }
+
+    setText("exportPreviewTitle", previewTitle);
+    setText("exportPreviewSubtitle", previewSubtitle);
+    setText("exportRowsCount", String(rows.length));
+    setText("exportColumnsCount", String(columns.length));
+    setText("exportTypeLabel", toTitleCase(exportChoice));
+
+    renderExportChips(columns);
+    renderExportTable(columns, rows);
   }
 
-  exportBundle = result;
-  hydrateExportHeader();
-  hydrateFilterOptions();
-  setActiveChoiceCard();
-  setActiveFormatCard();
-  renderExportPreview();
-}
-
-function hydrateExportHeader() {
-  const form = exportBundle?.form || {};
-  const summary = exportBundle?.summary || {};
-
-  setText("exportSchoolName", form.school_name || "—");
-  setText("exportFormTitle", form.title || "Untitled Form");
-  setText("exportAudienceMeta", buildAudienceText(form));
-  setText(
-    "exportResponsesMeta",
-    `${Number(summary.total_responses || 0)} response${Number(summary.total_responses || 0) === 1 ? "" : "s"}`
-  );
-  setText("exportIdentityMeta", formatIdentityMode(form.identity_mode));
-  setText(
-    "exportLastSubmissionMeta",
-    summary.latest_submission
-      ? `Last submission: ${formatDateTime(summary.latest_submission)}`
-      : "Last submission: —"
-  );
-}
-
-function hydrateFilterOptions() {
-  const programmeSelect = document.getElementById("exportProgrammeSelect");
-  const levelSelect = document.getElementById("exportLevelSelect");
-
-  const rows = Array.isArray(exportBundle?.individual_responses)
-    ? exportBundle.individual_responses
-    : [];
-
-  const programmes = uniqueValues(
-    rows.map((row) => cleanText(row.programme)).filter(Boolean)
-  ).sort((a, b) => a.localeCompare(b));
-
-  const levels = uniqueValues(
-    rows.map((row) => cleanText(row.level)).filter(Boolean)
-  ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-  if (programmeSelect) {
-    const current = programmeSelect.value;
-    programmeSelect.innerHTML = `<option value="">All programmes</option>` +
-      programmes.map((p) => `<option value="${escapeHtmlAttr(p)}">${escapeHtml(p)}</option>`).join("");
-    if (programmes.includes(current)) programmeSelect.value = current;
+  function toggleFilters(show) {
+    const card = document.getElementById("exportFiltersCard");
+    if (!card) return;
+    card.style.display = show ? "" : "none";
   }
 
-  if (levelSelect) {
-    const current = levelSelect.value;
-    levelSelect.innerHTML = `<option value="">All levels</option>` +
-      levels.map((l) => `<option value="${escapeHtmlAttr(l)}">${escapeHtml(l)}</option>`).join("");
-    if (levels.includes(current)) levelSelect.value = current;
-  }
-}
+  function buildAllColumns(questions) {
+    const base = [
+      { key: "full_name", label: "Student Name" },
+      { key: "matric_number", label: "Matric Number" },
+      { key: "programme", label: "Programme" },
+      { key: "level", label: "Level" },
+      { key: "submitted_at", label: "Submitted At" }
+    ];
 
-function renderExportPreview() {
-  if (!exportBundle) return;
+    const qcols = questions.map((q, index) => ({
+      key: `q_${q.id}`,
+      label: cleanText(q.question_text) || `Question ${index + 1}`
+    }));
 
-  const form = exportBundle.form || {};
-  const allRows = Array.isArray(exportBundle.individual_responses)
-    ? exportBundle.individual_responses
-    : [];
-  const questions = Array.isArray(exportBundle.questions)
-    ? exportBundle.questions
-    : [];
-  const questionSummaries = Array.isArray(exportBundle.question_summaries)
-    ? exportBundle.question_summaries
-    : [];
-
-  let previewTitle = "";
-  let previewSubtitle = "";
-  let tableColumns = [];
-  let tableRows = [];
-
-  if (exportChoice === "all") {
-    const rows = allRows.slice();
-    tableColumns = buildAllResponseColumns(questions);
-    tableRows = buildAllResponseRows(rows, questions);
-
-    previewTitle = "All responses export preview";
-    previewSubtitle = "This preview shows every response that will be exported for this form.";
-
-    toggleFiltersSection(false);
-  } else if (exportChoice === "filtered") {
-    const rows = getFilteredRows(allRows);
-    tableColumns = buildAllResponseColumns(questions);
-    tableRows = buildAllResponseRows(rows, questions);
-
-    previewTitle = "Filtered responses export preview";
-    previewSubtitle = `This preview shows ${rows.length} matching response${rows.length === 1 ? "" : "s"} for the selected filters.`;
-
-    toggleFiltersSection(true);
-  } else if (exportChoice === "single") {
-    const rows = getFilteredRows(allRows);
-    const selected = resolveSingleRespondent(rows);
-    tableColumns = buildSingleResponseColumns();
-    tableRows = selected ? [buildSingleResponseRow(selected)] : [];
-
-    previewTitle = "Single respondent export preview";
-    previewSubtitle = selected
-      ? `This preview shows the selected respondent that will be exported.`
-      : "No matching respondent found for the current filters.";
-
-    toggleFiltersSection(true);
-  } else {
-    const rows = questionSummaries.slice();
-    tableColumns = buildQuestionSummaryColumns();
-    tableRows = buildQuestionSummaryRows(rows);
-
-    previewTitle = "Question summary export preview";
-    previewSubtitle = "This preview shows grouped question statistics that will be exported.";
-
-    toggleFiltersSection(false);
+    return [...base, ...qcols];
   }
 
-  setText("exportPreviewTitle", previewTitle);
-  setText("exportPreviewSubtitle", previewSubtitle);
-  setText("exportRowsCount", String(tableRows.length));
-  setText("exportColumnsCount", String(tableColumns.length));
-  setText("exportTypeLabel", toTitleCase(exportChoice));
+  function buildAllRows(rows, questions) {
+    return rows.map((row) => {
+      const item = {
+        full_name: row.full_name || "—",
+        matric_number: row.matric_number || "—",
+        programme: row.programme || "—",
+        level: row.level || "—",
+        submitted_at: row.submitted_at ? formatDateTime(row.submitted_at) : "—"
+      };
 
-  renderColumnsChips(tableColumns);
-  renderPreviewTable(tableColumns, tableRows);
-  updateDownloadButtons();
-}
+      questions.forEach((q) => {
+        item[`q_${q.id}`] = "Will load from backend detail export";
+      });
 
-function toggleFiltersSection(show) {
-  const filtersSection = document.getElementById("exportSearchInput")?.closest(".section-card");
-  if (!filtersSection) return;
+      return item;
+    });
+  }
 
-  filtersSection.style.display = show ? "" : "none";
-}
+  function buildSingleColumns() {
+    return [
+      { key: "full_name", label: "Student Name" },
+      { key: "matric_number", label: "Matric Number" },
+      { key: "programme", label: "Programme" },
+      { key: "level", label: "Level" },
+      { key: "submitted_at", label: "Submitted At" }
+    ];
+  }
 
-function buildAllResponseColumns(questions) {
-  const base = [
-    { key: "full_name", label: "Student Name" },
-    { key: "matric_number", label: "Matric Number" },
-    { key: "programme", label: "Programme" },
-    { key: "level", label: "Level" },
-    { key: "submitted_at", label: "Submitted At" }
-  ];
-
-  const questionCols = questions.map((q, index) => ({
-    key: `q_${q.id}`,
-    label: q.question_text || `Question ${index + 1}`
-  }));
-
-  return [...base, ...questionCols];
-}
-
-function buildAllResponseRows(rows, questions) {
-  return rows.map((row) => {
-    const out = {
+  function buildSingleRow(row) {
+    return {
       full_name: row.full_name || "—",
       matric_number: row.matric_number || "—",
       programme: row.programme || "—",
       level: row.level || "—",
       submitted_at: row.submitted_at ? formatDateTime(row.submitted_at) : "—"
     };
-
-    questions.forEach((q) => {
-      out[`q_${q.id}`] = "Will load from backend detail export";
-    });
-
-    return out;
-  });
-}
-
-function buildSingleResponseColumns() {
-  return [
-    { key: "full_name", label: "Student Name" },
-    { key: "matric_number", label: "Matric Number" },
-    { key: "programme", label: "Programme" },
-    { key: "level", label: "Level" },
-    { key: "submitted_at", label: "Submitted At" }
-  ];
-}
-
-function buildSingleResponseRow(row) {
-  return {
-    full_name: row.full_name || "—",
-    matric_number: row.matric_number || "—",
-    programme: row.programme || "—",
-    level: row.level || "—",
-    submitted_at: row.submitted_at ? formatDateTime(row.submitted_at) : "—"
-  };
-}
-
-function buildQuestionSummaryColumns() {
-  return [
-    { key: "question_text", label: "Question" },
-    { key: "question_type", label: "Type" },
-    { key: "answered_count", label: "Answered" },
-    { key: "total_answers", label: "Total Answers" },
-    { key: "top_options", label: "Top Options" }
-  ];
-}
-
-function buildQuestionSummaryRows(rows) {
-  return rows.map((row) => ({
-    question_text: row.question_text || "—",
-    question_type: formatQuestionType(row.question_type),
-    answered_count: String(Number(row.answered_count || 0)),
-    total_answers: String(Number(row.total_answers || 0)),
-    top_options: Array.isArray(row.options) && row.options.length
-      ? row.options.slice(0, 3).map((opt) => `${opt.label} (${opt.count})`).join(", ")
-      : "—"
-  }));
-}
-
-function renderColumnsChips(columns) {
-  const wrap = document.getElementById("exportColumnsChips");
-  if (!wrap) return;
-
-  wrap.innerHTML = columns.map((col) => `
-    <span class="col-chip">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path>
-      </svg>
-      ${escapeHtml(col.label)}
-    </span>
-  `).join("");
-}
-
-function renderPreviewTable(columns, rows) {
-  const table = document.querySelector(".export-table");
-  const theadRow = table?.querySelector("thead tr");
-  const tbody = document.getElementById("exportPreviewTableBody");
-  if (!theadRow || !tbody) return;
-
-  theadRow.innerHTML = columns.map((col) => `<th>${escapeHtml(col.label)}</th>`).join("");
-
-  if (!rows.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="${columns.length}" class="answer-cell">No matching rows found for this export view.</td>
-      </tr>
-    `;
-    return;
   }
 
-  tbody.innerHTML = rows.map((row) => {
-    return `<tr>${
-      columns.map((col) => {
-        const value = row[col.key];
-        return `<td class="${col.key.startsWith("q_") || col.key === "top_options" ? "answer-cell" : ""}">${escapeHtml(String(value ?? "—"))}</td>`;
-      }).join("")
-    }</tr>`;
-  }).join("");
-}
+  function buildSummaryColumns() {
+    return [
+      { key: "question_text", label: "Question" },
+      { key: "question_type", label: "Type" },
+      { key: "answered_count", label: "Answered" },
+      { key: "total_answers", label: "Total Answers" },
+      { key: "top_options", label: "Top Options" }
+    ];
+  }
 
-function getFilteredRows(rows) {
-  const search = cleanText(document.getElementById("exportSearchInput")?.value).toLowerCase();
-  const programme = cleanText(document.getElementById("exportProgrammeSelect")?.value);
-  const level = cleanText(document.getElementById("exportLevelSelect")?.value);
-  const identity = cleanText(document.getElementById("exportIdentitySelect")?.value).toLowerCase();
+  function buildSummaryRows(rows) {
+    return rows.map((row) => ({
+      question_text: row.question_text || "—",
+      question_type: formatQuestionType(row.question_type),
+      answered_count: String(Number(row.answered_count || 0)),
+      total_answers: String(Number(row.total_answers || 0)),
+      top_options: Array.isArray(row.options) && row.options.length
+        ? row.options.slice(0, 3).map((opt) => `${opt.label} (${opt.count})`).join(", ")
+        : "—"
+    }));
+  }
 
-  return rows.filter((row) => {
-    const name = cleanText(row.full_name);
-    const matric = cleanText(row.matric_number);
-    const programmeOk = !programme || cleanText(row.programme) === programme;
-    const levelOk = !level || cleanText(row.level) === level;
+  function getFilteredRows(rows) {
+    const search = cleanText(document.getElementById("exportSearchInput")?.value).toLowerCase();
+    const programme = cleanText(document.getElementById("exportProgrammeSelect")?.value);
+    const level = cleanText(document.getElementById("exportLevelSelect")?.value);
+    const identity = cleanText(document.getElementById("exportIdentitySelect")?.value);
 
-    let identityOk = true;
-    if (identity === "identified only") identityOk = !row.is_anonymous;
-    if (identity === "anonymous only") identityOk = !!row.is_anonymous;
+    return rows.filter((row) => {
+      const programmeOk = !programme || cleanText(row.programme) === programme;
+      const levelOk = !level || cleanText(row.level) === level;
 
-    let searchOk = true;
-    if (search) {
-      const hay = [
-        cleanText(row.full_name),
-        cleanText(row.matric_number),
-        cleanText(row.programme),
-        cleanText(row.level)
-      ].join(" ").toLowerCase();
-      searchOk = hay.includes(search);
+      let identityOk = true;
+      if (identity === "identified") identityOk = !row.is_anonymous;
+      if (identity === "anonymous") identityOk = !!row.is_anonymous;
+
+      let searchOk = true;
+      if (search) {
+        const hay = [
+          cleanText(row.full_name),
+          cleanText(row.matric_number),
+          cleanText(row.programme),
+          cleanText(row.level)
+        ].join(" ").toLowerCase();
+
+        searchOk = hay.includes(search);
+      }
+
+      return programmeOk && levelOk && identityOk && searchOk;
+    });
+  }
+
+  function resolveSingleRow(rows) {
+    if (!rows.length) {
+      exportSelectedResponseId = null;
+      return null;
     }
 
-    return programmeOk && levelOk && identityOk && searchOk && (name || matric || row.response_id);
-  });
-}
+    if (exportSelectedResponseId) {
+      const found = rows.find((row) => String(row.response_id) === String(exportSelectedResponseId));
+      if (found) return found;
+    }
 
-function resolveSingleRespondent(rows) {
-  if (!rows.length) {
-    exportSelectedResponseId = null;
-    return null;
+    exportSelectedResponseId = rows[0].response_id;
+    return rows[0];
   }
 
-  if (exportSelectedResponseId) {
-    const found = rows.find((row) => String(row.response_id) === String(exportSelectedResponseId));
-    if (found) return found;
+  function renderExportChips(columns) {
+    const wrap = document.getElementById("exportColumnsChips");
+    if (!wrap) return;
+
+    wrap.innerHTML = columns.map((col) => `
+      <span class="export-chip">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12h14M12 5v14" stroke-width="2.2" stroke-linecap="round"></path>
+        </svg>
+        ${escapeHtml(col.label)}
+      </span>
+    `).join("");
   }
 
-  exportSelectedResponseId = rows[0].response_id;
-  return rows[0];
-}
+  function renderExportTable(columns, rows) {
+    const headRow = document.getElementById("exportTableHeadRow");
+    const body = document.getElementById("exportPreviewTableBody");
+    if (!headRow || !body) return;
 
-function updateDownloadButtons() {
-  const exportBtn = document.getElementById("downloadExportBtn");
-  const topBtn = document.getElementById("quickExportTopBtn");
-  const text = getDownloadButtonText();
+    headRow.innerHTML = columns.map((col) => `<th>${escapeHtml(col.label)}</th>`).join("");
 
-  if (exportBtn) {
-    const span = exportBtn.querySelector("span");
-    if (span) span.textContent = text;
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="${columns.length}" class="export-answer">No matching rows found for this export view.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = rows.map((row) => `
+      <tr>
+        ${columns.map((col) => `<td class="${col.key.startsWith("q_") || col.key === "top_options" ? "export-answer" : ""}">${escapeHtml(String(row[col.key] ?? "—"))}</td>`).join("")}
+      </tr>
+    `).join("");
   }
 
-  if (topBtn) {
-    const span = topBtn.querySelector("span");
-    if (span) span.textContent = text;
-  }
-}
+  function updateDownloadButtons() {
+    const btn = document.getElementById("downloadExportBtn");
+    if (!btn) return;
+    const span = btn.querySelector("span");
+    if (!span) return;
 
-function getDownloadButtonText() {
-  if (exportFormat === "excel") return "Export Excel";
-  if (exportFormat === "csv") return "Export CSV";
-  if (exportFormat === "pdf") return "Export PDF";
-  if (exportFormat === "word") return "Export Word";
-  return "Export";
-}
-
-function renderCustomSelectedColumns() {
-  const selectedWrap = document.querySelector(".selected-columns");
-  if (!selectedWrap) return;
-
-  const values = Array.from(exportCustomSelectedColumns);
-
-  selectedWrap.innerHTML = values.length
-    ? values.map((label) => `<span class="mini-badge">${escapeHtml(label)}</span>`).join("")
-    : `<span class="mini-badge">No column selected</span>`;
-}
-
-function exportCustomTable() {
-  const rows = getFilteredRows(Array.isArray(exportBundle?.individual_responses) ? exportBundle.individual_responses : []);
-  const selected = Array.from(exportCustomSelectedColumns);
-
-  if (!selected.length) {
-    alert("Select at least one column for your custom table.");
-    return;
+    if (exportFormat === "excel") span.textContent = "Export Excel";
+    else if (exportFormat === "csv") span.textContent = "Export CSV";
+    else if (exportFormat === "pdf") span.textContent = "Export PDF";
+    else if (exportFormat === "word") span.textContent = "Export Word";
+    else span.textContent = "Export";
   }
 
-  if (!rows.length) {
-    alert("No matching responses to export.");
-    return;
+  function renderCustomSelectedColumns() {
+    const wrap = document.getElementById("exportCustomSelectedWrap");
+    const note = document.getElementById("exportCustomNote");
+    if (!wrap || !note) return;
+
+    const values = Array.from(exportCustomSelectedColumns);
+    wrap.innerHTML = values.length
+      ? values.map((value) => `<span class="export-mini-chip">${escapeHtml(value)}</span>`).join("")
+      : `<span class="export-mini-chip">No column selected</span>`;
+
+    note.textContent = values.length
+      ? `${values.length} column(s) selected for your custom export table.`
+      : "Select columns above to build your custom table export.";
   }
 
-  const csv = buildCustomCsv(selected, rows);
-  downloadBlob(csv, buildDownloadName("custom-table", "csv"), "text/csv;charset=utf-8;");
-}
+  function exportCurrentPreview() {
+    const columns = getPreviewColumns();
+    const rows = getPreviewRows();
 
-function buildCustomCsv(selectedLabels, rows) {
-  const labelToValue = (row, label) => {
+    if (!rows.length) {
+      alert("No rows available to export.");
+      return;
+    }
+
+    if (exportFormat === "csv" || exportFormat === "excel") {
+      const csv = buildCsv(columns, rows);
+      const ext = "csv";
+      downloadBlob(csv, buildDownloadName(exportChoice, ext), "text/csv;charset=utf-8;");
+      return;
+    }
+
+    const text = buildPlainText(columns, rows);
+    downloadBlob(text, buildDownloadName(exportChoice, "txt"), "text/plain;charset=utf-8;");
+  }
+
+  function exportCustomTable() {
+    const rows = getFilteredRows(Array.isArray(exportBundle?.individual_responses) ? exportBundle.individual_responses : []);
+    const selected = Array.from(exportCustomSelectedColumns);
+
+    if (!selected.length) {
+      alert("Select at least one column.");
+      return;
+    }
+
+    if (!rows.length) {
+      alert("No matching responses to export.");
+      return;
+    }
+
+    const csv = buildCustomCsv(selected, rows);
+    downloadBlob(csv, buildDownloadName("custom-table", "csv"), "text/csv;charset=utf-8;");
+  }
+
+  function getPreviewColumns() {
+    if (exportChoice === "summary") return buildSummaryColumns();
+    if (exportChoice === "single") return buildSingleColumns();
+    return buildAllColumns(Array.isArray(exportBundle?.questions) ? exportBundle.questions : []);
+  }
+
+  function getPreviewRows() {
+    const allRows = Array.isArray(exportBundle?.individual_responses) ? exportBundle.individual_responses : [];
+    const questions = Array.isArray(exportBundle?.questions) ? exportBundle.questions : [];
+    const summaries = Array.isArray(exportBundle?.question_summaries) ? exportBundle.question_summaries : [];
+
+    if (exportChoice === "all") return buildAllRows(allRows, questions);
+    if (exportChoice === "filtered") return buildAllRows(getFilteredRows(allRows), questions);
+    if (exportChoice === "single") {
+      const selected = resolveSingleRow(getFilteredRows(allRows));
+      return selected ? [buildSingleRow(selected)] : [];
+    }
+
+    return buildSummaryRows(summaries);
+  }
+
+  function buildCsv(columns, rows) {
+    const header = columns.map((c) => csvEscape(c.label)).join(",");
+    const body = rows.map((row) => columns.map((c) => csvEscape(row[c.key] ?? "")).join(",")).join("\\n");
+    return `${header}\\n${body}`;
+  }
+
+  function buildPlainText(columns, rows) {
+    const lines = [];
+    lines.push(`Export Type: ${toTitleCase(exportChoice)}`);
+    lines.push(`Form: ${cleanText(exportBundle?.form?.title) || "Form"}`);
+    lines.push(`Rows: ${rows.length}`);
+    lines.push("");
+
+    rows.forEach((row, index) => {
+      lines.push(`Row ${index + 1}`);
+      columns.forEach((col) => lines.push(`${col.label}: ${row[col.key] ?? ""}`));
+      lines.push("");
+    });
+
+    return lines.join("\\n");
+  }
+
+  function buildCustomCsv(selectedLabels, rows) {
+    const header = selectedLabels.map(csvEscape).join(",");
+    const body = rows.map((row) => {
+      return selectedLabels.map((label) => csvEscape(valueForCustomLabel(row, label))).join(",");
+    }).join("\\n");
+
+    return `${header}\\n${body}`;
+  }
+
+  function valueForCustomLabel(row, label) {
     const key = cleanText(label).toLowerCase();
 
     if (key === "student name") return row.full_name || "";
@@ -1843,278 +1438,166 @@ function buildCustomCsv(selectedLabels, rows) {
     if (key === "response id") return row.response_id || "";
 
     return "";
-  };
-
-  const header = selectedLabels.map(csvEscape).join(",");
-  const body = rows.map((row) => selectedLabels.map((label) => csvEscape(labelToValue(row, label))).join(",")).join("\n");
-  return `${header}\n${body}`;
-}
-
-function exportCurrentPreview() {
-  const rows = getPreviewRowsForExport();
-  const columns = getPreviewColumnsForExport();
-
-  if (!rows.length) {
-    alert("No rows available to export.");
-    return;
   }
 
-  if (exportFormat === "csv") {
-    const csv = buildCsv(columns, rows);
-    downloadBlob(csv, buildDownloadName(exportChoice, "csv"), "text/csv;charset=utf-8;");
-    return;
+  function buildDownloadName(type, ext) {
+    const formName = slugify(cleanText(exportBundle?.form?.title) || "form-export");
+    return `${formName}-${type}.${ext}`;
   }
 
-  if (exportFormat === "excel") {
-    const csv = buildCsv(columns, rows);
-    downloadBlob(csv, buildDownloadName(exportChoice, "csv"), "text/csv;charset=utf-8;");
-    return;
+  function downloadBlob(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
-  if (exportFormat === "pdf" || exportFormat === "word") {
-    const text = buildPlainTextExport(columns, rows);
-    const ext = exportFormat === "pdf" ? "txt" : "txt";
-    downloadBlob(text, buildDownloadName(exportChoice, ext), "text/plain;charset=utf-8;");
-    return;
+  async function invokeFormResponseManager(payload) {
+    const { data, error } = await exportSupabase.functions.invoke(
+      FORM_RESPONSE_FUNCTION,
+      { body: payload }
+    );
+
+    if (error) throw new Error(error.message || "Edge function request failed.");
+    if (!data?.ok) throw new Error(data?.error || "Could not load export preview.");
+    return data;
   }
 
-  alert("Unsupported export format.");
-}
+  function getActorPayloadFromSession() {
+    const keys = [
+      "colspot_hos_session",
+      "colspot_admin_session",
+      "hos_session",
+      "admin_session",
+      "colspot_session"
+    ];
 
-function getPreviewColumnsForExport() {
-  if (exportChoice === "summary") return buildQuestionSummaryColumns();
-  if (exportChoice === "single") return buildSingleResponseColumns();
+    for (const key of keys) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
 
-  const questions = Array.isArray(exportBundle?.questions) ? exportBundle.questions : [];
-  return buildAllResponseColumns(questions);
-}
+      try {
+        const parsed = JSON.parse(raw);
 
-function getPreviewRowsForExport() {
-  const allRows = Array.isArray(exportBundle?.individual_responses)
-    ? exportBundle.individual_responses
-    : [];
-  const questions = Array.isArray(exportBundle?.questions)
-    ? exportBundle.questions
-    : [];
-  const questionSummaries = Array.isArray(exportBundle?.question_summaries)
-    ? exportBundle.question_summaries
-    : [];
+        if (parsed?.hos_admin_id) return { hos_admin_id: parsed.hos_admin_id };
+        if (parsed?.form_agent_id) return { form_agent_id: parsed.form_agent_id };
 
-  if (exportChoice === "all") {
-    return buildAllResponseRows(allRows.slice(), questions);
+        if (parsed?.id && cleanText(parsed.role).toLowerCase() === "hos") {
+          return { hos_admin_id: parsed.id };
+        }
+
+        if (parsed?.id && cleanText(parsed.role).toLowerCase() === "form_agent") {
+          return { form_agent_id: parsed.id };
+        }
+
+        if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "hos") {
+          return { hos_admin_id: parsed.account.id };
+        }
+
+        if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "form_agent") {
+          return { form_agent_id: parsed.account.id };
+        }
+      } catch (_) {}
+    }
+
+    throw new Error("Admin session not found. Please sign in again.");
   }
 
-  if (exportChoice === "filtered") {
-    return buildAllResponseRows(getFilteredRows(allRows), questions);
+  function buildAudienceText(form) {
+    const audienceMode = cleanText(form.audience_mode || "all_students");
+    if (audienceMode !== "programme_filter") return "All students";
+
+    const targets = Array.isArray(form.programme_targets) ? form.programme_targets : [];
+    if (!targets.length) return "Programme filter";
+
+    const first = targets[0];
+    const programme = toTitleCase(cleanText(first.programme_name));
+    const levels = Array.isArray(first.levels) ? first.levels.join(", ") : "";
+    return `${programme} ${levels}`.trim();
   }
 
-  if (exportChoice === "single") {
-    const selected = resolveSingleRespondent(getFilteredRows(allRows));
-    return selected ? [buildSingleResponseRow(selected)] : [];
+  function formatIdentityMode(mode) {
+    return cleanText(mode) === "anonymous" ? "Anonymous" : "Use login identity";
   }
 
-  return buildQuestionSummaryRows(questionSummaries);
-}
-
-function buildCsv(columns, rows) {
-  const header = columns.map((c) => csvEscape(c.label)).join(",");
-  const body = rows
-    .map((row) => columns.map((c) => csvEscape(row[c.key] ?? "")).join(","))
-    .join("\n");
-
-  return `${header}\n${body}`;
-}
-
-function buildPlainTextExport(columns, rows) {
-  const lines = [];
-  lines.push(`Export Type: ${toTitleCase(exportChoice)}`);
-  lines.push(`Form: ${cleanText(exportBundle?.form?.title) || "Untitled Form"}`);
-  lines.push(`Rows: ${rows.length}`);
-  lines.push("");
-
-  rows.forEach((row, index) => {
-    lines.push(`Row ${index + 1}`);
-    columns.forEach((col) => {
-      lines.push(`${col.label}: ${row[col.key] ?? ""}`);
+  function formatDateTime(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleString([], {
+      day:"numeric",
+      month:"short",
+      year:"numeric",
+      hour:"numeric",
+      minute:"2-digit"
     });
-    lines.push("");
-  });
-
-  return lines.join("\n");
-}
-
-function buildDownloadName(type, ext) {
-  const formName = slugify(cleanText(exportBundle?.form?.title) || "form-responses");
-  return `${formName}-${type}.${ext}`;
-}
-
-function downloadBlob(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
-async function invokeFormResponseManager(payload) {
-  console.log("EXPORT BODY SENT:", JSON.stringify(payload, null, 2));
-
-  const { data, error } = await exportSupabase.functions.invoke(
-    FORM_RESPONSE_FUNCTION,
-    { body: payload }
-  );
-
-  console.log("EXPORT RAW DATA:", data);
-  console.log("EXPORT RAW ERROR:", error);
-
-  if (error) {
-    throw new Error(error.message || "Edge function request failed.");
   }
 
-  if (!data?.ok) {
-    throw new Error(data?.error || "Could not load export preview.");
+  function formatQuestionType(value) {
+    return toTitleCase(cleanText(value).replaceAll("_", " "));
   }
 
-  return data;
-}
-
-function getActorPayloadFromSession() {
-  const keys = [
-    "colspot_hos_session",
-    "colspot_admin_session",
-    "hos_session",
-    "admin_session",
-    "colspot_session"
-  ];
-
-  for (const key of keys) {
-    const raw = localStorage.getItem(key);
-    if (!raw) continue;
-
-    try {
-      const parsed = JSON.parse(raw);
-
-      if (parsed?.hos_admin_id) return { hos_admin_id: parsed.hos_admin_id };
-      if (parsed?.form_agent_id) return { form_agent_id: parsed.form_agent_id };
-
-      if (parsed?.id && cleanText(parsed.role).toLowerCase() === "hos") {
-        return { hos_admin_id: parsed.id };
-      }
-
-      if (parsed?.id && cleanText(parsed.role).toLowerCase() === "form_agent") {
-        return { form_agent_id: parsed.id };
-      }
-
-      if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "hos") {
-        return { hos_admin_id: parsed.account.id };
-      }
-
-      if (parsed?.account?.id && cleanText(parsed?.role || parsed?.account?.role).toLowerCase() === "form_agent") {
-        return { form_agent_id: parsed.account.id };
-      }
-    } catch (_) {}
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? "";
   }
 
-  throw new Error("Admin session not found. Please sign in again.");
-}
-
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value ?? "";
-}
-
-function buildAudienceText(form) {
-  const audienceMode = cleanText(form.audience_mode || "all_students");
-
-  if (audienceMode !== "programme_filter") {
-    return "All students";
+  function cleanText(value) {
+    return String(value ?? "").trim();
   }
 
-  const targets = Array.isArray(form.programme_targets) ? form.programme_targets : [];
-  if (!targets.length) return "Programme filter";
-
-  const first = targets[0];
-  const programme = toTitleCase(cleanText(first.programme_name));
-  const levels = Array.isArray(first.levels) ? first.levels.join(", ") : "";
-  return `${programme} ${levels}`.trim();
-}
-
-function formatIdentityMode(mode) {
-  return cleanText(mode) === "anonymous" ? "Anonymous" : "Use login identity";
-}
-
-function formatDateTime(value) {
-  if (!value) return "—";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString([], {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
-}
-
-function formatQuestionType(value) {
-  const v = cleanText(value).replaceAll("_", " ");
-  return toTitleCase(v);
-}
-
-function cleanText(value) {
-  return String(value ?? "").trim();
-}
-
-function toTitleCase(value) {
-  return cleanText(value)
-    .toLowerCase()
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function uniqueValues(arr) {
-  return [...new Set(arr)];
-}
-
-function csvEscape(value) {
-  const s = String(value ?? "");
-  if (s.includes('"') || s.includes(",") || s.includes("\n")) {
-    return `"${s.replaceAll('"', '""')}"`;
+  function toTitleCase(value) {
+    return cleanText(value)
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   }
-  return s;
-}
 
-function slugify(value) {
-  return cleanText(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "export";
-}
+  function uniqueValues(arr) {
+    return [...new Set(arr)];
+  }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+  function csvEscape(value) {
+    const s = String(value ?? "");
+    if (s.includes('"') || s.includes(",") || s.includes("\\n")) {
+      return `"${s.replaceAll('"', '""')}"`;
+    }
+    return s;
+  }
 
-function escapeHtmlAttr(value) {
-  return escapeHtml(value);
-}
+  function slugify(value) {
+    return cleanText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "export";
+  }
 
-function debounce(fn, wait) {
-  let timer = null;
-  return function(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), wait);
-  };
-}
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeHtmlAttr(value) {
+    return escapeHtml(value);
+  }
+
+  function debounce(fn, wait) {
+    let timer = null;
+    return function () {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(), wait);
+    };
+  }
+})();
 </script>
