@@ -1499,8 +1499,8 @@
 
 <script>
 (function () {
-  if (window.__formsBackendSystemInitializedV3) return;
-  window.__formsBackendSystemInitializedV3 = true;
+  if (window.__formsBackendSystemInitializedV4) return;
+  window.__formsBackendSystemInitializedV4 = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
@@ -1539,6 +1539,10 @@
 
   function normalizeText(value) {
     return String(value || "").trim().replace(/\s+/g, " ");
+  }
+
+  function normalizeUpper(value) {
+    return normalizeText(value).toUpperCase();
   }
 
   function createClientSafe() {
@@ -1583,7 +1587,6 @@
       <option value="auto">Use logged-in identity</option>
       <option value="anonymous">Anonymous</option>
     `;
-
     select.value = current === "anonymous" ? "anonymous" : "auto";
   }
 
@@ -1716,7 +1719,14 @@
 
   async function invokeFormsManager(body) {
     if (!state.sb) throw new Error("Supabase is not ready.");
+
+    console.log("FORMS BODY SENT:", JSON.stringify(body, null, 2));
+
     const { data, error } = await state.sb.functions.invoke(FORMS_FUNCTION, { body });
+
+    console.log("FORMS RAW DATA:", data);
+    console.log("FORMS RAW ERROR:", error);
+
     if (error) throw new Error(error.message || "Request failed.");
     if (!data?.ok) throw new Error(data?.error || "Request failed.");
     return data;
@@ -1771,10 +1781,10 @@
     const listBox = $("programmeListBox");
     if (!listBox) return;
 
-    const search = normalizeText(state.pickerSearch).toUpperCase();
+    const search = normalizeUpper(state.pickerSearch);
     const items = (state.programmes || []).filter((item) => {
-      if (!search) return true;
-      return String(item.programme_name || "").includes(search);
+      const name = normalizeUpper(item.programme_name || "");
+      return !search || name.includes(search);
     });
 
     if (!items.length) {
@@ -1782,28 +1792,29 @@
       return;
     }
 
-    listBox.innerHTML = items
-      .map((item) => {
-        const checked = !!state.pickerSelectedMap[item.programme_name];
-        return `
-          <label class="question-card" style="cursor:pointer;">
-            <div class="question-card-body" style="grid-template-columns:1fr auto; display:grid; align-items:center;">
-              <div><div class="question-title-static">${escapeHtml(item.programme_name)}</div></div>
-              <input type="checkbox" data-programme-pick="${escapeHtml(item.programme_name)}" ${checked ? "checked" : ""}>
+    listBox.innerHTML = items.map((item) => {
+      const programmeName = String(item.programme_name || "");
+      const checked = !!state.pickerSelectedMap[programmeName];
+
+      return `
+        <label class="question-card" style="cursor:pointer;">
+          <div class="question-card-body" style="display:grid; grid-template-columns:1fr auto; align-items:center;">
+            <div>
+              <div class="question-title-static">${escapeHtml(programmeName)}</div>
             </div>
-          </label>
-        `;
-      })
-      .join("");
+            <input type="checkbox" data-programme-pick="${escapeHtml(programmeName)}" ${checked ? "checked" : ""}>
+          </div>
+        </label>
+      `;
+    }).join("");
   }
 
   function openProgrammePicker() {
     const modal = $("programmePickerModal");
     if (!modal) return;
 
-    const currentTargets = getFormProgrammeTargets();
     state.pickerSelectedMap = {};
-    currentTargets.forEach((item) => {
+    getFormProgrammeTargets().forEach((item) => {
       state.pickerSelectedMap[item.programme_name] = true;
     });
 
@@ -1897,49 +1908,39 @@
     }
 
     if (selectedBox) {
-      selectedBox.innerHTML = targets
-        .map(
-          (item) => `
-          <div class="programme-pill">
-            <span>${escapeHtml(item.programme_name)}</span>
-            <button type="button" data-remove-programme="${escapeHtml(item.programme_name)}">×</button>
-          </div>
-        `
-        )
-        .join("");
+      selectedBox.innerHTML = targets.map((item) => `
+        <div class="programme-pill">
+          <span>${escapeHtml(item.programme_name)}</span>
+          <button type="button" data-remove-programme="${escapeHtml(item.programme_name)}">×</button>
+        </div>
+      `).join("");
     }
 
     if (stack) {
-      stack.innerHTML = targets
-        .map(
-          (item) => `
-          <div class="programme-level-card">
-            <div class="programme-level-head">
-              <div>
-                <div class="programme-level-name">${escapeHtml(item.programme_name)}</div>
-                <div class="programme-level-sub">Choose level(s) under this programme.</div>
-              </div>
-            </div>
-
-            <div class="level-chip-row">
-              ${LEVEL_OPTIONS.map(
-                (level) => `
-                <label class="level-option">
-                  <input
-                    type="checkbox"
-                    data-programme-level-programme="${escapeHtml(item.programme_name)}"
-                    data-programme-level-value="${level}"
-                    ${Array.isArray(item.levels) && item.levels.includes(level) ? "checked" : ""}
-                  >
-                  <span class="level-chip">${level}</span>
-                </label>
-              `
-              ).join("")}
+      stack.innerHTML = targets.map((item) => `
+        <div class="programme-level-card">
+          <div class="programme-level-head">
+            <div>
+              <div class="programme-level-name">${escapeHtml(item.programme_name)}</div>
+              <div class="programme-level-sub">Choose level(s) under this programme.</div>
             </div>
           </div>
-        `
-        )
-        .join("");
+
+          <div class="level-chip-row">
+            ${LEVEL_OPTIONS.map((level) => `
+              <label class="level-option">
+                <input
+                  type="checkbox"
+                  data-programme-level-programme="${escapeHtml(item.programme_name)}"
+                  data-programme-level-value="${level}"
+                  ${Array.isArray(item.levels) && item.levels.includes(level) ? "checked" : ""}
+                >
+                <span class="level-chip">${level}</span>
+              </label>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
     }
 
     const filled = targets
@@ -1955,7 +1956,7 @@
 
   function patchQuestionHeader(questionId) {
     const question = getFormQuestions().find((q) => q.local_id === questionId);
-    const card = document.querySelector(`.question-card[data-question-id="${CSS.escape(questionId)}"]`);
+    const card = document.querySelector(`.question-card[data-question-id="${questionId}"]`);
     if (!question || !card) return;
 
     const titleNode = card.querySelector(".question-title-static");
@@ -1971,8 +1972,10 @@
 
   function patchPreviewMeta() {
     const form = state.currentForm || blankForm();
-    $("studentPreviewTitle").textContent = form.title || "Untitled Form";
-    $("studentPreviewDescription").textContent = form.description || "Form description will appear here.";
+    if ($("studentPreviewTitle")) $("studentPreviewTitle").textContent = form.title || "Untitled Form";
+    if ($("studentPreviewDescription")) {
+      $("studentPreviewDescription").textContent = form.description || "Form description will appear here.";
+    }
   }
 
   function loadFormIntoEditor(form, questions) {
@@ -1985,7 +1988,7 @@
       programme_targets: Array.isArray(form?.programme_targets)
         ? form.programme_targets.map((item) => ({
             programme_name: item.programme_name || "",
-            levels: Array.isArray(item.levels) ? item.levels : [],
+            levels: Array.isArray(item.levels) ? item.levels.map((v) => String(v)) : [],
           }))
         : [],
       open_at: form?.open_at ? String(form.open_at).slice(0, 10) : "",
@@ -2002,8 +2005,8 @@
             help_text: q.help_text || "",
             placeholder_text: q.placeholder_text || "",
             is_required: !!q.is_required,
-            options_json: Array.isArray(q.options_json) ? q.options_json : [],
-            allowed_file_types: Array.isArray(q.allowed_file_types) ? q.allowed_file_types : [],
+            options_json: Array.isArray(q.options_json) ? q.options_json.slice() : [],
+            allowed_file_types: Array.isArray(q.allowed_file_types) ? q.allowed_file_types.slice() : [],
             max_file_size_mb: Number(q.max_file_size_mb || 5),
             max_files: Number(q.max_files || 1),
             section_name: q.section_name || "",
@@ -2019,21 +2022,23 @@
     ensureCurrentForm();
     const form = state.currentForm;
 
-    $("formTitleInput").value = form.title || "";
-    $("formDescriptionInput").value = form.description || "";
-    $("formOpenDateInput").value = form.open_at || "";
-    $("formCloseDateInput").value = form.close_at || "";
-    $("formResponseRule").value = form.response_rule || "one";
+    if ($("formTitleInput")) $("formTitleInput").value = form.title || "";
+    if ($("formDescriptionInput")) $("formDescriptionInput").value = form.description || "";
+    if ($("formOpenDateInput")) $("formOpenDateInput").value = form.open_at || "";
+    if ($("formCloseDateInput")) $("formCloseDateInput").value = form.close_at || "";
+    if ($("formResponseRule")) $("formResponseRule").value = form.response_rule || "one";
 
     ensureIdentityModeOptions();
-    $("formIdentityMode").value = form.identity_mode === "anonymous" ? "anonymous" : "auto";
+    if ($("formIdentityMode")) {
+      $("formIdentityMode").value = form.identity_mode === "anonymous" ? "anonymous" : "auto";
+    }
 
     if ((form.audience_mode || "all_students") === "programme_filter") {
-      $("audienceProgrammeFilter").checked = true;
-      $("audienceAllStudents").checked = false;
+      if ($("audienceProgrammeFilter")) $("audienceProgrammeFilter").checked = true;
+      if ($("audienceAllStudents")) $("audienceAllStudents").checked = false;
     } else {
-      $("audienceAllStudents").checked = true;
-      $("audienceProgrammeFilter").checked = false;
+      if ($("audienceAllStudents")) $("audienceAllStudents").checked = true;
+      if ($("audienceProgrammeFilter")) $("audienceProgrammeFilter").checked = false;
     }
 
     renderProgrammeTargets();
@@ -2049,6 +2054,7 @@
 
   function renderFormsList() {
     const box = $("formsListBox");
+    if (!box) return;
 
     if (state.loadingList) {
       box.innerHTML = `<div class="forms-empty">Loading forms...</div>`;
@@ -2062,38 +2068,36 @@
       return;
     }
 
-    box.innerHTML = items
-      .map(
-        (form) => `
-        <div class="form-item">
-          <div class="form-item-head">
-            <div>
-              <h4 class="form-item-title">${escapeHtml(form.title || "Untitled Form")}</h4>
-              <p class="form-item-desc">${escapeHtml(form.description || "No description yet.")}</p>
-            </div>
-            <span class="status-pill ${escapeHtml(form.status || "draft")}">${escapeHtml(form.status || "draft")}</span>
+    box.innerHTML = items.map((form) => `
+      <div class="form-item">
+        <div class="form-item-head">
+          <div>
+            <h4 class="form-item-title">${escapeHtml(form.title || "Untitled Form")}</h4>
+            <p class="form-item-desc">${escapeHtml(form.description || "No description yet.")}</p>
           </div>
-
-          <div class="form-item-meta">
-            <span class="meta-chip">${Number(form.question_count || 0)} Questions</span>
-            <span class="meta-chip">${escapeHtml(getAudienceLabel(form))}</span>
-            <span class="meta-chip">Updated ${escapeHtml(formatDate(form.updated_at || form.created_at))}</span>
-          </div>
-
-          <div class="form-item-actions">
-            <button type="button" class="forms-mini-btn" data-form-action="open" data-form-id="${form.id}">Open</button>
-            <button type="button" class="forms-mini-btn gray" data-form-action="edit" data-form-id="${form.id}">Edit</button>
-            <button type="button" class="forms-mini-btn red" data-form-action="delete" data-form-id="${form.id}">Delete</button>
-          </div>
+          <span class="status-pill ${escapeHtml(form.status || "draft")}">${escapeHtml(form.status || "draft")}</span>
         </div>
-      `
-      )
-      .join("");
+
+        <div class="form-item-meta">
+          <span class="meta-chip">${Number(form.question_count || 0)} Questions</span>
+          <span class="meta-chip">${escapeHtml(getAudienceLabel(form))}</span>
+          <span class="meta-chip">Updated ${escapeHtml(formatDate(form.updated_at || form.created_at))}</span>
+        </div>
+
+        <div class="form-item-actions">
+          <button type="button" class="forms-mini-btn" data-form-action="open" data-form-id="${form.id}">Open</button>
+          <button type="button" class="forms-mini-btn gray" data-form-action="edit" data-form-id="${form.id}">Edit</button>
+          <button type="button" class="forms-mini-btn red" data-form-action="delete" data-form-id="${form.id}">Delete</button>
+        </div>
+      </div>
+    `).join("");
   }
 
   function renderQuestionList() {
     const list = $("formsQuestionList");
     const empty = $("formsQuestionEmpty");
+    if (!list || !empty) return;
+
     const questions = getFormQuestions();
 
     if (!questions.length) {
@@ -2104,121 +2108,116 @@
 
     empty.classList.add("forms-hidden");
 
-    list.innerHTML = questions
-      .map((q, index) => {
-        const supportsOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type);
-        const isFile = q.question_type === "file_upload";
+    list.innerHTML = questions.map((q, index) => {
+      const supportsOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type);
+      const isFile = q.question_type === "file_upload";
 
-        return `
-          <div class="question-card" data-question-id="${q.local_id}">
-            <div class="question-card-head">
-              <div class="question-head-left">
-                <div class="question-number">${index + 1}</div>
-                <div>
-                  <div class="question-title-static">${escapeHtml(q.question_text || "Untitled Question")}</div>
-                  <div class="question-type-static">${escapeHtml(getQuestionTypeLabel(q.question_type))}</div>
-                </div>
-              </div>
-
-              <div class="question-head-right">
-                <label class="toggle-wrap">
-                  <span>Required</span>
-                  <span class="switch">
-                    <input type="checkbox" data-question-action="toggle-required" data-question-id="${q.local_id}" ${q.is_required ? "checked" : ""}>
-                    <span class="slider"></span>
-                  </span>
-                </label>
-
-                <button type="button" class="icon-btn" data-question-action="move-up" data-question-id="${q.local_id}" title="Move Up">↑</button>
-                <button type="button" class="icon-btn" data-question-action="move-down" data-question-id="${q.local_id}" title="Move Down">↓</button>
-                <button type="button" class="icon-btn" data-question-action="duplicate" data-question-id="${q.local_id}" title="Duplicate">⧉</button>
-                <button type="button" class="icon-btn" data-question-action="delete" data-question-id="${q.local_id}" title="Delete">✕</button>
+      return `
+        <div class="question-card" data-question-id="${q.local_id}">
+          <div class="question-card-head">
+            <div class="question-head-left">
+              <div class="question-number">${index + 1}</div>
+              <div>
+                <div class="question-title-static">${escapeHtml(q.question_text || "Untitled Question")}</div>
+                <div class="question-type-static">${escapeHtml(getQuestionTypeLabel(q.question_type))}</div>
               </div>
             </div>
 
-            <div class="question-card-body">
-              <div class="question-grid-2">
-                <div class="forms-field">
-                  <label>Question Title</label>
-                  <input
-                    class="forms-input"
-                    type="text"
-                    value="${escapeHtml(q.question_text || "")}"
-                    data-question-input="question_text"
-                    data-question-id="${q.local_id}"
-                    placeholder="Enter your question here."
-                  >
-                </div>
+            <div class="question-head-right">
+              <label class="toggle-wrap">
+                <span>Required</span>
+                <span class="switch">
+                  <input type="checkbox" data-question-action="toggle-required" data-question-id="${q.local_id}" ${q.is_required ? "checked" : ""}>
+                  <span class="slider"></span>
+                </span>
+              </label>
 
-                <div class="forms-field">
-                  <label>Question Type</label>
-                  <select class="forms-select" data-question-input="question_type" data-question-id="${q.local_id}">
-                    <option value="short_answer" ${q.question_type === "short_answer" ? "selected" : ""}>Short Answer</option>
-                    <option value="paragraph" ${q.question_type === "paragraph" ? "selected" : ""}>Paragraph</option>
-                    <option value="multiple_choice" ${q.question_type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
-                    <option value="checkboxes" ${q.question_type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
-                    <option value="dropdown" ${q.question_type === "dropdown" ? "selected" : ""}>Dropdown</option>
-                    <option value="date" ${q.question_type === "date" ? "selected" : ""}>Date</option>
-                    <option value="file_upload" ${q.question_type === "file_upload" ? "selected" : ""}>File Upload</option>
-                    <option value="yes_no" ${q.question_type === "yes_no" ? "selected" : ""}>Yes / No</option>
-                  </select>
-                </div>
-              </div>
+              <button type="button" class="icon-btn" data-question-action="move-up" data-question-id="${q.local_id}" title="Move Up">↑</button>
+              <button type="button" class="icon-btn" data-question-action="move-down" data-question-id="${q.local_id}" title="Move Down">↓</button>
+              <button type="button" class="icon-btn" data-question-action="duplicate" data-question-id="${q.local_id}" title="Duplicate">⧉</button>
+              <button type="button" class="icon-btn" data-question-action="delete" data-question-id="${q.local_id}" title="Delete">✕</button>
+            </div>
+          </div>
 
+          <div class="question-card-body">
+            <div class="question-grid-2">
               <div class="forms-field">
-                <label>Help Text</label>
+                <label>Question Title</label>
                 <input
                   class="forms-input"
                   type="text"
-                  value="${escapeHtml(q.help_text || "")}"
-                  data-question-input="help_text"
+                  value="${escapeHtml(q.question_text || "")}"
+                  data-question-input="question_text"
                   data-question-id="${q.local_id}"
-                  placeholder="Optional helper text."
+                  placeholder="Enter your question here."
                 >
               </div>
 
-              ${!isFile ? `
-                <div class="forms-field">
-                  <label>Placeholder</label>
-                  <input
-                    class="forms-input"
-                    type="text"
-                    value="${escapeHtml(q.placeholder_text || "")}"
-                    data-question-input="placeholder_text"
-                    data-question-id="${q.local_id}"
-                    placeholder="Optional placeholder."
-                  >
-                </div>
-              ` : ""}
+              <div class="forms-field">
+                <label>Question Type</label>
+                <select class="forms-select" data-question-input="question_type" data-question-id="${q.local_id}">
+                  <option value="short_answer" ${q.question_type === "short_answer" ? "selected" : ""}>Short Answer</option>
+                  <option value="paragraph" ${q.question_type === "paragraph" ? "selected" : ""}>Paragraph</option>
+                  <option value="multiple_choice" ${q.question_type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
+                  <option value="checkboxes" ${q.question_type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
+                  <option value="dropdown" ${q.question_type === "dropdown" ? "selected" : ""}>Dropdown</option>
+                  <option value="date" ${q.question_type === "date" ? "selected" : ""}>Date</option>
+                  <option value="file_upload" ${q.question_type === "file_upload" ? "selected" : ""}>File Upload</option>
+                  <option value="yes_no" ${q.question_type === "yes_no" ? "selected" : ""}>Yes / No</option>
+                </select>
+              </div>
+            </div>
 
-              ${
-                supportsOptions
-                  ? `
+            <div class="forms-field">
+              <label>Help Text</label>
+              <input
+                class="forms-input"
+                type="text"
+                value="${escapeHtml(q.help_text || "")}"
+                data-question-input="help_text"
+                data-question-id="${q.local_id}"
+                placeholder="Optional helper text."
+              >
+            </div>
+
+            ${!isFile ? `
+              <div class="forms-field">
+                <label>Placeholder</label>
+                <input
+                  class="forms-input"
+                  type="text"
+                  value="${escapeHtml(q.placeholder_text || "")}"
+                  data-question-input="placeholder_text"
+                  data-question-id="${q.local_id}"
+                  placeholder="Optional placeholder."
+                >
+              </div>
+            ` : ""}
+
+            ${
+              supportsOptions ? `
                 <div class="forms-field">
                   <label>Options</label>
                   <div class="options-list">
-                    ${(q.options_json || [])
-                      .map(
-                        (opt, optIndex) => `
+                    ${(Array.isArray(q.options_json) ? q.options_json : []).map((optionValue, optIndex) => `
                       <div class="option-row">
-                        <div class="option-badge">${optIndex + 1}</div>
+                        <div class="option-badge">${String.fromCharCode(65 + optIndex)}</div>
                         <input
                           class="forms-input"
                           type="text"
-                          value="${escapeHtml(opt || "")}"
-                          data-question-input="option"
+                          value="${escapeHtml(optionValue || "")}"
+                          data-question-input="option_value"
                           data-question-id="${q.local_id}"
                           data-option-index="${optIndex}"
-                          placeholder="Option text"
+                          placeholder="Option ${optIndex + 1}"
                         >
                         <div class="option-actions">
-                          <button type="button" class="icon-btn" data-question-action="remove-option" data-question-id="${q.local_id}" data-option-index="${optIndex}">✕</button>
+                          <button type="button" class="forms-mini-btn gray" data-question-action="remove-option" data-question-id="${q.local_id}" data-option-index="${optIndex}">Remove</button>
                         </div>
                       </div>
-                    `
-                      )
-                      .join("")}
+                    `).join("")}
                   </div>
+
                   <div class="question-footer" style="margin-top:10px;">
                     <div class="question-footer-left">
                       <button type="button" class="forms-mini-btn" data-question-action="add-option" data-question-id="${q.local_id}">
@@ -2227,14 +2226,12 @@
                     </div>
                   </div>
                 </div>
-              `
-                  : ""
-              }
+              ` : ""
+            }
 
-              ${
-                isFile
-                  ? `
-                <div class="question-grid-2">
+            ${
+              isFile ? `
+                <div class="question-grid-3">
                   <div class="forms-field">
                     <label>Allowed File Types</label>
                     <input
@@ -2246,8 +2243,21 @@
                       placeholder="pdf, jpg, png"
                     >
                   </div>
+
                   <div class="forms-field">
-                    <label>Max Upload</label>
+                    <label>Max File Size (MB)</label>
+                    <input
+                      class="forms-input"
+                      type="number"
+                      min="1"
+                      value="${Number(q.max_file_size_mb || 5)}"
+                      data-question-input="max_file_size_mb"
+                      data-question-id="${q.local_id}"
+                    >
+                  </div>
+
+                  <div class="forms-field">
+                    <label>Max Files</label>
                     <input
                       class="forms-input"
                       type="number"
@@ -2258,68 +2268,91 @@
                     >
                   </div>
                 </div>
-              `
-                  : ""
-              }
+              ` : ""
+            }
+
+            <div class="forms-field">
+              <label>Section Name</label>
+              <input
+                class="forms-input"
+                type="text"
+                value="${escapeHtml(q.section_name || "")}"
+                data-question-input="section_name"
+                data-question-id="${q.local_id}"
+                placeholder="Optional section name"
+              >
             </div>
           </div>
-        `;
-      })
-      .join("");
+        </div>
+      `;
+    }).join("");
   }
 
   function renderPreview() {
-    ensureCurrentForm();
     patchPreviewMeta();
 
     const body = $("studentPreviewBody");
     if (!body) return;
 
     const questions = getFormQuestions();
+
     if (!questions.length) {
-      body.innerHTML = `<div class="forms-empty">No questions added yet.</div>`;
+      body.innerHTML = `<div class="forms-empty">No questions yet. Add questions to preview the student view.</div>`;
       return;
     }
 
-    body.innerHTML = questions
-      .map((q) => {
-        const required = q.is_required ? `<span class="student-required">*</span>` : "";
+    body.innerHTML = questions.map((q) => {
+      const required = q.is_required ? `<span class="student-required">*</span>` : "";
+      let answerHtml = "";
 
-        let answerHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(q.placeholder_text || "Your answer")}">`;
-
-        if (q.question_type === "paragraph") {
-          answerHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(q.placeholder_text || "Write your answer")}"></textarea>`;
-        } else if (["multiple_choice", "checkboxes", "dropdown", "yes_no"].includes(q.question_type)) {
-          const options = q.question_type === "yes_no" ? ["Yes", "No"] : (q.options_json || []);
-          answerHtml = `
-            <div class="student-option-list">
-              ${options
-                .map(
-                  (opt) => `
-                <label class="student-option">
-                  <input type="${q.question_type === "checkboxes" ? "checkbox" : "radio"}" name="${escapeHtml(q.local_id)}">
-                  <span>${escapeHtml(opt || "Option")}</span>
-                </label>
-              `
-                )
-                .join("")}
-            </div>
-          `;
-        } else if (q.question_type === "date") {
-          answerHtml = `<input class="forms-input" type="date">`;
-        } else if (q.question_type === "file_upload") {
-          answerHtml = `<input class="forms-input" type="file">`;
-        }
-
-        return `
-          <div class="student-q">
-            <h4>${escapeHtml(q.question_text || "Untitled Question")}${required}</h4>
-            <p>${escapeHtml(q.help_text || "")}</p>
-            ${answerHtml}
+      if (q.question_type === "short_answer") {
+        answerHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(q.placeholder_text || "Your answer")}">`;
+      } else if (q.question_type === "paragraph") {
+        answerHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(q.placeholder_text || "Write your answer")}"></textarea>`;
+      } else if (["multiple_choice", "checkboxes"].includes(q.question_type)) {
+        const inputType = q.question_type === "checkboxes" ? "checkbox" : "radio";
+        answerHtml = `
+          <div class="student-option-list">
+            ${(Array.isArray(q.options_json) ? q.options_json : []).map((option) => `
+              <label class="student-option">
+                <input type="${inputType}" name="${escapeHtml(q.local_id)}">
+                <span>${escapeHtml(option || "Option")}</span>
+              </label>
+            `).join("")}
           </div>
         `;
-      })
-      .join("");
+      } else if (q.question_type === "dropdown") {
+        answerHtml = `
+          <select class="forms-select">
+            <option value="">Choose one</option>
+            ${(Array.isArray(q.options_json) ? q.options_json : []).map((option) => `
+              <option value="${escapeHtml(option)}">${escapeHtml(option)}</option>
+            `).join("")}
+          </select>
+        `;
+      } else if (q.question_type === "date") {
+        answerHtml = `<input class="forms-input" type="date">`;
+      } else if (q.question_type === "file_upload") {
+        answerHtml = `<input class="forms-input" type="file">`;
+      } else if (q.question_type === "yes_no") {
+        answerHtml = `
+          <div class="student-option-list">
+            <label class="student-option"><input type="radio" name="${escapeHtml(q.local_id)}"><span>Yes</span></label>
+            <label class="student-option"><input type="radio" name="${escapeHtml(q.local_id)}"><span>No</span></label>
+          </div>
+        `;
+      } else {
+        answerHtml = `<input class="forms-input" type="text" placeholder="Your answer">`;
+      }
+
+      return `
+        <div class="student-q">
+          <h4>${escapeHtml(q.question_text || "Untitled Question")}${required}</h4>
+          <p>${escapeHtml(q.help_text || "")}</p>
+          ${answerHtml}
+        </div>
+      `;
+    }).join("");
   }
 
   function syncFormFromSetupInputs() {
@@ -2343,11 +2376,8 @@
     state.currentForm.target_audience = "all_students";
   }
 
-  function buildPayload(statusOverride) {
-    syncFormFromSetupInputs();
-
-    const form = state.currentForm || blankForm();
-    const questions = getFormQuestions().map((q, index) => ({
+  function serializeQuestions() {
+    return getFormQuestions().map((q, index) => ({
       id: q.id || null,
       question_text: normalizeText(q.question_text),
       question_type: q.question_type,
@@ -2365,6 +2395,12 @@
       section_name: normalizeText(q.section_name),
       sort_order: index + 1,
     }));
+  }
+
+  function getSetupPayload(statusOverride) {
+    syncFormFromSetupInputs();
+
+    const form = state.currentForm || blankForm();
 
     return {
       ...getActorPayload(),
@@ -2379,8 +2415,13 @@
       open_date: form.open_at || null,
       close_date: form.close_at || null,
       status: statusOverride || form.status || "draft",
-      questions,
     };
+  }
+
+  function getFullPayload(statusOverride) {
+    const payload = getSetupPayload(statusOverride);
+    payload.questions = serializeQuestions();
+    return payload;
   }
 
   async function loadForms() {
@@ -2398,7 +2439,9 @@
       renderFormsList();
     } catch (err) {
       console.error("Load forms error:", err);
-      $("formsListBox").innerHTML = `<div class="forms-empty">${escapeHtml(err.message || "Could not load forms.")}</div>`;
+      if ($("formsListBox")) {
+        $("formsListBox").innerHTML = `<div class="forms-empty">${escapeHtml(err.message || "Could not load forms.")}</div>`;
+      }
     } finally {
       state.loadingList = false;
       renderFormsList();
@@ -2407,6 +2450,8 @@
 
   async function openForm(formId) {
     try {
+      setSavePill("Loading form...", "warn");
+
       const data = await invokeFormsManager({
         action: "get_form",
         form_id: formId,
@@ -2418,23 +2463,68 @@
       setStep("setup");
       setSavePill("Loaded", "");
     } catch (err) {
+      console.error(err);
+      setSavePill("Load failed", "error");
       alert(err.message || "Could not open form.");
     }
   }
 
   async function saveSetupOnly() {
     syncFormFromSetupInputs();
+
     if (!normalizeText(state.currentForm.title)) {
       alert("Enter form title first.");
       return false;
     }
 
+    const payload = {
+      ...getSetupPayload("draft"),
+      questions: [],
+    };
+
+    console.log("SAVE SETUP DATA:", JSON.stringify(payload, null, 2));
+
     const btn = $("formsSaveDraftBtn");
     setButtonLoading(btn, "Saving...", true);
 
     try {
-      const payload = buildPayload("draft");
+      let data;
+      if (state.currentForm.id) {
+        data = await invokeFormsManager({ action: "update_form", ...payload });
+      } else {
+        data = await invokeFormsManager({ action: "create_form", ...payload });
+      }
 
+      state.currentForm.id = data.form?.id || state.currentForm.id;
+      state.currentForm.status = data.form?.status || "draft";
+      setSavePill("Draft saved", "");
+      await loadForms();
+      return true;
+    } catch (err) {
+      console.error(err);
+      setSavePill("Save failed", "error");
+      alert(err.message || "Could not save draft.");
+      return false;
+    } finally {
+      setButtonLoading(btn, "Saving...", false);
+    }
+  }
+
+  async function saveFullForm(buttonEl) {
+    syncFormFromSetupInputs();
+
+    if (!normalizeText(state.currentForm.title)) {
+      alert("Enter form title first.");
+      return false;
+    }
+
+    const payload = getFullPayload("draft");
+    console.log("SAVE FULL FORM DATA:", JSON.stringify(payload, null, 2));
+
+    const btn = buttonEl || $("formsSaveDraftBtn");
+    setButtonLoading(btn, "Saving...", true);
+
+    try {
       let data;
       if (state.currentForm.id) {
         data = await invokeFormsManager({ action: "update_form", ...payload });
@@ -2461,8 +2551,11 @@
     syncFormFromSetupInputs();
 
     if (!state.currentForm?.id) {
-      const ok = await saveSetupOnly();
+      const ok = await saveFullForm(buttonEl);
       if (!ok) return;
+    } else {
+      const saveOk = await saveFullForm(buttonEl);
+      if (!saveOk) return;
     }
 
     const btn = buttonEl || $("formsPublishBtn");
@@ -2527,235 +2620,261 @@
     const nextIndex = index + dir;
     if (nextIndex < 0 || nextIndex >= list.length) return;
 
-    const temp = list[index];
-    list[index] = list[nextIndex];
-    list[nextIndex] = temp;
+    const [item] = list.splice(index, 1);
+    list.splice(nextIndex, 0, item);
 
     renderQuestionList();
     renderPreview();
     setSavePill("Unsaved changes", "warn");
   }
 
-  function getQuestionById(questionId) {
-    return getFormQuestions().find((q) => q.local_id === questionId) || null;
+  function addOption(questionId) {
+    const question = getFormQuestions().find((q) => q.local_id === questionId);
+    if (!question) return;
+    if (!Array.isArray(question.options_json)) question.options_json = [];
+    question.options_json.push("");
+    renderQuestionList();
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function handleQuestionInput(el) {
-    const questionId = el.dataset.questionId;
-    const field = el.dataset.questionInput;
-    const q = getQuestionById(questionId);
-    if (!q || !field) return;
+  function removeOption(questionId, optionIndex) {
+    const question = getFormQuestions().find((q) => q.local_id === questionId);
+    if (!question || !Array.isArray(question.options_json)) return;
+    if (question.options_json.length <= 1) return;
 
-    if (field === "question_text") {
-      q.question_text = el.value;
-      patchQuestionHeader(questionId);
-      renderPreview();
-    } else if (field === "help_text") {
-      q.help_text = el.value;
-      renderPreview();
-    } else if (field === "placeholder_text") {
-      q.placeholder_text = el.value;
-      renderPreview();
-    } else if (field === "question_type") {
-      q.question_type = el.value;
+    question.options_json.splice(optionIndex, 1);
+    renderQuestionList();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
+  }
 
-      if (["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type) && !Array.isArray(q.options_json)) {
-        q.options_json = ["", ""];
+  function updateQuestionInput(questionId, inputName, value, optionIndex) {
+    const question = getFormQuestions().find((q) => q.local_id === questionId);
+    if (!question) return;
+
+    if (inputName === "question_type") {
+      question.question_type = value;
+
+      if (["multiple_choice", "checkboxes", "dropdown"].includes(value)) {
+        if (!Array.isArray(question.options_json) || !question.options_json.length) {
+          question.options_json = ["", ""];
+        }
+      } else if (value === "yes_no") {
+        question.options_json = ["Yes", "No"];
+      } else {
+        question.options_json = [];
       }
 
-      if (["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type) && q.options_json.length === 0) {
-        q.options_json = ["", ""];
+      if (value !== "file_upload") {
+        question.allowed_file_types = [];
+        question.max_file_size_mb = 5;
+        question.max_files = 1;
       }
 
-      if (q.question_type === "yes_no") {
-        q.options_json = ["Yes", "No"];
-        q.placeholder_text = "";
-      }
-
-      if (q.question_type === "file_upload") {
-        q.allowed_file_types = q.allowed_file_types || [];
-        q.max_files = q.max_files || 1;
+      if (value === "yes_no") {
+        question.placeholder_text = "";
       }
 
       renderQuestionList();
       renderPreview();
-    } else if (field === "option") {
-      const optIndex = Number(el.dataset.optionIndex);
-      if (!Array.isArray(q.options_json)) q.options_json = [];
-      q.options_json[optIndex] = el.value;
-      renderPreview();
-    } else if (field === "allowed_file_types") {
-      q.allowed_file_types = String(el.value || "")
-        .split(",")
-        .map((v) => normalizeText(v))
-        .filter(Boolean);
-    } else if (field === "max_files") {
-      q.max_files = Math.max(1, Number(el.value || 1));
+      patchQuestionHeader(questionId);
+      setSavePill("Unsaved changes", "warn");
+      return;
     }
 
-    setSavePill("Unsaved changes", "warn");
-  }
-
-  function handleQuestionAction(el) {
-    const action = el.dataset.questionAction;
-    const questionId = el.dataset.questionId;
-    const q = getQuestionById(questionId);
-    if (!action || !questionId) return;
-
-    if (action === "toggle-required" && q) {
-      q.is_required = !!el.checked;
+    if (inputName === "toggle_required") {
+      question.is_required = !!value;
       renderPreview();
       setSavePill("Unsaved changes", "warn");
       return;
     }
 
-    if (action === "move-up") {
-      moveQuestion(questionId, -1);
+    if (inputName === "option_value") {
+      if (!Array.isArray(question.options_json)) question.options_json = [];
+      question.options_json[optionIndex] = value;
+      renderPreview();
+      setSavePill("Unsaved changes", "warn");
       return;
     }
 
-    if (action === "move-down") {
-      moveQuestion(questionId, 1);
+    if (inputName === "allowed_file_types") {
+      question.allowed_file_types = String(value || "")
+        .split(",")
+        .map((v) => normalizeText(v))
+        .filter(Boolean);
+      setSavePill("Unsaved changes", "warn");
       return;
     }
 
-    if (action === "duplicate") {
-      duplicateQuestion(questionId);
+    if (inputName === "max_file_size_mb") {
+      question.max_file_size_mb = Math.max(1, Number(value || 1));
+      setSavePill("Unsaved changes", "warn");
+      return;
+    }
+
+    if (inputName === "max_files") {
+      question.max_files = Math.max(1, Number(value || 1));
+      setSavePill("Unsaved changes", "warn");
+      return;
+    }
+
+    question[inputName] = value;
+    if (inputName === "question_text") patchQuestionHeader(questionId);
+    if (["question_text", "help_text", "placeholder_text", "section_name"].includes(inputName)) {
+      renderPreview();
+    }
+    setSavePill("Unsaved changes", "warn");
+  }
+
+  function validateSetupOnly() {
+    syncFormFromSetupInputs();
+
+    if (!normalizeText(state.currentForm.title)) {
+      alert("Form title is required.");
+      return false;
+    }
+
+    if (state.currentForm.audience_mode === "programme_filter") {
+      const targets = getFormProgrammeTargets();
+
+      if (!targets.length) {
+        alert("Select at least one programme.");
+        return false;
+      }
+
+      const noLevel = targets.some((item) => !Array.isArray(item.levels) || !item.levels.length);
+      if (noLevel) {
+        alert("Every selected programme must have at least one level.");
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function validateQuestionsBeforePreview() {
+    const questions = getFormQuestions();
+
+    if (!questions.length) {
+      alert("Add at least one question.");
+      return false;
+    }
+
+    for (const q of questions) {
+      if (!normalizeText(q.question_text)) {
+        alert("Every question must have a title.");
+        return false;
+      }
+
+      if (["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type)) {
+        const options = Array.isArray(q.options_json)
+          ? q.options_json.map((v) => normalizeText(v)).filter(Boolean)
+          : [];
+        if (!options.length) {
+          alert(`Question "${q.question_text || "Untitled Question"}" must have at least one option.`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  async function deleteForm(formId) {
+    const yes = confirm("Delete this form?");
+    if (!yes) return;
+
+    try {
+      await invokeFormsManager({
+        action: "delete_form",
+        form_id: formId,
+        ...getActorPayload(),
+      });
+
+      await loadForms();
+      alert("Form deleted successfully.");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not delete form.");
+    }
+  }
+
+  function handleFormListClick(event) {
+    const button = event.target.closest("[data-form-action]");
+    if (!button) return;
+
+    const action = button.getAttribute("data-form-action");
+    const formId = button.getAttribute("data-form-id");
+    if (!formId) return;
+
+    if (action === "open" || action === "edit") {
+      openForm(formId);
+      showBuilder();
       return;
     }
 
     if (action === "delete") {
-      deleteQuestion(questionId);
-      return;
-    }
-
-    if (action === "add-option" && q) {
-      if (!Array.isArray(q.options_json)) q.options_json = [];
-      q.options_json.push("");
-      renderQuestionList();
-      setSavePill("Unsaved changes", "warn");
-      return;
-    }
-
-    if (action === "remove-option" && q) {
-      const optIndex = Number(el.dataset.optionIndex);
-      if (!Array.isArray(q.options_json)) q.options_json = [];
-      q.options_json.splice(optIndex, 1);
-      if (q.options_json.length === 0) q.options_json = [""];
-      renderQuestionList();
-      renderPreview();
-      setSavePill("Unsaved changes", "warn");
+      deleteForm(formId);
     }
   }
 
-  function bindEvents() {
-    $("formsCreateBtn")?.addEventListener("click", () => {
-      state.currentForm = blankForm();
-      showBuilder();
-      setStep("setup");
-      renderEditor();
-      setSavePill("Ready", "");
+  function wireQuestionEvents() {
+    const list = $("formsQuestionList");
+    if (!list) return;
+
+    list.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const inputName = target.getAttribute("data-question-input");
+      const questionId = target.getAttribute("data-question-id");
+      if (!inputName || !questionId) return;
+
+      const optionIndex = Number(target.getAttribute("data-option-index"));
+      const value = "value" in target ? target.value : "";
+      updateQuestionInput(questionId, inputName, value, optionIndex);
     });
 
-    $("formsBackBtn")?.addEventListener("click", showHome);
+    list.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
 
-    $("formsSaveDraftBtn")?.addEventListener("click", saveSetupOnly);
-
-    $("formsPublishBtn")?.addEventListener("click", function () {
-      publishForm(this);
-    });
-
-    $("formsPublishBottomBtn")?.addEventListener("click", function () {
-      publishForm(this);
-    });
-
-    $("formsContinueToQuestionsBtn")?.addEventListener("click", async function () {
-      syncFormFromSetupInputs();
-      if (!normalizeText(state.currentForm.title)) {
-        alert("Enter form title first.");
+      if (target.matches('[data-question-action="toggle-required"]')) {
+        const questionId = target.getAttribute("data-question-id");
+        if (!questionId) return;
+        updateQuestionInput(questionId, "toggle_required", !!target.checked);
         return;
       }
-      const ok = await saveSetupOnly();
-      if (ok) setStep("questions");
+
+      const inputName = target.getAttribute("data-question-input");
+      const questionId = target.getAttribute("data-question-id");
+      if (!inputName || !questionId) return;
+
+      const optionIndex = Number(target.getAttribute("data-option-index"));
+      const value = "value" in target ? target.value : "";
+      updateQuestionInput(questionId, inputName, value, optionIndex);
     });
 
-    $("formsBackToSetupBtn")?.addEventListener("click", () => setStep("setup"));
+    list.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-question-action]");
+      if (!button) return;
 
-    $("formsContinueToPreviewBtn")?.addEventListener("click", () => {
-      renderPreview();
-      setStep("preview");
+      const action = button.getAttribute("data-question-action");
+      const questionId = button.getAttribute("data-question-id");
+      const optionIndex = Number(button.getAttribute("data-option-index"));
+
+      if (!questionId) return;
+
+      if (action === "delete") deleteQuestion(questionId);
+      if (action === "duplicate") duplicateQuestion(questionId);
+      if (action === "move-up") moveQuestion(questionId, -1);
+      if (action === "move-down") moveQuestion(questionId, 1);
+      if (action === "add-option") addOption(questionId);
+      if (action === "remove-option") removeOption(questionId, optionIndex);
     });
+  }
 
-    $("formsBackToQuestionsBtn")?.addEventListener("click", () => setStep("questions"));
-
-    document.querySelectorAll("#formsStatusTabs [data-status]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        state.statusFilter = btn.dataset.status;
-        renderHomeTabs();
-        await loadForms();
-      });
-    });
-
-    $("formTitleInput")?.addEventListener("input", () => {
-      ensureCurrentForm();
-      state.currentForm.title = $("formTitleInput").value;
-      patchPreviewMeta();
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("formDescriptionInput")?.addEventListener("input", () => {
-      ensureCurrentForm();
-      state.currentForm.description = $("formDescriptionInput").value;
-      patchPreviewMeta();
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("formOpenDateInput")?.addEventListener("change", () => {
-      ensureCurrentForm();
-      state.currentForm.open_at = $("formOpenDateInput").value || "";
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("formCloseDateInput")?.addEventListener("change", () => {
-      ensureCurrentForm();
-      state.currentForm.close_at = $("formCloseDateInput").value || "";
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("formResponseRule")?.addEventListener("change", () => {
-      ensureCurrentForm();
-      state.currentForm.response_rule = $("formResponseRule").value || "one";
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("formIdentityMode")?.addEventListener("change", () => {
-      ensureCurrentForm();
-      const value = $("formIdentityMode").value || "auto";
-      state.currentForm.identity_mode = value === "anonymous" ? "anonymous" : "auto";
-      setSavePill("Unsaved changes", "warn");
-    });
-
-    $("audienceAllStudents")?.addEventListener("change", () => {
-      if ($("audienceAllStudents").checked) {
-        ensureCurrentForm();
-        state.currentForm.audience_mode = "all_students";
-        state.currentForm.programme_targets = [];
-        renderProgrammeTargets();
-        renderPreview();
-        setSavePill("Unsaved changes", "warn");
-      }
-    });
-
-    $("audienceProgrammeFilter")?.addEventListener("change", () => {
-      if ($("audienceProgrammeFilter").checked) {
-        ensureCurrentForm();
-        state.currentForm.audience_mode = "programme_filter";
-        renderProgrammeTargets();
-        renderPreview();
-        setSavePill("Unsaved changes", "warn");
-      }
-    });
-
+  function wireProgrammeEvents() {
     $("openProgrammePickerBtn")?.addEventListener("click", openProgrammePicker);
     $("closeProgrammePickerBtn")?.addEventListener("click", closeProgrammePicker);
     $("applyProgrammePickerBtn")?.addEventListener("click", applyProgrammePickerSelection);
@@ -2765,99 +2884,145 @@
       renderProgrammePickerList();
     });
 
-    $("programmeListBox")?.addEventListener("change", (e) => {
-      const target = e.target;
-      if (!target || !target.matches("[data-programme-pick]")) return;
-      state.pickerSelectedMap[target.dataset.programmePick] = !!target.checked;
+    $("programmeListBox")?.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const programmeName = target.getAttribute("data-programme-pick");
+      if (!programmeName) return;
+      state.pickerSelectedMap[programmeName] = !!target.checked;
     });
 
-    $("selectedProgrammesBox")?.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-remove-programme]");
+    $("selectedProgrammesBox")?.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-remove-programme]");
       if (!btn) return;
-      removeProgramme(btn.dataset.removeProgramme);
+      removeProgramme(btn.getAttribute("data-remove-programme"));
     });
 
-    $("programmeLevelStack")?.addEventListener("change", (e) => {
-      const target = e.target;
-      if (!target || !target.matches("[data-programme-level-programme]")) return;
-      toggleProgrammeLevel(target.dataset.programmeLevelProgramme, target.dataset.programmeLevelValue);
+    $("programmeLevelStack")?.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLElement)) return;
+      const programmeName = input.getAttribute("data-programme-level-programme");
+      const level = input.getAttribute("data-programme-level-value");
+      if (!programmeName || !level) return;
+      toggleProgrammeLevel(programmeName, level);
     });
+  }
+
+  function wireSetupEvents() {
+    $("audienceAllStudents")?.addEventListener("change", () => {
+      renderProgrammeTargets();
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("audienceProgrammeFilter")?.addEventListener("change", () => {
+      renderProgrammeTargets();
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    ["formTitleInput","formDescriptionInput","formOpenDateInput","formCloseDateInput","formResponseRule","formIdentityMode"]
+      .forEach((id) => {
+        $(id)?.addEventListener("input", () => {
+          syncFormFromSetupInputs();
+          renderPreview();
+          setSavePill("Unsaved changes", "warn");
+        });
+        $(id)?.addEventListener("change", () => {
+          syncFormFromSetupInputs();
+          renderPreview();
+          setSavePill("Unsaved changes", "warn");
+        });
+      });
+
+    $("formsContinueToQuestionsBtn")?.addEventListener("click", async () => {
+      if (!validateSetupOnly()) return;
+      const ok = await saveSetupOnly();
+      if (!ok) return;
+      setStep("questions");
+    });
+
+    $("formsBackToSetupBtn")?.addEventListener("click", () => setStep("setup"));
+    $("formsContinueToPreviewBtn")?.addEventListener("click", () => {
+      if (!validateQuestionsBeforePreview()) return;
+      renderPreview();
+      setStep("preview");
+    });
+    $("formsBackToQuestionsBtn")?.addEventListener("click", () => setStep("questions"));
+  }
+
+  function wireTopActions() {
+    $("formsCreateBtn")?.addEventListener("click", () => {
+      state.currentForm = blankForm();
+      renderEditor();
+      showBuilder();
+      setStep("setup");
+      setSavePill("Ready", "");
+    });
+
+    $("formsBackBtn")?.addEventListener("click", async () => {
+      showHome();
+      await loadForms();
+    });
+
+    $("formsSaveDraftBtn")?.addEventListener("click", async () => {
+      if (state.currentStep === "setup") {
+        await saveSetupOnly();
+      } else {
+        await saveFullForm($("formsSaveDraftBtn"));
+      }
+    });
+
+    $("formsPublishBtn")?.addEventListener("click", async () => {
+      await publishForm($("formsPublishBtn"));
+    });
+
+    $("formsPublishBottomBtn")?.addEventListener("click", async () => {
+      await publishForm($("formsPublishBottomBtn"));
+    });
+
+    document.querySelectorAll("#formsStatusTabs [data-status]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        state.statusFilter = btn.dataset.status || "draft";
+        renderHomeTabs();
+        await loadForms();
+      });
+    });
+
+    $("formsListBox")?.addEventListener("click", handleFormListClick);
 
     document.querySelectorAll(".type-btn[data-question-type]").forEach((btn) => {
-      btn.addEventListener("click", () => addQuestion(btn.dataset.questionType));
-    });
-
-    $("formsQuestionList")?.addEventListener("input", (e) => {
-      const el = e.target.closest("[data-question-input]");
-      if (!el) return;
-      handleQuestionInput(el);
-    });
-
-    $("formsQuestionList")?.addEventListener("change", (e) => {
-      const el = e.target.closest("[data-question-input], [data-question-action]");
-      if (!el) return;
-
-      if (el.hasAttribute("data-question-input")) {
-        handleQuestionInput(el);
-      } else {
-        handleQuestionAction(el);
-      }
-    });
-
-    $("formsQuestionList")?.addEventListener("click", (e) => {
-      const el = e.target.closest("[data-question-action]");
-      if (!el) return;
-      handleQuestionAction(el);
-    });
-
-    $("formsListBox")?.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-form-action]");
-      if (!btn) return;
-
-      const action = btn.dataset.formAction;
-      const formId = btn.dataset.formId;
-      if (!formId) return;
-
-      if (action === "open" || action === "edit") {
-        await openForm(formId);
-        return;
-      }
-
-      if (action === "delete") {
-        const ok = confirm("Delete this form?");
-        if (!ok) return;
-
-        try {
-          await invokeFormsManager({
-            action: "delete_form",
-            form_id: formId,
-            ...getActorPayload(),
-          });
-          await loadForms();
-        } catch (err) {
-          alert(err.message || "Could not delete form.");
-        }
-      }
+      btn.addEventListener("click", () => {
+        addQuestion(btn.getAttribute("data-question-type"));
+      });
     });
   }
 
   async function init() {
+    ensureIdentityModeOptions();
+
     state.sb = createClientSafe();
     if (!state.sb) {
-      console.error("Supabase client not found.");
+      console.error("Supabase browser library is not loaded.");
       return;
     }
 
     state.session = getAdminSession();
-    ensureIdentityModeOptions();
-    bindEvents();
-    renderHomeTabs();
+    console.log("FORMS INIT SESSION:", state.session);
+
     showHome();
+    renderHomeTabs();
+    wireTopActions();
+    wireSetupEvents();
+    wireProgrammeEvents();
+    wireQuestionEvents();
+
+    state.currentForm = blankForm();
+    renderEditor();
+
     await loadProgrammes();
     await loadForms();
   }
 
-  init();
+  document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
 </section>
