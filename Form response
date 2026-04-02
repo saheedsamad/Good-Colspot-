@@ -1236,9 +1236,779 @@
     </main>
   </div>
 
-  <!-- PASTE YOUR JS BELOW -->
-  <script>
-    // Paste your JS here
-  </script>
+<script>
+/* =========================
+   COLSPOT FORM RESPONSE JS
+   ========================= */
+
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+const FUNCTION_NAME = "forms-manager";
+
+let supabaseClient = null;
+let currentForm = null;
+let currentQuestions = [];
+let currentResponses = [];
+let currentAnswers = [];
+let currentAudienceStudents = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  initFormResponsePage().catch((err) => {
+    console.error("form_response init error:", err);
+    showFatalState(err?.message || "Failed to load form response page.");
+  });
+});
+
+async function initFormResponsePage() {
+  ensureSupabaseBrowserLoaded();
+  supabaseClient = getSupabaseClient();
+
+  wireLeftTabs();
+  wireTopButtons();
+
+  const formId = getFormIdFromUrl();
+  if (!formId) {
+    throw new Error("form_id is missing in URL.");
+  }
+
+  await loadSummaryPage(formId);
+}
+
+function ensureSupabaseBrowserLoaded() {
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    throw new Error("Supabase browser library is not loaded on this page.");
+  }
+}
+
+function getSupabaseClient() {
+  if (window.__colspotFormResponseSupabase) {
+    return window.__colspotFormResponseSupabase;
+  }
+
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_ANON_KEY ||
+    SUPABASE_URL.includes("YOUR_SUPABASE_URL") ||
+    SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
+  ) {
+    throw new Error("Set your real SUPABASE_URL and SUPABASE_ANON_KEY in form_response.html.");
+  }
+
+  window.__colspotFormResponseSupabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  return window.__colspotFormResponseSupabase;
+}
+
+function getFormIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return cleanText(params.get("form_id"));
+}
+
+function wireLeftTabs() {
+  const links = Array.from(document.querySelectorAll(".side-link"));
+  if (!links.length) return;
+
+  const summarySectionIds = [
+    ".hero-card",
+    ".row-grid",
+    ".info-grid"
+  ];
+
+  const questionsPlaceholder = document.getElementById("questionsPlaceholder");
+  const individualPlaceholder = document.getElementById("individualPlaceholder");
+  const exportPlaceholder = document.getElementById("exportPlaceholder");
+
+  function showSummary() {
+    links.forEach((btn) => btn.classList.remove("active"));
+    if (links[0]) links[0].classList.add("active");
+
+    summarySectionIds.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.style.display = "";
+      });
+    });
+
+    if (questionsPlaceholder) questionsPlaceholder.style.display = "none";
+    if (individualPlaceholder) individualPlaceholder.style.display = "none";
+    if (exportPlaceholder) exportPlaceholder.style.display = "none";
+
+    updateTopbarTitle("Summary", "Form response overview");
+  }
+
+  function showQuestions() {
+    links.forEach((btn) => btn.classList.remove("active"));
+    if (links[1]) links[1].classList.add("active");
+
+    summarySectionIds.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.style.display = "none";
+      });
+    });
+
+    if (questionsPlaceholder) {
+      questionsPlaceholder.textContent = "This is question";
+      questionsPlaceholder.style.display = "block";
+    }
+    if (individualPlaceholder) individualPlaceholder.style.display = "none";
+    if (exportPlaceholder) exportPlaceholder.style.display = "none";
+
+    updateTopbarTitle("Questions", "Question breakdown will show here");
+  }
+
+  function showIndividual() {
+    links.forEach((btn) => btn.classList.remove("active"));
+    if (links[2]) links[2].classList.add("active");
+
+    summarySectionIds.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.style.display = "none";
+      });
+    });
+
+    if (questionsPlaceholder) questionsPlaceholder.style.display = "none";
+    if (individualPlaceholder) {
+      individualPlaceholder.textContent = "This is individual";
+      individualPlaceholder.style.display = "block";
+    }
+    if (exportPlaceholder) exportPlaceholder.style.display = "none";
+
+    updateTopbarTitle("Individual", "Single response view will show here");
+  }
+
+  function showExport() {
+    links.forEach((btn) => btn.classList.remove("active"));
+    if (links[3]) links[3].classList.add("active");
+
+    summarySectionIds.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.style.display = "none";
+      });
+    });
+
+    if (questionsPlaceholder) questionsPlaceholder.style.display = "none";
+    if (individualPlaceholder) individualPlaceholder.style.display = "none";
+    if (exportPlaceholder) {
+      exportPlaceholder.textContent = "This is export";
+      exportPlaceholder.style.display = "block";
+    }
+
+    updateTopbarTitle("Export", "Export options will show here");
+  }
+
+  if (links[0]) links[0].addEventListener("click", showSummary);
+  if (links[1]) links[1].addEventListener("click", showQuestions);
+  if (links[2]) links[2].addEventListener("click", showIndividual);
+  if (links[3]) links[3].addEventListener("click", showExport);
+
+  showSummary();
+}
+
+function wireTopButtons() {
+  const backBtn = document.querySelector(".back-btn");
+  const previewBtn = document.getElementById("previewFormBtn");
+  const closeBtn = document.getElementById("closeFormBtn");
+
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (document.referrer) {
+        window.history.back();
+      } else {
+        window.location.href = "hos.html";
+      }
+    });
+  }
+
+  if (previewBtn) {
+    previewBtn.addEventListener("click", () => {
+      if (!currentForm?.id) return;
+      window.open(`form_preview.html?form_id=${encodeURIComponent(currentForm.id)}`, "_blank");
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", async () => {
+      if (!currentForm?.id) return;
+
+      const confirmed = window.confirm("Are you sure you want to close this form?");
+      if (!confirmed) return;
+
+      try {
+        closeBtn.disabled = true;
+        const result = await invokeFormsManager({
+          action: "close_form",
+          form_id: currentForm.id,
+          ...getActorPayloadFromSession()
+        });
+
+        if (!result?.ok) {
+          throw new Error(result?.error || "Failed to close form.");
+        }
+
+        currentForm.status = "closed";
+        setText("summaryStatusChip", "Closed");
+        setText("infoIdentityMode", formatIdentityMode(currentForm.identity_mode));
+        alert("Form closed successfully.");
+      } catch (err) {
+        console.error("close form error:", err);
+        alert(err?.message || "Unable to close form.");
+      } finally {
+        closeBtn.disabled = false;
+      }
+    });
+  }
+}
+
+async function loadSummaryPage(formId) {
+  const [form, questions, responses] = await Promise.all([
+    fetchForm(formId),
+    fetchQuestions(formId),
+    fetchResponses(formId)
+  ]);
+
+  currentForm = form;
+  currentQuestions = questions;
+  currentResponses = responses;
+
+  const responseIds = responses.map((row) => row.id).filter(Boolean);
+  currentAnswers = responseIds.length ? await fetchAnswers(responseIds) : [];
+
+  currentAudienceStudents = await fetchAudienceStudentsForForm(form);
+
+  renderSummary();
+}
+
+async function fetchForm(formId) {
+  const { data, error } = await supabaseClient
+    .from("forms")
+    .select("*")
+    .eq("id", formId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Form not found.");
+
+  return data;
+}
+
+async function fetchQuestions(formId) {
+  const { data, error } = await supabaseClient
+    .from("form_questions")
+    .select("*")
+    .eq("form_id", formId)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+async function fetchResponses(formId) {
+  const { data, error } = await supabaseClient
+    .from("form_responses")
+    .select("*")
+    .eq("form_id", formId)
+    .order("submitted_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+async function fetchAnswers(responseIds) {
+  const { data, error } = await supabaseClient
+    .from("form_answers")
+    .select("*")
+    .in("response_id", responseIds);
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+async function fetchAudienceStudentsForForm(form) {
+  const { data, error } = await supabaseClient
+    .from("student_accounts")
+    .select("user_id, full_name, school_name, programme, level");
+
+  if (error) throw new Error(error.message);
+
+  const allStudents = (data || []).filter((row) => {
+    return normalizeUpper(row.school_name) === normalizeUpper(form.school_name) && !!row.user_id;
+  });
+
+  if (cleanText(form.audience_mode || "all_students") !== "programme_filter") {
+    return allStudents;
+  }
+
+  const programmeTargets = normalizeProgrammeTargets(form.programme_targets);
+
+  return allStudents.filter((row) => {
+    const studentProgramme = normalizeUpper(row.programme);
+    const studentLevel = normalizeLevelValue(row.level);
+
+    return programmeTargets.some((target) => {
+      if (target.programme_name !== studentProgramme) return false;
+      if (!Array.isArray(target.levels) || !target.levels.length) return false;
+      return target.levels.includes(studentLevel);
+    });
+  });
+}
+
+function renderSummary() {
+  if (!currentForm) return;
+
+  const totalResponses = currentResponses.length;
+  const expectedStudents = currentAudienceStudents.length;
+  const responseRate = expectedStudents > 0 ? Math.round((totalResponses / expectedStudents) * 100) : 0;
+  const latestSubmission = getLatestSubmission(currentResponses);
+  const completionRate = getCompletionRate(currentQuestions, currentResponses, currentAnswers);
+
+  const responseIdentity = getIdentityBreakdown(currentForm, currentResponses);
+  const programmeBreakdown = getProgrammeBreakdown(currentResponses, currentAudienceStudents);
+  const levelBreakdown = getLevelBreakdown(currentResponses, currentAudienceStudents);
+
+  setText("summarySchoolName", currentForm.school_name || "—");
+  setText("summaryFormTitle", currentForm.title || "Untitled Form");
+  setText("summaryFormAudience", buildAudienceText(currentForm));
+  setText(
+    "summaryFormCreator",
+    currentForm.created_by_admin_name
+      ? `By ${currentForm.created_by_admin_name}`
+      : "Created by admin"
+  );
+
+  setText("summaryStatusChip", formatStatus(currentForm.status));
+  setText("summaryIdentityChip", formatIdentityMode(currentForm.identity_mode));
+
+  setText("statTotalResponses", String(totalResponses));
+  setText("statResponseRate", `${responseRate}%`);
+  setText("statLatestSubmission", latestSubmission ? formatDateTime(latestSubmission) : "—");
+  setText("statCompletionRate", `${completionRate}%`);
+
+  setText("programmeBreakdownTotal", String(totalResponses));
+  renderProgrammeLegend(programmeBreakdown);
+  renderLevelBreakdown(levelBreakdown);
+
+  setText("identityBreakdownPercent", `${responseIdentity.identifiedPercent}%`);
+  setText("identityIdentifiedCount", String(responseIdentity.identified));
+  setText("identityAnonymousCount", String(responseIdentity.anonymous));
+
+  setText("infoQuestionCount", String(currentQuestions.length));
+  setText("infoOpenDate", formatDate(currentForm.open_at));
+  setText("infoCloseDate", formatDate(currentForm.close_at));
+  setText("infoIdentityMode", formatIdentityMode(currentForm.identity_mode));
+  setText("infoAudience", buildAudienceText(currentForm));
+
+  setText("audienceExpectedStudents", String(expectedStudents));
+  setText("audienceActualSubmissions", String(totalResponses));
+  setText("questionCountBadge", `${currentQuestions.length} Question${currentQuestions.length === 1 ? "" : "s"}`);
+}
+
+function getLatestSubmission(responses) {
+  return responses
+    .map((row) => row.submitted_at)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b) - new Date(a))[0] || null;
+}
+
+function getCompletionRate(questions, responses, answers) {
+  const requiredQuestionIds = questions
+    .filter((q) => !!q.is_required)
+    .map((q) => q.id);
+
+  if (!responses.length) return 0;
+  if (!requiredQuestionIds.length) return 100;
+
+  const answersByResponse = new Map();
+
+  for (const ans of answers) {
+    const responseId = ans.response_id;
+    if (!responseId) continue;
+    if (!answersByResponse.has(responseId)) answersByResponse.set(responseId, []);
+    answersByResponse.get(responseId).push(ans);
+  }
+
+  let completedCount = 0;
+
+  for (const response of responses) {
+    const rowAnswers = answersByResponse.get(response.id) || [];
+
+    const allRequiredAnswered = requiredQuestionIds.every((questionId) => {
+      const answer = rowAnswers.find((a) => a.question_id === questionId);
+      return hasUsefulAnswer(answer);
+    });
+
+    if (allRequiredAnswered) completedCount += 1;
+  }
+
+  return Math.round((completedCount / responses.length) * 100);
+}
+
+function hasUsefulAnswer(answer) {
+  if (!answer) return false;
+
+  const valuesToCheck = [
+    answer.answer_text,
+    answer.answer_value,
+    answer.value,
+    answer.option_text,
+    answer.selected_option,
+    answer.file_url
+  ];
+
+  if (valuesToCheck.some((v) => cleanText(v))) return true;
+
+  if (Array.isArray(answer.selected_options_json) && answer.selected_options_json.length) return true;
+  if (Array.isArray(answer.file_urls) && answer.file_urls.length) return true;
+
+  return false;
+}
+
+function getIdentityBreakdown(form, responses) {
+  if (!responses.length) {
+    return {
+      identified: 0,
+      anonymous: 0,
+      identifiedPercent: 0
+    };
+  }
+
+  let identified = 0;
+  let anonymous = 0;
+
+  if (cleanText(form.identity_mode) === "anonymous") {
+    anonymous = responses.length;
+  } else {
+    responses.forEach((row) => {
+      if (row.user_id) identified += 1;
+      else anonymous += 1;
+    });
+  }
+
+  const identifiedPercent = responses.length
+    ? Math.round((identified / responses.length) * 100)
+    : 0;
+
+  return { identified, anonymous, identifiedPercent };
+}
+
+function getProgrammeBreakdown(responses, students) {
+  const studentMap = new Map();
+  students.forEach((row) => {
+    if (row.user_id) studentMap.set(row.user_id, row);
+  });
+
+  const counts = new Map();
+
+  responses.forEach((row) => {
+    const inferredProgramme =
+      cleanText(row.programme) ||
+      cleanText(row.responder_programme) ||
+      cleanText(row.respondent_programme) ||
+      cleanText(studentMap.get(row.user_id)?.programme) ||
+      "Unknown";
+
+    counts.set(inferredProgramme, (counts.get(inferredProgramme) || 0) + 1);
+  });
+
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+}
+
+function getLevelBreakdown(responses, students) {
+  const studentMap = new Map();
+  students.forEach((row) => {
+    if (row.user_id) studentMap.set(row.user_id, row);
+  });
+
+  const counts = new Map();
+
+  responses.forEach((row) => {
+    const inferredLevelRaw =
+      cleanText(row.level) ||
+      cleanText(row.responder_level) ||
+      cleanText(row.respondent_level) ||
+      cleanText(studentMap.get(row.user_id)?.level) ||
+      "Unknown";
+
+    const inferredLevel = inferredLevelRaw === "Unknown"
+      ? "Unknown"
+      : normalizeLevelValue(inferredLevelRaw);
+
+    counts.set(inferredLevel, (counts.get(inferredLevel) || 0) + 1);
+  });
+
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function renderProgrammeLegend(items) {
+  const container = document.getElementById("programmeLegendList");
+  if (!container) return;
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="legend-row">
+        <span class="legend-dot blue"></span>
+        <span class="legend-name">No programme data yet</span>
+        <span class="legend-count">0</span>
+      </div>
+    `;
+    return;
+  }
+
+  const classes = ["blue", "mint", "orange", "red", "sky", "soft"];
+
+  container.innerHTML = items
+    .map((row, index) => {
+      const dotClass = classes[index % classes.length];
+      return `
+        <div class="legend-row">
+          <span class="legend-dot ${dotClass}"></span>
+          <span class="legend-name">${escapeHtml(row.name)}</span>
+          <span class="legend-count">${row.count}</span>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderLevelBreakdown(items) {
+  const container = document.getElementById("levelBreakdownList");
+  if (!container) return;
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">No level data yet</div>
+          <div class="bar w16"><span></span></div>
+        </div>
+        <div class="breakdown-value">0</div>
+      </div>
+    `;
+    return;
+  }
+
+  const max = Math.max(...items.map((row) => row.count), 1);
+
+  container.innerHTML = items
+    .map((row) => {
+      const widthPercent = Math.max(8, Math.round((row.count / max) * 100));
+      return `
+        <div class="breakdown-row">
+          <div class="breakdown-left">
+            <div class="breakdown-name">${escapeHtml(row.name === "Unknown" ? "Unknown Level" : `${row.name} Level`)}</div>
+            <div class="bar">
+              <span style="width:${widthPercent}%"></span>
+            </div>
+          </div>
+          <div class="breakdown-value">${row.count}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function buildAudienceText(form) {
+  const audienceMode = cleanText(form.audience_mode || "all_students");
+
+  if (audienceMode !== "programme_filter") {
+    return "All students";
+  }
+
+  const targets = normalizeProgrammeTargets(form.programme_targets);
+  if (!targets.length) return "Programme filter";
+
+  const first = targets[0];
+  const firstLevels = Array.isArray(first.levels) ? first.levels.join(", ") : "";
+  const extra = targets.length > 1 ? ` +${targets.length - 1} more` : "";
+
+  return `${toTitleCase(first.programme_name)} ${firstLevels}${extra}`.trim();
+}
+
+function formatStatus(status) {
+  const value = cleanText(status);
+  if (!value) return "Unknown";
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatIdentityMode(mode) {
+  return cleanText(mode) === "anonymous" ? "Anonymous" : "Use login identity";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString([], {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString([], {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function updateTopbarTitle(title, subtitle) {
+  const h2 = document.querySelector(".topbar-title h2");
+  const p = document.querySelector(".topbar-title p");
+  if (h2) h2.textContent = title;
+  if (p) p.textContent = subtitle;
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value ?? "";
+}
+
+function normalizeUpper(value) {
+  return cleanText(value).replace(/\s+/g, " ").toUpperCase();
+}
+
+function normalizeLevelValue(value) {
+  return normalizeUpper(value)
+    .replace(/\bLEVEL\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeProgrammeTargets(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      const programmeName = normalizeUpper(item?.programme_name);
+      const levels = Array.isArray(item?.levels)
+        ? item.levels.map((v) => normalizeLevelValue(v)).filter(Boolean)
+        : [];
+
+      return {
+        programme_name: programmeName,
+        levels
+      };
+    })
+    .filter((item) => item.programme_name);
+}
+
+function cleanText(value) {
+  return String(value ?? "").trim();
+}
+
+function toTitleCase(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function showFatalState(message) {
+  const main = document.querySelector(".main");
+  if (!main) return;
+
+  main.innerHTML = `
+    <section class="content-card" style="padding:28px;">
+      <h2 style="margin:0 0 10px;font-size:28px;font-weight:900;color:#16213d;">Unable to load form response</h2>
+      <p style="margin:0;color:#6d7895;font-size:16px;font-weight:700;">${escapeHtml(message)}</p>
+    </section>
+  `;
+}
+
+function getActorPayloadFromSession() {
+  const session = getAnyStoredSession();
+
+  if (session?.hos_admin_id) {
+    return { hos_admin_id: session.hos_admin_id };
+  }
+
+  if (session?.form_agent_id) {
+    return { form_agent_id: session.form_agent_id };
+  }
+
+  if (session?.id && cleanText(session.role).toLowerCase() === "hos") {
+    return { hos_admin_id: session.id };
+  }
+
+  if (session?.id && cleanText(session.role).toLowerCase() === "form_agent") {
+    return { form_agent_id: session.id };
+  }
+
+  throw new Error("Admin session not found. Please sign in again.");
+}
+
+function getAnyStoredSession() {
+  const keys = [
+    "colspot_hos_session",
+    "colspot_admin_session",
+    "hos_session",
+    "admin_session",
+    "colspot_session"
+  ];
+
+  for (const key of keys) {
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    } catch (_) {}
+  }
+
+  return null;
+}
+
+async function invokeFormsManager(payload) {
+  const url = `${SUPABASE_URL}/functions/v1/${FUNCTION_NAME}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result?.error || "Edge Function returned a non-2xx status code");
+  }
+
+  return result;
+}
+</script>
 </body>
 </html>
