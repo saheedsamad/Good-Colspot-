@@ -305,6 +305,7 @@
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const HISTORY_FUNCTION = "hos-history-manager";
 
   let historySb = null;
   let historyRows = [];
@@ -340,18 +341,22 @@
     }
   }
 
-  function getSchoolNameFromSession(session) {
-    if (!session) return "";
+  function getActorPayloadFromSession() {
+    const session = getAdminSession();
+    const account = session?.account || {};
+    const role = session?.role || account?.role || "";
 
-    const account = session.account || {};
+    console.log("History admin session:", session);
 
-    return normalizeUpper(
-      account.school_name ||
-      session.school_name ||
-      session.school ||
-      session.schoolName ||
-      ""
-    );
+    if (role === "hos") {
+      return { hos_admin_id: account.id || session.id || "" };
+    }
+
+    if (role === "form_agent") {
+      return { form_agent_id: account.id || session.id || "" };
+    }
+
+    return { hos_admin_id: account.id || session.id || "" };
   }
 
   function formatHistoryDate(value) {
@@ -545,19 +550,36 @@
     renderHistoryRows();
   }
 
+  async function invokeHistoryManager(body) {
+    if (!historySb) {
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        throw new Error("Supabase browser library is not loaded.");
+      }
+      historySb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    console.log("HISTORY BODY SENT:", JSON.stringify(body, null, 2));
+
+    const { data, error } = await historySb.functions.invoke(HISTORY_FUNCTION, { body });
+
+    console.log("HISTORY RAW DATA:", data);
+    console.log("HISTORY RAW ERROR:", error);
+
+    if (error) throw new Error(error.message || "History request failed.");
+    if (!data?.ok) throw new Error(data?.error || "History request failed.");
+
+    return data;
+  }
+
   async function loadHosHistory() {
     if (!historyBox) return;
 
-    const adminSession = getAdminSession();
-    const schoolName = getSchoolNameFromSession(adminSession);
+    const actorPayload = getActorPayloadFromSession();
 
-    console.log("History admin session:", adminSession);
-    console.log("History school name normalized:", schoolName);
-
-    if (!schoolName) {
+    if (!actorPayload.hos_admin_id && !actorPayload.form_agent_id) {
       historyBox.innerHTML = `
         <div class="history-error">
-          School session not found. Please sign in again.
+          HOS session not found. Please sign in again.
         </div>
       `;
       return;
@@ -566,23 +588,17 @@
     historyBox.innerHTML = `<div class="history-loading">Loading history...</div>`;
 
     try {
-      if (!window.supabase || typeof window.supabase.createClient !== "function") {
-        throw new Error("Supabase browser library is not loaded.");
-      }
+      const data = await invokeHistoryManager({
+        action: "list_history",
+        search: historySearchInput?.value || "",
+        filter: historyFilterSelect?.value || "all",
+        sort: historySortSelect?.value || "recent",
+        ...actorPayload,
+      });
 
-      historySb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log("History rows loaded:", data.rows);
 
-      const { data, error } = await historySb
-        .from("hos_history")
-        .select("id, school_name, activity_type, title, description, entity_type, entity_id, actor_name, actor_role, target_name, meta_json, created_at")
-        .ilike("school_name", schoolName)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      console.log("History rows loaded:", data);
-
-      historyRows = Array.isArray(data) ? data : [];
+      historyRows = Array.isArray(data.rows) ? data.rows : [];
       applyHistoryFilters();
     } catch (error) {
       console.error("History load error:", error);
@@ -595,9 +611,17 @@
   }
 
   function bindHistoryEvents() {
-    historySearchInput?.addEventListener("input", applyHistoryFilters);
-    historyFilterSelect?.addEventListener("change", applyHistoryFilters);
-    historySortSelect?.addEventListener("change", applyHistoryFilters);
+    historySearchInput?.addEventListener("input", () => {
+      loadHosHistory();
+    });
+
+    historyFilterSelect?.addEventListener("change", () => {
+      loadHosHistory();
+    });
+
+    historySortSelect?.addEventListener("change", () => {
+      loadHosHistory();
+    });
 
     historyBox?.addEventListener("click", function (event) {
       const button = event.target.closest("[data-history-btn-url]");
