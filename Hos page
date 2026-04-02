@@ -1498,9 +1498,9 @@
     </div>
 
 <script>
-(function(){
-  if (window.__formsBackendSystemInitializedV2) return;
-  window.__formsBackendSystemInitializedV2 = true;
+(function () {
+  if (window.__formsBackendSystemInitializedV3) return;
+  window.__formsBackendSystemInitializedV3 = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
@@ -1517,12 +1517,14 @@
     loadingList: false,
     currentForm: null,
     pickerSearch: "",
-    pickerSelectedMap: {}
+    pickerSelectedMap: {},
   };
 
-  function $(id){ return document.getElementById(id); }
+  function $(id) {
+    return document.getElementById(id);
+  }
 
-  function escapeHtml(value){
+  function escapeHtml(value) {
     return String(value || "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
@@ -1531,50 +1533,61 @@
       .replaceAll("'", "&#39;");
   }
 
-  function uid(prefix){
-    return prefix + "_" + Math.random().toString(36).slice(2,10) + "_" + Date.now().toString(36);
+  function uid(prefix) {
+    return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
   }
 
-  function createClientSafe(){
-    try{
-      if (window.supabase && typeof window.supabase.createClient === "function"){
+  function normalizeText(value) {
+    return String(value || "").trim().replace(/\s+/g, " ");
+  }
+
+  function createClientSafe() {
+    try {
+      if (window.supabase && typeof window.supabase.createClient === "function") {
         return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-    }catch(err){
+    } catch (err) {
       console.error("Forms supabase init failed:", err);
     }
     return null;
   }
 
-  function getAdminSession(){
-    try{
+  function getAdminSession() {
+    try {
       return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-    }catch{
+    } catch {
       return null;
     }
   }
 
-  function normalizeText(value){
-    return String(value || "").trim().replace(/\s+/g, " ");
-  }
-
-  function getActorPayload(){
+  function getActorPayload() {
     const session = state.session || {};
     const account = session.account || {};
     const role = session.role || account.role || "";
 
-    if (role === "hos"){
+    if (role === "hos") {
       return { hos_admin_id: account.id || session.id || "" };
     }
-
-    if (role === "form_agent"){
+    if (role === "form_agent") {
       return { form_agent_id: account.id || session.id || "" };
     }
-
     return { hos_admin_id: account.id || session.id || "" };
   }
 
-  function blankForm(){
+  function ensureIdentityModeOptions() {
+    const select = $("formIdentityMode");
+    if (!select) return;
+
+    const current = (select.value || "auto").toLowerCase();
+    select.innerHTML = `
+      <option value="auto">Use logged-in identity</option>
+      <option value="anonymous">Anonymous</option>
+    `;
+
+    select.value = current === "anonymous" ? "anonymous" : "auto";
+  }
+
+  function blankForm() {
     return {
       id: null,
       title: "",
@@ -1587,13 +1600,14 @@
       response_rule: "one",
       identity_mode: "auto",
       status: "draft",
-      questions: []
+      questions: [],
     };
   }
 
-  function blankQuestion(type){
+  function blankQuestion(type) {
     const q = {
       local_id: uid("q"),
+      id: null,
       question_text: "",
       question_type: type,
       help_text: "",
@@ -1604,28 +1618,28 @@
       max_file_size_mb: 5,
       max_files: 1,
       section_name: "",
-      sort_order: 0
+      sort_order: 0,
     };
 
-    if (["multiple_choice","checkboxes","dropdown"].includes(type)){
+    if (["multiple_choice", "checkboxes", "dropdown"].includes(type)) {
       q.options_json = ["", ""];
     }
 
-    if (type === "yes_no"){
+    if (type === "yes_no") {
       q.options_json = ["Yes", "No"];
     }
 
     return q;
   }
 
-  function formatDate(value){
+  function formatDate(value) {
     if (!value) return "—";
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return value;
     return d.toLocaleDateString();
   }
 
-  function getQuestionTypeLabel(type){
+  function getQuestionTypeLabel(type) {
     const map = {
       short_answer: "Short Answer",
       paragraph: "Paragraph",
@@ -1634,19 +1648,18 @@
       dropdown: "Dropdown",
       date: "Date",
       file_upload: "File Upload",
-      yes_no: "Yes / No"
+      yes_no: "Yes / No",
     };
     return map[type] || type;
   }
 
-  function getAudienceLabel(form){
-    if ((form.audience_mode || "") === "programme_filter") {
-      return "FILTER BY PROGRAMME";
-    }
-    return "ALL STUDENTS";
+  function getAudienceLabel(form) {
+    return (form.audience_mode || "") === "programme_filter"
+      ? "FILTER BY PROGRAMME"
+      : "ALL STUDENTS";
   }
 
-  function setSavePill(text, type){
+  function setSavePill(text, type) {
     const pill = $("formsSavePill");
     if (!pill) return;
     pill.className = "save-pill" + (type ? " " + type : "");
@@ -1658,14 +1671,15 @@
     `;
   }
 
-  function setButtonLoading(button, loadingText, isLoading){
+  function setButtonLoading(button, loadingText, isLoading) {
     if (!button) return;
     const textNode = button.querySelector(".btn-text") || button;
+
     if (!button.dataset.defaultText) {
       button.dataset.defaultText = textNode.textContent.trim();
     }
 
-    if (isLoading){
+    if (isLoading) {
       button.disabled = true;
       button.style.opacity = "0.7";
       textNode.textContent = loadingText;
@@ -1676,29 +1690,31 @@
     }
   }
 
-  function showHome(){
-    $("formsHomeView").classList.remove("forms-hidden");
-    $("formsBuilderView").classList.add("forms-hidden");
+  function showHome() {
+    $("formsHomeView")?.classList.remove("forms-hidden");
+    $("formsBuilderView")?.classList.add("forms-hidden");
   }
 
-  function showBuilder(){
-    $("formsHomeView").classList.add("forms-hidden");
-    $("formsBuilderView").classList.remove("forms-hidden");
+  function showBuilder() {
+    $("formsHomeView")?.classList.add("forms-hidden");
+    $("formsBuilderView")?.classList.remove("forms-hidden");
   }
 
-  function setStep(step){
+  function setStep(step) {
     state.currentStep = step;
 
-    $("formsStageSetup").classList.toggle("forms-hidden", step !== "setup");
-    $("formsStageQuestions").classList.toggle("forms-hidden", step !== "questions");
-    $("formsStagePreview").classList.toggle("forms-hidden", step !== "preview");
+    $("formsStageSetup")?.classList.toggle("forms-hidden", step !== "setup");
+    $("formsStageQuestions")?.classList.toggle("forms-hidden", step !== "questions");
+    $("formsStagePreview")?.classList.toggle("forms-hidden", step !== "preview");
 
-    $("stepChipSetup").className = "forms-step" + (step === "setup" ? " active" : (step === "questions" || step === "preview" ? " done" : ""));
-    $("stepChipQuestions").className = "forms-step" + (step === "questions" ? " active" : (step === "preview" ? " done" : ""));
+    $("stepChipSetup").className =
+      "forms-step" + (step === "setup" ? " active" : step === "questions" || step === "preview" ? " done" : "");
+    $("stepChipQuestions").className =
+      "forms-step" + (step === "questions" ? " active" : step === "preview" ? " done" : "");
     $("stepChipPreview").className = "forms-step" + (step === "preview" ? " active" : "");
   }
 
-  async function invokeFormsManager(body){
+  async function invokeFormsManager(body) {
     if (!state.sb) throw new Error("Supabase is not ready.");
     const { data, error } = await state.sb.functions.invoke(FORMS_FUNCTION, { body });
     if (error) throw new Error(error.message || "Request failed.");
@@ -1706,10 +1722,30 @@
     return data;
   }
 
-  async function loadProgrammes(){
+  function ensureCurrentForm() {
+    if (!state.currentForm) state.currentForm = blankForm();
+  }
+
+  function getFormQuestions() {
+    ensureCurrentForm();
+    if (!Array.isArray(state.currentForm.questions)) {
+      state.currentForm.questions = [];
+    }
+    return state.currentForm.questions;
+  }
+
+  function getFormProgrammeTargets() {
+    ensureCurrentForm();
+    if (!Array.isArray(state.currentForm.programme_targets)) {
+      state.currentForm.programme_targets = [];
+    }
+    return state.currentForm.programme_targets;
+  }
+
+  async function loadProgrammes() {
     const listBox = $("programmeListBox");
-    try{
-      if (listBox){
+    try {
+      if (listBox) {
         listBox.innerHTML = `<div class="forms-empty">Loading programmes...</div>`;
       }
 
@@ -1723,226 +1759,263 @@
 
       state.programmes = Array.isArray(data) ? data : [];
       renderProgrammePickerList();
-    }catch(err){
+    } catch (err) {
       console.error("Load programmes error:", err);
-      if (listBox){
+      if (listBox) {
         listBox.innerHTML = `<div class="forms-empty">${escapeHtml(err.message || "Could not load programmes.")}</div>`;
       }
     }
   }
 
-  function ensureCurrentForm(){
-    if (!state.currentForm) state.currentForm = blankForm();
-  }
-
-  function getFormProgrammeTargets(){
-    ensureCurrentForm();
-    if (!Array.isArray(state.currentForm.programme_targets)){
-      state.currentForm.programme_targets = [];
-    }
-    return state.currentForm.programme_targets;
-  }
-
-  function renderProgrammePickerList(){
+  function renderProgrammePickerList() {
     const listBox = $("programmeListBox");
     if (!listBox) return;
 
     const search = normalizeText(state.pickerSearch).toUpperCase();
-    const items = (state.programmes || []).filter(item => {
+    const items = (state.programmes || []).filter((item) => {
       if (!search) return true;
       return String(item.programme_name || "").includes(search);
     });
 
-    if (!items.length){
+    if (!items.length) {
       listBox.innerHTML = `<div class="forms-empty">No programme found.</div>`;
       return;
     }
 
-    listBox.innerHTML = items.map(item => {
-      const checked = !!state.pickerSelectedMap[item.programme_name];
-      return `
-        <label class="question-card" style="cursor:pointer;">
-          <div class="question-card-body" style="grid-template-columns:1fr auto; display:grid; align-items:center;">
-            <div>
-              <div class="question-title-static">${escapeHtml(item.programme_name)}</div>
+    listBox.innerHTML = items
+      .map((item) => {
+        const checked = !!state.pickerSelectedMap[item.programme_name];
+        return `
+          <label class="question-card" style="cursor:pointer;">
+            <div class="question-card-body" style="grid-template-columns:1fr auto; display:grid; align-items:center;">
+              <div><div class="question-title-static">${escapeHtml(item.programme_name)}</div></div>
+              <input type="checkbox" data-programme-pick="${escapeHtml(item.programme_name)}" ${checked ? "checked" : ""}>
             </div>
-            <input type="checkbox" data-programme-pick="${escapeHtml(item.programme_name)}" ${checked ? "checked" : ""}>
-          </div>
-        </label>
-      `;
-    }).join("");
+          </label>
+        `;
+      })
+      .join("");
   }
 
-  function openProgrammePicker(){
+  function openProgrammePicker() {
     const modal = $("programmePickerModal");
     if (!modal) return;
 
     const currentTargets = getFormProgrammeTargets();
     state.pickerSelectedMap = {};
-    currentTargets.forEach(item => {
+    currentTargets.forEach((item) => {
       state.pickerSelectedMap[item.programme_name] = true;
     });
 
     state.pickerSearch = "";
-    $("programmeSearchInput").value = "";
+    if ($("programmeSearchInput")) $("programmeSearchInput").value = "";
     renderProgrammePickerList();
     modal.classList.remove("forms-hidden");
   }
 
-  function closeProgrammePicker(){
-    const modal = $("programmePickerModal");
-    if (modal) modal.classList.add("forms-hidden");
+  function closeProgrammePicker() {
+    $("programmePickerModal")?.classList.add("forms-hidden");
   }
 
-  function applyProgrammePickerSelection(){
+  function applyProgrammePickerSelection() {
     ensureCurrentForm();
 
     const currentTargets = getFormProgrammeTargets();
     const preserved = {};
-    currentTargets.forEach(item => {
+    currentTargets.forEach((item) => {
       preserved[item.programme_name] = Array.isArray(item.levels) ? item.levels.slice() : [];
     });
 
     const nextTargets = Object.keys(state.pickerSelectedMap)
-      .filter(name => !!state.pickerSelectedMap[name])
+      .filter((name) => !!state.pickerSelectedMap[name])
       .sort((a, b) => a.localeCompare(b))
-      .map(name => ({
+      .map((name) => ({
         programme_name: name,
-        levels: preserved[name] || []
+        levels: preserved[name] || [],
       }));
 
     state.currentForm.programme_targets = nextTargets;
     renderProgrammeTargets();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
     closeProgrammePicker();
   }
 
-  function removeProgramme(programmeName){
+  function removeProgramme(programmeName) {
     ensureCurrentForm();
     state.currentForm.programme_targets = getFormProgrammeTargets().filter(
-      item => item.programme_name !== programmeName
+      (item) => item.programme_name !== programmeName
     );
     renderProgrammeTargets();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function toggleProgrammeLevel(programmeName, level){
+  function toggleProgrammeLevel(programmeName, level) {
     ensureCurrentForm();
-    const target = getFormProgrammeTargets().find(item => item.programme_name === programmeName);
+    const target = getFormProgrammeTargets().find((item) => item.programme_name === programmeName);
     if (!target) return;
 
     if (!Array.isArray(target.levels)) target.levels = [];
 
-    if (target.levels.includes(level)){
-      target.levels = target.levels.filter(v => v !== level);
+    if (target.levels.includes(level)) {
+      target.levels = target.levels.filter((v) => v !== level);
     } else {
       target.levels.push(level);
       target.levels.sort((a, b) => Number(a) - Number(b));
     }
 
     renderProgrammeTargets();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function renderProgrammeTargets(){
+  function renderProgrammeTargets() {
     const wrap = $("programmeTargetWrap");
     const selectedBox = $("selectedProgrammesBox");
     const stack = $("programmeLevelStack");
     const summary = $("targetSummaryText");
     const allMode = $("audienceAllStudents")?.checked;
 
-    if (allMode){
-      wrap.classList.add("forms-hidden");
+    if (allMode) {
+      wrap?.classList.add("forms-hidden");
       if (summary) summary.textContent = "This form is for all students.";
       return;
     }
 
-    wrap.classList.remove("forms-hidden");
+    wrap?.classList.remove("forms-hidden");
 
     const targets = getFormProgrammeTargets();
 
-    if (!targets.length){
-      selectedBox.innerHTML = `<div class="forms-empty" style="min-height:100px;">No programme selected yet.</div>`;
-      stack.innerHTML = "";
-      summary.textContent = "No programme and level selected yet.";
+    if (!targets.length) {
+      if (selectedBox) {
+        selectedBox.innerHTML = `<div class="forms-empty" style="min-height:100px;">No programme selected yet.</div>`;
+      }
+      if (stack) stack.innerHTML = "";
+      if (summary) summary.textContent = "No programme and level selected yet.";
       return;
     }
 
-    selectedBox.innerHTML = targets.map(item => `
-      <div class="programme-pill">
-        <span>${escapeHtml(item.programme_name)}</span>
-        <button type="button" data-remove-programme="${escapeHtml(item.programme_name)}">×</button>
-      </div>
-    `).join("");
-
-    stack.innerHTML = targets.map(item => `
-      <div class="programme-level-card">
-        <div class="programme-level-head">
-          <div>
-            <div class="programme-level-name">${escapeHtml(item.programme_name)}</div>
-            <div class="programme-level-sub">Choose level(s) under this programme.</div>
+    if (selectedBox) {
+      selectedBox.innerHTML = targets
+        .map(
+          (item) => `
+          <div class="programme-pill">
+            <span>${escapeHtml(item.programme_name)}</span>
+            <button type="button" data-remove-programme="${escapeHtml(item.programme_name)}">×</button>
           </div>
-        </div>
+        `
+        )
+        .join("");
+    }
 
-        <div class="level-chip-row">
-          ${LEVEL_OPTIONS.map(level => `
-            <label class="level-option">
-              <input
-                type="checkbox"
-                data-programme-level-programme="${escapeHtml(item.programme_name)}"
-                data-programme-level-value="${level}"
-                ${Array.isArray(item.levels) && item.levels.includes(level) ? "checked" : ""}
-              >
-              <span class="level-chip">${level}</span>
-            </label>
-          `).join("")}
-        </div>
-      </div>
-    `).join("");
+    if (stack) {
+      stack.innerHTML = targets
+        .map(
+          (item) => `
+          <div class="programme-level-card">
+            <div class="programme-level-head">
+              <div>
+                <div class="programme-level-name">${escapeHtml(item.programme_name)}</div>
+                <div class="programme-level-sub">Choose level(s) under this programme.</div>
+              </div>
+            </div>
+
+            <div class="level-chip-row">
+              ${LEVEL_OPTIONS.map(
+                (level) => `
+                <label class="level-option">
+                  <input
+                    type="checkbox"
+                    data-programme-level-programme="${escapeHtml(item.programme_name)}"
+                    data-programme-level-value="${level}"
+                    ${Array.isArray(item.levels) && item.levels.includes(level) ? "checked" : ""}
+                  >
+                  <span class="level-chip">${level}</span>
+                </label>
+              `
+              ).join("")}
+            </div>
+          </div>
+        `
+        )
+        .join("");
+    }
 
     const filled = targets
-      .filter(item => Array.isArray(item.levels) && item.levels.length)
-      .map(item => `${item.programme_name} (${item.levels.join(", ")})`);
+      .filter((item) => Array.isArray(item.levels) && item.levels.length)
+      .map((item) => `${item.programme_name} (${item.levels.join(", ")})`);
 
-    summary.textContent = filled.length
-      ? filled.join(" • ")
-      : "Programme selected, but no level chosen yet.";
+    if (summary) {
+      summary.textContent = filled.length
+        ? filled.join(" • ")
+        : "Programme selected, but no level chosen yet.";
+    }
   }
 
-  function loadFormIntoEditor(form, questions){
+  function patchQuestionHeader(questionId) {
+    const question = getFormQuestions().find((q) => q.local_id === questionId);
+    const card = document.querySelector(`.question-card[data-question-id="${CSS.escape(questionId)}"]`);
+    if (!question || !card) return;
+
+    const titleNode = card.querySelector(".question-title-static");
+    const typeNode = card.querySelector(".question-type-static");
+
+    if (titleNode) {
+      titleNode.textContent = question.question_text || "Untitled Question";
+    }
+    if (typeNode) {
+      typeNode.textContent = getQuestionTypeLabel(question.question_type);
+    }
+  }
+
+  function patchPreviewMeta() {
+    const form = state.currentForm || blankForm();
+    $("studentPreviewTitle").textContent = form.title || "Untitled Form";
+    $("studentPreviewDescription").textContent = form.description || "Form description will appear here.";
+  }
+
+  function loadFormIntoEditor(form, questions) {
     state.currentForm = {
       id: form?.id || null,
       title: form?.title || "",
       description: form?.description || "",
-      audience_mode: form?.audience_mode || ((form?.programme_targets?.length) ? "programme_filter" : "all_students"),
+      audience_mode: form?.audience_mode || (form?.programme_targets?.length ? "programme_filter" : "all_students"),
       target_audience: form?.target_audience || "all_students",
-      programme_targets: Array.isArray(form?.programme_targets) ? form.programme_targets.map(item => ({
-        programme_name: item.programme_name || "",
-        levels: Array.isArray(item.levels) ? item.levels : []
-      })) : [],
-      open_at: form?.open_at ? String(form.open_at).slice(0,10) : "",
-      close_at: form?.close_at ? String(form.close_at).slice(0,10) : "",
+      programme_targets: Array.isArray(form?.programme_targets)
+        ? form.programme_targets.map((item) => ({
+            programme_name: item.programme_name || "",
+            levels: Array.isArray(item.levels) ? item.levels : [],
+          }))
+        : [],
+      open_at: form?.open_at ? String(form.open_at).slice(0, 10) : "",
+      close_at: form?.close_at ? String(form.close_at).slice(0, 10) : "",
       response_rule: form?.response_rule || "one",
-      identity_mode: form?.identity_mode || "auto",
+      identity_mode: form?.identity_mode === "anonymous" ? "anonymous" : "auto",
       status: form?.status || "draft",
-      questions: Array.isArray(questions) ? questions.map((q, i) => ({
-        local_id: q.id || uid("q"),
-        id: q.id || null,
-        question_text: q.question_text || "",
-        question_type: q.question_type || "short_answer",
-        help_text: q.help_text || "",
-        placeholder_text: q.placeholder_text || "",
-        is_required: !!q.is_required,
-        options_json: Array.isArray(q.options_json) ? q.options_json : [],
-        allowed_file_types: Array.isArray(q.allowed_file_types) ? q.allowed_file_types : [],
-        max_file_size_mb: Number(q.max_file_size_mb || 5),
-        max_files: Number(q.max_files || 1),
-        section_name: q.section_name || "",
-        sort_order: Number.isFinite(Number(q.sort_order)) ? Number(q.sort_order) : (i + 1)
-      })) : []
+      questions: Array.isArray(questions)
+        ? questions.map((q, i) => ({
+            local_id: q.id || uid("q"),
+            id: q.id || null,
+            question_text: q.question_text || "",
+            question_type: q.question_type || "short_answer",
+            help_text: q.help_text || "",
+            placeholder_text: q.placeholder_text || "",
+            is_required: !!q.is_required,
+            options_json: Array.isArray(q.options_json) ? q.options_json : [],
+            allowed_file_types: Array.isArray(q.allowed_file_types) ? q.allowed_file_types : [],
+            max_file_size_mb: Number(q.max_file_size_mb || 5),
+            max_files: Number(q.max_files || 1),
+            section_name: q.section_name || "",
+            sort_order: Number.isFinite(Number(q.sort_order)) ? Number(q.sort_order) : i + 1,
+          }))
+        : [],
     };
 
     renderEditor();
   }
 
-  function renderEditor(){
+  function renderEditor() {
     ensureCurrentForm();
     const form = state.currentForm;
 
@@ -1951,9 +2024,11 @@
     $("formOpenDateInput").value = form.open_at || "";
     $("formCloseDateInput").value = form.close_at || "";
     $("formResponseRule").value = form.response_rule || "one";
-    $("formIdentityMode").value = form.identity_mode || "auto";
 
-    if ((form.audience_mode || "all_students") === "programme_filter"){
+    ensureIdentityModeOptions();
+    $("formIdentityMode").value = form.identity_mode === "anonymous" ? "anonymous" : "auto";
+
+    if ((form.audience_mode || "all_students") === "programme_filter") {
       $("audienceProgrammeFilter").checked = true;
       $("audienceAllStudents").checked = false;
     } else {
@@ -1966,58 +2041,62 @@
     renderPreview();
   }
 
-  function renderHomeTabs(){
-    document.querySelectorAll("#formsStatusTabs [data-status]").forEach(btn => {
+  function renderHomeTabs() {
+    document.querySelectorAll("#formsStatusTabs [data-status]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.status === state.statusFilter);
     });
   }
 
-  function renderFormsList(){
+  function renderFormsList() {
     const box = $("formsListBox");
 
-    if (state.loadingList){
+    if (state.loadingList) {
       box.innerHTML = `<div class="forms-empty">Loading forms...</div>`;
       return;
     }
 
-    const items = (state.forms || []).filter(item => item.status === state.statusFilter);
+    const items = (state.forms || []).filter((item) => item.status === state.statusFilter);
 
-    if (!items.length){
+    if (!items.length) {
       box.innerHTML = `<div class="forms-empty">No ${escapeHtml(state.statusFilter)} forms yet.</div>`;
       return;
     }
 
-    box.innerHTML = items.map(form => `
-      <div class="form-item">
-        <div class="form-item-head">
-          <div>
-            <h4 class="form-item-title">${escapeHtml(form.title || "Untitled Form")}</h4>
-            <p class="form-item-desc">${escapeHtml(form.description || "No description yet.")}</p>
+    box.innerHTML = items
+      .map(
+        (form) => `
+        <div class="form-item">
+          <div class="form-item-head">
+            <div>
+              <h4 class="form-item-title">${escapeHtml(form.title || "Untitled Form")}</h4>
+              <p class="form-item-desc">${escapeHtml(form.description || "No description yet.")}</p>
+            </div>
+            <span class="status-pill ${escapeHtml(form.status || "draft")}">${escapeHtml(form.status || "draft")}</span>
           </div>
-          <span class="status-pill ${escapeHtml(form.status || "draft")}">${escapeHtml(form.status || "draft")}</span>
-        </div>
 
-        <div class="form-item-meta">
-          <span class="meta-chip">${Number(form.question_count || 0)} Questions</span>
-          <span class="meta-chip">${escapeHtml(getAudienceLabel(form))}</span>
-          <span class="meta-chip">Updated ${escapeHtml(formatDate(form.updated_at || form.created_at))}</span>
-        </div>
+          <div class="form-item-meta">
+            <span class="meta-chip">${Number(form.question_count || 0)} Questions</span>
+            <span class="meta-chip">${escapeHtml(getAudienceLabel(form))}</span>
+            <span class="meta-chip">Updated ${escapeHtml(formatDate(form.updated_at || form.created_at))}</span>
+          </div>
 
-        <div class="form-item-actions">
-          <button type="button" class="forms-mini-btn" data-form-action="open" data-form-id="${form.id}">Open</button>
-          <button type="button" class="forms-mini-btn gray" data-form-action="edit" data-form-id="${form.id}">Edit</button>
-          <button type="button" class="forms-mini-btn red" data-form-action="delete" data-form-id="${form.id}">Delete</button>
+          <div class="form-item-actions">
+            <button type="button" class="forms-mini-btn" data-form-action="open" data-form-id="${form.id}">Open</button>
+            <button type="button" class="forms-mini-btn gray" data-form-action="edit" data-form-id="${form.id}">Edit</button>
+            <button type="button" class="forms-mini-btn red" data-form-action="delete" data-form-id="${form.id}">Delete</button>
+          </div>
         </div>
-      </div>
-    `).join("");
+      `
+      )
+      .join("");
   }
 
-  function renderQuestionList(){
+  function renderQuestionList() {
     const list = $("formsQuestionList");
     const empty = $("formsQuestionEmpty");
     const questions = getFormQuestions();
 
-    if (!questions.length){
+    if (!questions.length) {
       list.innerHTML = "";
       empty.classList.remove("forms-hidden");
       return;
@@ -2025,761 +2104,713 @@
 
     empty.classList.add("forms-hidden");
 
-    list.innerHTML = questions.map((q, index) => {
-      const supportsOptions = ["multiple_choice","checkboxes","dropdown"].includes(q.question_type);
-      const isFile = q.question_type === "file_upload";
-      const isYesNo = q.question_type === "yes_no";
+    list.innerHTML = questions
+      .map((q, index) => {
+        const supportsOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type);
+        const isFile = q.question_type === "file_upload";
 
-      return `
-        <div class="question-card" data-question-id="${q.local_id}">
-          <div class="question-card-head">
-            <div class="question-head-left">
-              <div class="question-number">${index + 1}</div>
-              <div>
-                <div class="question-title-static">${escapeHtml(q.question_text || "Untitled Question")}</div>
-                <div class="question-type-static">${escapeHtml(getQuestionTypeLabel(q.question_type))}</div>
+        return `
+          <div class="question-card" data-question-id="${q.local_id}">
+            <div class="question-card-head">
+              <div class="question-head-left">
+                <div class="question-number">${index + 1}</div>
+                <div>
+                  <div class="question-title-static">${escapeHtml(q.question_text || "Untitled Question")}</div>
+                  <div class="question-type-static">${escapeHtml(getQuestionTypeLabel(q.question_type))}</div>
+                </div>
+              </div>
+
+              <div class="question-head-right">
+                <label class="toggle-wrap">
+                  <span>Required</span>
+                  <span class="switch">
+                    <input type="checkbox" data-question-action="toggle-required" data-question-id="${q.local_id}" ${q.is_required ? "checked" : ""}>
+                    <span class="slider"></span>
+                  </span>
+                </label>
+
+                <button type="button" class="icon-btn" data-question-action="move-up" data-question-id="${q.local_id}" title="Move Up">↑</button>
+                <button type="button" class="icon-btn" data-question-action="move-down" data-question-id="${q.local_id}" title="Move Down">↓</button>
+                <button type="button" class="icon-btn" data-question-action="duplicate" data-question-id="${q.local_id}" title="Duplicate">⧉</button>
+                <button type="button" class="icon-btn" data-question-action="delete" data-question-id="${q.local_id}" title="Delete">✕</button>
               </div>
             </div>
 
-            <div class="question-head-right">
-              <label class="toggle-wrap">
-                <span>Required</span>
-                <span class="switch">
-                  <input type="checkbox" data-question-action="toggle-required" data-question-id="${q.local_id}" ${q.is_required ? "checked" : ""}>
-                  <span class="slider"></span>
-                </span>
-              </label>
+            <div class="question-card-body">
+              <div class="question-grid-2">
+                <div class="forms-field">
+                  <label>Question Title</label>
+                  <input
+                    class="forms-input"
+                    type="text"
+                    value="${escapeHtml(q.question_text || "")}"
+                    data-question-input="question_text"
+                    data-question-id="${q.local_id}"
+                    placeholder="Enter your question here."
+                  >
+                </div>
 
-              <button type="button" class="icon-btn" data-question-action="move-up" data-question-id="${q.local_id}" title="Move Up">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-
-              <button type="button" class="icon-btn" data-question-action="move-down" data-question-id="${q.local_id}" title="Move Down">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-
-              <button type="button" class="icon-btn" data-question-action="duplicate" data-question-id="${q.local_id}" title="Duplicate">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                  <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                </svg>
-              </button>
-
-              <button type="button" class="icon-btn" data-question-action="delete" data-question-id="${q.local_id}" title="Delete">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="question-card-body">
-            <div class="question-grid-2">
-              <div class="forms-field">
-                <label>Question Title</label>
-                <input class="forms-input" type="text" value="${escapeHtml(q.question_text || "")}" data-question-input="question_text" data-question-id="${q.local_id}" placeholder="Enter your question here.">
+                <div class="forms-field">
+                  <label>Question Type</label>
+                  <select class="forms-select" data-question-input="question_type" data-question-id="${q.local_id}">
+                    <option value="short_answer" ${q.question_type === "short_answer" ? "selected" : ""}>Short Answer</option>
+                    <option value="paragraph" ${q.question_type === "paragraph" ? "selected" : ""}>Paragraph</option>
+                    <option value="multiple_choice" ${q.question_type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
+                    <option value="checkboxes" ${q.question_type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
+                    <option value="dropdown" ${q.question_type === "dropdown" ? "selected" : ""}>Dropdown</option>
+                    <option value="date" ${q.question_type === "date" ? "selected" : ""}>Date</option>
+                    <option value="file_upload" ${q.question_type === "file_upload" ? "selected" : ""}>File Upload</option>
+                    <option value="yes_no" ${q.question_type === "yes_no" ? "selected" : ""}>Yes / No</option>
+                  </select>
+                </div>
               </div>
 
               <div class="forms-field">
-                <label>Question Type</label>
-                <select class="forms-select" data-question-input="question_type" data-question-id="${q.local_id}">
-                  <option value="short_answer" ${q.question_type === "short_answer" ? "selected" : ""}>Short Answer</option>
-                  <option value="paragraph" ${q.question_type === "paragraph" ? "selected" : ""}>Paragraph</option>
-                  <option value="multiple_choice" ${q.question_type === "multiple_choice" ? "selected" : ""}>Multiple Choice</option>
-                  <option value="checkboxes" ${q.question_type === "checkboxes" ? "selected" : ""}>Checkboxes</option>
-                  <option value="dropdown" ${q.question_type === "dropdown" ? "selected" : ""}>Dropdown</option>
-                  <option value="date" ${q.question_type === "date" ? "selected" : ""}>Date</option>
-                  <option value="file_upload" ${q.question_type === "file_upload" ? "selected" : ""}>File Upload</option>
-                  <option value="yes_no" ${q.question_type === "yes_no" ? "selected" : ""}>Yes / No</option>
-                </select>
+                <label>Help Text</label>
+                <input
+                  class="forms-input"
+                  type="text"
+                  value="${escapeHtml(q.help_text || "")}"
+                  data-question-input="help_text"
+                  data-question-id="${q.local_id}"
+                  placeholder="Optional helper text."
+                >
               </div>
-            </div>
 
-            <div class="forms-field">
-              <label>Help Text</label>
-              <input class="forms-input" type="text" value="${escapeHtml(q.help_text || "")}" data-question-input="help_text" data-question-id="${q.local_id}" placeholder="Optional helper text.">
-            </div>
+              ${!isFile ? `
+                <div class="forms-field">
+                  <label>Placeholder</label>
+                  <input
+                    class="forms-input"
+                    type="text"
+                    value="${escapeHtml(q.placeholder_text || "")}"
+                    data-question-input="placeholder_text"
+                    data-question-id="${q.local_id}"
+                    placeholder="Optional placeholder."
+                  >
+                </div>
+              ` : ""}
 
-            ${!isFile ? `
-              <div class="forms-field">
-                <label>Placeholder</label>
-                <input class="forms-input" type="text" value="${escapeHtml(q.placeholder_text || "")}" data-question-input="placeholder_text" data-question-id="${q.local_id}" placeholder="Optional placeholder.">
-              </div>
-            ` : ""}
-
-            ${supportsOptions ? `
-              <div class="forms-field">
-                <label>Options</label>
-                <div class="options-list">
-                  ${(q.options_json || []).map((opt, optIndex) => `
-                    <div class="option-row">
-                      <div class="option-badge">${optIndex + 1}</div>
-                      <input class="forms-input" type="text" value="${escapeHtml(opt || "")}" data-question-input="option" data-question-id="${q.local_id}" data-option-index="${optIndex}" placeholder="Option text">
-                      <div class="option-actions">
-                        <button type="button" class="icon-btn" data-question-action="option-up" data-question-id="${q.local_id}" data-option-index="${optIndex}">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                          </svg>
-                        </button>
-                        <button type="button" class="icon-btn" data-question-action="option-down" data-question-id="${q.local_id}" data-option-index="${optIndex}">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                          </svg>
-                        </button>
-                        <button type="button" class="icon-btn" data-question-action="delete-option" data-question-id="${q.local_id}" data-option-index="${optIndex}">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                            <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                          </svg>
-                        </button>
+              ${
+                supportsOptions
+                  ? `
+                <div class="forms-field">
+                  <label>Options</label>
+                  <div class="options-list">
+                    ${(q.options_json || [])
+                      .map(
+                        (opt, optIndex) => `
+                      <div class="option-row">
+                        <div class="option-badge">${optIndex + 1}</div>
+                        <input
+                          class="forms-input"
+                          type="text"
+                          value="${escapeHtml(opt || "")}"
+                          data-question-input="option"
+                          data-question-id="${q.local_id}"
+                          data-option-index="${optIndex}"
+                          placeholder="Option text"
+                        >
+                        <div class="option-actions">
+                          <button type="button" class="icon-btn" data-question-action="remove-option" data-question-id="${q.local_id}" data-option-index="${optIndex}">✕</button>
+                        </div>
                       </div>
+                    `
+                      )
+                      .join("")}
+                  </div>
+                  <div class="question-footer" style="margin-top:10px;">
+                    <div class="question-footer-left">
+                      <button type="button" class="forms-mini-btn" data-question-action="add-option" data-question-id="${q.local_id}">
+                        Add Option
+                      </button>
                     </div>
-                  `).join("")}
+                  </div>
                 </div>
-              </div>
-            ` : ""}
+              `
+                  : ""
+              }
 
-            ${isFile ? `
-              <div class="question-grid-3">
-                <div class="forms-field">
-                  <label>Allowed File Types</label>
-                  <input class="forms-input" type="text" value="${escapeHtml((q.allowed_file_types || []).join(","))}" data-question-input="allowed_file_types" data-question-id="${q.local_id}" placeholder="pdf,image">
+              ${
+                isFile
+                  ? `
+                <div class="question-grid-2">
+                  <div class="forms-field">
+                    <label>Allowed File Types</label>
+                    <input
+                      class="forms-input"
+                      type="text"
+                      value="${escapeHtml((q.allowed_file_types || []).join(", "))}"
+                      data-question-input="allowed_file_types"
+                      data-question-id="${q.local_id}"
+                      placeholder="pdf, jpg, png"
+                    >
+                  </div>
+                  <div class="forms-field">
+                    <label>Max Upload</label>
+                    <input
+                      class="forms-input"
+                      type="number"
+                      min="1"
+                      value="${Number(q.max_files || 1)}"
+                      data-question-input="max_files"
+                      data-question-id="${q.local_id}"
+                    >
+                  </div>
                 </div>
-                <div class="forms-field">
-                  <label>Max File Size (MB)</label>
-                  <input class="forms-input" type="number" min="1" value="${escapeHtml(String(q.max_file_size_mb || 5))}" data-question-input="max_file_size_mb" data-question-id="${q.local_id}">
-                </div>
-                <div class="forms-field">
-                  <label>Max Files</label>
-                  <input class="forms-input" type="number" min="1" value="${escapeHtml(String(q.max_files || 1))}" data-question-input="max_files" data-question-id="${q.local_id}">
-                </div>
-              </div>
-            ` : ""}
-
-            ${isYesNo ? `
-              <div class="forms-note info">This question uses fixed options: Yes and No.</div>
-            ` : ""}
-
-            <div class="question-footer">
-              <div class="question-footer-left">
-                ${supportsOptions ? `
-                  <button type="button" class="forms-btn-soft" data-question-action="add-option" data-question-id="${q.local_id}">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span>Add Option</span>
-                  </button>
-                ` : ""}
-              </div>
-
-              <div class="question-footer-right">
-                <button type="button" class="forms-btn-danger" data-question-action="delete" data-question-id="${q.local_id}">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M5.75 7.75h12.5v10.5A1.75 1.75 0 0 1 16.5 20h-9A1.75 1.75 0 0 1 5.75 18.25V7.75Z" stroke="currentColor" stroke-width="1.8"/>
-                    <path d="M4 7.75h16M9.5 11.5v4.5M14.5 11.5v4.5M8.5 5.25h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                  </svg>
-                  <span>Delete Question</span>
-                </button>
-              </div>
+              `
+                  : ""
+              }
             </div>
           </div>
-        </div>
-      `;
-    }).join("");
+        `;
+      })
+      .join("");
   }
 
-  function renderPreview(){
-    const form = state.currentForm || blankForm();
-    const titleEl = $("studentPreviewTitle");
-    const descEl = $("studentPreviewDescription");
-    const bodyEl = $("studentPreviewBody");
+  function renderPreview() {
+    ensureCurrentForm();
+    patchPreviewMeta();
 
-    titleEl.textContent = form.title || "Untitled Form";
+    const body = $("studentPreviewBody");
+    if (!body) return;
 
-    let descText = form.description || "Form description will appear here.";
-
-    if ((form.audience_mode || "all_students") === "programme_filter" && Array.isArray(form.programme_targets) && form.programme_targets.length){
-      const targetText = form.programme_targets
-        .filter(item => item.programme_name)
-        .map(item => {
-          const levels = Array.isArray(item.levels) && item.levels.length ? item.levels.join(", ") : "No level yet";
-          return item.programme_name + " (" + levels + ")";
-        })
-        .join(" • ");
-
-      if (targetText){
-        descText += " | Target: " + targetText;
-      }
-    }
-
-    descEl.textContent = descText;
-
-    if (!(form.questions || []).length){
-      bodyEl.innerHTML = `<div class="forms-empty">No questions yet. Add questions first.</div>`;
+    const questions = getFormQuestions();
+    if (!questions.length) {
+      body.innerHTML = `<div class="forms-empty">No questions added yet.</div>`;
       return;
     }
 
-    bodyEl.innerHTML = form.questions.map((q, index) => {
-      const requiredMark = q.is_required ? `<span class="student-required">*</span>` : "";
-      let inputHtml = "";
+    body.innerHTML = questions
+      .map((q) => {
+        const required = q.is_required ? `<span class="student-required">*</span>` : "";
 
-      if (q.question_type === "short_answer"){
-        inputHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(q.placeholder_text || "Short answer")}">`;
-      } else if (q.question_type === "paragraph"){
-        inputHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(q.placeholder_text || "Write your answer here")}"></textarea>`;
-      } else if (q.question_type === "multiple_choice"){
-        inputHtml = `
-          <div class="student-option-list">
-            ${(q.options_json || []).map(opt => `
-              <label class="student-option">
-                <input type="radio" name="preview_q_${index}">
-                <span>${escapeHtml(opt || "Option")}</span>
-              </label>
-            `).join("")}
-          </div>
-        `;
-      } else if (q.question_type === "checkboxes"){
-        inputHtml = `
-          <div class="student-option-list">
-            ${(q.options_json || []).map(opt => `
-              <label class="student-option">
-                <input type="checkbox">
-                <span>${escapeHtml(opt || "Option")}</span>
-              </label>
-            `).join("")}
-          </div>
-        `;
-      } else if (q.question_type === "dropdown"){
-        inputHtml = `
-          <select class="forms-select">
-            <option value="">Select an option</option>
-            ${(q.options_json || []).map(opt => `<option>${escapeHtml(opt || "Option")}</option>`).join("")}
-          </select>
-        `;
-      } else if (q.question_type === "date"){
-        inputHtml = `<input class="forms-input" type="date">`;
-      } else if (q.question_type === "file_upload"){
-        inputHtml = `
-          <div class="forms-empty" style="min-height:80px;">
-            Allowed: ${escapeHtml((q.allowed_file_types || []).join(",") || "pdf,image")} • Max size: ${escapeHtml(String(q.max_file_size_mb || 5))}MB • Max files: ${escapeHtml(String(q.max_files || 1))}
-          </div>
-        `;
-      } else if (q.question_type === "yes_no"){
-        inputHtml = `
-          <div class="student-option-list">
-            <label class="student-option">
-              <input type="radio" name="preview_q_${index}">
-              <span>Yes</span>
-            </label>
-            <label class="student-option">
-              <input type="radio" name="preview_q_${index}">
-              <span>No</span>
-            </label>
-          </div>
-        `;
-      }
+        let answerHtml = `<input class="forms-input" type="text" placeholder="${escapeHtml(q.placeholder_text || "Your answer")}">`;
 
-      return `
-        <div class="student-q">
-          <h4>${index + 1}. ${escapeHtml(q.question_text || "Untitled Question")}${requiredMark}</h4>
-          <p>${escapeHtml(q.help_text || "Answer this question below.")}</p>
-          ${inputHtml}
-        </div>
-      `;
-    }).join("");
+        if (q.question_type === "paragraph") {
+          answerHtml = `<textarea class="forms-textarea" placeholder="${escapeHtml(q.placeholder_text || "Write your answer")}"></textarea>`;
+        } else if (["multiple_choice", "checkboxes", "dropdown", "yes_no"].includes(q.question_type)) {
+          const options = q.question_type === "yes_no" ? ["Yes", "No"] : (q.options_json || []);
+          answerHtml = `
+            <div class="student-option-list">
+              ${options
+                .map(
+                  (opt) => `
+                <label class="student-option">
+                  <input type="${q.question_type === "checkboxes" ? "checkbox" : "radio"}" name="${escapeHtml(q.local_id)}">
+                  <span>${escapeHtml(opt || "Option")}</span>
+                </label>
+              `
+                )
+                .join("")}
+            </div>
+          `;
+        } else if (q.question_type === "date") {
+          answerHtml = `<input class="forms-input" type="date">`;
+        } else if (q.question_type === "file_upload") {
+          answerHtml = `<input class="forms-input" type="file">`;
+        }
+
+        return `
+          <div class="student-q">
+            <h4>${escapeHtml(q.question_text || "Untitled Question")}${required}</h4>
+            <p>${escapeHtml(q.help_text || "")}</p>
+            ${answerHtml}
+          </div>
+        `;
+      })
+      .join("");
   }
 
-  function getFormQuestions(){
+  function syncFormFromSetupInputs() {
     ensureCurrentForm();
-    if (!Array.isArray(state.currentForm.questions)){
-      state.currentForm.questions = [];
+    state.currentForm.title = $("formTitleInput")?.value || "";
+    state.currentForm.description = $("formDescriptionInput")?.value || "";
+    state.currentForm.open_at = $("formOpenDateInput")?.value || "";
+    state.currentForm.close_at = $("formCloseDateInput")?.value || "";
+    state.currentForm.response_rule = $("formResponseRule")?.value || "one";
+
+    const mode = $("formIdentityMode")?.value || "auto";
+    state.currentForm.identity_mode = mode === "anonymous" ? "anonymous" : "auto";
+
+    if ($("audienceProgrammeFilter")?.checked) {
+      state.currentForm.audience_mode = "programme_filter";
+    } else {
+      state.currentForm.audience_mode = "all_students";
+      state.currentForm.programme_targets = [];
     }
-    return state.currentForm.questions;
+
+    state.currentForm.target_audience = "all_students";
   }
 
-  function serializeQuestions(){
-    return getFormQuestions().map((q, index) => ({
-      question_text: String(q.question_text || "").trim(),
-      question_type: q.question_type || "short_answer",
-      help_text: String(q.help_text || "").trim(),
-      placeholder_text: String(q.placeholder_text || "").trim(),
+  function buildPayload(statusOverride) {
+    syncFormFromSetupInputs();
+
+    const form = state.currentForm || blankForm();
+    const questions = getFormQuestions().map((q, index) => ({
+      id: q.id || null,
+      question_text: normalizeText(q.question_text),
+      question_type: q.question_type,
+      help_text: normalizeText(q.help_text),
+      placeholder_text: normalizeText(q.placeholder_text),
       is_required: !!q.is_required,
       options_json: Array.isArray(q.options_json)
-        ? q.options_json.map(v => String(v || "").trim()).filter(Boolean)
+        ? q.options_json.map((v) => normalizeText(v)).filter(Boolean)
         : [],
       allowed_file_types: Array.isArray(q.allowed_file_types)
-        ? q.allowed_file_types.map(v => String(v || "").trim()).filter(Boolean)
+        ? q.allowed_file_types.map((v) => normalizeText(v)).filter(Boolean)
         : [],
       max_file_size_mb: Number(q.max_file_size_mb || 5),
       max_files: Number(q.max_files || 1),
-      section_name: String(q.section_name || "").trim(),
-      sort_order: index + 1
+      section_name: normalizeText(q.section_name),
+      sort_order: index + 1,
     }));
-  }
-
-  function serializeProgrammeTargets(){
-    ensureCurrentForm();
-    if ((state.currentForm.audience_mode || "all_students") !== "programme_filter"){
-      return [];
-    }
-
-    return getFormProgrammeTargets()
-      .filter(item => item.programme_name)
-      .map(item => ({
-        programme_name: String(item.programme_name || "").trim(),
-        levels: Array.isArray(item.levels)
-          ? item.levels.map(v => String(v || "").trim()).filter(Boolean)
-          : []
-      }))
-      .filter(item => item.programme_name);
-  }
-
-  function getSetupPayload(){
-    ensureCurrentForm();
-    const form = state.currentForm;
-    const audienceMode = form.audience_mode || "all_students";
-    const programmeTargets = serializeProgrammeTargets();
 
     return {
-      title: String(form.title || "").trim(),
-      description: String(form.description || "").trim(),
-      target_audience: audienceMode === "programme_filter" ? "specific_group" : "all_students",
-      audience_mode: audienceMode,
-      programme_targets: programmeTargets,
+      ...getActorPayload(),
+      form_id: form.id || undefined,
+      title: normalizeText(form.title),
+      description: normalizeText(form.description),
+      target_audience: "all_students",
+      audience_mode: form.audience_mode || "all_students",
+      programme_targets: Array.isArray(form.programme_targets) ? form.programme_targets : [],
       response_rule: form.response_rule || "one",
-      identity_mode: form.identity_mode || "auto",
-      open_at: form.open_at || null,
-      close_at: form.close_at || null,
-      status: form.status || "draft"
+      identity_mode: form.identity_mode === "anonymous" ? "anonymous" : "auto",
+      open_date: form.open_at || null,
+      close_date: form.close_at || null,
+      status: statusOverride || form.status || "draft",
+      questions,
     };
   }
 
-  async function loadForms(){
-    try{
-      state.loadingList = true;
-      renderFormsList();
+  async function loadForms() {
+    state.loadingList = true;
+    renderFormsList();
 
+    try {
       const data = await invokeFormsManager({
         action: "list_forms",
         status: state.statusFilter,
-        ...getActorPayload()
+        ...getActorPayload(),
       });
 
       state.forms = Array.isArray(data.forms) ? data.forms : [];
       renderFormsList();
-    }catch(err){
-      console.error(err);
+    } catch (err) {
+      console.error("Load forms error:", err);
       $("formsListBox").innerHTML = `<div class="forms-empty">${escapeHtml(err.message || "Could not load forms.")}</div>`;
-    }finally{
+    } finally {
       state.loadingList = false;
+      renderFormsList();
     }
   }
 
-  async function openForm(formId){
-    try{
-      setSavePill("Loading form...", "warn");
+  async function openForm(formId) {
+    try {
       const data = await invokeFormsManager({
         action: "get_form",
         form_id: formId,
-        ...getActorPayload()
+        ...getActorPayload(),
       });
 
       loadFormIntoEditor(data.form, data.questions || []);
       showBuilder();
       setStep("setup");
-      setSavePill("Loaded");
-    }catch(err){
-      console.error(err);
-      setSavePill(err.message || "Could not load form", "error");
-      alert(err.message || "Could not load form.");
+      setSavePill("Loaded", "");
+    } catch (err) {
+      alert(err.message || "Could not open form.");
     }
   }
 
-  async function saveSetupOnly(){
-    const payload = getSetupPayload();
-
-    if (!payload.title){
-      throw new Error("Form title is required.");
+  async function saveSetupOnly() {
+    syncFormFromSetupInputs();
+    if (!normalizeText(state.currentForm.title)) {
+      alert("Enter form title first.");
+      return false;
     }
 
-    if (payload.audience_mode === "programme_filter"){
-      if (!payload.programme_targets.length){
-        throw new Error("Select at least one programme.");
+    const btn = $("formsSaveDraftBtn");
+    setButtonLoading(btn, "Saving...", true);
+
+    try {
+      const payload = buildPayload("draft");
+
+      let data;
+      if (state.currentForm.id) {
+        data = await invokeFormsManager({ action: "update_form", ...payload });
+      } else {
+        data = await invokeFormsManager({ action: "create_form", ...payload });
       }
 
-      const missingLevel = payload.programme_targets.some(item => !Array.isArray(item.levels) || !item.levels.length);
-      if (missingLevel){
-        throw new Error("Choose at least one level under each selected programme.");
-      }
-    }
-
-    if (!state.currentForm.id){
-      const data = await invokeFormsManager({
-        action: "create_form",
-        ...getActorPayload(),
-        ...payload,
-        questions: []
-      });
-
-      state.currentForm.id = data.form.id;
-      state.currentForm.status = data.form.status || "draft";
-      return data.form;
-    }
-
-    const data = await invokeFormsManager({
-      action: "update_form",
-      form_id: state.currentForm.id,
-      ...getActorPayload(),
-      ...payload
-    });
-
-    state.currentForm.status = data.form.status || state.currentForm.status;
-    return data.form;
-  }
-
-  async function saveFormWithQuestions(){
-    const payload = getSetupPayload();
-
-    if (!payload.title){
-      throw new Error("Form title is required.");
-    }
-
-    if (payload.audience_mode === "programme_filter"){
-      if (!payload.programme_targets.length){
-        throw new Error("Select at least one programme.");
-      }
-
-      const missingLevel = payload.programme_targets.some(item => !Array.isArray(item.levels) || !item.levels.length);
-      if (missingLevel){
-        throw new Error("Choose at least one level under each selected programme.");
-      }
-    }
-
-    const questions = serializeQuestions();
-
-    if (!state.currentForm.id){
-      const data = await invokeFormsManager({
-        action: "create_form",
-        ...getActorPayload(),
-        ...payload,
-        questions
-      });
-
-      state.currentForm.id = data.form.id;
-      state.currentForm.status = data.form.status || "draft";
-      return data.form;
-    }
-
-    const data = await invokeFormsManager({
-      action: "update_form",
-      form_id: state.currentForm.id,
-      ...getActorPayload(),
-      ...payload,
-      questions
-    });
-
-    state.currentForm.status = data.form.status || state.currentForm.status;
-    return data.form;
-  }
-
-  async function saveDraft(button){
-    try{
-      setButtonLoading(button, "Saving Draft...", true);
-      setSavePill("Saving draft...", "warn");
-      await saveFormWithQuestions();
+      state.currentForm.id = data.form?.id || state.currentForm.id;
+      state.currentForm.status = data.form?.status || "draft";
+      setSavePill("Draft saved", "");
       await loadForms();
-      setSavePill("Draft saved");
-    }catch(err){
+      return true;
+    } catch (err) {
       console.error(err);
-      setSavePill(err.message || "Save failed", "error");
+      setSavePill("Save failed", "error");
       alert(err.message || "Could not save draft.");
-    }finally{
-      setButtonLoading(button, "", false);
+      return false;
+    } finally {
+      setButtonLoading(btn, "Saving...", false);
     }
   }
 
-  async function publishForm(button){
-    try{
-      setButtonLoading(button, "Publishing...", true);
+  async function publishForm(buttonEl) {
+    syncFormFromSetupInputs();
 
-      if (!state.currentForm?.id){
-        await saveFormWithQuestions();
-      }
+    if (!state.currentForm?.id) {
+      const ok = await saveSetupOnly();
+      if (!ok) return;
+    }
 
-      setSavePill("Publishing...", "warn");
+    const btn = buttonEl || $("formsPublishBtn");
+    setButtonLoading(btn, "Publishing...", true);
 
-      await invokeFormsManager({
+    try {
+      const data = await invokeFormsManager({
         action: "publish_form",
         form_id: state.currentForm.id,
-        ...getActorPayload()
+        ...getActorPayload(),
       });
 
-      state.currentForm.status = "published";
-      state.statusFilter = "published";
-      renderHomeTabs();
+      state.currentForm.status = data.form?.status || "published";
+      setSavePill("Published", "");
       await loadForms();
-      setSavePill("Published");
+      alert("Form published successfully.");
       showHome();
-    }catch(err){
+    } catch (err) {
       console.error(err);
-      setSavePill(err.message || "Publish failed", "error");
+      setSavePill("Publish failed", "error");
       alert(err.message || "Could not publish form.");
-    }finally{
-      setButtonLoading(button, "", false);
+    } finally {
+      setButtonLoading(btn, "Publishing...", false);
     }
   }
 
-  function attachSetupInputs(){
-    [
-      ["formTitleInput", "title"],
-      ["formDescriptionInput", "description"],
-      ["formOpenDateInput", "open_at"],
-      ["formCloseDateInput", "close_at"],
-      ["formResponseRule", "response_rule"],
-      ["formIdentityMode", "identity_mode"]
-    ].forEach(([id, key]) => {
-      const el = $(id);
-      const eventName = el.tagName === "SELECT" ? "change" : "input";
-
-      el.addEventListener(eventName, function(){
-        ensureCurrentForm();
-        state.currentForm[key] = el.value;
-        renderPreview();
-      });
-    });
-
-    $("audienceAllStudents").addEventListener("change", function(){
-      if (!this.checked) return;
-      ensureCurrentForm();
-      state.currentForm.audience_mode = "all_students";
-      renderProgrammeTargets();
-      renderPreview();
-    });
-
-    $("audienceProgrammeFilter").addEventListener("change", function(){
-      if (!this.checked) return;
-      ensureCurrentForm();
-      state.currentForm.audience_mode = "programme_filter";
-      renderProgrammeTargets();
-      renderPreview();
-    });
-
-    $("openProgrammePickerBtn").addEventListener("click", openProgrammePicker);
-    $("closeProgrammePickerBtn").addEventListener("click", closeProgrammePicker);
-    $("applyProgrammePickerBtn").addEventListener("click", applyProgrammePickerSelection);
-
-    $("programmeSearchInput").addEventListener("input", function(){
-      state.pickerSearch = this.value || "";
-      renderProgrammePickerList();
-    });
-
-    $("programmeListBox").addEventListener("change", function(e){
-      const input = e.target.closest("[data-programme-pick]");
-      if (!input) return;
-      state.pickerSelectedMap[input.dataset.programmePick] = !!input.checked;
-    });
-
-    $("selectedProgrammesBox").addEventListener("click", function(e){
-      const btn = e.target.closest("[data-remove-programme]");
-      if (!btn) return;
-      removeProgramme(btn.dataset.removeProgramme);
-    });
-
-    $("programmeLevelStack").addEventListener("change", function(e){
-      const input = e.target.closest("[data-programme-level-programme]");
-      if (!input) return;
-      toggleProgrammeLevel(
-        input.dataset.programmeLevelProgramme,
-        input.dataset.programmeLevelValue
-      );
-      renderPreview();
-    });
+  function addQuestion(type) {
+    const list = getFormQuestions();
+    list.push(blankQuestion(type));
+    renderQuestionList();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function moveItem(arr, from, to){
-    if (to < 0 || to >= arr.length) return;
-    const item = arr.splice(from, 1)[0];
-    arr.splice(to, 0, item);
+  function deleteQuestion(questionId) {
+    state.currentForm.questions = getFormQuestions().filter((q) => q.local_id !== questionId);
+    renderQuestionList();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function bindQuestionInputs(){
-    $("formsQuestionList").addEventListener("input", function(e){
-      const target = e.target;
-      const field = target.dataset.questionInput;
-      const questionId = target.dataset.questionId;
-      if (!field || !questionId || !state.currentForm) return;
+  function duplicateQuestion(questionId) {
+    const list = getFormQuestions();
+    const index = list.findIndex((q) => q.local_id === questionId);
+    if (index < 0) return;
 
-      const q = getFormQuestions().find(item => item.local_id === questionId);
-      if (!q) return;
+    const clone = JSON.parse(JSON.stringify(list[index]));
+    clone.local_id = uid("q");
+    clone.id = null;
+    list.splice(index + 1, 0, clone);
 
-      if (field === "question_text") q.question_text = target.value;
-      if (field === "help_text") q.help_text = target.value;
-      if (field === "placeholder_text") q.placeholder_text = target.value;
-      if (field === "max_file_size_mb") q.max_file_size_mb = Math.max(1, Number(target.value || 1));
-      if (field === "max_files") q.max_files = Math.max(1, Number(target.value || 1));
+    renderQuestionList();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
+  }
 
-      if (field === "allowed_file_types"){
-        q.allowed_file_types = String(target.value || "")
-          .split(",")
-          .map(v => v.trim())
-          .filter(Boolean);
-      }
+  function moveQuestion(questionId, dir) {
+    const list = getFormQuestions();
+    const index = list.findIndex((q) => q.local_id === questionId);
+    if (index < 0) return;
 
-      if (field === "option"){
-        const optIndex = Number(target.dataset.optionIndex);
-        q.options_json[optIndex] = target.value;
-      }
+    const nextIndex = index + dir;
+    if (nextIndex < 0 || nextIndex >= list.length) return;
 
+    const temp = list[index];
+    list[index] = list[nextIndex];
+    list[nextIndex] = temp;
+
+    renderQuestionList();
+    renderPreview();
+    setSavePill("Unsaved changes", "warn");
+  }
+
+  function getQuestionById(questionId) {
+    return getFormQuestions().find((q) => q.local_id === questionId) || null;
+  }
+
+  function handleQuestionInput(el) {
+    const questionId = el.dataset.questionId;
+    const field = el.dataset.questionInput;
+    const q = getQuestionById(questionId);
+    if (!q || !field) return;
+
+    if (field === "question_text") {
+      q.question_text = el.value;
+      patchQuestionHeader(questionId);
       renderPreview();
+    } else if (field === "help_text") {
+      q.help_text = el.value;
+      renderPreview();
+    } else if (field === "placeholder_text") {
+      q.placeholder_text = el.value;
+      renderPreview();
+    } else if (field === "question_type") {
+      q.question_type = el.value;
+
+      if (["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type) && !Array.isArray(q.options_json)) {
+        q.options_json = ["", ""];
+      }
+
+      if (["multiple_choice", "checkboxes", "dropdown"].includes(q.question_type) && q.options_json.length === 0) {
+        q.options_json = ["", ""];
+      }
+
+      if (q.question_type === "yes_no") {
+        q.options_json = ["Yes", "No"];
+        q.placeholder_text = "";
+      }
+
+      if (q.question_type === "file_upload") {
+        q.allowed_file_types = q.allowed_file_types || [];
+        q.max_files = q.max_files || 1;
+      }
+
       renderQuestionList();
-    });
+      renderPreview();
+    } else if (field === "option") {
+      const optIndex = Number(el.dataset.optionIndex);
+      if (!Array.isArray(q.options_json)) q.options_json = [];
+      q.options_json[optIndex] = el.value;
+      renderPreview();
+    } else if (field === "allowed_file_types") {
+      q.allowed_file_types = String(el.value || "")
+        .split(",")
+        .map((v) => normalizeText(v))
+        .filter(Boolean);
+    } else if (field === "max_files") {
+      q.max_files = Math.max(1, Number(el.value || 1));
+    }
 
-    $("formsQuestionList").addEventListener("change", function(e){
-      const target = e.target;
-      const field = target.dataset.questionInput;
-      const questionId = target.dataset.questionId;
-      if (!field || !questionId || !state.currentForm) return;
-
-      const q = getFormQuestions().find(item => item.local_id === questionId);
-      if (!q) return;
-
-      if (field === "question_type"){
-        const fresh = blankQuestion(target.value);
-        q.question_type = fresh.question_type;
-        q.options_json = fresh.options_json;
-        q.allowed_file_types = fresh.allowed_file_types;
-        q.max_file_size_mb = fresh.max_file_size_mb;
-        q.max_files = fresh.max_files;
-        renderQuestionList();
-        renderPreview();
-      }
-    });
-
-    $("formsQuestionList").addEventListener("click", function(e){
-      const btn = e.target.closest("[data-question-action]");
-      if (!btn || !state.currentForm) return;
-
-      const action = btn.dataset.questionAction;
-      const questionId = btn.dataset.questionId;
-      const qIndex = getFormQuestions().findIndex(item => item.local_id === questionId);
-      if (qIndex === -1) return;
-
-      const q = getFormQuestions()[qIndex];
-
-      if (action === "toggle-required"){
-        q.is_required = !q.is_required;
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "move-up"){
-        moveItem(getFormQuestions(), qIndex, qIndex - 1);
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "move-down"){
-        moveItem(getFormQuestions(), qIndex, qIndex + 1);
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "duplicate"){
-        const copy = JSON.parse(JSON.stringify(q));
-        copy.local_id = uid("q");
-        delete copy.id;
-        getFormQuestions().splice(qIndex + 1, 0, copy);
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "delete"){
-        getFormQuestions().splice(qIndex, 1);
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "add-option"){
-        if (!Array.isArray(q.options_json)) q.options_json = [];
-        q.options_json.push("");
-        renderQuestionList();
-        return;
-      }
-
-      if (action === "delete-option"){
-        const optIndex = Number(btn.dataset.optionIndex);
-        q.options_json.splice(optIndex, 1);
-        if (!q.options_json.length && ["multiple_choice","checkboxes","dropdown"].includes(q.question_type)){
-          q.options_json = [""];
-        }
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "option-up"){
-        const optIndex = Number(btn.dataset.optionIndex);
-        moveItem(q.options_json, optIndex, optIndex - 1);
-        renderQuestionList();
-        renderPreview();
-        return;
-      }
-
-      if (action === "option-down"){
-        const optIndex = Number(btn.dataset.optionIndex);
-        moveItem(q.options_json, optIndex, optIndex + 1);
-        renderQuestionList();
-        renderPreview();
-      }
-    });
+    setSavePill("Unsaved changes", "warn");
   }
 
-  function bindQuestionTypeButtons(){
-    document.querySelectorAll("#screen-forms [data-question-type]").forEach(btn => {
-      btn.addEventListener("click", function(){
-        ensureCurrentForm();
-        getFormQuestions().push(blankQuestion(btn.dataset.questionType));
-        renderQuestionList();
-        renderPreview();
-      });
-    });
+  function handleQuestionAction(el) {
+    const action = el.dataset.questionAction;
+    const questionId = el.dataset.questionId;
+    const q = getQuestionById(questionId);
+    if (!action || !questionId) return;
+
+    if (action === "toggle-required" && q) {
+      q.is_required = !!el.checked;
+      renderPreview();
+      setSavePill("Unsaved changes", "warn");
+      return;
+    }
+
+    if (action === "move-up") {
+      moveQuestion(questionId, -1);
+      return;
+    }
+
+    if (action === "move-down") {
+      moveQuestion(questionId, 1);
+      return;
+    }
+
+    if (action === "duplicate") {
+      duplicateQuestion(questionId);
+      return;
+    }
+
+    if (action === "delete") {
+      deleteQuestion(questionId);
+      return;
+    }
+
+    if (action === "add-option" && q) {
+      if (!Array.isArray(q.options_json)) q.options_json = [];
+      q.options_json.push("");
+      renderQuestionList();
+      setSavePill("Unsaved changes", "warn");
+      return;
+    }
+
+    if (action === "remove-option" && q) {
+      const optIndex = Number(el.dataset.optionIndex);
+      if (!Array.isArray(q.options_json)) q.options_json = [];
+      q.options_json.splice(optIndex, 1);
+      if (q.options_json.length === 0) q.options_json = [""];
+      renderQuestionList();
+      renderPreview();
+      setSavePill("Unsaved changes", "warn");
+    }
   }
 
-  async function createNewFormFlow(){
-    state.currentForm = blankForm();
-    renderEditor();
-    setStep("setup");
-    setSavePill("Ready");
-    showBuilder();
-  }
-
-  function bindGeneralActions(){
-    $("formsCreateBtn").addEventListener("click", createNewFormFlow);
-
-    $("formsBackBtn").addEventListener("click", function(){
-      showHome();
-      loadForms();
+  function bindEvents() {
+    $("formsCreateBtn")?.addEventListener("click", () => {
+      state.currentForm = blankForm();
+      showBuilder();
+      setStep("setup");
+      renderEditor();
+      setSavePill("Ready", "");
     });
 
-    document.querySelectorAll("#formsStatusTabs [data-status]").forEach(btn => {
-      btn.addEventListener("click", async function(){
-        state.statusFilter = btn.dataset.status || "draft";
+    $("formsBackBtn")?.addEventListener("click", showHome);
+
+    $("formsSaveDraftBtn")?.addEventListener("click", saveSetupOnly);
+
+    $("formsPublishBtn")?.addEventListener("click", function () {
+      publishForm(this);
+    });
+
+    $("formsPublishBottomBtn")?.addEventListener("click", function () {
+      publishForm(this);
+    });
+
+    $("formsContinueToQuestionsBtn")?.addEventListener("click", async function () {
+      syncFormFromSetupInputs();
+      if (!normalizeText(state.currentForm.title)) {
+        alert("Enter form title first.");
+        return;
+      }
+      const ok = await saveSetupOnly();
+      if (ok) setStep("questions");
+    });
+
+    $("formsBackToSetupBtn")?.addEventListener("click", () => setStep("setup"));
+
+    $("formsContinueToPreviewBtn")?.addEventListener("click", () => {
+      renderPreview();
+      setStep("preview");
+    });
+
+    $("formsBackToQuestionsBtn")?.addEventListener("click", () => setStep("questions"));
+
+    document.querySelectorAll("#formsStatusTabs [data-status]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        state.statusFilter = btn.dataset.status;
         renderHomeTabs();
         await loadForms();
       });
     });
 
-    $("formsListBox").addEventListener("click", async function(e){
+    $("formTitleInput")?.addEventListener("input", () => {
+      ensureCurrentForm();
+      state.currentForm.title = $("formTitleInput").value;
+      patchPreviewMeta();
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("formDescriptionInput")?.addEventListener("input", () => {
+      ensureCurrentForm();
+      state.currentForm.description = $("formDescriptionInput").value;
+      patchPreviewMeta();
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("formOpenDateInput")?.addEventListener("change", () => {
+      ensureCurrentForm();
+      state.currentForm.open_at = $("formOpenDateInput").value || "";
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("formCloseDateInput")?.addEventListener("change", () => {
+      ensureCurrentForm();
+      state.currentForm.close_at = $("formCloseDateInput").value || "";
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("formResponseRule")?.addEventListener("change", () => {
+      ensureCurrentForm();
+      state.currentForm.response_rule = $("formResponseRule").value || "one";
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("formIdentityMode")?.addEventListener("change", () => {
+      ensureCurrentForm();
+      const value = $("formIdentityMode").value || "auto";
+      state.currentForm.identity_mode = value === "anonymous" ? "anonymous" : "auto";
+      setSavePill("Unsaved changes", "warn");
+    });
+
+    $("audienceAllStudents")?.addEventListener("change", () => {
+      if ($("audienceAllStudents").checked) {
+        ensureCurrentForm();
+        state.currentForm.audience_mode = "all_students";
+        state.currentForm.programme_targets = [];
+        renderProgrammeTargets();
+        renderPreview();
+        setSavePill("Unsaved changes", "warn");
+      }
+    });
+
+    $("audienceProgrammeFilter")?.addEventListener("change", () => {
+      if ($("audienceProgrammeFilter").checked) {
+        ensureCurrentForm();
+        state.currentForm.audience_mode = "programme_filter";
+        renderProgrammeTargets();
+        renderPreview();
+        setSavePill("Unsaved changes", "warn");
+      }
+    });
+
+    $("openProgrammePickerBtn")?.addEventListener("click", openProgrammePicker);
+    $("closeProgrammePickerBtn")?.addEventListener("click", closeProgrammePicker);
+    $("applyProgrammePickerBtn")?.addEventListener("click", applyProgrammePickerSelection);
+
+    $("programmeSearchInput")?.addEventListener("input", (e) => {
+      state.pickerSearch = e.target.value || "";
+      renderProgrammePickerList();
+    });
+
+    $("programmeListBox")?.addEventListener("change", (e) => {
+      const target = e.target;
+      if (!target || !target.matches("[data-programme-pick]")) return;
+      state.pickerSelectedMap[target.dataset.programmePick] = !!target.checked;
+    });
+
+    $("selectedProgrammesBox")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-remove-programme]");
+      if (!btn) return;
+      removeProgramme(btn.dataset.removeProgramme);
+    });
+
+    $("programmeLevelStack")?.addEventListener("change", (e) => {
+      const target = e.target;
+      if (!target || !target.matches("[data-programme-level-programme]")) return;
+      toggleProgrammeLevel(target.dataset.programmeLevelProgramme, target.dataset.programmeLevelValue);
+    });
+
+    document.querySelectorAll(".type-btn[data-question-type]").forEach((btn) => {
+      btn.addEventListener("click", () => addQuestion(btn.dataset.questionType));
+    });
+
+    $("formsQuestionList")?.addEventListener("input", (e) => {
+      const el = e.target.closest("[data-question-input]");
+      if (!el) return;
+      handleQuestionInput(el);
+    });
+
+    $("formsQuestionList")?.addEventListener("change", (e) => {
+      const el = e.target.closest("[data-question-input], [data-question-action]");
+      if (!el) return;
+
+      if (el.hasAttribute("data-question-input")) {
+        handleQuestionInput(el);
+      } else {
+        handleQuestionAction(el);
+      }
+    });
+
+    $("formsQuestionList")?.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-question-action]");
+      if (!el) return;
+      handleQuestionAction(el);
+    });
+
+    $("formsListBox")?.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-form-action]");
       if (!btn) return;
 
@@ -2787,130 +2818,46 @@
       const formId = btn.dataset.formId;
       if (!formId) return;
 
-      if (action === "open" || action === "edit"){
+      if (action === "open" || action === "edit") {
         await openForm(formId);
         return;
       }
 
-      if (action === "delete"){
-        const yes = confirm("Delete this form?");
-        if (!yes) return;
+      if (action === "delete") {
+        const ok = confirm("Delete this form?");
+        if (!ok) return;
 
-        try{
-          setButtonLoading(btn, "Deleting...", true);
-          setSavePill("Deleting...", "warn");
+        try {
           await invokeFormsManager({
             action: "delete_form",
             form_id: formId,
-            ...getActorPayload()
+            ...getActorPayload(),
           });
           await loadForms();
-          setSavePill("Deleted");
-        }catch(err){
-          console.error(err);
-          setSavePill(err.message || "Delete failed", "error");
+        } catch (err) {
           alert(err.message || "Could not delete form.");
-        }finally{
-          setButtonLoading(btn, "", false);
         }
       }
-    });
-
-    $("formsContinueToQuestionsBtn").addEventListener("click", async function(){
-      try{
-        setButtonLoading(this, "Saving...", true);
-        setSavePill("Saving setup...", "warn");
-        await saveSetupOnly();
-        await loadForms();
-        setStep("questions");
-        setSavePill("Setup saved");
-      }catch(err){
-        console.error(err);
-        setSavePill(err.message || "Could not save setup", "error");
-        alert(err.message || "Could not save setup.");
-      }finally{
-        setButtonLoading(this, "", false);
-      }
-    });
-
-    $("formsBackToSetupBtn").addEventListener("click", function(){
-      setStep("setup");
-    });
-
-    $("formsContinueToPreviewBtn").addEventListener("click", async function(){
-      try{
-        if (!getFormQuestions().length){
-          alert("Add at least one question before preview.");
-          return;
-        }
-
-        setButtonLoading(this, "Saving...", true);
-        setSavePill("Saving questions...", "warn");
-        await saveFormWithQuestions();
-        await loadForms();
-        renderPreview();
-        setStep("preview");
-        setSavePill("Questions saved");
-      }catch(err){
-        console.error(err);
-        setSavePill(err.message || "Could not save questions", "error");
-        alert(err.message || "Could not save questions.");
-      }finally{
-        setButtonLoading(this, "", false);
-      }
-    });
-
-    $("formsBackToQuestionsBtn").addEventListener("click", function(){
-      setStep("questions");
-    });
-
-    $("formsSaveDraftBtn").addEventListener("click", function(){
-      saveDraft(this);
-    });
-
-    $("formsPublishBtn").addEventListener("click", function(){
-      publishForm(this);
-    });
-
-    $("formsPublishBottomBtn").addEventListener("click", function(){
-      publishForm(this);
     });
   }
 
-  async function init(){
+  async function init() {
     state.sb = createClientSafe();
+    if (!state.sb) {
+      console.error("Supabase client not found.");
+      return;
+    }
+
     state.session = getAdminSession();
-
-    if (!state.sb){
-      $("formsListBox").innerHTML = `<div class="forms-empty">Supabase client is not ready on this page.</div>`;
-      return;
-    }
-
-    if (!state.session){
-      $("formsListBox").innerHTML = `<div class="forms-empty">Admin session not found. Sign in again.</div>`;
-      return;
-    }
-
-    bindGeneralActions();
-    attachSetupInputs();
-    bindQuestionInputs();
-    bindQuestionTypeButtons();
-
+    ensureIdentityModeOptions();
+    bindEvents();
     renderHomeTabs();
-    renderEditor();
     showHome();
-
-    await Promise.all([
-      loadProgrammes(),
-      loadForms()
-    ]);
+    await loadProgrammes();
+    await loadForms();
   }
 
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  init();
 })();
 </script>
 </section>
