@@ -1,693 +1,551 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-  />
-  <title>Colspot • HOS History</title>
-
-  <style>
-    :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --blue-soft:#eef4ff;
-      --card:#ffffff;
-      --line:#e5e7eb;
-      --muted:#6b7280;
-      --text:#111827;
-      --danger-soft:#fef2f2;
-      --shadow:0 18px 40px rgba(15,23,42,.08);
-      --shadow-soft:0 10px 26px rgba(37,99,235,.10);
-      --radius-xl:28px;
-      --radius-lg:22px;
-      --radius-md:18px;
-      --radius-sm:14px;
-    }
-
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      margin:0;
-      padding:0;
-      min-height:100%;
-      background:
-        radial-gradient(circle at top, #dfeeff 0%, #f6faff 48%, #ffffff 100%);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      color:var(--text);
-    }
-
-    body{
-      display:flex;
-      justify-content:center;
-    }
-
-    body::-webkit-scrollbar{
-      width:0;
-      height:0;
-      display:none;
-    }
-
-    .phone-shell{
-      width:100%;
-      max-width:420px;
-      min-height:100vh;
-      padding:calc(env(safe-area-inset-top) + 12px) 14px 108px;
-      position:relative;
-    }
-
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
-    .back-btn{
-      width:40px;
-      height:40px;
-      border:none;
-      border-radius:12px;
-      background:#fff;
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:var(--shadow-soft);
-      cursor:pointer;
-      color:#111827;
-      flex-shrink:0;
-    }
-
-    .brand-logo{
-      width:38px;
-      height:38px;
-      border-radius:12px;
-      overflow:hidden;
-      background:#fff;
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:var(--shadow-soft);
-      flex-shrink:0;
-    }
-
-    .brand-logo img{
-      width:30px;
-      height:30px;
-      object-fit:contain;
-      display:block;
-    }
-
-    .brand-name{
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#10224a;
-      white-space:nowrap;
-    }
-
-    .avatar-chip{
-      width:42px;
-      height:42px;
-      border:none;
-      border-radius:999px;
-      background:linear-gradient(135deg,#2563eb 0%, #22c55e 100%);
-      color:#fff;
-      font-weight:900;
-      font-size:15px;
-      box-shadow:var(--shadow);
-      cursor:pointer;
-      flex-shrink:0;
-    }
-
-    .hero{
-      margin:4px 2px 16px;
-      padding:22px 18px;
-      border-radius:var(--radius-xl);
-      background:linear-gradient(135deg,var(--blue),#3b82f6);
-      color:#fff;
-      position:relative;
-      overflow:hidden;
-      box-shadow:0 24px 44px rgba(37,99,235,.22);
-    }
-
-    .hero::before{
-      content:"";
-      position:absolute;
-      right:-34px;
-      top:-26px;
-      width:150px;
-      height:150px;
-      border-radius:50%;
-      background:rgba(255,255,255,.10);
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      right:-18px;
-      bottom:-34px;
-      width:190px;
-      height:96px;
-      border-radius:50%;
-      background:rgba(255,255,255,.08);
-      transform:rotate(-18deg);
-    }
-
-    .hero-line{
-      font-size:13px;
-      font-weight:800;
-      opacity:.95;
-      margin-bottom:6px;
-      position:relative;
-      z-index:1;
-    }
-
-    .hero-title{
-      font-size:30px;
-      line-height:1.05;
-      font-weight:900;
-      letter-spacing:-.04em;
-      margin:0 0 8px;
-      position:relative;
-      z-index:1;
-      max-width:240px;
-    }
-
-    .hero-sub{
-      font-size:13px;
-      line-height:1.5;
-      opacity:.96;
-      position:relative;
-      z-index:1;
-      max-width:270px;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:10px;
-      margin:0 2px 14px;
-    }
-
-    .search-wrap{
-      flex:1;
-      position:relative;
-    }
-
-    .search-input{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:13px 14px 13px 42px;
-      background:#fff;
-      font-size:14px;
-      color:var(--text);
-      outline:none;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .search-input:focus,
-    .filter-select:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(37,99,235,.10);
-    }
-
-    .search-icon{
-      position:absolute;
-      left:14px;
-      top:50%;
-      transform:translateY(-50%);
-      width:18px;
-      height:18px;
-      color:#94a3b8;
-      pointer-events:none;
-    }
-
-    .filter-select{
-      width:128px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:13px 12px;
-      background:#fff;
-      font-size:14px;
-      color:var(--text);
-      outline:none;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .message{
-      display:none;
-      margin:0 2px 14px;
-      padding:12px 13px;
-      border-radius:16px;
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .message.error{
-      display:block;
-      background:var(--danger-soft);
-      border:1px solid #fecaca;
-      color:#991b1b;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin:0 4px 10px;
-    }
-
-    .section-title{
-      margin:0;
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:-.02em;
-    }
-
-    .section-note{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    .card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:14px;
-      box-shadow:var(--shadow-soft);
-      margin:0 2px 14px;
-    }
-
-    .history-list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .history-card{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      background:#fff;
-    }
-
-    .history-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin-bottom:8px;
-    }
-
-    .history-title{
-      font-size:14px;
-      font-weight:800;
-      line-height:1.25;
-      color:#111827;
-    }
-
-    .history-sub{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.45;
-      margin-top:3px;
-      word-break:break-word;
-    }
-
-    .history-meta{
-      margin-top:8px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .pill{
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:10px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      background:#eff6ff;
-      color:var(--blue);
-      flex-shrink:0;
-    }
-
-    .empty{
-      font-size:13px;
-      color:var(--muted);
-      text-align:center;
-      padding:22px 10px;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:max(12px, env(safe-area-inset-bottom));
-      width:calc(100% - 28px);
-      max-width:392px;
-      background:rgba(255,255,255,.96);
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-      border:1px solid rgba(229,231,235,.9);
-      box-shadow:0 20px 40px rgba(15,23,42,.12);
-      border-radius:26px;
-      padding:8px 8px 10px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:4px;
-      z-index:30;
-    }
-
-    .nav-btn{
-      border:none;
-      background:transparent;
-      color:#94a3b8;
-      text-align:center;
-      font-size:11px;
-      cursor:pointer;
-      padding-top:2px;
-    }
-
-    .nav-btn.active{
-      color:var(--blue);
-      font-weight:800;
-    }
-
-    .nav-inner{
-      display:inline-flex;
-      flex-direction:column;
-      align-items:center;
-      gap:3px;
-    }
-
-    .nav-inner svg{
-      width:20px;
-      height:20px;
-      display:block;
-    }
-
-    @media (max-width:360px){
-      .toolbar{
-        flex-direction:column;
-      }
-
-      .filter-select{
-        width:100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="phone-shell">
-    <header>
-      <div class="brand">
-        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-
-        <div class="brand-logo">
-          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+<section id="screen-history" class="screen">
+  <div class="section-shell">
+    <article class="panel history-panel">
+      <div class="panel-head history-head">
+        <div>
+          <div class="panel-title">Activity History</div>
+          <div class="panel-sub">Recent form activities.</div>
         </div>
-
-        <div class="brand-name">History</div>
       </div>
 
-      <button class="avatar-chip" id="avatarChip">H</button>
-    </header>
+      <div class="panel-body history-body">
+        <div class="history-toolbar">
+          <div class="history-search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" class="history-search-icon" aria-hidden="true">
+              <path d="M21 21L16.65 16.65M10.8 18.6A7.8 7.8 0 1 0 10.8 3a7.8 7.8 0 0 0 0 15.6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              id="historySearchInput"
+              class="history-search-input"
+              placeholder="Search history"
+            />
+          </div>
 
-    <main>
-      <section class="hero">
-        <div class="hero-line" id="schoolNameText">School</div>
-        <h1 class="hero-title">Activity history</h1>
-        <div class="hero-sub">
-          View all HOD accounts, agent accounts, and announcements created in your school.
+          <div class="history-filter-group">
+            <label class="history-filter-label" for="historyFilterSelect">Filter by:</label>
+            <select id="historyFilterSelect" class="history-select">
+              <option value="all">All Activities</option>
+              <option value="published">Published Forms</option>
+              <option value="created">Created Forms</option>
+              <option value="updated">Updated Forms</option>
+              <option value="closed">Closed Forms</option>
+              <option value="archived">Archived Forms</option>
+              <option value="deleted">Deleted Forms</option>
+            </select>
+          </div>
+
+          <div class="history-filter-group">
+            <label class="history-filter-label" for="historySortSelect">Sort by:</label>
+            <select id="historySortSelect" class="history-select">
+              <option value="recent">Most Recent</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
         </div>
-      </section>
 
-      <section class="toolbar">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none">
-            <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-          <input
-            id="searchInput"
-            class="search-input"
-            type="text"
-            placeholder="Search history"
-          />
+        <div class="history-list" id="historyLiveBox">
+          <div class="history-empty">
+            Live history will show here when connected.
+          </div>
         </div>
-
-        <select id="typeFilter" class="filter-select">
-          <option value="all">All history</option>
-          <option value="HOD">HOD</option>
-          <option value="Agent">Agent</option>
-          <option value="Announcement">Announcement</option>
-        </select>
-      </section>
-
-      <div class="message" id="pageMessage"></div>
-
-      <div class="section-head">
-        <h2 class="section-title">Recent activity</h2>
-        <div class="section-note" id="historyCountText">0 items</div>
       </div>
-
-      <section class="card">
-        <div class="history-list" id="historyList">
-          <div class="empty">Loading history...</div>
-        </div>
-      </section>
-    </main>
+    </article>
   </div>
+</section>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn" type="button" onclick="window.location.href='hos.html'">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 0 1-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 0 1 4.5 19v-8.25Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        </svg>
-        <span>Dashboard</span>
-      </span>
-    </button>
+<style>
+  .history-panel{
+    overflow:hidden;
+  }
 
-    <button class="nav-btn" type="button" onclick="window.location.href='hos_create_account.html'">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="1.7"/>
-          <path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        </svg>
-        <span>Accounts</span>
-      </span>
-    </button>
+  .history-head{
+    padding-bottom:18px;
+  }
 
-    <button class="nav-btn" type="button" onclick="window.location.href='hos_announcement.html'">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4 11.5V7.8A1.8 1.8 0 0 1 5.8 6h12.4A1.8 1.8 0 0 1 20 7.8v8.4A1.8 1.8 0 0 1 18.2 18H9l-5 3v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        </svg>
-        <span>Announcement</span>
-      </span>
-    </button>
+  .history-body{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
 
-    <button class="nav-btn active" type="button" onclick="window.location.href='hos_history.html'">
-      <span class="nav-inner">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M20 12a8 8 0 1 1-2.35-5.66" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>History</span>
-      </span>
-    </button>
-  </nav>
+  .history-toolbar{
+    display:grid;
+    grid-template-columns:minmax(240px,1fr) auto auto;
+    gap:14px;
+    align-items:center;
+  }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  .history-search-wrap{
+    position:relative;
+  }
+
+  .history-search-icon{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    width:18px;
+    height:18px;
+    color:#94a3b8;
+    pointer-events:none;
+  }
+
+  .history-search-input,
+  .history-select{
+    width:100%;
+    min-height:52px;
+    border:1px solid #dbe5f2;
+    border-radius:14px;
+    background:#fff;
+    color:#0f172a;
+    padding:0 14px;
+    outline:none;
+    font-size:15px;
+  }
+
+  .history-search-input{
+    padding-left:42px;
+  }
+
+  .history-search-input:focus,
+  .history-select:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 4px rgba(59,130,246,.12);
+  }
+
+  .history-filter-group{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    white-space:nowrap;
+  }
+
+  .history-filter-label{
+    font-size:14px;
+    font-weight:700;
+    color:#334155;
+  }
+
+  .history-select{
+    min-width:190px;
+    padding-right:38px;
+  }
+
+  .history-list{
+    border:1px solid #e5eaf3;
+    border-radius:18px;
+    background:#fff;
+    overflow:hidden;
+  }
+
+  .history-item{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto auto;
+    gap:16px;
+    align-items:center;
+    padding:20px 22px;
+    border-bottom:1px solid #edf2f7;
+    cursor:pointer;
+    transition:background .18s ease, transform .18s ease;
+  }
+
+  .history-item:last-child{
+    border-bottom:none;
+  }
+
+  .history-item:hover{
+    background:#f8fbff;
+  }
+
+  .history-status{
+    width:42px;
+    height:42px;
+    border-radius:999px;
+    background:#22c55e;
+    display:grid;
+    place-items:center;
+    color:#fff;
+    flex-shrink:0;
+  }
+
+  .history-status svg{
+    width:22px;
+    height:22px;
+  }
+
+  .history-main{
+    min-width:0;
+  }
+
+  .history-title{
+    margin:0 0 4px;
+    font-size:17px;
+    font-weight:800;
+    color:#1e293b;
+    line-height:1.25;
+  }
+
+  .history-sub{
+    margin:0;
+    font-size:14px;
+    color:#64748b;
+    line-height:1.45;
+  }
+
+  .history-time{
+    font-size:15px;
+    color:#475569;
+    white-space:nowrap;
+  }
+
+  .history-btn{
+    border:none;
+    border-radius:12px;
+    min-height:42px;
+    padding:0 16px;
+    background:linear-gradient(135deg,#635bff 0%, #4f46e5 100%);
+    color:#fff;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(79,70,229,.24);
+    transition:transform .18s ease, opacity .18s ease;
+  }
+
+  .history-btn:hover{
+    transform:translateY(-1px);
+  }
+
+  .history-btn:active{
+    transform:translateY(0);
+  }
+
+  .history-empty{
+    padding:34px 18px;
+    text-align:center;
+    color:#64748b;
+    font-size:15px;
+  }
+
+  .history-loading{
+    padding:30px 18px;
+    text-align:center;
+    color:#475569;
+    font-size:15px;
+  }
+
+  .history-error{
+    padding:24px 18px;
+    text-align:center;
+    color:#b91c1c;
+    font-size:15px;
+  }
+
+  @media (max-width: 980px){
+    .history-toolbar{
+      grid-template-columns:1fr;
+    }
+
+    .history-filter-group{
+      width:100%;
+      justify-content:space-between;
+    }
+
+    .history-select{
+      min-width:0;
+      width:100%;
+    }
+  }
+
+  @media (max-width: 720px){
+    .history-item{
+      grid-template-columns:auto 1fr;
+      gap:14px;
+    }
+
+    .history-time{
+      grid-column:2;
+      margin-top:-4px;
+      font-size:13px;
+    }
+
+    .history-btn{
+      grid-column:2;
+      justify-self:start;
+      margin-top:4px;
+    }
+  }
+</style>
+
 <script>
-  (() => {
-    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+(function () {
+  if (window.__hosHistoryInitialized) return;
+  window.__hosHistoryInitialized = true;
 
-    const EDGE = {
-      getHistory: "get-hos-history"
-    };
+  const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const state = {
+    sb: null,
+    allItems: [],
+    filteredItems: [],
+    search: "",
+    filter: "all",
+    sort: "recent",
+  };
 
-    let adminSession = null;
-    let currentSchoolName = "";
-    let currentHistory = [];
+  function historyEl(id) {
+    return document.getElementById(id);
+  }
 
-    function $(id){
-      return document.getElementById(id);
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function normalizeText(value) {
+    return String(value || "").trim().replace(/\s+/g, " ");
+  }
+
+  function getAdminSession() {
+    try {
+      return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+    } catch {
+      return null;
     }
+  }
 
-    function escapeHtml(value){
-      return String(value || "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#39;");
-    }
+  function getHosAdminId() {
+    const session = getAdminSession();
+    if (!session) return "";
 
-    function formatDate(value){
-      if (!value) return "-";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "-";
-      return d.toLocaleString();
-    }
+    if (session?.account?.id) return session.account.id;
+    if (session?.id) return session.id;
 
-    function getAdminSession(){
-      try{
-        return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
-      }catch{
-        return null;
-      }
-    }
+    return "";
+  }
 
-    function showMessage(id, text){
-      const box = $(id);
-      if (!text){
-        box.textContent = "";
-        box.className = "message";
-        return;
-      }
-      box.textContent = text;
-      box.className = "message error";
-    }
+  function formatHistoryTime(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
 
-    async function invokeEdge(functionName, body){
-      const { data, error } = await sb.functions.invoke(functionName, {
-        body: body || {}
-      });
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
 
-      if (error){
-        throw new Error((data && data.error) || error.message || "Request failed.");
-      }
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
 
-      return data || {};
-    }
-
-    function requireHosSession(){
-      adminSession = getAdminSession();
-
-      if (!adminSession || String(adminSession.role || "").toLowerCase() !== "hos"){
-        window.location.href = "index.html";
-        return false;
-      }
-
-      currentSchoolName =
-        adminSession.school_name ||
-        adminSession.school ||
-        adminSession.schoolName ||
-        "";
-
-      $("schoolNameText").textContent = currentSchoolName || "School";
-      $("avatarChip").textContent = ((adminSession.full_name || "H").trim().charAt(0).toUpperCase() || "H");
-      return true;
-    }
-
-    async function loadHistory(){
-      showMessage("pageMessage", "");
-      $("historyList").innerHTML = '<div class="empty">Loading history...</div>';
-      $("historyCountText").textContent = "0 items";
-
-      try{
-        const type = $("typeFilter").value || "all";
-        const search = ($("searchInput").value || "").trim();
-
-        const result = await invokeEdge(EDGE.getHistory, {
-          hos_admin_id: adminSession.id,
-          type,
-          search
-        });
-
-        if (!result.ok){
-          throw new Error(result.error || "Could not load history.");
-        }
-
-        currentHistory = Array.isArray(result.history) ? result.history : [];
-        renderHistory();
-      }catch(err){
-        console.error(err);
-        currentHistory = [];
-        renderHistory();
-        showMessage("pageMessage", err.message || "Could not load history.");
-      }
-    }
-
-    function renderHistory(){
-      const wrap = $("historyList");
-      const items = currentHistory || [];
-
-      $("historyCountText").textContent = `${items.length} item${items.length === 1 ? "" : "s"}`;
-
-      if (!items.length){
-        wrap.innerHTML = '<div class="empty">No history found.</div>';
-        return;
-      }
-
-      wrap.innerHTML = items.map((item) => `
-        <div class="history-card">
-          <div class="history-top">
-            <div>
-              <div class="history-title">${escapeHtml(item.title || "-")}</div>
-              <div class="history-sub">${escapeHtml(item.description || "-")}</div>
-            </div>
-            <div class="pill">${escapeHtml(item.type || "Item")}</div>
-          </div>
-
-          <div class="history-meta">
-            <div class="pill">Created: ${escapeHtml(formatDate(item.created_at))}</div>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      if (!requireHosSession()) return;
-
-      $("avatarChip").addEventListener("click", () => {
-        window.location.href = "hos_account.html";
-      });
-
-      $("backBtn").addEventListener("click", () => {
-        window.history.back();
-      });
-
-      let searchTimer = null;
-      $("searchInput").addEventListener("input", () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(loadHistory, 250);
-      });
-
-      $("typeFilter").addEventListener("change", loadHistory);
-
-      await loadHistory();
+    const timeText = date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
     });
-  })();
+
+    if (isToday) return `Today, ${timeText}`;
+    if (isYesterday) return `Yesterday, ${timeText}`;
+
+    return `${date.toLocaleDateString([], {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })}, ${timeText}`;
+  }
+
+  function getHistoryType(item) {
+    const actionType = String(item.action_type || "").toUpperCase();
+
+    if (actionType === "FORM_PUBLISHED") return "published";
+    if (actionType === "FORM_CREATED") return "created";
+    if (actionType === "FORM_UPDATED") return "updated";
+    if (actionType === "FORM_CLOSED") return "closed";
+    if (actionType === "FORM_ARCHIVED") return "archived";
+    if (actionType === "FORM_DELETED") return "deleted";
+
+    return "other";
+  }
+
+  function getHistorySubtitle(item) {
+    const type = getHistoryType(item);
+
+    if (type === "published") return "Form published successfully.";
+    if (type === "created") return "Form created successfully.";
+    if (type === "updated") return "Form updated successfully.";
+    if (type === "closed") return "Form closed successfully.";
+    if (type === "archived") return "Form archived successfully.";
+    if (type === "deleted") return "Form deleted successfully.";
+
+    return item.description || "Recent form activity.";
+  }
+
+  function getResponseUrl(item) {
+    const formId =
+      item?.entity_id ||
+      item?.payload?.form_id ||
+      item?.payload?.entity_id ||
+      "";
+
+    if (!formId) return "";
+    return `form_response.html?form_id=${encodeURIComponent(formId)}`;
+  }
+
+  function canViewResponses(item) {
+    return getHistoryType(item) === "published" && !!getResponseUrl(item);
+  }
+
+  function renderHistoryList() {
+    const box = historyEl("historyLiveBox");
+    if (!box) return;
+
+    if (!state.filteredItems.length) {
+      box.innerHTML = `
+        <div class="history-empty">
+          No history found for this filter.
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = state.filteredItems.map((item) => {
+      const buttonHtml = canViewResponses(item)
+        ? `<button type="button" class="history-btn" data-view-history-response="${escapeHtml(getResponseUrl(item))}">View Responses</button>`
+        : `<button type="button" class="history-btn" style="opacity:.45;pointer-events:none;">No Response Page</button>`;
+
+      return `
+        <div class="history-item" data-history-response-url="${escapeHtml(getResponseUrl(item))}">
+          <div class="history-status" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="history-main">
+            <h3 class="history-title">${escapeHtml(item.title || "Form Activity")}</h3>
+            <p class="history-sub">${escapeHtml(getHistorySubtitle(item))}</p>
+          </div>
+
+          <div class="history-time">${escapeHtml(formatHistoryTime(item.created_at))}</div>
+
+          ${buttonHtml}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function applyHistoryFilters() {
+    const search = state.search.toLowerCase();
+
+    let items = [...state.allItems];
+
+    if (state.filter !== "all") {
+      items = items.filter((item) => getHistoryType(item) === state.filter);
+    }
+
+    if (search) {
+      items = items.filter((item) => {
+        const title = String(item.title || "").toLowerCase();
+        const description = String(item.description || "").toLowerCase();
+        const actionType = String(item.action_type || "").toLowerCase();
+        return (
+          title.includes(search) ||
+          description.includes(search) ||
+          actionType.includes(search)
+        );
+      });
+    }
+
+    items.sort((a, b) => {
+      const aTime = new Date(a.created_at || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      return state.sort === "oldest" ? aTime - bTime : bTime - aTime;
+    });
+
+    state.filteredItems = items;
+    renderHistoryList();
+  }
+
+  async function loadHistory() {
+    const box = historyEl("historyLiveBox");
+    if (!box) return;
+
+    const hosAdminId = getHosAdminId();
+    if (!hosAdminId) {
+      box.innerHTML = `
+        <div class="history-error">
+          HOS session not found. Please sign in again.
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = `<div class="history-loading">Loading history...</div>`;
+
+    try {
+      state.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const { data, error } = await state.sb
+        .from("hos_activity_history")
+        .select("id, title, description, action_type, entity_type, entity_id, payload, created_at")
+        .eq("hos_admin_id", hosAdminId)
+        .eq("entity_type", "form")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      state.allItems = Array.isArray(data) ? data : [];
+      applyHistoryFilters();
+    } catch (err) {
+      console.error("History load error:", err);
+      box.innerHTML = `
+        <div class="history-error">
+          Could not load history.
+        </div>
+      `;
+    }
+  }
+
+  function bindHistoryEvents() {
+    const searchInput = historyEl("historySearchInput");
+    const filterSelect = historyEl("historyFilterSelect");
+    const sortSelect = historyEl("historySortSelect");
+    const listBox = historyEl("historyLiveBox");
+
+    searchInput?.addEventListener("input", function () {
+      state.search = this.value || "";
+      applyHistoryFilters();
+    });
+
+    filterSelect?.addEventListener("change", function () {
+      state.filter = this.value || "all";
+      applyHistoryFilters();
+    });
+
+    sortSelect?.addEventListener("change", function () {
+      state.sort = this.value || "recent";
+      applyHistoryFilters();
+    });
+
+    listBox?.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-view-history-response]");
+      if (button) {
+        const url = button.getAttribute("data-view-history-response");
+        if (url) window.location.href = url;
+        return;
+      }
+
+      const card = event.target.closest(".history-item");
+      if (!card) return;
+
+      const url = card.getAttribute("data-history-response-url");
+      if (url) window.location.href = url;
+    });
+  }
+
+  bindHistoryEvents();
+  loadHistory();
+})();
 </script>
-</body>
-</html>
