@@ -1,286 +1,569 @@
-<!-- 🔹 STUDENT CLASS ACTIVITY SCREEN START -->
+<!-- 🔹 STUDENT CLASS + SCHOOL FORMS SCREEN START -->
 <div id="screen-reports" class="screen">
   <style>
     #screen-reports{
-      padding:8px 6px 96px;
+      --reports-blue:#2563eb;
+      --reports-blue-dark:#1d4ed8;
+      --reports-blue-soft:#eff6ff;
+      --reports-purple:#7c3aed;
+      --reports-purple-soft:#f5f3ff;
+      --reports-green:#16a34a;
+      --reports-green-soft:#ecfdf5;
+      --reports-amber:#d97706;
+      --reports-amber-soft:#fffbeb;
+      --reports-red:#dc2626;
+      --reports-red-soft:#fef2f2;
+      --reports-text:#0f172a;
+      --reports-muted:#64748b;
+      --reports-line:#e5e7eb;
+      --reports-line-2:#dbeafe;
+      --reports-card:#ffffff;
+      --reports-bg:#f8fbff;
+      --reports-shadow:0 10px 30px rgba(15,23,42,.06);
+      --reports-shadow-strong:0 18px 44px rgba(15,23,42,.08);
+
+      padding:8px 6px 100px;
       overflow-y:auto;
       -webkit-overflow-scrolling:touch;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 28%),
+        linear-gradient(180deg,#f8fbff 0%, #f6f9ff 38%, #f8fbff 100%);
     }
+
+    #screen-reports *{
+      box-sizing:border-box;
+    }
+
+    #screen-reports .hidden{
+      display:none !important;
+    }
+
+    #screen-reports .reports-shell{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
     #screen-reports .hero{
-      padding:4px 4px 6px;
-      margin-bottom:6px;
+      padding:4px 4px 2px;
+      margin-bottom:2px;
     }
+
     #screen-reports .hero-line-1{
       font-size:12px;
-      font-weight:500;
-      color:var(--text-muted);
-      margin-bottom:3px;
+      font-weight:600;
+      color:var(--reports-muted);
+      margin-bottom:4px;
+      letter-spacing:.02em;
+      text-transform:uppercase;
     }
+
     #screen-reports .hero-title{
-      font-size:20px;
-      font-weight:800;
-      letter-spacing:-0.03em;
-      line-height:1.2;
-      color:var(--text-main);
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-0.04em;
+      line-height:1.15;
+      color:var(--reports-text);
       margin:0;
     }
+
     #screen-reports .hero-title span{
-      color:var(--blue);
-      font-weight:600;
+      color:var(--reports-blue);
+      font-weight:800;
     }
+
     #screen-reports .hero-sub{
       font-size:12px;
-      color:var(--text-muted);
-      margin:6px 0 0;
-      line-height:1.45;
+      color:var(--reports-muted);
+      margin:7px 0 0;
+      line-height:1.5;
     }
-    #screen-reports .activities-top-card{
-      margin:6px 2px 14px;
-      border-radius:18px;
+
+    #screen-reports .reports-top-card{
+      border-radius:22px;
       background:linear-gradient(135deg,#eff6ff,#ffffff);
-      border:1px solid #dbeafe;
+      border:1px solid var(--reports-line-2);
       padding:14px 14px 12px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      box-shadow:var(--reports-shadow);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin:2px 2px 2px;
     }
-    #screen-reports .activities-top-title{
+
+    #screen-reports .reports-top-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    #screen-reports .reports-top-title{
       font-size:15px;
-      font-weight:700;
-      color:var(--text-main);
+      font-weight:800;
+      color:var(--reports-text);
       margin-bottom:4px;
     }
-    #screen-reports .activities-top-sub{
+
+    #screen-reports .reports-top-sub{
       font-size:12px;
-      color:var(--text-muted);
-      line-height:1.4;
+      color:var(--reports-muted);
+      line-height:1.45;
     }
-    #screen-reports .activity-list{
+
+    #screen-reports .reports-pending-badge{
+      min-width:54px;
+      border-radius:999px;
+      padding:8px 10px;
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
+      box-shadow:0 12px 30px rgba(37,99,235,.20);
+      white-space:nowrap;
+    }
+
+    #screen-reports .reports-stats{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    #screen-reports .reports-stat{
+      min-height:78px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid #e7eef8;
+      padding:12px;
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    #screen-reports .reports-stat-label{
+      font-size:11px;
+      font-weight:700;
+      color:var(--reports-muted);
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+
+    #screen-reports .reports-stat-value{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      color:var(--reports-text);
+    }
+
+    #screen-reports .reports-toolbar{
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-top:10px;
+      margin:0 2px;
     }
-    #screen-reports .activity-item{
-      border-radius:18px;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
-      padding:12px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-      cursor:pointer;
-      transition:transform .05s, box-shadow .15s;
-    }
-    #screen-reports .activity-item:active{
-      transform:scale(.99);
-    }
-    #screen-reports .activity-item-top{
+
+    #screen-reports .reports-tabs{
       display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding-bottom:2px;
+      scrollbar-width:none;
+    }
+
+    #screen-reports .reports-tabs::-webkit-scrollbar{
+      display:none;
+    }
+
+    #screen-reports .reports-tab{
+      border:none;
+      background:#fff;
+      color:var(--reports-text);
+      border:1px solid var(--reports-line);
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+    }
+
+    #screen-reports .reports-tab.active{
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 14px 34px rgba(37,99,235,.22);
+    }
+
+    #screen-reports .reports-tab-count{
+      min-width:20px;
+      height:20px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      background:rgba(15,23,42,.06);
+      color:inherit;
+      padding:0 6px;
+    }
+
+    #screen-reports .reports-tab.active .reports-tab-count{
+      background:rgba(255,255,255,.18);
+    }
+
+    #screen-reports .reports-search{
+      position:relative;
+    }
+
+    #screen-reports .reports-search svg{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      width:16px;
+      height:16px;
+      color:#94a3b8;
+      pointer-events:none;
+    }
+
+    #screen-reports .reports-search input{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--reports-line);
+      background:#fff;
+      color:var(--reports-text);
+      font-size:13px;
+      padding:12px 12px 12px 38px;
+      outline:none;
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
+    }
+
+    #screen-reports .reports-search input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.10);
+    }
+
+    #screen-reports .feed-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:2px;
+      padding:0 2px;
+    }
+
+    #screen-reports .feed-card{
+      border-radius:22px;
+      background:var(--reports-card);
+      border:1px solid var(--reports-line);
+      padding:13px;
+      box-shadow:var(--reports-shadow);
+      cursor:pointer;
+      transition:transform .05s ease, box-shadow .15s ease;
+    }
+
+    #screen-reports .feed-card:active{
+      transform:scale(.992);
+    }
+
+    #screen-reports .feed-card-top{
+      display:flex;
+      gap:12px;
       justify-content:space-between;
       align-items:flex-start;
-      gap:10px;
-      margin-bottom:8px;
+      margin-bottom:10px;
     }
-    #screen-reports .activity-course{
-      font-size:13px;
-      font-weight:700;
-      color:var(--text-main);
-      margin-bottom:3px;
+
+    #screen-reports .feed-card-head{
+      min-width:0;
+      flex:1;
     }
-    #screen-reports .activity-title{
+
+    #screen-reports .feed-source{
+      font-size:11px;
+      font-weight:800;
+      color:var(--reports-muted);
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:4px;
+    }
+
+    #screen-reports .feed-title{
       font-size:15px;
-      font-weight:700;
-      color:var(--text-main);
-      line-height:1.3;
+      font-weight:800;
+      line-height:1.35;
+      color:var(--reports-text);
+      margin:0 0 4px;
+      word-break:break-word;
     }
-    #screen-reports .activity-badge{
+
+    #screen-reports .feed-subtitle{
+      font-size:12px;
+      color:var(--reports-muted);
+      line-height:1.45;
+      margin:0;
+      word-break:break-word;
+    }
+
+    #screen-reports .feed-kind-badge{
       display:inline-flex;
       align-items:center;
       justify-content:center;
       border-radius:999px;
-      padding:4px 10px;
+      padding:5px 10px;
       font-size:11px;
-      font-weight:700;
+      font-weight:800;
       white-space:nowrap;
+      border:1px solid transparent;
     }
-    #screen-reports .activity-badge.revision{
-      background:#eff6ff;
-      color:#2563eb;
+
+    #screen-reports .feed-kind-badge.revision{
+      background:var(--reports-blue-soft);
+      color:var(--reports-blue-dark);
     }
-    #screen-reports .activity-badge.assignment{
-      background:#f5f3ff;
+
+    #screen-reports .feed-kind-badge.assignment{
+      background:var(--reports-purple-soft);
       color:#6d28d9;
     }
-    #screen-reports .activity-badge.test{
-      background:#fef3c7;
+
+    #screen-reports .feed-kind-badge.test{
+      background:var(--reports-amber-soft);
       color:#b45309;
     }
-    #screen-reports .activity-badge.expired{
-      background:#fee2e2;
-      color:#b91c1c;
+
+    #screen-reports .feed-kind-badge.form{
+      background:#eef2ff;
+      color:#4338ca;
     }
-    #screen-reports .activity-meta-row{
+
+    #screen-reports .feed-kind-badge.closed{
+      background:var(--reports-red-soft);
+      color:var(--reports-red);
+    }
+
+    #screen-reports .feed-kind-badge.submitted{
+      background:#f1f5f9;
+      color:#475569;
+    }
+
+    #screen-reports .feed-meta{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
-    #screen-reports .activity-meta-pill{
+
+    #screen-reports .feed-pill{
       display:inline-flex;
       align-items:center;
-      gap:5px;
+      gap:6px;
       border-radius:999px;
-      padding:5px 9px;
+      padding:6px 10px;
       font-size:11px;
+      font-weight:700;
       background:#f8fafc;
       border:1px solid #e5e7eb;
-      color:var(--text-muted);
+      color:var(--reports-muted);
+      min-height:30px;
     }
-    #screen-reports .activity-status-row{
+
+    #screen-reports .feed-status-row{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
     }
-    #screen-reports .activity-status{
+
+    #screen-reports .feed-status{
       font-size:12px;
-      font-weight:600;
+      font-weight:800;
     }
-    #screen-reports .activity-status.not-started{
-      color:#15803d;
+
+    #screen-reports .feed-status.not-started{
+      color:var(--reports-green);
     }
-    #screen-reports .activity-status.in-progress{
-      color:#2563eb;
+
+    #screen-reports .feed-status.in-progress{
+      color:var(--reports-blue-dark);
     }
-    #screen-reports .activity-status.submitted{
-      color:#6b7280;
+
+    #screen-reports .feed-status.submitted{
+      color:#475569;
     }
-    #screen-reports .activity-status.expired{
-      color:#b91c1c;
+
+    #screen-reports .feed-status.expired,
+    #screen-reports .feed-status.closed{
+      color:var(--reports-red);
     }
-    #screen-reports .activity-open-btn{
+
+    #screen-reports .feed-open-btn{
       border:none;
       border-radius:999px;
-      padding:8px 14px;
+      padding:9px 14px;
       font-size:12px;
-      font-weight:700;
-      color:#ffffff;
-      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      font-weight:800;
+      color:#fff;
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
       cursor:pointer;
-      box-shadow:var(--shadow-soft);
+      box-shadow:0 12px 28px rgba(37,99,235,.20);
     }
-    #screen-reports .activity-open-btn.disabled{
+
+    #screen-reports .feed-open-btn.disabled{
       background:#cbd5e1;
       box-shadow:none;
       cursor:default;
+      color:#fff;
     }
-    #screen-reports .activity-empty{
-      border-radius:18px;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
-      padding:16px 14px;
+
+    #screen-reports .feed-empty{
+      border-radius:22px;
+      background:#fff;
+      border:1px solid var(--reports-line);
+      padding:18px 16px;
       font-size:12px;
-      color:var(--text-muted);
+      color:var(--reports-muted);
       text-align:center;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      box-shadow:var(--reports-shadow);
+      line-height:1.55;
     }
-    #screen-reports .activity-intro-card,
-    #screen-reports .activity-question-card,
-    #screen-reports .activity-review-card,
-    #screen-reports .activity-submitted-card{
-      border-radius:18px;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
+
+    #screen-reports .panel-card{
+      border-radius:22px;
+      background:#fff;
+      border:1px solid var(--reports-line);
       padding:14px;
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      box-shadow:var(--reports-shadow);
       margin:8px 2px 14px;
     }
-    #screen-reports .activity-back-btn{
+
+    #screen-reports .panel-back-btn{
       width:100%;
-      margin-bottom:10px;
+      margin:0 2px 10px;
       border-radius:999px;
-      border:1px solid #e5e7eb;
-      background:#ffffff;
-      color:var(--text-main);
-      padding:10px 12px;
+      border:1px solid var(--reports-line);
+      background:#fff;
+      color:var(--reports-text);
+      padding:11px 12px;
       font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-    }
-    #screen-reports .activity-intro-title,
-    #screen-reports .activity-review-title,
-    #screen-reports .activity-submitted-title{
-      font-size:18px;
       font-weight:700;
-      color:var(--text-main);
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
+    }
+
+    #screen-reports .panel-title{
+      font-size:19px;
+      font-weight:900;
+      color:var(--reports-text);
+      letter-spacing:-.03em;
       margin-bottom:8px;
     }
-    #screen-reports .activity-intro-course{
+
+    #screen-reports .panel-course{
       font-size:14px;
-      font-weight:700;
-      color:var(--text-main);
+      font-weight:800;
+      color:var(--reports-text);
       margin-bottom:10px;
     }
-    #screen-reports .activity-intro-meta{
+
+    #screen-reports .panel-meta{
       display:flex;
       flex-direction:column;
       gap:8px;
       margin-bottom:14px;
     }
-    #screen-reports .activity-intro-meta-item{
+
+    #screen-reports .panel-meta-item{
       font-size:13px;
-      color:var(--text-main);
+      color:var(--reports-text);
       display:flex;
       justify-content:space-between;
       gap:10px;
       padding-bottom:8px;
       border-bottom:1px solid #f1f5f9;
     }
-    #screen-reports .activity-warning-box{
-      border-radius:14px;
-      background:#eff6ff;
-      border:1px solid #dbeafe;
-      color:#1e3a8a;
+
+    #screen-reports .panel-meta-item strong{
+      text-align:right;
+    }
+
+    #screen-reports .info-box{
+      border-radius:16px;
       padding:12px;
       font-size:12px;
-      line-height:1.45;
+      line-height:1.55;
       margin-bottom:12px;
+      border:1px solid;
     }
-    #screen-reports .activity-timer-box{
+
+    #screen-reports .info-box.blue{
+      background:var(--reports-blue-soft);
+      border-color:#dbeafe;
+      color:#1e3a8a;
+    }
+
+    #screen-reports .info-box.green{
+      background:var(--reports-green-soft);
+      border-color:#bbf7d0;
+      color:#166534;
+    }
+
+    #screen-reports .info-box.amber{
+      background:var(--reports-amber-soft);
+      border-color:#fde68a;
+      color:#92400e;
+    }
+
+    #screen-reports .timer-box{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      border-radius:14px;
-      background:#eff6ff;
+      border-radius:16px;
+      background:var(--reports-blue-soft);
       border:1px solid #dbeafe;
       color:#1e3a8a;
       padding:10px 12px;
       margin-bottom:12px;
     }
-    #screen-reports .activity-timer-label{
+
+    #screen-reports .timer-label{
       font-size:12px;
-      font-weight:700;
+      font-weight:800;
       color:#1e3a8a;
     }
-    #screen-reports .activity-timer-value{
+
+    #screen-reports .timer-value{
       font-size:18px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.02em;
-      color:#1d4ed8;
+      color:var(--reports-blue-dark);
       font-variant-numeric:tabular-nums;
     }
-    #screen-reports .activity-timer-value.warning{
-      color:#dc2626;
+
+    #screen-reports .timer-value.warning{
+      color:var(--reports-red);
     }
-    #screen-reports .activity-progress-top{
+
+    #screen-reports .progress-top{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
       margin-bottom:8px;
       font-size:12px;
-      color:var(--text-main);
-      font-weight:600;
+      color:var(--reports-text);
+      font-weight:700;
     }
-    #screen-reports .activity-progress-track{
+
+    #screen-reports .progress-track{
       width:100%;
       height:6px;
       border-radius:999px;
@@ -288,964 +571,674 @@
       overflow:hidden;
       margin-bottom:14px;
     }
-    #screen-reports .activity-progress-bar{
+
+    #screen-reports .progress-bar{
       height:100%;
-      border-radius:999px;
-      background:linear-gradient(135deg,#2563eb,#1d4ed8);
       width:0%;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
     }
-    #screen-reports .activity-question-title{
+
+    #screen-reports .question-title{
       font-size:17px;
-      font-weight:700;
-      line-height:1.4;
-      color:var(--text-main);
+      font-weight:800;
+      line-height:1.45;
+      color:var(--reports-text);
       margin-bottom:14px;
     }
-    #screen-reports .activity-option-list{
+
+    #screen-reports .question-help{
+      margin:-6px 0 14px;
+      font-size:12px;
+      color:var(--reports-muted);
+      line-height:1.5;
+    }
+
+    #screen-reports .question-block{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    #screen-reports .choice-list{
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-bottom:14px;
     }
-    #screen-reports .activity-option{
-      border-radius:14px;
+
+    #screen-reports .choice-option{
+      border-radius:16px;
       border:1px solid #e5e7eb;
-      background:#ffffff;
-      padding:12px 12px;
+      background:#fff;
+      padding:12px;
       display:flex;
       align-items:flex-start;
       gap:10px;
       cursor:pointer;
+      transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
     }
-    #screen-reports .activity-option.active{
-      border-color:#2563eb;
-      background:#eff6ff;
-      box-shadow:0 0 0 1px rgba(37,99,235,.2);
+
+    #screen-reports .choice-option.active{
+      border-color:var(--reports-blue);
+      background:var(--reports-blue-soft);
+      box-shadow:0 0 0 1px rgba(37,99,235,.18);
     }
-    #screen-reports .activity-option-letter{
+
+    #screen-reports .choice-mark{
       width:28px;
       height:28px;
-      border-radius:8px;
+      border-radius:10px;
       background:#f3f4f6;
-      color:var(--text-main);
+      color:var(--reports-text);
       font-size:13px;
-      font-weight:700;
+      font-weight:800;
       display:flex;
       align-items:center;
       justify-content:center;
       flex-shrink:0;
+      border:1px solid #e5e7eb;
     }
-    #screen-reports .activity-option.active .activity-option-letter{
+
+    #screen-reports .choice-option.active .choice-mark{
       background:#dbeafe;
-      color:#1d4ed8;
+      color:var(--reports-blue-dark);
+      border-color:#bfdbfe;
     }
-    #screen-reports .activity-option-text{
+
+    #screen-reports .choice-text{
       font-size:14px;
-      line-height:1.45;
-      color:var(--text-main);
+      line-height:1.5;
+      color:var(--reports-text);
       flex:1;
+      word-break:break-word;
     }
-    #screen-reports .activity-nav-row{
+
+    #screen-reports .input-shell,
+    #screen-reports .textarea-shell,
+    #screen-reports .select-shell,
+    #screen-reports .date-shell,
+    #screen-reports .file-shell{
+      border-radius:18px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      box-shadow:0 8px 20px rgba(15,23,42,.03);
+    }
+
+    #screen-reports .text-input,
+    #screen-reports .text-area,
+    #screen-reports .select-input,
+    #screen-reports .date-input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--reports-text);
+      font-size:14px;
+      padding:0;
+      resize:none;
+    }
+
+    #screen-reports .text-area{
+      min-height:140px;
+      line-height:1.55;
+    }
+
+    #screen-reports .file-shell{
+      border-style:dashed;
+      border-color:#bfdbfe;
+      background:linear-gradient(180deg,#f8fbff 0%, #ffffff 100%);
+    }
+
+    #screen-reports .file-drop{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:8px;
+      min-height:150px;
+    }
+
+    #screen-reports .file-drop-icon{
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      background:#dbeafe;
+      color:var(--reports-blue-dark);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    #screen-reports .file-drop-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--reports-text);
+    }
+
+    #screen-reports .file-drop-sub{
+      font-size:12px;
+      color:var(--reports-muted);
+      line-height:1.5;
+      max-width:260px;
+    }
+
+    #screen-reports .file-drop-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:10px 16px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 12px 28px rgba(37,99,235,.18);
+    }
+
+    #screen-reports .field-note{
+      font-size:11px;
+      color:var(--reports-muted);
+      line-height:1.45;
+      margin-top:2px;
+    }
+
+    #screen-reports .nav-row{
       display:flex;
       gap:10px;
     }
-    #screen-reports .activity-nav-row button{
+
+    #screen-reports .nav-row button{
       flex:1;
     }
-    #screen-reports .activity-ghost-btn{
+
+    #screen-reports .ghost-btn{
       border-radius:999px;
       border:1px solid #d1d5db;
       padding:11px 14px;
       font-size:14px;
-      font-weight:600;
-      background:#ffffff;
-      color:var(--text-main);
+      font-weight:700;
+      background:#fff;
+      color:var(--reports-text);
       cursor:pointer;
     }
-    #screen-reports .activity-review-list{
+
+    #screen-reports .primary-btn{
+      border:none;
+      border-radius:999px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:800;
+      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      color:#fff;
+      cursor:pointer;
+      box-shadow:0 16px 36px rgba(37,99,235,.22);
+    }
+
+    #screen-reports .review-list{
       display:flex;
       flex-direction:column;
       gap:10px;
       margin-bottom:14px;
     }
-    #screen-reports .activity-review-item{
-      border-radius:14px;
+
+    #screen-reports .review-item{
+      border-radius:16px;
       background:#f9fafb;
       border:1px solid #e5e7eb;
       padding:12px;
       cursor:pointer;
     }
-    #screen-reports .activity-review-q{
+
+    #screen-reports .review-q{
       font-size:13px;
-      font-weight:700;
-      color:var(--text-main);
+      font-weight:800;
+      color:var(--reports-text);
       margin-bottom:8px;
-    }
-    #screen-reports .activity-review-a{
-      font-size:13px;
-      color:var(--text-muted);
-      line-height:1.4;
-    }
-    #screen-reports .activity-review-a strong{
-      color:var(--text-main);
-    }
-    #screen-reports .activity-submit-note{
-      font-size:12px;
-      color:var(--text-muted);
       line-height:1.45;
+    }
+
+    #screen-reports .review-a{
+      font-size:13px;
+      color:var(--reports-muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    #screen-reports .review-a strong{
+      color:var(--reports-text);
+    }
+
+    #screen-reports .submit-note{
+      font-size:12px;
+      color:var(--reports-muted);
+      line-height:1.55;
       margin-bottom:12px;
     }
-    #screen-reports .activity-success-icon{
-      width:78px;
-      height:78px;
+
+    #screen-reports .success-wrap{
+      text-align:center;
+    }
+
+    #screen-reports .success-icon{
+      width:80px;
+      height:80px;
       border-radius:999px;
-      background:#22c55e;
-      color:#ffffff;
+      background:var(--reports-green);
+      color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
       margin:6px auto 14px;
       box-shadow:0 12px 30px rgba(34,197,94,.25);
     }
-    #screen-reports .activity-success-icon svg{
+
+    #screen-reports .success-icon svg{
       width:38px;
       height:38px;
     }
-    #screen-reports .activity-submitted-text{
+
+    #screen-reports .success-text{
       font-size:14px;
-      color:var(--text-main);
+      color:var(--reports-text);
       text-align:center;
-      line-height:1.5;
+      line-height:1.55;
       margin-bottom:14px;
     }
-    #screen-reports .activity-submitted-box{
-      border-radius:14px;
-      background:#eff6ff;
+
+    #screen-reports .success-note{
+      border-radius:16px;
+      background:var(--reports-blue-soft);
       border:1px solid #dbeafe;
       color:#1e3a8a;
       padding:12px;
       font-size:12px;
-      line-height:1.45;
+      line-height:1.5;
       margin-bottom:14px;
       text-align:center;
     }
-    #screen-reports .hidden{
-      display:none !important;
-    }
-    @media (max-width:360px){
-      #screen-reports .activity-nav-row{
+
+    @media (max-width: 380px){
+      #screen-reports .reports-stats{
+        grid-template-columns:1fr;
+      }
+
+      #screen-reports .feed-status-row,
+      #screen-reports .reports-top-head{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      #screen-reports .nav-row{
         flex-direction:column;
       }
     }
   </style>
 
-  <section id="studentActivitiesListView">
+  <section class="reports-shell" id="studentReportsHomeView">
     <section class="hero">
-      <div class="hero-line-1">Class activity</div>
+      <div class="hero-line-1">School work</div>
       <h1 class="hero-title">
-        Answer your <span>class questions</span>
+        Your <span>forms</span> and <span>class activities</span>
       </h1>
       <p class="hero-sub">
-        Revisions, tests, and assignments from classes you already joined.
+        Revisions, tests, assignments, and school forms sent to you will show here in one clean place.
       </p>
     </section>
 
-    <article class="activities-top-card">
-      <div class="activities-top-title">Your class activities</div>
-      <div class="activities-top-sub">
-        Tap any published activity to open it. Once you submit, you cannot retry again.
+    <article class="reports-top-card">
+      <div class="reports-top-head">
+        <div>
+          <div class="reports-top-title">Pending work</div>
+          <div class="reports-top-sub">
+            Open any item below to answer it. Activities and forms that still need your attention will appear here.
+          </div>
+        </div>
+        <div class="reports-pending-badge" id="studentReportsPendingBadge">0 Pending</div>
+      </div>
+
+      <div class="reports-stats">
+        <div class="reports-stat">
+          <div class="reports-stat-label">Total items</div>
+          <div class="reports-stat-value" id="studentReportsTotalCount">0</div>
+        </div>
+        <div class="reports-stat">
+          <div class="reports-stat-label">Forms</div>
+          <div class="reports-stat-value" id="studentReportsFormCount">0</div>
+        </div>
+        <div class="reports-stat">
+          <div class="reports-stat-label">Activities</div>
+          <div class="reports-stat-value" id="studentReportsActivityCount">0</div>
+        </div>
       </div>
     </article>
 
-    <div id="studentActivitiesList" class="activity-list">
-      <div class="activity-empty">Loading class activities...</div>
+    <div class="reports-toolbar">
+      <div class="reports-tabs" id="studentReportsTabs">
+        <button class="reports-tab active" type="button" data-feed-filter="all">
+          All
+          <span class="reports-tab-count" id="studentReportsAllCount">0</span>
+        </button>
+
+        <button class="reports-tab" type="button" data-feed-filter="forms">
+          Forms
+          <span class="reports-tab-count" id="studentReportsFormsCount">0</span>
+        </button>
+
+        <button class="reports-tab" type="button" data-feed-filter="activities">
+          Revisions
+          <span class="reports-tab-count" id="studentReportsActivitiesCount">0</span>
+        </button>
+
+        <button class="reports-tab" type="button" data-feed-filter="pending">
+          Pending
+          <span class="reports-tab-count" id="studentReportsPendingCount">0</span>
+        </button>
+      </div>
+
+      <div class="reports-search">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="m21 21-4.35-4.35m1.85-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input
+          id="studentReportsSearchInput"
+          type="text"
+          placeholder="Search title, class, form, or course"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+
+    <div id="studentReportsFeedList" class="feed-list">
+      <div class="feed-empty">Loading your school forms and class activities...</div>
     </div>
   </section>
 
+  <!-- CLASS ACTIVITY INTRO -->
   <section id="studentActivityIntroView" class="hidden">
-    <button class="activity-back-btn" type="button" onclick="studentBackToActivitiesList()">← Back to activities</button>
+    <button class="panel-back-btn" type="button">← Back to activities</button>
 
-    <article class="activity-intro-card">
-      <div class="activity-intro-title" id="studentActivityIntroTitle">Activity</div>
-      <div class="activity-intro-course" id="studentActivityIntroCourse">Class</div>
+    <article class="panel-card">
+      <div class="panel-title" id="studentActivityIntroTitle">Activity</div>
+      <div class="panel-course" id="studentActivityIntroCourse">Class</div>
 
-      <div class="activity-intro-meta">
-        <div class="activity-intro-meta-item">
+      <div class="panel-meta">
+        <div class="panel-meta-item">
           <span>Questions</span>
           <strong id="studentActivityIntroQuestions">0 Questions</strong>
         </div>
-        <div class="activity-intro-meta-item">
+        <div class="panel-meta-item">
           <span>Time limit</span>
           <strong id="studentActivityIntroTime">No limit</strong>
         </div>
-        <div class="activity-intro-meta-item">
+        <div class="panel-meta-item">
           <span>Due</span>
           <strong id="studentActivityIntroDue">No due date</strong>
         </div>
       </div>
 
-      <div class="activity-warning-box" id="studentActivityStartWarning">
+      <div class="info-box blue" id="studentActivityStartWarning">
         You can only submit once. Your score will not show immediately. You will only see confirmation after submission.
       </div>
 
-      <button id="studentStartActivityBtn" class="primary-cta" type="button" onclick="studentStartActivity()">Start activity</button>
+      <button id="studentStartActivityBtn" class="primary-btn" type="button">Start activity</button>
     </article>
   </section>
 
+  <!-- CLASS ACTIVITY QUESTION -->
   <section id="studentActivityQuestionView" class="hidden">
-    <button class="activity-back-btn" type="button" onclick="studentGoBackQuestion()">← Back</button>
+    <button class="panel-back-btn" type="button">← Back</button>
 
-    <article class="activity-question-card">
-      <div class="activity-timer-box">
-        <div class="activity-timer-label">Time remaining</div>
-        <div id="studentActivityTimerValue" class="activity-timer-value">--:--</div>
+    <article class="panel-card">
+      <div class="timer-box">
+        <div class="timer-label">Time remaining</div>
+        <div id="studentActivityTimerValue" class="timer-value">--:--</div>
       </div>
 
-      <div class="activity-progress-top">
+      <div class="progress-top">
         <span id="studentActivityProgressText">Question 1 of 1</span>
         <span id="studentActivityProgressPercent">100%</span>
       </div>
 
-      <div class="activity-progress-track">
-        <div id="studentActivityProgressBar" class="activity-progress-bar"></div>
+      <div class="progress-track">
+        <div id="studentActivityProgressBar" class="progress-bar"></div>
       </div>
 
-      <div id="studentActivityQuestionTitle" class="activity-question-title">Question</div>
+      <div id="studentActivityQuestionTitle" class="question-title">Question</div>
 
-      <div id="studentActivityOptionList" class="activity-option-list"></div>
+      <div id="studentActivityOptionList" class="choice-list">
+        <!-- objective options render here -->
+      </div>
 
-      <div class="activity-nav-row">
-        <button id="studentActivityPrevBtn" class="activity-ghost-btn" type="button" onclick="studentGoPrevQuestion()">Back</button>
-        <button id="studentActivityNextBtn" class="primary-cta" type="button" onclick="studentGoNextQuestion()">Next</button>
+      <div class="nav-row">
+        <button id="studentActivityPrevBtn" class="ghost-btn" type="button">Back</button>
+        <button id="studentActivityNextBtn" class="primary-btn" type="button">Next</button>
       </div>
     </article>
   </section>
 
+  <!-- CLASS ACTIVITY REVIEW -->
   <section id="studentActivityReviewView" class="hidden">
-    <button class="activity-back-btn" type="button" onclick="studentBackToLastQuestion()">← Back to questions</button>
+    <button class="panel-back-btn" type="button">← Back to questions</button>
 
-    <article class="activity-review-card">
-      <div class="activity-timer-box">
-        <div class="activity-timer-label">Time remaining</div>
-        <div id="studentActivityReviewTimerValue" class="activity-timer-value">--:--</div>
+    <article class="panel-card">
+      <div class="timer-box">
+        <div class="timer-label">Time remaining</div>
+        <div id="studentActivityReviewTimerValue" class="timer-value">--:--</div>
       </div>
 
-      <div class="activity-review-title">Review your answers</div>
-      <div class="activity-submit-note">
+      <div class="panel-title">Review your answers</div>
+      <div class="submit-note">
         Check all your selected answers below before submitting. Tap any item if you want to go back and change it.
       </div>
 
-      <div id="studentActivityReviewList" class="activity-review-list"></div>
+      <div id="studentActivityReviewList" class="review-list"></div>
 
-      <button id="studentSubmitActivityBtn" class="primary-cta" type="button" onclick="studentSubmitActivity()">Submit activity</button>
+      <button id="studentSubmitActivityBtn" class="primary-btn" type="button">Submit activity</button>
     </article>
   </section>
 
+  <!-- CLASS ACTIVITY SUBMITTED -->
   <section id="studentActivitySubmittedView" class="hidden">
-    <article class="activity-submitted-card">
-      <div class="activity-success-icon">
+    <article class="panel-card success-wrap">
+      <div class="success-icon">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
 
-      <div class="activity-submitted-title" style="text-align:center;">Activity submitted</div>
+      <div class="panel-title" style="text-align:center;">Activity submitted</div>
 
-      <div class="activity-submitted-text">
+      <div class="success-text">
         Your answers have been submitted successfully.
       </div>
 
-      <div class="activity-submitted-box">
+      <div class="success-note">
         You cannot retry this activity again. Your result will only show after the lecturer releases it.
       </div>
 
-      <button class="primary-cta" type="button" onclick="studentBackToActivitiesList()">Back to activities</button>
+      <button class="primary-btn" type="button">Back to activities</button>
     </article>
   </section>
 
-  <script>
-    window.studentClassActivityState = window.studentClassActivityState || {
-      activities: [],
-      currentActivity: null,
-      questions: [],
-      answers: {},
-      currentIndex: 0,
-      currentAttemptId: null,
-      currentAttemptExpiresAt: null,
-      timerInterval: null
-    };
-
-    function studentActivityEscape(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function studentFmtDate(value) {
-      if (!value) return "No due date";
-      try {
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "No due date";
-        return d.toLocaleString([], {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        });
-      } catch {
-        return "No due date";
-      }
-    }
-
-    function studentFormatDuration(minutes) {
-      const n = Number(minutes || 0);
-      if (!n || n <= 0) return "No limit";
-      if (n === 1) return "1 minute";
-      return `${n} minutes`;
-    }
-
-    function studentFormatCountdown(ms) {
-      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-      const mins = Math.floor(totalSeconds / 60);
-      const secs = totalSeconds % 60;
-      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-    }
-
-    function studentStopTimer() {
-      if (window.studentClassActivityState.timerInterval) {
-        clearInterval(window.studentClassActivityState.timerInterval);
-        window.studentClassActivityState.timerInterval = null;
-      }
-    }
-
-    function studentSetTimerText(text, warning = false) {
-      ["studentActivityTimerValue", "studentActivityReviewTimerValue"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.textContent = text;
-        el.classList.toggle("warning", !!warning);
-      });
-    }
-
-    async function studentAutoSubmitFromTimer() {
-      studentStopTimer();
-      alert("Time is up. Your activity will be submitted now.");
-      await studentSubmitActivity(true);
-    }
-
-    function studentStartTimer(expiresAt) {
-      studentStopTimer();
-
-      if (!expiresAt) {
-        studentSetTimerText("--:--", false);
-        return;
-      }
-
-      window.studentClassActivityState.currentAttemptExpiresAt = expiresAt;
-
-      const tick = () => {
-        const endMs = new Date(expiresAt).getTime();
-        const diff = endMs - Date.now();
-
-        if (Number.isNaN(endMs)) {
-          studentSetTimerText("--:--", false);
-          studentStopTimer();
-          return;
-        }
-
-        if (diff <= 0) {
-          studentSetTimerText("00:00", true);
-          studentAutoSubmitFromTimer();
-          return;
-        }
-
-        const warning = diff <= 5 * 60 * 1000;
-        studentSetTimerText(studentFormatCountdown(diff), warning);
-      };
-
-      tick();
-      window.studentClassActivityState.timerInterval = setInterval(tick, 1000);
-    }
-
-    function studentShowActivityView(viewName) {
-      const ids = [
-        "studentActivitiesListView",
-        "studentActivityIntroView",
-        "studentActivityQuestionView",
-        "studentActivityReviewView",
-        "studentActivitySubmittedView"
-      ];
-
-      ids.forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.toggle("hidden", id !== viewName);
-      });
-
-      if (viewName === "studentActivitiesListView" || viewName === "studentActivityIntroView" || viewName === "studentActivitySubmittedView") {
-        if (viewName !== "studentActivitySubmittedView") {
-          studentStopTimer();
-        }
-      }
-    }
-
-    async function studentEnsureUser() {
-      if (typeof ensureCurrentUser === "function") {
-        return await ensureCurrentUser();
-      }
-
-      if (window.currentUser) return window.currentUser;
-      if (typeof supabase === "undefined") return null;
-
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data?.user) return null;
-        window.currentUser = data.user;
-        return data.user;
-      } catch {
-        return null;
-      }
-    }
-
-    function studentIsExpiredByDueDate(dueAt) {
-      if (!dueAt) return false;
-      const t = new Date(dueAt).getTime();
-      if (Number.isNaN(t)) return false;
-      return Date.now() > t;
-    }
-
-    async function studentLoadActivitiesScreen() {
-      const wrap = document.getElementById("studentActivitiesList");
-      if (!wrap) return;
-
-      wrap.innerHTML = `<div class="activity-empty">Loading class activities...</div>`;
-
-      if (typeof supabase === "undefined") {
-        wrap.innerHTML = `<div class="activity-empty">Could not connect to the server.</div>`;
-        return;
-      }
-
-      const user = await studentEnsureUser();
-      if (!user) {
-        wrap.innerHTML = `<div class="activity-empty">Please sign in again to load your activities.</div>`;
-        return;
-      }
-
-      try {
-        const { data: memberships, error: membershipError } = await supabase
-          .from("course_memberships")
-          .select("course_id")
-          .eq("user_id", user.id);
-
-        if (membershipError) throw membershipError;
-
-        const classIds = (memberships || []).map(x => x.course_id).filter(Boolean);
-
-        if (!classIds.length) {
-          window.studentClassActivityState.activities = [];
-          wrap.innerHTML = `<div class="activity-empty">You have not joined any class activity yet.</div>`;
-          return;
-        }
-
-        const { data: courses, error: coursesError } = await supabase
-          .from("courses")
-          .select("id, course_code, course_title")
-          .in("id", classIds);
-
-        if (coursesError) throw coursesError;
-
-        const courseMap = {};
-        (courses || []).forEach((c) => {
-          courseMap[c.id] = c;
-        });
-
-        const { data: activities, error: activitiesError } = await supabase
-          .from("class_activities")
-          .select("id, class_id, activity_type, title, due_at, time_limit_minutes, attempts_allowed, is_published, status, created_at")
-          .in("class_id", classIds)
-          .eq("is_published", true)
-          .eq("status", "published")
-          .order("created_at", { ascending: false });
-
-        if (activitiesError) throw activitiesError;
-
-        const activityIds = (activities || []).map(a => a.id).filter(Boolean);
-
-        let attempts = [];
-        if (activityIds.length) {
-          const { data: attemptsData, error: attemptsError } = await supabase
-            .from("class_activity_attempts")
-            .select("id, activity_id, started_at, submitted_at, status, expires_at")
-            .eq("user_id", user.id)
-            .in("activity_id", activityIds);
-
-          if (attemptsError) throw attemptsError;
-          attempts = attemptsData || [];
-        }
-
-        let questionRows = [];
-        if (activityIds.length) {
-          const { data: qs, error: qsError } = await supabase
-            .from("class_activity_questions")
-            .select("id, activity_id")
-            .in("activity_id", activityIds);
-
-          if (qsError) throw qsError;
-          questionRows = qs || [];
-        }
-
-        const countMap = {};
-        questionRows.forEach((q) => {
-          const key = q.activity_id;
-          countMap[key] = (countMap[key] || 0) + 1;
-        });
-
-        const attemptMap = {};
-        attempts.forEach((a) => {
-          attemptMap[a.activity_id] = a;
-        });
-
-        const items = (activities || []).map((a) => {
-          const attempt = attemptMap[a.id] || null;
-          const expiredByDueDate = studentIsExpiredByDueDate(a.due_at);
-          const expiredByTimer = !!(attempt?.expires_at && new Date(attempt.expires_at).getTime() < Date.now());
-
-          let status = "not-started";
-          if (attempt?.status === "submitted" || attempt?.submitted_at) {
-            status = "submitted";
-          } else if (attempt) {
-            status = "in-progress";
-          }
-
-          if (expiredByDueDate || expiredByTimer) {
-            if (status !== "submitted") status = "expired";
-          }
-
-          const course = courseMap[a.class_id] || {};
-
-          return {
-            id: a.id,
-            class_id: a.class_id,
-            class_code: course.course_code || "Class",
-            class_title: course.course_title || "",
-            type: a.activity_type || "revision",
-            title: a.title || "Untitled activity",
-            questions_count: countMap[a.id] || 0,
-            time_limit: a.time_limit_minutes || null,
-            due_at: a.due_at || null,
-            due_text: studentFmtDate(a.due_at),
-            status,
-            attempt_id: attempt?.id || null,
-            expires_at: attempt?.expires_at || null
-          };
-        });
-
-        window.studentClassActivityState.activities = items;
-
-        if (!items.length) {
-          wrap.innerHTML = `<div class="activity-empty">No class activity available yet.</div>`;
-          return;
-        }
-
-        wrap.innerHTML = items.map((item) => {
-          const typeClass = item.status === "expired" ? "expired" : (item.type || "revision");
-          const typeLabel =
-            item.status === "expired" ? "Expired" :
-            item.type === "assignment" ? "Assignment" :
-            item.type === "test" ? "Test" : "Revision";
-
-          const statusClass =
-            item.status === "submitted" ? "submitted" :
-            item.status === "in-progress" ? "in-progress" :
-            item.status === "expired" ? "expired" : "not-started";
-
-          const statusLabel =
-            item.status === "submitted" ? "Submitted" :
-            item.status === "in-progress" ? "In progress" :
-            item.status === "expired" ? "Expired" : "Not started";
-
-          const isBlocked = item.status === "submitted" || item.status === "expired";
-
-          return `
-            <article class="activity-item" onclick="${isBlocked ? "" : `studentOpenActivityIntro('${item.id}')`}">
-              <div class="activity-item-top">
-                <div>
-                  <div class="activity-course">${studentActivityEscape(item.class_code)}</div>
-                  <div class="activity-title">${studentActivityEscape(item.title)}</div>
-                </div>
-                <div class="activity-badge ${typeClass}">${typeLabel}</div>
-              </div>
-
-              <div class="activity-meta-row">
-                <div class="activity-meta-pill">${studentActivityEscape(item.questions_count)} Questions</div>
-                <div class="activity-meta-pill">${studentActivityEscape(item.due_text)}</div>
-                <div class="activity-meta-pill">${item.time_limit ? studentActivityEscape(studentFormatDuration(item.time_limit)) : "No limit"}</div>
-              </div>
-
-              <div class="activity-status-row">
-                <div class="activity-status ${statusClass}">${statusLabel}</div>
-                <button class="activity-open-btn ${isBlocked ? "disabled" : ""}" type="button">
-                  ${item.status === "in-progress" ? "Continue" : item.status === "submitted" ? "Submitted" : item.status === "expired" ? "Expired" : "Open"}
-                </button>
-              </div>
-            </article>
-          `;
-        }).join("");
-      } catch (err) {
-        console.error("studentLoadActivitiesScreen failed:", err);
-        wrap.innerHTML = `<div class="activity-empty">Could not load activities right now.</div>`;
-      }
-    }
-
-    async function studentOpenActivityIntro(activityId) {
-      const found = (window.studentClassActivityState.activities || []).find((x) => x.id === activityId);
-      if (!found) return;
-
-      document.getElementById("studentActivityIntroTitle").textContent = found.title;
-      document.getElementById("studentActivityIntroCourse").textContent = `${found.class_code} - ${found.class_title}`;
-      document.getElementById("studentActivityIntroQuestions").textContent = `${found.questions_count} Questions`;
-      document.getElementById("studentActivityIntroTime").textContent = found.time_limit ? studentFormatDuration(found.time_limit) : "No limit";
-      document.getElementById("studentActivityIntroDue").textContent = found.due_text || "No due date";
-
-      const warningEl = document.getElementById("studentActivityStartWarning");
-      if (warningEl) {
-        warningEl.textContent = found.time_limit
-          ? `Once you start, this activity will expire after ${studentFormatDuration(found.time_limit)}. A countdown will show at the top while you answer. You can only submit once, and your score will not show immediately.`
-          : `You can only submit once. Your score will not show immediately. You will only see confirmation after submission.`;
-      }
-
-      window.studentClassActivityState.currentActivity = found;
-      window.studentClassActivityState.questions = [];
-      window.studentClassActivityState.answers = {};
-      window.studentClassActivityState.currentIndex = 0;
-      window.studentClassActivityState.currentAttemptId = found.attempt_id || null;
-      window.studentClassActivityState.currentAttemptExpiresAt = found.expires_at || null;
-
-      studentShowActivityView("studentActivityIntroView");
-    }
-
-    function studentBackToActivitiesList() {
-      studentStopTimer();
-      studentShowActivityView("studentActivitiesListView");
-      studentLoadActivitiesScreen();
-    }
-
-    async function studentEnsureAttempt() {
-      const activity = window.studentClassActivityState.currentActivity;
-      if (!activity) return null;
-
-      const user = await studentEnsureUser();
-      if (!user) return null;
-
-      if (window.studentClassActivityState.currentAttemptId) {
-        return window.studentClassActivityState.currentAttemptId;
-      }
-
-      const { data: existing, error: existingError } = await supabase
-        .from("class_activity_attempts")
-        .select("id, status, submitted_at, expires_at")
-        .eq("activity_id", activity.id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-
-      if (existing) {
-        window.studentClassActivityState.currentAttemptId = existing.id;
-        window.studentClassActivityState.currentAttemptExpiresAt = existing.expires_at || null;
-        return existing.id;
-      }
-
-      const { data: created, error: createError } = await supabase
-        .from("class_activity_attempts")
-        .insert([{
-          activity_id: activity.id,
-          user_id: user.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        }])
-        .select("id, expires_at")
-        .single();
-
-      if (createError) throw createError;
-
-      window.studentClassActivityState.currentAttemptId = created.id;
-      window.studentClassActivityState.currentAttemptExpiresAt = created.expires_at || null;
-      return created.id;
-    }
-
-    async function studentLoadAnswersForAttempt(attemptId) {
-      if (!attemptId) return {};
-      const { data, error } = await supabase
-        .from("class_activity_answers")
-        .select("question_id, selected_option")
-        .eq("attempt_id", attemptId);
-
-      if (error) throw error;
-
-      const answers = {};
-      (data || []).forEach((row) => {
-        answers[row.question_id] = row.selected_option;
-      });
-      return answers;
-    }
-
-    async function studentStartActivity() {
-      if (typeof supabase === "undefined") return;
-      const activity = window.studentClassActivityState.currentActivity;
-      if (!activity) return;
-
-      if (studentIsExpiredByDueDate(activity.due_at)) {
-        alert("This activity has expired.");
-        studentBackToActivitiesList();
-        return;
-      }
-
-      const btn = document.getElementById("studentStartActivityBtn");
-      const oldText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = "Starting...";
-
-      try {
-        const { data: questions, error: questionError } = await supabase
-          .from("class_activity_questions")
-          .select("id, question_text, option_a, option_b, option_c, option_d, position")
-          .eq("activity_id", activity.id)
-          .order("position", { ascending: true });
-
-        if (questionError) throw questionError;
-
-        window.studentClassActivityState.questions = (questions || []).map((q) => ({
-          id: q.id,
-          question: q.question_text,
-          options: {
-            A: q.option_a,
-            B: q.option_b,
-            C: q.option_c,
-            D: q.option_d
-          },
-          position: q.position
-        }));
-
-        const attemptId = await studentEnsureAttempt();
-        const savedAnswers = await studentLoadAnswersForAttempt(attemptId);
-
-        window.studentClassActivityState.answers = savedAnswers || {};
-        window.studentClassActivityState.currentIndex = 0;
-
-        if (window.studentClassActivityState.currentAttemptExpiresAt) {
-          const endMs = new Date(window.studentClassActivityState.currentAttemptExpiresAt).getTime();
-          if (!Number.isNaN(endMs) && Date.now() >= endMs) {
-            alert("This activity time has already expired.");
-            studentBackToActivitiesList();
-            return;
-          }
-        }
-
-        studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-        studentRenderQuestion();
-        studentShowActivityView("studentActivityQuestionView");
-      } catch (err) {
-        console.error("studentStartActivity failed:", err);
-        alert("Could not open this activity right now.");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-
-    function studentRenderQuestion() {
-      const questions = window.studentClassActivityState.questions;
-      const idx = window.studentClassActivityState.currentIndex;
-      const q = questions[idx];
-      if (!q) return;
-
-      const total = questions.length;
-      const progress = Math.round(((idx + 1) / total) * 100);
-
-      document.getElementById("studentActivityProgressText").textContent = `Question ${idx + 1} of ${total}`;
-      document.getElementById("studentActivityProgressPercent").textContent = `${progress}%`;
-      document.getElementById("studentActivityProgressBar").style.width = `${progress}%`;
-      document.getElementById("studentActivityQuestionTitle").textContent = q.question;
-
-      const wrap = document.getElementById("studentActivityOptionList");
-      const selected = window.studentClassActivityState.answers[q.id] || "";
-
-      wrap.innerHTML = Object.entries(q.options).map(([key, value]) => `
-        <div class="activity-option ${selected === key ? "active" : ""}" onclick="studentSelectOption('${q.id}','${key}')">
-          <div class="activity-option-letter">${key}</div>
-          <div class="activity-option-text">${studentActivityEscape(value)}</div>
+  <!-- FORM DETAILS -->
+  <section id="studentFormDetailsView" class="hidden">
+    <button class="panel-back-btn" type="button">← Back to forms and activities</button>
+
+    <article class="panel-card">
+      <div class="panel-title" id="studentFormDetailsTitle">School Form</div>
+      <div class="panel-course" id="studentFormDetailsSchool">School</div>
+
+      <div class="panel-meta">
+        <div class="panel-meta-item">
+          <span>Description</span>
+          <strong id="studentFormDetailsDescription">No description</strong>
         </div>
-      `).join("");
+        <div class="panel-meta-item">
+          <span>Questions</span>
+          <strong id="studentFormDetailsQuestions">0 Questions</strong>
+        </div>
+        <div class="panel-meta-item">
+          <span>Response rule</span>
+          <strong id="studentFormDetailsRule">One response only</strong>
+        </div>
+        <div class="panel-meta-item">
+          <span>Identity mode</span>
+          <strong id="studentFormDetailsIdentity">Logged in identity</strong>
+        </div>
+        <div class="panel-meta-item">
+          <span>Open date</span>
+          <strong id="studentFormDetailsOpenAt">Now</strong>
+        </div>
+        <div class="panel-meta-item">
+          <span>Close date</span>
+          <strong id="studentFormDetailsCloseAt">No close date</strong>
+        </div>
+      </div>
 
-      document.getElementById("studentActivityPrevBtn").style.visibility = idx === 0 ? "hidden" : "visible";
-      document.getElementById("studentActivityNextBtn").textContent = idx === total - 1 ? "Review answers" : "Next";
-    }
+      <div class="info-box blue" id="studentFormDetailsMessage">
+        Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.
+      </div>
 
-    async function studentSelectOption(questionId, optionKey) {
-      window.studentClassActivityState.answers[questionId] = optionKey;
-      studentRenderQuestion();
+      <button id="studentStartFormBtn" class="primary-btn" type="button">Start form</button>
+    </article>
+  </section>
 
-      try {
-        const attemptId = await studentEnsureAttempt();
-        if (!attemptId) return;
+  <!-- FORM QUESTION -->
+  <section id="studentFormQuestionView" class="hidden">
+    <button class="panel-back-btn" type="button">← Back</button>
 
-        const { data: existing, error: existingError } = await supabase
-          .from("class_activity_answers")
-          .select("id")
-          .eq("attempt_id", attemptId)
-          .eq("question_id", questionId)
-          .maybeSingle();
+    <article class="panel-card">
+      <div class="progress-top">
+        <span id="studentFormProgressText">Question 1 of 1</span>
+        <span id="studentFormProgressPercent">100%</span>
+      </div>
 
-        if (existingError) throw existingError;
+      <div class="progress-track">
+        <div id="studentFormProgressBar" class="progress-bar"></div>
+      </div>
 
-        if (existing?.id) {
-          const { error: updateError } = await supabase
-            .from("class_activity_answers")
-            .update({ selected_option: optionKey })
-            .eq("id", existing.id);
+      <div id="studentFormQuestionTitle" class="question-title">Question title</div>
+      <div id="studentFormQuestionHelp" class="question-help hidden">Question help text</div>
 
-          if (updateError) throw updateError;
-        } else {
-          const { error: insertError } = await supabase
-            .from("class_activity_answers")
-            .insert([{
-              attempt_id: attemptId,
-              question_id: questionId,
-              selected_option: optionKey
-            }]);
+      <!-- generic form question host -->
+      <div id="studentFormQuestionHost" class="question-block">
 
-          if (insertError) throw insertError;
-        }
-      } catch (err) {
-        console.error("studentSelectOption save failed:", err);
-      }
-    }
+        <!-- short answer -->
+        <div id="studentFormShortAnswerBlock" class="input-shell hidden">
+          <input
+            id="studentFormShortAnswerInput"
+            class="text-input"
+            type="text"
+            placeholder="Type your answer"
+          />
+        </div>
 
-    function studentGoPrevQuestion() {
-      if (window.studentClassActivityState.currentIndex > 0) {
-        window.studentClassActivityState.currentIndex -= 1;
-        studentRenderQuestion();
-      }
-    }
+        <!-- paragraph -->
+        <div id="studentFormParagraphBlock" class="textarea-shell hidden">
+          <textarea
+            id="studentFormParagraphInput"
+            class="text-area"
+            placeholder="Type your answer here"
+          ></textarea>
+        </div>
 
-    function studentGoBackQuestion() {
-      if (window.studentClassActivityState.currentIndex > 0) {
-        studentGoPrevQuestion();
-      } else {
-        studentStopTimer();
-        studentShowActivityView("studentActivityIntroView");
-      }
-    }
+        <!-- multiple choice -->
+        <div id="studentFormMultipleChoiceBlock" class="choice-list hidden">
+          <!-- render from js -->
+        </div>
 
-    function studentGoNextQuestion() {
-      const questions = window.studentClassActivityState.questions;
-      const idx = window.studentClassActivityState.currentIndex;
-      const q = questions[idx];
-      if (!q) return;
+        <!-- checkboxes -->
+        <div id="studentFormCheckboxBlock" class="choice-list hidden">
+          <!-- render from js -->
+        </div>
 
-      if (!window.studentClassActivityState.answers[q.id]) {
-        alert("Please choose an answer before continuing.");
-        return;
-      }
+        <!-- dropdown -->
+        <div id="studentFormDropdownBlock" class="select-shell hidden">
+          <select id="studentFormDropdownInput" class="select-input">
+            <option value="">Select an option</option>
+          </select>
+        </div>
 
-      if (idx === questions.length - 1) {
-        studentOpenReviewAnswers();
-        return;
-      }
+        <!-- yes/no -->
+        <div id="studentFormYesNoBlock" class="choice-list hidden">
+          <!-- render from js -->
+        </div>
 
-      window.studentClassActivityState.currentIndex += 1;
-      studentRenderQuestion();
-    }
+        <!-- date -->
+        <div id="studentFormDateBlock" class="date-shell hidden">
+          <input id="studentFormDateInput" class="date-input" type="date" />
+        </div>
 
-    function studentBackToLastQuestion() {
-      studentShowActivityView("studentActivityQuestionView");
-      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-      window.studentClassActivityState.currentIndex = window.studentClassActivityState.questions.length - 1;
-      studentRenderQuestion();
-    }
-
-    function studentJumpToQuestion(index) {
-      window.studentClassActivityState.currentIndex = index;
-      studentShowActivityView("studentActivityQuestionView");
-      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-      studentRenderQuestion();
-    }
-
-    function studentOpenReviewAnswers() {
-      const wrap = document.getElementById("studentActivityReviewList");
-      wrap.innerHTML = window.studentClassActivityState.questions.map((q, index) => {
-        const picked = window.studentClassActivityState.answers[q.id];
-        const pickedText = picked ? `${picked}. ${q.options[picked]}` : "No answer selected";
-
-        return `
-          <div class="activity-review-item" onclick="studentJumpToQuestion(${index})">
-            <div class="activity-review-q">Question ${index + 1}: ${studentActivityEscape(q.question)}</div>
-            <div class="activity-review-a"><strong>Your answer:</strong> ${studentActivityEscape(pickedText)}</div>
+        <!-- file upload -->
+        <div id="studentFormFileBlock" class="file-shell hidden">
+          <div class="file-drop">
+            <div class="file-drop-icon">
+              <svg viewBox="0 0 24 24" fill="none" width="26" height="26">
+                <path d="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="file-drop-title">Upload file</div>
+            <div class="file-drop-sub" id="studentFormFileRules">
+              Allowed file types and upload limit will show here.
+            </div>
+            <button id="studentFormChooseFileBtn" class="file-drop-btn" type="button">Choose file</button>
+            <input id="studentFormFileInput" type="file" class="hidden" />
           </div>
-        `;
-      }).join("");
+        </div>
 
-      studentShowActivityView("studentActivityReviewView");
-      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-    }
+        <div id="studentFormFieldNote" class="field-note"></div>
+      </div>
 
-    async function studentSubmitActivity(fromTimer = false) {
-      const btn = document.getElementById("studentSubmitActivityBtn");
-      const oldText = btn ? btn.textContent : "Submit activity";
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = fromTimer ? "Submitting..." : "Submitting...";
-      }
+      <div class="nav-row">
+        <button id="studentFormPrevBtn" class="ghost-btn" type="button">Back</button>
+        <button id="studentFormNextBtn" class="primary-btn" type="button">Next</button>
+      </div>
+    </article>
+  </section>
 
-      try {
-        const attemptId = await studentEnsureAttempt();
-        if (!attemptId) throw new Error("Missing attempt");
+  <!-- FORM REVIEW -->
+  <section id="studentFormReviewView" class="hidden">
+    <button class="panel-back-btn" type="button">← Back to questions</button>
 
-        const { error } = await supabase
-          .from("class_activity_attempts")
-          .update({
-            status: "submitted",
-            submitted_at: new Date().toISOString()
-          })
-          .eq("id", attemptId);
+    <article class="panel-card">
+      <div class="panel-title">Review your form</div>
+      <div class="submit-note">
+        Check your answers below before submitting the form. Tap any item to go back and edit it.
+      </div>
 
-        if (error) throw error;
+      <div id="studentFormReviewList" class="review-list"></div>
 
-        studentStopTimer();
-        studentShowActivityView("studentActivitySubmittedView");
-      } catch (err) {
-        console.error("studentSubmitActivity failed:", err);
-        alert("Could not submit activity right now.");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
-      }
-    }
+      <button id="studentSubmitFormBtn" class="primary-btn" type="button">Submit form</button>
+    </article>
+  </section>
 
-    (function bindStudentActivityScreen() {
-      const originalShowScreen = window.showScreen;
+  <!-- FORM SUBMITTED -->
+  <section id="studentFormSubmittedView" class="hidden">
+    <article class="panel-card success-wrap">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
 
-      if (!window.__studentActivityShowScreenWrapped && typeof originalShowScreen === "function") {
-        window.showScreen = function(name) {
-          originalShowScreen(name);
-          if (name === "reports") {
-            studentBackToActivitiesList();
-          }
-        };
-        window.__studentActivityShowScreenWrapped = true;
-      }
+      <div class="panel-title" style="text-align:center;">Form submitted</div>
 
-      document.addEventListener("DOMContentLoaded", () => {
-        studentLoadActivitiesScreen();
-      });
-    })();
-  </script>
+      <div class="success-text">
+        Your response has been submitted successfully.
+      </div>
+
+      <div class="success-note">
+        If the form only allows one response, you will not be able to submit it again.
+      </div>
+
+      <button class="primary-btn" type="button">Back to forms and activities</button>
+    </article>
+  </section>
 </div>
-<!-- 🔹 STUDENT CLASS ACTIVITY SCREEN END -->
+<!-- 🔹 STUDENT CLASS + SCHOOL FORMS SCREEN END -->
