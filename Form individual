@@ -1,0 +1,1161 @@
+<section class="individual-view" id="individualView" style="display:none;">
+  <div class="individual-shell">
+    <article class="individual-list-card">
+      <div class="individual-list-head">
+        <div>
+          <h3>Submitted Responses</h3>
+          <p>View everyone that submitted this form.</p>
+        </div>
+
+        <button type="button" class="individual-refresh-btn" id="individualRefreshBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0 2 5.3M20 4v7h-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div class="individual-toolbar">
+        <div class="individual-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21L16.65 16.65M10.8 18.6A7.8 7.8 0 1 0 10.8 3a7.8 7.8 0 0 0 0 15.6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input
+            type="text"
+            id="individualSearchInput"
+            placeholder="Search by name, programme or level"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="individual-filter-grid">
+          <div class="individual-filter-box">
+            <label for="individualProgrammeFilter">Programme</label>
+            <select id="individualProgrammeFilter">
+              <option value="">All Programmes</option>
+            </select>
+          </div>
+
+          <div class="individual-filter-box">
+            <label for="individualLevelFilter">Level</label>
+            <select id="individualLevelFilter">
+              <option value="">All Levels</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="individual-summary-strip">
+        <div class="individual-mini-stat">
+          <span>Total Submitted</span>
+          <strong id="individualTotalCount">0</strong>
+        </div>
+
+        <div class="individual-mini-stat">
+          <span>Filtered Result</span>
+          <strong id="individualFilteredCount">0</strong>
+        </div>
+      </div>
+
+      <div class="individual-list-wrap" id="individualListWrap">
+        <div class="individual-empty-state" id="individualListEmpty">
+          No submitted response found yet.
+        </div>
+
+        <div class="individual-list" id="individualList"></div>
+      </div>
+    </article>
+
+    <article class="individual-detail-card">
+      <div class="individual-detail-top">
+        <div>
+          <h3>Response Details</h3>
+          <p>Click “View Details” on any submission to see full answers.</p>
+        </div>
+      </div>
+
+      <div class="individual-detail-empty" id="individualDetailEmpty">
+        Select a submitted response to view full details.
+      </div>
+
+      <div class="individual-detail-body" id="individualDetailBody" style="display:none;">
+        <div class="individual-person-hero">
+          <div class="individual-avatar" id="individualAvatar">A</div>
+
+          <div class="individual-person-copy">
+            <h4 id="individualPersonName">—</h4>
+            <div class="individual-person-meta">
+              <span id="individualPersonProgramme">—</span>
+              <span class="dot">•</span>
+              <span id="individualPersonLevel">—</span>
+              <span class="dot">•</span>
+              <span id="individualPersonSubmittedAt">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="individual-detail-grid">
+          <div class="individual-detail-stat">
+            <span>Response ID</span>
+            <strong id="individualResponseId">—</strong>
+          </div>
+
+          <div class="individual-detail-stat">
+            <span>Identity</span>
+            <strong id="individualIdentityMode">—</strong>
+          </div>
+
+          <div class="individual-detail-stat">
+            <span>Answered</span>
+            <strong id="individualAnsweredCount">0</strong>
+          </div>
+
+          <div class="individual-detail-stat">
+            <span>Total Questions</span>
+            <strong id="individualQuestionCount">0</strong>
+          </div>
+        </div>
+
+        <div class="individual-answer-list" id="individualAnswerList"></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .individual-view{
+    margin-top:18px;
+  }
+
+  .individual-shell{
+    display:grid;
+    grid-template-columns:410px minmax(0,1fr);
+    gap:18px;
+    min-width:0;
+  }
+
+  .individual-list-card,
+  .individual-detail-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:18px;
+    box-shadow:0 10px 25px rgba(55,84,170,.05);
+    min-width:0;
+  }
+
+  .individual-list-head,
+  .individual-detail-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:16px;
+  }
+
+  .individual-list-head h3,
+  .individual-detail-top h3{
+    margin:0;
+    font-size:24px;
+    line-height:1.05;
+    font-weight:900;
+    color:var(--text);
+  }
+
+  .individual-list-head p,
+  .individual-detail-top p{
+    margin:7px 0 0;
+    color:var(--muted);
+    font-size:14px;
+    font-weight:700;
+  }
+
+  .individual-refresh-btn{
+    min-height:42px;
+    padding:0 14px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    color:var(--text);
+    cursor:pointer;
+  }
+
+  .individual-refresh-btn svg{
+    width:18px;
+    height:18px;
+  }
+
+  .individual-toolbar{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:16px;
+  }
+
+  .individual-search-wrap{
+    position:relative;
+  }
+
+  .individual-search-wrap svg{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    width:18px;
+    height:18px;
+    color:#7d8aab;
+    pointer-events:none;
+  }
+
+  .individual-search-wrap input{
+    width:100%;
+    height:48px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#fff;
+    padding:0 14px 0 42px;
+    outline:none;
+    color:var(--text);
+    font-weight:700;
+  }
+
+  .individual-search-wrap input:focus,
+  .individual-filter-box select:focus{
+    border-color:#9fb7ff;
+    box-shadow:0 0 0 4px rgba(41,98,255,.08);
+  }
+
+  .individual-filter-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  .individual-filter-box{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .individual-filter-box label{
+    font-size:13px;
+    color:#64708f;
+    font-weight:800;
+  }
+
+  .individual-filter-box select{
+    width:100%;
+    height:46px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#fff;
+    padding:0 14px;
+    outline:none;
+    color:var(--text);
+    font-weight:700;
+  }
+
+  .individual-summary-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+
+  .individual-mini-stat{
+    border:1px solid var(--line);
+    background:#f8faff;
+    border-radius:18px;
+    padding:14px;
+  }
+
+  .individual-mini-stat span{
+    display:block;
+    font-size:12px;
+    color:#6f7a98;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+
+  .individual-mini-stat strong{
+    display:block;
+    font-size:28px;
+    line-height:1;
+    color:var(--text);
+    font-weight:900;
+  }
+
+  .individual-list-wrap{
+    min-height:420px;
+  }
+
+  .individual-empty-state,
+  .individual-detail-empty{
+    min-height:260px;
+    border:1px dashed #cad6f6;
+    background:#fbfcff;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:22px;
+    color:#7782a1;
+    font-weight:800;
+  }
+
+  .individual-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .individual-row{
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:#fff;
+    padding:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    transition:.18s ease;
+  }
+
+  .individual-row:hover{
+    border-color:#b8c9fb;
+    transform:translateY(-1px);
+    box-shadow:0 10px 20px rgba(41,98,255,.06);
+  }
+
+  .individual-row.active{
+    border-color:#89a9ff;
+    background:#f5f8ff;
+    box-shadow:0 10px 20px rgba(41,98,255,.09);
+  }
+
+  .individual-row-left{
+    min-width:0;
+    flex:1;
+  }
+
+  .individual-row-name{
+    margin:0;
+    font-size:16px;
+    line-height:1.15;
+    color:var(--text);
+    font-weight:900;
+    word-break:break-word;
+  }
+
+  .individual-row-meta{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .individual-chip{
+    min-height:28px;
+    padding:0 10px;
+    border-radius:999px;
+    background:#eef3ff;
+    border:1px solid #dce6ff;
+    display:inline-flex;
+    align-items:center;
+    font-size:12px;
+    color:#5069c9;
+    font-weight:800;
+  }
+
+  .individual-row-time{
+    margin-top:9px;
+    font-size:12px;
+    color:#7b86a5;
+    font-weight:800;
+  }
+
+  .individual-view-btn{
+    min-height:40px;
+    padding:0 14px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--text);
+    border-radius:14px;
+    font-weight:900;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  .individual-view-btn:hover{
+    border-color:#9db7ff;
+    color:#2557eb;
+  }
+
+  .individual-person-hero{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line-soft);
+    margin-bottom:16px;
+  }
+
+  .individual-avatar{
+    width:62px;
+    height:62px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(180deg, #5f88ff, #7aa2ff);
+    color:#fff;
+    font-size:26px;
+    font-weight:900;
+    flex:0 0 auto;
+  }
+
+  .individual-person-copy{
+    min-width:0;
+  }
+
+  .individual-person-copy h4{
+    margin:0;
+    font-size:22px;
+    line-height:1.05;
+    color:var(--text);
+    font-weight:900;
+    word-break:break-word;
+  }
+
+  .individual-person-meta{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    color:#6f7a98;
+    font-size:14px;
+    font-weight:800;
+  }
+
+  .individual-person-meta .dot{
+    color:#b5bfd7;
+  }
+
+  .individual-detail-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:12px;
+    margin-bottom:16px;
+  }
+
+  .individual-detail-stat{
+    border:1px solid var(--line);
+    background:#f8faff;
+    border-radius:18px;
+    padding:14px;
+    min-width:0;
+  }
+
+  .individual-detail-stat span{
+    display:block;
+    font-size:12px;
+    color:#7480a0;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+
+  .individual-detail-stat strong{
+    display:block;
+    font-size:16px;
+    line-height:1.25;
+    color:var(--text);
+    font-weight:900;
+    word-break:break-word;
+  }
+
+  .individual-answer-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .individual-answer-card{
+    border:1px solid var(--line);
+    border-radius:20px;
+    background:#fff;
+    padding:16px;
+  }
+
+  .individual-answer-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
+  .individual-answer-question{
+    min-width:0;
+  }
+
+  .individual-answer-question h5{
+    margin:0;
+    font-size:17px;
+    line-height:1.25;
+    color:var(--text);
+    font-weight:900;
+    word-break:break-word;
+  }
+
+  .individual-answer-question p{
+    margin:7px 0 0;
+    font-size:13px;
+    color:#7480a0;
+    font-weight:700;
+  }
+
+  .individual-answer-type{
+    min-height:30px;
+    padding:0 10px;
+    border-radius:999px;
+    background:#eef3ff;
+    border:1px solid #dce6ff;
+    display:inline-flex;
+    align-items:center;
+    font-size:12px;
+    color:#5069c9;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .individual-answer-body{
+    border-top:1px solid var(--line-soft);
+    padding-top:12px;
+  }
+
+  .individual-answer-text{
+    font-size:15px;
+    line-height:1.6;
+    color:#2d3957;
+    font-weight:700;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  .individual-answer-empty{
+    color:#8a96b5;
+    font-style:italic;
+    font-weight:800;
+  }
+
+  .individual-answer-list-items{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .individual-answer-list-items span{
+    min-height:34px;
+    padding:0 12px;
+    border-radius:999px;
+    background:#f3f6ff;
+    border:1px solid #dce6ff;
+    display:inline-flex;
+    align-items:center;
+    color:#425ed0;
+    font-size:13px;
+    font-weight:900;
+  }
+
+  .individual-file-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .individual-file-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fbfcff;
+  }
+
+  .individual-file-item a{
+    color:#2557eb;
+    font-weight:900;
+    text-decoration:none;
+    word-break:break-word;
+  }
+
+  .individual-file-item a:hover{
+    text-decoration:underline;
+  }
+
+  @media (max-width: 1180px){
+    .individual-shell{
+      grid-template-columns:1fr;
+    }
+
+    .individual-detail-grid{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+  }
+
+  @media (max-width: 680px){
+    .individual-list-card,
+    .individual-detail-card{
+      padding:14px;
+      border-radius:20px;
+    }
+
+    .individual-list-head h3,
+    .individual-detail-top h3{
+      font-size:20px;
+    }
+
+    .individual-filter-grid,
+    .individual-summary-strip,
+    .individual-detail-grid{
+      grid-template-columns:1fr;
+    }
+
+    .individual-row{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .individual-view-btn{
+      width:100%;
+      justify-content:center;
+    }
+
+    .individual-person-hero{
+      align-items:flex-start;
+    }
+
+    .individual-avatar{
+      width:54px;
+      height:54px;
+      font-size:22px;
+    }
+  }
+</style>
+
+<script>
+  const individualState = {
+    loaded: false,
+    formId: null,
+    form: null,
+    rows: [],
+    filteredRows: [],
+    selectedResponseId: null,
+    selectedDetails: null,
+    questionMap: new Map(),
+  };
+
+  function getActorPayloadForIndividual() {
+    try {
+      const keys = [
+        "colspot_hos_session",
+        "colspot_admin_session",
+        "hos_session",
+        "admin_session",
+        "colspot_session"
+      ];
+
+      let stored = null;
+
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") {
+            stored = parsed;
+            break;
+          }
+        } catch (_) {}
+      }
+
+      const params = new URLSearchParams(window.location.search);
+
+      const hosAdminId =
+        (stored && (stored.hos_admin_id || (stored.role === "hos" ? stored.id : ""))) ||
+        params.get("hos_admin_id") ||
+        "";
+
+      const formAgentId =
+        (stored && (stored.form_agent_id || (stored.role === "form_agent" ? stored.id : ""))) ||
+        params.get("form_agent_id") ||
+        "";
+
+      if (hosAdminId) return { hos_admin_id: hosAdminId };
+      if (formAgentId) return { form_agent_id: formAgentId };
+
+      throw new Error("HOS or Form Agent session not found.");
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  function getCurrentFormIdForIndividual() {
+    const params = new URLSearchParams(window.location.search);
+    const formId = params.get("form_id") || "";
+    if (!formId) throw new Error("form_id is missing in URL.");
+    return formId;
+  }
+
+  function normalizeIndividualText(value) {
+    return String(value ?? "").trim().replace(/\s+/g, " ");
+  }
+
+  function normalizeIndividualUpper(value) {
+    return normalizeIndividualText(value).toUpperCase();
+  }
+
+  function formatIndividualDateTime(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleString([], {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  function escapeIndividualHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formatQuestionTypeLabel(value) {
+    const map = {
+      short_answer: "Short Answer",
+      paragraph: "Paragraph",
+      multiple_choice: "Multiple Choice",
+      checkboxes: "Checkboxes",
+      dropdown: "Dropdown",
+      date: "Date",
+      file_upload: "File Upload",
+      yes_no: "Yes / No",
+    };
+    return map[value] || value || "Question";
+  }
+
+  async function invokeFormResponseManager(payload) {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("Supabase browser library is not loaded on this page.");
+    }
+
+    if (
+      !SUPABASE_URL ||
+      !SUPABASE_ANON_KEY ||
+      SUPABASE_URL.includes("YOUR_SUPABASE_URL") ||
+      SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
+    ) {
+      throw new Error("Set your real SUPABASE_URL and SUPABASE_ANON_KEY first.");
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/form-response-manager`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result?.error || "Edge Function returned a non-2xx status code");
+    }
+
+    if (!result?.ok) {
+      throw new Error(result?.error || "Request failed.");
+    }
+
+    return result;
+  }
+
+  async function loadIndividualResponses(force = false) {
+    if (individualState.loaded && !force) return;
+
+    const actorPayload = getActorPayloadForIndividual();
+    const formId = getCurrentFormIdForIndividual();
+
+    const result = await invokeFormResponseManager({
+      action: "list_individual_responses",
+      form_id: formId,
+      ...actorPayload,
+    });
+
+    individualState.loaded = true;
+    individualState.formId = formId;
+    individualState.form = result.form || null;
+    individualState.rows = Array.isArray(result.responses) ? result.responses : [];
+    individualState.filteredRows = [...individualState.rows];
+    individualState.selectedResponseId = null;
+    individualState.selectedDetails = null;
+
+    populateIndividualFilters();
+    applyIndividualFilters();
+    renderIndividualList();
+    renderIndividualDetailEmpty();
+  }
+
+  function populateIndividualFilters() {
+    const programmeSelect = document.getElementById("individualProgrammeFilter");
+    const levelSelect = document.getElementById("individualLevelFilter");
+    if (!programmeSelect || !levelSelect) return;
+
+    const programmes = [...new Set(
+      individualState.rows
+        .map((row) => normalizeIndividualText(row.programme))
+        .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+
+    const levels = [...new Set(
+      individualState.rows
+        .map((row) => normalizeIndividualText(row.level))
+        .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    const currentProgramme = programmeSelect.value;
+    const currentLevel = levelSelect.value;
+
+    programmeSelect.innerHTML =
+      `<option value="">All Programmes</option>` +
+      programmes.map((item) => `<option value="${escapeIndividualHtml(item)}">${escapeIndividualHtml(item)}</option>`).join("");
+
+    levelSelect.innerHTML =
+      `<option value="">All Levels</option>` +
+      levels.map((item) => `<option value="${escapeIndividualHtml(item)}">${escapeIndividualHtml(item)}</option>`).join("");
+
+    if (programmes.includes(currentProgramme)) programmeSelect.value = currentProgramme;
+    if (levels.includes(currentLevel)) levelSelect.value = currentLevel;
+  }
+
+  function applyIndividualFilters() {
+    const searchInput = document.getElementById("individualSearchInput");
+    const programmeSelect = document.getElementById("individualProgrammeFilter");
+    const levelSelect = document.getElementById("individualLevelFilter");
+
+    const search = normalizeIndividualUpper(searchInput?.value || "");
+    const programme = normalizeIndividualUpper(programmeSelect?.value || "");
+    const level = normalizeIndividualUpper(levelSelect?.value || "");
+
+    individualState.filteredRows = individualState.rows.filter((row) => {
+      const rowName = normalizeIndividualUpper(row.full_name);
+      const rowProgramme = normalizeIndividualUpper(row.programme);
+      const rowLevel = normalizeIndividualUpper(row.level);
+
+      const searchOk =
+        !search ||
+        rowName.includes(search) ||
+        rowProgramme.includes(search) ||
+        rowLevel.includes(search);
+
+      const programmeOk = !programme || rowProgramme === programme;
+      const levelOk = !level || rowLevel === level;
+
+      return searchOk && programmeOk && levelOk;
+    });
+
+    const totalCount = document.getElementById("individualTotalCount");
+    const filteredCount = document.getElementById("individualFilteredCount");
+    if (totalCount) totalCount.textContent = String(individualState.rows.length);
+    if (filteredCount) filteredCount.textContent = String(individualState.filteredRows.length);
+
+    if (
+      individualState.selectedResponseId &&
+      !individualState.filteredRows.some((row) => row.response_id === individualState.selectedResponseId)
+    ) {
+      individualState.selectedResponseId = null;
+      individualState.selectedDetails = null;
+    }
+  }
+
+  function renderIndividualList() {
+    const list = document.getElementById("individualList");
+    const empty = document.getElementById("individualListEmpty");
+    if (!list || !empty) return;
+
+    if (!individualState.filteredRows.length) {
+      list.innerHTML = "";
+      empty.style.display = "flex";
+      empty.textContent = "No submitted response found for this filter.";
+      return;
+    }
+
+    empty.style.display = "none";
+
+    list.innerHTML = individualState.filteredRows.map((row) => {
+      const active = row.response_id === individualState.selectedResponseId ? " active" : "";
+      const initials = normalizeIndividualText(row.full_name || "A").charAt(0).toUpperCase() || "A";
+
+      return `
+        <div class="individual-row${active}">
+          <div class="individual-row-left">
+            <h4 class="individual-row-name">${escapeIndividualHtml(row.full_name || "Anonymous")}</h4>
+
+            <div class="individual-row-meta">
+              ${row.programme ? `<span class="individual-chip">${escapeIndividualHtml(row.programme)}</span>` : ""}
+              ${row.level ? `<span class="individual-chip">${escapeIndividualHtml(row.level)}</span>` : ""}
+              ${row.is_anonymous ? `<span class="individual-chip">Anonymous</span>` : `<span class="individual-chip">Identified</span>`}
+            </div>
+
+            <div class="individual-row-time">${escapeIndividualHtml(formatIndividualDateTime(row.submitted_at))}</div>
+          </div>
+
+          <button
+            type="button"
+            class="individual-view-btn"
+            data-response-id="${escapeIndividualHtml(row.response_id)}"
+          >
+            View Details
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    list.querySelectorAll(".individual-view-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const responseId = btn.getAttribute("data-response-id") || "";
+        await loadIndividualDetail(responseId);
+      });
+    });
+  }
+
+  async function loadIndividualDetail(responseId) {
+    const actorPayload = getActorPayloadForIndividual();
+    const result = await invokeFormResponseManager({
+      action: "get_individual_response",
+      form_id: individualState.formId,
+      response_id: responseId,
+      ...actorPayload,
+    });
+
+    individualState.selectedResponseId = responseId;
+    individualState.selectedDetails = result;
+
+    renderIndividualList();
+    renderIndividualDetail();
+  }
+
+  function renderIndividualDetailEmpty() {
+    const empty = document.getElementById("individualDetailEmpty");
+    const body = document.getElementById("individualDetailBody");
+    if (empty) empty.style.display = "flex";
+    if (body) body.style.display = "none";
+  }
+
+  function renderIndividualDetail() {
+    const empty = document.getElementById("individualDetailEmpty");
+    const body = document.getElementById("individualDetailBody");
+    const data = individualState.selectedDetails;
+
+    if (!data || !data.respondent) {
+      renderIndividualDetailEmpty();
+      return;
+    }
+
+    if (empty) empty.style.display = "none";
+    if (body) body.style.display = "block";
+
+    const respondent = data.respondent;
+    const answers = Array.isArray(data.answers) ? data.answers : [];
+    const answeredCount = answers.filter((item) => item.answered).length;
+    const fullName = respondent.full_name || "Anonymous";
+    const initials = normalizeIndividualText(fullName).charAt(0).toUpperCase() || "A";
+
+    const avatar = document.getElementById("individualAvatar");
+    const personName = document.getElementById("individualPersonName");
+    const personProgramme = document.getElementById("individualPersonProgramme");
+    const personLevel = document.getElementById("individualPersonLevel");
+    const personSubmittedAt = document.getElementById("individualPersonSubmittedAt");
+    const responseId = document.getElementById("individualResponseId");
+    const identityMode = document.getElementById("individualIdentityMode");
+    const answered = document.getElementById("individualAnsweredCount");
+    const questionCount = document.getElementById("individualQuestionCount");
+    const answerList = document.getElementById("individualAnswerList");
+
+    if (avatar) avatar.textContent = initials;
+    if (personName) personName.textContent = fullName;
+    if (personProgramme) personProgramme.textContent = respondent.programme || "No programme";
+    if (personLevel) personLevel.textContent = respondent.level || "No level";
+    if (personSubmittedAt) personSubmittedAt.textContent = formatIndividualDateTime(respondent.submitted_at);
+    if (responseId) responseId.textContent = respondent.response_id || "—";
+    if (identityMode) identityMode.textContent = respondent.is_anonymous ? "Anonymous" : "Use login identity";
+    if (answered) answered.textContent = String(answeredCount);
+    if (questionCount) questionCount.textContent = String(answers.length);
+
+    if (!answerList) return;
+
+    if (!answers.length) {
+      answerList.innerHTML = `
+        <div class="individual-detail-empty" style="min-height:180px;">
+          No answers found for this response.
+        </div>
+      `;
+      return;
+    }
+
+    answerList.innerHTML = answers.map((item) => {
+      const typeLabel = formatQuestionTypeLabel(item.question_type);
+      const helper = item.section_name ? `<p>${escapeIndividualHtml(item.section_name)}</p>` : "";
+
+      let bodyHtml = `<div class="individual-answer-text individual-answer-empty">No answer submitted.</div>`;
+
+      if (item.file_urls && item.file_urls.length) {
+        bodyHtml = `
+          <div class="individual-file-list">
+            ${item.file_urls.map((url) => `
+              <div class="individual-file-item">
+                <a href="${escapeIndividualHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeIndividualHtml(url)}</a>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } else if (item.answer_list && item.answer_list.length) {
+        bodyHtml = `
+          <div class="individual-answer-list-items">
+            ${item.answer_list.map((value) => `<span>${escapeIndividualHtml(value)}</span>`).join("")}
+          </div>
+        `;
+      } else if (normalizeIndividualText(item.answer_text)) {
+        bodyHtml = `<div class="individual-answer-text">${escapeIndividualHtml(item.answer_text)}</div>`;
+      }
+
+      return `
+        <div class="individual-answer-card">
+          <div class="individual-answer-top">
+            <div class="individual-answer-question">
+              <h5>${escapeIndividualHtml(item.question_text || "Untitled question")}</h5>
+              ${helper}
+            </div>
+            <div class="individual-answer-type">${escapeIndividualHtml(typeLabel)}</div>
+          </div>
+
+          <div class="individual-answer-body">
+            ${bodyHtml}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function showIndividualView() {
+    const individualView = document.getElementById("individualView");
+    const questionsView = document.getElementById("questionsView");
+    const questionsPlaceholder = document.getElementById("questionsPlaceholder");
+    const individualPlaceholder = document.getElementById("individualPlaceholder");
+    const exportPlaceholder = document.getElementById("exportPlaceholder");
+
+    document.querySelectorAll(".hero-card, .row-grid, .info-grid").forEach((el) => {
+      el.style.display = "none";
+    });
+
+    if (questionsView) questionsView.style.display = "none";
+    if (questionsPlaceholder) questionsPlaceholder.style.display = "none";
+    if (individualPlaceholder) individualPlaceholder.style.display = "none";
+    if (exportPlaceholder) exportPlaceholder.style.display = "none";
+    if (individualView) individualView.style.display = "block";
+
+    const links = Array.from(document.querySelectorAll(".side-link"));
+    links.forEach((btn) => btn.classList.remove("active"));
+    if (links[2]) links[2].classList.add("active");
+
+    const h2 = document.querySelector(".topbar-title h2");
+    const p = document.querySelector(".topbar-title p");
+    if (h2) h2.textContent = "Individual";
+    if (p) p.textContent = "View one submitted response at a time";
+
+    loadIndividualResponses().catch((err) => {
+      console.error("individual view load error:", err);
+      const list = document.getElementById("individualList");
+      const empty = document.getElementById("individualListEmpty");
+      if (list) list.innerHTML = "";
+      if (empty) {
+        empty.style.display = "flex";
+        empty.textContent = err?.message || "Unable to load individual responses.";
+      }
+      renderIndividualDetailEmpty();
+    });
+  }
+
+  function wireIndividualView() {
+    const links = Array.from(document.querySelectorAll(".side-link"));
+    if (links[2]) {
+      links[2].addEventListener("click", showIndividualView);
+    }
+
+    const search = document.getElementById("individualSearchInput");
+    const programme = document.getElementById("individualProgrammeFilter");
+    const level = document.getElementById("individualLevelFilter");
+    const refresh = document.getElementById("individualRefreshBtn");
+
+    if (search) {
+      search.addEventListener("input", () => {
+        applyIndividualFilters();
+        renderIndividualList();
+        if (!individualState.selectedResponseId) renderIndividualDetailEmpty();
+      });
+    }
+
+    if (programme) {
+      programme.addEventListener("change", () => {
+        applyIndividualFilters();
+        renderIndividualList();
+        if (!individualState.selectedResponseId) renderIndividualDetailEmpty();
+      });
+    }
+
+    if (level) {
+      level.addEventListener("change", () => {
+        applyIndividualFilters();
+        renderIndividualList();
+        if (!individualState.selectedResponseId) renderIndividualDetailEmpty();
+      });
+    }
+
+    if (refresh) {
+      refresh.addEventListener("click", async () => {
+        try {
+          refresh.disabled = true;
+          individualState.loaded = false;
+          await loadIndividualResponses(true);
+        } catch (err) {
+          console.error("individual refresh error:", err);
+          alert(err?.message || "Unable to refresh responses.");
+        } finally {
+          refresh.disabled = false;
+        }
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", wireIndividualView);
+</script>
