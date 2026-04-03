@@ -1975,69 +1975,9 @@
     }
   }
 
-  async function studentEnsureAttempt() {
-    const activity = window.studentClassActivityState.currentActivity;
-    if (!activity) return null;
-
-    const user = await studentEnsureUser();
-    if (!user) return null;
-
-    if (window.studentClassActivityState.currentAttemptId) {
-      return window.studentClassActivityState.currentAttemptId;
-    }
-
-    const { data: existing, error: existingError } = await supabase
-      .from("class_activity_attempts")
-      .select("id, status, submitted_at, expires_at")
-      .eq("activity_id", activity.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (existingError) throw existingError;
-
-    if (existing) {
-      window.studentClassActivityState.currentAttemptId = existing.id;
-      window.studentClassActivityState.currentAttemptExpiresAt = existing.expires_at || null;
-      return existing.id;
-    }
-
-    const { data: created, error: createError } = await supabase
-      .from("class_activity_attempts")
-      .insert([{
-        activity_id: activity.id,
-        user_id: user.id,
-        status: "in_progress",
-        started_at: new Date().toISOString()
-      }])
-      .select("id, expires_at")
-      .single();
-
-    if (createError) throw createError;
-
-    window.studentClassActivityState.currentAttemptId = created.id;
-    window.studentClassActivityState.currentAttemptExpiresAt = created.expires_at || null;
-    return created.id;
-  }
-
-  async function studentLoadAnswersForAttempt(attemptId) {
-    if (!attemptId) return {};
-    const { data, error } = await supabase
-      .from("class_activity_answers")
-      .select("question_id, selected_option")
-      .eq("attempt_id", attemptId);
-
-    if (error) throw error;
-
-    const answers = {};
-    (data || []).forEach((row) => {
-      answers[row.question_id] = row.selected_option;
-    });
-    return answers;
-  }
-
   async function studentStartActivity() {
     const activity = window.studentClassActivityState.currentActivity;
-    if (!activity || typeof supabase === "undefined") return;
+    if (!activity) return;
 
     if (studentIsExpiredByDate(activity.due_at)) {
       alert("This activity has expired.");
@@ -2047,21 +1987,28 @@
 
     const btn = document.getElementById("studentStartActivityBtn");
     const oldText = btn ? btn.textContent : "Start activity";
+
     if (btn) {
       btn.disabled = true;
       btn.textContent = "Starting...";
     }
 
     try {
-      const { data: questions, error: questionError } = await supabase
-        .from("class_activity_questions")
-        .select("id, question_text, option_a, option_b, option_c, option_d, position")
-        .eq("activity_id", activity.id)
-        .order("position", { ascending: true });
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again.");
 
-      if (questionError) throw questionError;
+      const result = await studentInvokeHistoryManager({
+        action: "start_activity_attempt",
+        user_id: user.id,
+        activity_id: activity.id
+      });
 
-      window.studentClassActivityState.activityQuestions = (questions || []).map((q) => ({
+      const questions = studentEnsureArray(result.questions);
+      const attempt = result.attempt || null;
+      const answers = studentEnsureArray(result.answers);
+
+      const state = window.studentClassActivityState;
+      state.activityQuestions = questions.map((q) => ({
         id: q.id,
         question: q.question_text,
         options: {
@@ -2073,14 +2020,17 @@
         position: q.position
       }));
 
-      const attemptId = await studentEnsureAttempt();
-      const savedAnswers = await studentLoadAnswersForAttempt(attemptId);
+      state.activityAnswers = {};
+      answers.forEach((row) => {
+        state.activityAnswers[row.question_id] = row.selected_option;
+      });
 
-      window.studentClassActivityState.activityAnswers = savedAnswers || {};
-      window.studentClassActivityState.currentActivityIndex = 0;
+      state.currentActivityIndex = 0;
+      state.currentAttemptId = attempt?.id || null;
+      state.currentAttemptExpiresAt = attempt?.expires_at || null;
 
-      if (window.studentClassActivityState.currentAttemptExpiresAt) {
-        const endMs = new Date(window.studentClassActivityState.currentAttemptExpiresAt).getTime();
+      if (state.currentAttemptExpiresAt) {
+        const endMs = new Date(state.currentAttemptExpiresAt).getTime();
         if (!Number.isNaN(endMs) && Date.now() >= endMs) {
           alert("This activity time has already expired.");
           studentBackToReportsHome();
@@ -2088,12 +2038,12 @@
         }
       }
 
-      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
+      studentStartTimer(state.currentAttemptExpiresAt);
       studentRenderActivityQuestion();
       studentShowReportsView("studentActivityQuestionView");
     } catch (err) {
       console.error("studentStartActivity failed:", err);
-      alert("Could not open this activity right now.");
+      alert(err?.message || "Could not open this activity right now.");
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -2153,20 +2103,42 @@
       throw new Error("Please select one option before continuing.");
     }
 
-    const attemptId = await studentEnsureAttempt();
-    if (!attemptId) throw new Error("Missing activity attempt.");
+    const user = await studentEnsureUser();
+    if (!user) throw new Error("Please sign in again.");
 
-    const { error } = await supabase
-      .from("class_activity_answers")
-      .upsert([{
-        attempt_id: attemptId,
-        question_id: q.id,
-        selected_option: selected
-      }], {
-        onConflict: "attempt_id,question_id"
+    const result = await studentInvokeHistoryManager({
+      action: "save_activity_answer",
+      user_id: user.id,
+      activity_id: state.currentActivity?.id,
+      question_id: q.id,
+      selected_option: selected
+    });
+
+    state.currentAttemptId = result?.attempt?.id || state.currentAttemptId;
+    state.currentAttemptExpiresAt = result?.attempt?.expires_at || state.currentAttemptExpiresAt;
+
+    const returnedAnswers = studentEnsureArray(result?.answers);
+    if (returnedAnswers.length) {
+      const mapped = {};
+      returnedAnswers.forEach((row) => {
+        mapped[row.question_id] = row.selected_option;
       });
+      state.activityAnswers = {
+        ...state.activityAnswers,
+        ...mapped
+      };
+    }
+  }
 
-    if (error) throw error;
+  function studentGoPrevQuestion() {
+    const state = window.studentClassActivityState;
+    if (state.currentActivityIndex > 0) {
+      state.currentActivityIndex -= 1;
+      studentRenderActivityQuestion();
+    } else {
+      studentShowReportsView("studentActivityIntroView");
+      studentStartTimer(state.currentAttemptExpiresAt);
+    }
   }
 
   async function studentGoNextQuestion() {
@@ -2186,18 +2158,7 @@
       state.currentActivityIndex += 1;
       studentRenderActivityQuestion();
     } catch (err) {
-      alert(err?.message || "Could not save this answer.");
-    }
-  }
-
-  function studentGoPrevQuestion() {
-    const state = window.studentClassActivityState;
-    if (state.currentActivityIndex > 0) {
-      state.currentActivityIndex -= 1;
-      studentRenderActivityQuestion();
-    } else {
-      studentShowReportsView("studentActivityIntroView");
-      studentStartTimer(state.currentAttemptExpiresAt);
+      alert(err?.message || "Could not save answer right now.");
     }
   }
 
@@ -2207,44 +2168,33 @@
     if (!wrap) return;
 
     wrap.innerHTML = (state.activityQuestions || []).map((q, index) => {
-      const answer = state.activityAnswers[q.id] || "No answer";
-      const label = q.options?.[answer] ? `${answer}. ${q.options[answer]}` : answer;
-
+      const selected = state.activityAnswers[q.id];
+      const selectedText = selected && q.options[selected] ? `${selected}. ${q.options[selected]}` : "No answer selected";
       return `
         <div class="review-item" data-review-activity-index="${index}">
-          <div class="review-q">${studentReportEscape(q.question || "Question")}</div>
-          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(label)}</div>
+          <div class="review-q">${studentReportEscape(`Question ${index + 1}: ${q.question}`)}</div>
+          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(selectedText)}</div>
         </div>
       `;
     }).join("");
-
-    if (!wrap.dataset.bound) {
-      wrap.dataset.bound = "1";
-      wrap.addEventListener("click", (e) => {
-        const item = e.target.closest("[data-review-activity-index]");
-        if (!item) return;
-        const idx = Number(item.getAttribute("data-review-activity-index"));
-        if (!Number.isFinite(idx)) return;
-        window.studentClassActivityState.currentActivityIndex = idx;
-        studentRenderActivityQuestion();
-        studentShowReportsView("studentActivityQuestionView");
-        studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-      });
-    }
   }
 
-  async function studentSubmitActivity(forceSubmit = false) {
+  async function studentSubmitActivity(fromTimer = false) {
     const btn = document.getElementById("studentSubmitActivityBtn");
     const oldText = btn ? btn.textContent : "Submit activity";
 
     try {
       const state = window.studentClassActivityState;
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again.");
 
-      if (!forceSubmit) {
-        const unanswered = (state.activityQuestions || []).filter((q) => !state.activityAnswers[q.id]);
-        if (unanswered.length) {
-          alert("Please answer all questions before submitting.");
-          return;
+      const questions = state.activityQuestions || [];
+
+      if (!fromTimer) {
+        for (const q of questions) {
+          if (!state.activityAnswers[q.id]) {
+            throw new Error("Please answer all questions before submitting.");
+          }
         }
       }
 
@@ -2253,35 +2203,22 @@
         btn.textContent = "Submitting...";
       }
 
-      const attemptId = await studentEnsureAttempt();
-      if (!attemptId) throw new Error("Missing activity attempt.");
+      const answersPayload = questions
+        .map((q) => ({
+          question_id: q.id,
+          selected_option: state.activityAnswers[q.id] || ""
+        }))
+        .filter((row) => row.question_id && row.selected_option);
 
-      for (const q of state.activityQuestions || []) {
-        const selected = state.activityAnswers[q.id];
-        if (!selected) continue;
+      const result = await studentInvokeHistoryManager({
+        action: "submit_activity_attempt",
+        user_id: user.id,
+        activity_id: state.currentActivity?.id,
+        answers: answersPayload
+      });
 
-        const { error: answerError } = await supabase
-          .from("class_activity_answers")
-          .upsert([{
-            attempt_id: attemptId,
-            question_id: q.id,
-            selected_option: selected
-          }], {
-            onConflict: "attempt_id,question_id"
-          });
-
-        if (answerError) throw answerError;
-      }
-
-      const { error: attemptError } = await supabase
-        .from("class_activity_attempts")
-        .update({
-          status: "submitted",
-          submitted_at: new Date().toISOString()
-        })
-        .eq("id", attemptId);
-
-      if (attemptError) throw attemptError;
+      state.currentAttemptId = result?.attempt?.id || state.currentAttemptId;
+      state.currentAttemptExpiresAt = result?.attempt?.expires_at || state.currentAttemptExpiresAt;
 
       studentStopTimer();
       studentShowReportsView("studentActivitySubmittedView");
@@ -2610,36 +2547,6 @@
     }).join("");
   }
 
-  function studentBuildFormAnswersPayload(responseId) {
-    const state = window.studentClassActivityState;
-    const rows = [];
-
-    (state.formQuestions || []).forEach((q) => {
-      const answer = state.formAnswers[q.id];
-
-      const row = {
-        response_id: responseId,
-        question_id: q.id
-      };
-
-      if (q.question_type === "checkboxes") {
-        row.selected_options_json = Array.isArray(answer) ? answer : [];
-      } else if (q.question_type === "file_upload") {
-        if (Array.isArray(answer)) {
-          row.file_urls = answer;
-        } else if (typeof answer === "string" && answer) {
-          row.file_url = answer;
-        }
-      } else {
-        row.answer_text = answer ?? "";
-      }
-
-      rows.push(row);
-    });
-
-    return rows;
-  }
-
   async function studentStartForm() {
     const state = window.studentClassActivityState;
     if (!state.currentForm) return;
@@ -2841,6 +2748,18 @@
         btn.addEventListener("click", studentBackToReportsHome);
       }
     });
+
+    const homeBackBtn = document.querySelector("#studentReportsHomeView .uh-back-btn");
+    if (homeBackBtn && !homeBackBtn.dataset.bound) {
+      homeBackBtn.dataset.bound = "1";
+      homeBackBtn.addEventListener("click", () => {
+        if (typeof showScreen === "function") {
+          showScreen("home");
+        } else {
+          window.history.back();
+        }
+      });
+    }
 
     const formDetailsBack = document.querySelector("#studentFormDetailsView .panel-back-btn");
     if (formDetailsBack && !formDetailsBack.dataset.bound) {
