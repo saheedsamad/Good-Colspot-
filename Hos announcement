@@ -1134,61 +1134,6 @@
     loadingMatched: false
   };
 
-  function getRealSupabaseClient() {
-    const candidates = [
-      window.supabaseClient,
-      window.__colspotSupabase,
-      window.sb,
-      window.sbClient,
-      window._sb,
-      window.hosSupabaseClient
-    ];
-
-    for (const client of candidates) {
-      if (
-        client &&
-        typeof client === "object" &&
-        client.functions &&
-        typeof client.functions.invoke === "function"
-      ) {
-        return client;
-      }
-    }
-
-    return null;
-  }
-
-  function ensureGlobalSupabaseClient() {
-    const existing = getRealSupabaseClient();
-    if (existing) {
-      window.supabaseClient = existing;
-      window.__colspotSupabase = existing;
-      window.sb = existing;
-      return existing;
-    }
-
-    try {
-      if (
-        window.supabase &&
-        typeof window.supabase.createClient === "function" &&
-        typeof SUPABASE_URL !== "undefined" &&
-        typeof SUPABASE_ANON_KEY !== "undefined" &&
-        SUPABASE_URL &&
-        SUPABASE_ANON_KEY
-      ) {
-        const created = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window.supabaseClient = created;
-        window.__colspotSupabase = created;
-        window.sb = created;
-        return created;
-      }
-    } catch (err) {
-      console.error("ensureGlobalSupabaseClient failed:", err);
-    }
-
-    return null;
-  }
-
   function getAnnouncementActorPayload() {
     const hosAdminId =
       window.currentHosAdminId ||
@@ -1200,13 +1145,10 @@
   }
 
   async function invokeAnnouncementManager(payload) {
-    const client = ensureGlobalSupabaseClient();
+    const sb = window.supabase || window.sb || window.supabaseClient;
+    if (!sb) throw new Error("Supabase client not found.");
 
-    if (!client || !client.functions || typeof client.functions.invoke !== "function") {
-      throw new Error("Real Supabase client instance not found on this page.");
-    }
-
-    const { data, error } = await client.functions.invoke("announcement-manager", {
+    const { data, error } = await sb.functions.invoke("announcement-manager", {
       body: payload
     });
 
@@ -1218,11 +1160,7 @@
       throw new Error(error.message || "Announcement manager request failed.");
     }
 
-    if (data && data.ok === false) {
-      throw new Error(data.error || "Announcement manager request failed.");
-    }
-
-    return data || {};
+    return data;
   }
 
   function announcementEls() {
@@ -1340,7 +1278,7 @@
       card.dataset.id = item.id;
 
       const thumb = item.image_url
-        ? `<img src="${escapeHtml(item.image_url)}" alt="">`
+        ? `<img src="${item.image_url}" alt="">`
         : `<span>No Image</span>`;
 
       card.innerHTML = `
@@ -1611,7 +1549,6 @@
       if (els.composePreviewImage) els.composePreviewImage.src = imageUrl;
     } else {
       els.composePreviewImageWrap?.classList.add("hidden");
-      if (els.composePreviewImage) els.composePreviewImage.removeAttribute("src");
     }
 
     if (linkUrl) {
@@ -1894,7 +1831,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    ensureGlobalSupabaseClient();
     bindAnnouncementEvents();
     await loadAnnouncements("all");
   });
