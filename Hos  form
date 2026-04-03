@@ -1,3 +1,4 @@
+        </section>
 <section id="screen-forms" class="screen">
   <style>
     #screen-forms{
@@ -2312,62 +2313,44 @@
 
     return filled.length ? filled.join(" • ") : "Programme selected, but no level chosen yet.";
   }
+async function refreshMatchedStudentsPreview() {
+  if (!state.sb || !state.currentForm) return;
 
-  async function refreshMatchedStudentsPreview() {
-    if (!state.sb || !state.currentForm) return;
-    try {
-      state.announcementLoading = true;
-      renderAnnouncementPreview();
+  try {
+    state.announcementLoading = true;
+    renderAnnouncementPreview();
 
-      const schoolName = normalizeText((state.session?.account?.school_name || state.session?.school_name || ""));
-      if (!schoolName) {
-        state.matchedStudentsPreview = [];
-        renderAnnouncementPreview();
-        return;
-      }
-
-      const { data, error } = await state.sb
-        .from("student_accounts")
-        .select("user_id, full_name, school_name, programme, level");
-
-      if (error) throw error;
-
-      const allStudents = (data || []).filter((row) => {
-        return normalizeUpper(row.school_name) === normalizeUpper(schoolName) && !!row.user_id;
-      });
-
-      if ((state.currentForm.audience_mode || "all_students") !== "programme_filter") {
-        state.matchedStudentsPreview = allStudents;
-        renderAnnouncementPreview();
-        return;
-      }
-
-      const targets = Array.isArray(state.currentForm.programme_targets)
+    const payload = {
+      action: "preview_matched_students",
+      audience_mode: state.currentForm.audience_mode || "all_students",
+      programme_targets: Array.isArray(state.currentForm.programme_targets)
         ? state.currentForm.programme_targets
-        : [];
+        : [],
+      ...getActorPayload()
+    };
 
-      const matched = allStudents.filter((row) => {
-        const programme = normalizeUpper(row.programme);
-        const level = normalizeText(String(row.level || "")).replace(/\bLEVEL\b/gi, "").trim();
+    console.log("MATCHED STUDENTS PREVIEW BODY:", payload);
 
-        return targets.some((target) => {
-          const targetProgramme = normalizeUpper(target.programme_name);
-          const targetLevels = Array.isArray(target.levels) ? target.levels.map((v) => String(v).trim()) : [];
-          return targetProgramme === programme && targetLevels.includes(level);
-        });
-      });
+    const data = await invokeFormsManager(payload);
 
-      state.matchedStudentsPreview = matched;
-      renderAnnouncementPreview();
-    } catch (err) {
-      console.error("Matched students preview error:", err);
-      state.matchedStudentsPreview = [];
-      renderAnnouncementPreview();
-    } finally {
-      state.announcementLoading = false;
-      renderAnnouncementPreview();
-    }
+    console.log("MATCHED STUDENTS PREVIEW RESULT:", data);
+
+    state.matchedStudentsPreview = Array.isArray(data.matched_students)
+      ? data.matched_students
+      : [];
+
+    updateAudienceMatchedCountUI();
+    renderAnnouncementPreview();
+  } catch (err) {
+    console.error("Matched students preview error:", err);
+    state.matchedStudentsPreview = [];
+    updateAudienceMatchedCountUI();
+    renderAnnouncementPreview();
+  } finally {
+    state.announcementLoading = false;
+    renderAnnouncementPreview();
   }
+}
 
   function patchQuestionHeader(questionId) {
     const question = getFormQuestions().find((q) => q.local_id === questionId);
@@ -3272,7 +3255,12 @@
       setStep("preview");
       await refreshMatchedStudentsPreview();
     });
-
+$("formsContinueToAnnouncementBtn")?.addEventListener("click", async () => {
+  syncFormFromInputs();
+  renderAnnouncementPreview();
+  setStep("announcement");
+  await refreshMatchedStudentsPreview();
+});
     $("formsBackToQuestionsBtn")?.addEventListener("click", () => {
       syncFormFromInputs();
       setStep("questions");
