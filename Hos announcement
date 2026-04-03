@@ -1119,7 +1119,17 @@
 </style>
 
 <script>
-  let announcementState = {
+(function () {
+  if (window.__hosAnnouncementSystemInitializedV1) return;
+  window.__hosAnnouncementSystemInitializedV1 = true;
+
+  const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
+  const ANNOUNCEMENT_FUNCTION = "announcement-manager";
+
+  const announcementState = {
+    sb: null,
+    session: null,
     items: [],
     filteredItems: [],
     selectedId: null,
@@ -1134,21 +1144,62 @@
     loadingMatched: false
   };
 
-  function getAnnouncementActorPayload() {
-    const hosAdminId =
-      window.currentHosAdminId ||
-      window.currentAdminId ||
-      window.currentUserId ||
-      "";
-    if (!hosAdminId) return {};
-    return { hos_admin_id: hosAdminId };
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function normalizeText(value) {
+    return String(value || "").trim().replace(/\s+/g, " ");
+  }
+
+  function createClientSafe() {
+    try {
+      if (window.supabase && typeof window.supabase.createClient === "function") {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (err) {
+      console.error("Announcement supabase init failed:", err);
+    }
+    return null;
+  }
+
+  function getAdminSession() {
+    try {
+      return JSON.parse(localStorage.getItem("colspot_admin_session") || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function getActorPayload() {
+    const session = announcementState.session || {};
+    const account = session.account || {};
+    const role = session.role || account.role || "";
+
+    if (role === "hos") {
+      return { hos_admin_id: account.id || session.id || "" };
+    }
+    if (role === "form_agent") {
+      return { form_agent_id: account.id || session.id || "" };
+    }
+    return { hos_admin_id: account.id || session.id || "" };
   }
 
   async function invokeAnnouncementManager(payload) {
-    const sb = window.supabase || window.sb || window.supabaseClient;
-    if (!sb) throw new Error("Supabase client not found.");
+    if (!announcementState.sb) {
+      throw new Error("Supabase client not ready.");
+    }
 
-    const { data, error } = await sb.functions.invoke("announcement-manager", {
+    const { data, error } = await announcementState.sb.functions.invoke(ANNOUNCEMENT_FUNCTION, {
       body: payload
     });
 
@@ -1160,57 +1211,61 @@
       throw new Error(error.message || "Announcement manager request failed.");
     }
 
-    return data;
+    if (data && data.ok === false) {
+      throw new Error(data.error || "Announcement manager request failed.");
+    }
+
+    return data || {};
   }
 
   function announcementEls() {
     return {
-      list: document.getElementById("announcementList"),
-      empty: document.getElementById("announcementEmptyState"),
-      previewEmpty: document.getElementById("announcementPreviewEmpty"),
-      previewCard: document.getElementById("announcementPreviewCard"),
-      previewTitle: document.getElementById("announcementPreviewTitle"),
-      previewStatus: document.getElementById("announcementPreviewStatus"),
-      previewAudience: document.getElementById("announcementPreviewAudience"),
-      previewBody: document.getElementById("announcementPreviewBody"),
-      previewImageWrap: document.getElementById("announcementPreviewImageWrap"),
-      previewImage: document.getElementById("announcementPreviewImage"),
-      previewLinkWrap: document.getElementById("announcementPreviewLinkWrap"),
-      previewLinkLabel: document.getElementById("announcementPreviewLinkLabel"),
-      previewLinkUrl: document.getElementById("announcementPreviewLinkUrl"),
-      previewFileWrap: document.getElementById("announcementPreviewFileWrap"),
-      previewFileUrl: document.getElementById("announcementPreviewFileUrl"),
-      previewMatchedCount: document.getElementById("announcementPreviewMatchedCount"),
-      previewAuthor: document.getElementById("announcementPreviewAuthor"),
-      previewTime: document.getElementById("announcementPreviewTime"),
-      modal: document.getElementById("announcementComposerModal"),
-      composeTitle: document.getElementById("announcementComposerTitle"),
-      titleInput: document.getElementById("announcementTitleInput"),
-      bodyInput: document.getElementById("announcementBodyInput"),
-      linkLabelInput: document.getElementById("announcementLinkLabelInput"),
-      linkUrlInput: document.getElementById("announcementLinkUrlInput"),
-      imageUrlInput: document.getElementById("announcementImageUrlInput"),
-      fileUrlInput: document.getElementById("announcementFileUrlInput"),
-      programmeFilterBox: document.getElementById("announcementProgrammeFilterBox"),
-      programmeInput: document.getElementById("announcementProgrammeInput"),
-      levelsInput: document.getElementById("announcementLevelsInput"),
-      targetList: document.getElementById("announcementTargetList"),
-      matchedCount: document.getElementById("announcementMatchedCount"),
-      audienceText: document.getElementById("announcementAudienceText"),
-      audienceTextMini: document.getElementById("announcementAudienceTextMini"),
-      composePreviewTitle: document.getElementById("announcementComposePreviewTitle"),
-      composePreviewBody: document.getElementById("announcementComposePreviewBody"),
-      composePreviewImageWrap: document.getElementById("announcementComposePreviewImageWrap"),
-      composePreviewImage: document.getElementById("announcementComposePreviewImage"),
-      composePreviewLinkWrap: document.getElementById("announcementComposePreviewLinkWrap"),
-      composePreviewLinkLabel: document.getElementById("announcementComposePreviewLinkLabel"),
-      composePreviewLinkUrl: document.getElementById("announcementComposePreviewLinkUrl"),
-      composePreviewFileWrap: document.getElementById("announcementComposePreviewFileWrap"),
-      composePreviewFileUrl: document.getElementById("announcementComposePreviewFileUrl"),
-      composePreviewMatched: document.getElementById("announcementComposePreviewMatched"),
-      composePreviewStatus: document.getElementById("announcementComposePreviewStatus"),
-      scheduleWrap: document.getElementById("announcementScheduleWrap"),
-      scheduleInput: document.getElementById("announcementScheduleInput")
+      list: $("announcementList"),
+      empty: $("announcementEmptyState"),
+      previewEmpty: $("announcementPreviewEmpty"),
+      previewCard: $("announcementPreviewCard"),
+      previewTitle: $("announcementPreviewTitle"),
+      previewStatus: $("announcementPreviewStatus"),
+      previewAudience: $("announcementPreviewAudience"),
+      previewBody: $("announcementPreviewBody"),
+      previewImageWrap: $("announcementPreviewImageWrap"),
+      previewImage: $("announcementPreviewImage"),
+      previewLinkWrap: $("announcementPreviewLinkWrap"),
+      previewLinkLabel: $("announcementPreviewLinkLabel"),
+      previewLinkUrl: $("announcementPreviewLinkUrl"),
+      previewFileWrap: $("announcementPreviewFileWrap"),
+      previewFileUrl: $("announcementPreviewFileUrl"),
+      previewMatchedCount: $("announcementPreviewMatchedCount"),
+      previewAuthor: $("announcementPreviewAuthor"),
+      previewTime: $("announcementPreviewTime"),
+      modal: $("announcementComposerModal"),
+      composeTitle: $("announcementComposerTitle"),
+      titleInput: $("announcementTitleInput"),
+      bodyInput: $("announcementBodyInput"),
+      linkLabelInput: $("announcementLinkLabelInput"),
+      linkUrlInput: $("announcementLinkUrlInput"),
+      imageUrlInput: $("announcementImageUrlInput"),
+      fileUrlInput: $("announcementFileUrlInput"),
+      programmeFilterBox: $("announcementProgrammeFilterBox"),
+      programmeInput: $("announcementProgrammeInput"),
+      levelsInput: $("announcementLevelsInput"),
+      targetList: $("announcementTargetList"),
+      matchedCount: $("announcementMatchedCount"),
+      audienceText: $("announcementAudienceText"),
+      audienceTextMini: $("announcementAudienceTextMini"),
+      composePreviewTitle: $("announcementComposePreviewTitle"),
+      composePreviewBody: $("announcementComposePreviewBody"),
+      composePreviewImageWrap: $("announcementComposePreviewImageWrap"),
+      composePreviewImage: $("announcementComposePreviewImage"),
+      composePreviewLinkWrap: $("announcementComposePreviewLinkWrap"),
+      composePreviewLinkLabel: $("announcementComposePreviewLinkLabel"),
+      composePreviewLinkUrl: $("announcementComposePreviewLinkUrl"),
+      composePreviewFileWrap: $("announcementComposePreviewFileWrap"),
+      composePreviewFileUrl: $("announcementComposePreviewFileUrl"),
+      composePreviewMatched: $("announcementComposePreviewMatched"),
+      composePreviewStatus: $("announcementComposePreviewStatus"),
+      scheduleWrap: $("announcementScheduleWrap"),
+      scheduleInput: $("announcementScheduleInput")
     };
   }
 
@@ -1265,7 +1320,7 @@
     const items = announcementState.filteredItems;
     if (!items.length) {
       if (els.empty) els.empty.classList.remove("hidden");
-      els.list.appendChild(els.empty);
+      if (els.empty) els.list.appendChild(els.empty);
       renderAnnouncementPreview();
       return;
     }
@@ -1278,7 +1333,7 @@
       card.dataset.id = item.id;
 
       const thumb = item.image_url
-        ? `<img src="${item.image_url}" alt="">`
+        ? `<img src="${escapeHtml(item.image_url)}" alt="">`
         : `<span>No Image</span>`;
 
       card.innerHTML = `
@@ -1338,16 +1393,20 @@
     els.previewCard?.classList.remove("hidden");
 
     if (els.previewTitle) els.previewTitle.textContent = item.title || "Untitled announcement";
+
     if (els.previewStatus) {
       els.previewStatus.textContent = formatAnnouncementStatus(item.status);
       els.previewStatus.className = `announcement-preview-status ${announcementStatusClass(item.status)}`;
     }
+
     if (els.previewAudience) els.previewAudience.textContent = buildAnnouncementAudienceText(item);
     if (els.previewBody) els.previewBody.textContent = item.body || "";
+
     if (els.previewMatchedCount) {
       const count = Number(item.matched_students_count || 0);
       els.previewMatchedCount.textContent = `${count} student${count === 1 ? "" : "s"}`;
     }
+
     if (els.previewAuthor) els.previewAuthor.textContent = item.created_by_admin_name || "Admin";
     if (els.previewTime) els.previewTime.textContent = formatAnnouncementTime(item.published_at || item.updated_at || item.created_at);
 
@@ -1412,7 +1471,7 @@
       const payload = {
         action: "list_announcements",
         ...(statusOverride && statusOverride !== "all" ? { status: statusOverride } : {}),
-        ...getAnnouncementActorPayload()
+        ...getActorPayload()
       };
 
       const res = await invokeAnnouncementManager(payload);
@@ -1549,6 +1608,7 @@
       if (els.composePreviewImage) els.composePreviewImage.src = imageUrl;
     } else {
       els.composePreviewImageWrap?.classList.add("hidden");
+      if (els.composePreviewImage) els.composePreviewImage.removeAttribute("src");
     }
 
     if (linkUrl) {
@@ -1578,7 +1638,7 @@
         action: "preview_matched_students",
         audience_mode: announcementState.audienceMode,
         programme_targets: announcementState.programmeTargets,
-        ...getAnnouncementActorPayload()
+        ...getActorPayload()
       };
 
       const res = await invokeAnnouncementManager(payload);
@@ -1636,21 +1696,21 @@
           action: "update_announcement",
           announcement_id: announcementState.editingId,
           ...payload,
-          ...getAnnouncementActorPayload()
+          ...getActorPayload()
         });
 
         if (payload.status === "published") {
           await invokeAnnouncementManager({
             action: "publish_announcement",
             announcement_id: announcementState.editingId,
-            ...getAnnouncementActorPayload()
+            ...getActorPayload()
           });
         }
       } else {
         await invokeAnnouncementManager({
           action: "create_announcement",
           ...payload,
-          ...getAnnouncementActorPayload()
+          ...getActorPayload()
         });
       }
 
@@ -1663,15 +1723,15 @@
   }
 
   function bindAnnouncementEvents() {
-    document.getElementById("announcementNewBtn")?.addEventListener("click", () => {
+    $("announcementNewBtn")?.addEventListener("click", () => {
       openAnnouncementComposer("create");
     });
 
-    document.getElementById("announcementComposerCloseBtn")?.addEventListener("click", closeAnnouncementComposer);
-    document.getElementById("announcementComposerBackdrop")?.addEventListener("click", closeAnnouncementComposer);
-    document.getElementById("announcementCancelBtn")?.addEventListener("click", closeAnnouncementComposer);
+    $("announcementComposerCloseBtn")?.addEventListener("click", closeAnnouncementComposer);
+    $("announcementComposerBackdrop")?.addEventListener("click", closeAnnouncementComposer);
+    $("announcementCancelBtn")?.addEventListener("click", closeAnnouncementComposer);
 
-    document.getElementById("announcementSaveDraftBtn")?.addEventListener("click", () => {
+    $("announcementSaveDraftBtn")?.addEventListener("click", () => {
       announcementState.deliveryMode = "draft";
       document.querySelectorAll(".delivery-option").forEach((label) => {
         const input = label.querySelector("input");
@@ -1683,7 +1743,7 @@
       saveAnnouncement("draft");
     });
 
-    document.getElementById("announcementPublishBtn")?.addEventListener("click", () => {
+    $("announcementPublishBtn")?.addEventListener("click", () => {
       saveAnnouncement(announcementState.deliveryMode);
     });
 
@@ -1696,7 +1756,7 @@
       });
     });
 
-    document.getElementById("announcementSearchInput")?.addEventListener("input", (e) => {
+    $("announcementSearchInput")?.addEventListener("input", (e) => {
       announcementState.search = e.target.value || "";
       applyAnnouncementFilters();
     });
@@ -1712,7 +1772,7 @@
       });
     });
 
-    document.getElementById("announcementAddTargetBtn")?.addEventListener("click", () => {
+    $("announcementAddTargetBtn")?.addEventListener("click", () => {
       const els = announcementEls();
       const programme = els.programmeInput?.value?.trim() || "";
       const levelsRaw = els.levelsInput?.value?.trim() || "";
@@ -1759,15 +1819,15 @@
       "announcementFileUrlInput",
       "announcementScheduleInput"
     ].forEach((id) => {
-      document.getElementById(id)?.addEventListener("input", refreshAnnouncementPreviewCard);
+      $(id)?.addEventListener("input", refreshAnnouncementPreviewCard);
     });
 
-    document.getElementById("announcementEditBtn")?.addEventListener("click", () => {
+    $("announcementEditBtn")?.addEventListener("click", () => {
       const item = announcementState.items.find((x) => x.id === announcementState.selectedId);
       if (item) openAnnouncementComposer("edit", item);
     });
 
-    document.getElementById("announcementDuplicateBtn")?.addEventListener("click", () => {
+    $("announcementDuplicateBtn")?.addEventListener("click", () => {
       const item = announcementState.items.find((x) => x.id === announcementState.selectedId);
       if (!item) return;
 
@@ -1781,13 +1841,13 @@
       openAnnouncementComposer("create", clone);
     });
 
-    document.getElementById("announcementArchiveBtn")?.addEventListener("click", async () => {
+    $("announcementArchiveBtn")?.addEventListener("click", async () => {
       if (!announcementState.selectedId) return;
       try {
         await invokeAnnouncementManager({
           action: "archive_announcement",
           announcement_id: announcementState.selectedId,
-          ...getAnnouncementActorPayload()
+          ...getActorPayload()
         });
         await loadAnnouncements(announcementState.activeStatus);
       } catch (err) {
@@ -1796,7 +1856,7 @@
       }
     });
 
-    document.getElementById("announcementDeleteBtn")?.addEventListener("click", async () => {
+    $("announcementDeleteBtn")?.addEventListener("click", async () => {
       if (!announcementState.selectedId) return;
       if (!confirm("Delete this announcement?")) return;
 
@@ -1804,7 +1864,7 @@
         await invokeAnnouncementManager({
           action: "delete_announcement",
           announcement_id: announcementState.selectedId,
-          ...getAnnouncementActorPayload()
+          ...getActorPayload()
         });
         await loadAnnouncements(announcementState.activeStatus);
       } catch (err) {
@@ -1814,15 +1874,6 @@
     });
   }
 
-  function escapeHtml(value) {
-    return String(value || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function toDateTimeLocal(value) {
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return "";
@@ -1830,8 +1881,21 @@
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  async function initAnnouncementSystem() {
+    announcementState.sb = createClientSafe();
+    announcementState.session = getAdminSession();
+
+    if (!announcementState.sb) {
+      console.error("Announcement supabase client could not be created.");
+      return;
+    }
+
     bindAnnouncementEvents();
     await loadAnnouncements("all");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initAnnouncementSystem();
   });
+})();
 </script>
