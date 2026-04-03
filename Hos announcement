@@ -142,8 +142,8 @@
           <div class="announcement-step-badge" id="announcementStepBadgeTwo">
             <span class="announcement-step-number">2</span>
             <div class="announcement-step-copy">
-              <strong>Student View</strong>
-              <small>What students will see</small>
+              <strong>Push Notification</strong>
+              <small>What students will see first</small>
             </div>
           </div>
         </div>
@@ -155,13 +155,13 @@
                 <div class="announcement-compose-section-title">Announcement Details</div>
 
                 <label class="field">
-                  <span class="field-label">Internal Title</span>
-                  <input id="announcementTitleInput" type="text" placeholder="Enter internal announcement title" />
+                  <span class="field-label">Announcement Title</span>
+                  <input id="announcementTitleInput" type="text" placeholder="Enter announcement title" />
                 </label>
 
                 <label class="field">
-                  <span class="field-label">Internal Message</span>
-                  <textarea id="announcementBodyInput" rows="6" placeholder="Write the announcement content"></textarea>
+                  <span class="field-label">Announcement Message</span>
+                  <textarea id="announcementBodyInput" rows="6" placeholder="Write the full announcement students will open and read"></textarea>
                 </label>
 
                 <div class="field-grid two">
@@ -310,14 +310,14 @@
 
             <div class="announcement-compose-right">
               <div class="compose-preview-card">
-                <div class="compose-preview-title">Internal Preview</div>
+                <div class="compose-preview-title">Announcement Preview</div>
 
                 <div class="compose-preview-message-card">
                   <h3 id="announcementComposePreviewTitle">Announcement title</h3>
                   <div class="compose-preview-audience-pill" id="announcementAudienceText">All students</div>
 
                   <p id="announcementComposePreviewBody">
-                    Your announcement message preview will show here.
+                    Your full announcement preview will show here.
                   </p>
 
                   <div class="compose-preview-image hidden" id="announcementComposePreviewImageWrap">
@@ -348,25 +348,25 @@
               </div>
             </div>
           </div>
-        </div><!-- end step one -->
+        </div><!-- step one -->
 
         <div class="announcement-step hidden" id="announcementStepTwo">
           <div class="announcement-step-two-grid">
             <div class="announcement-step-two-left">
               <section class="announcement-compose-section">
-                <div class="announcement-compose-section-title">Student Announcement Details</div>
+                <div class="announcement-compose-section-title">Push Notification Details</div>
                 <div class="announcement-step-note">
-                  This is what students will see on their phone when the announcement is delivered.
+                  This is only the push notification students will first see on their phone before opening the full announcement.
                 </div>
 
                 <label class="field">
-                  <span class="field-label">Student Title</span>
-                  <input id="announcementStudentTitleInput" type="text" placeholder="Enter the title students will see" />
+                  <span class="field-label">Notification Title</span>
+                  <input id="announcementStudentTitleInput" type="text" placeholder="Enter the notification title students will see" />
                 </label>
 
                 <label class="field">
-                  <span class="field-label">Student Description</span>
-                  <textarea id="announcementStudentBodyInput" rows="7" placeholder="Write the student-facing description"></textarea>
+                  <span class="field-label">Notification Description</span>
+                  <textarea id="announcementStudentBodyInput" rows="7" placeholder="Write the notification description students will see"></textarea>
                 </label>
 
                 <div class="announcement-step-summary-card">
@@ -391,19 +391,19 @@
                 </div>
 
                 <div class="announcement-phone-content">
-                  <div class="announcement-phone-label">Student Preview</div>
+                  <div class="announcement-phone-label">Push Notification Preview</div>
 
                   <div class="announcement-phone-card">
                     <div class="announcement-phone-chip" id="announcementStudentPhoneAudience">All students</div>
 
-                    <h3 id="announcementStudentPhoneTitle">Announcement title</h3>
+                    <h3 id="announcementStudentPhoneTitle">Notification title</h3>
 
                     <p id="announcementStudentPhoneBody">
-                      This is how the announcement will look on the student's phone.
+                      Notification description will show here.
                     </p>
 
                     <div class="announcement-phone-image hidden" id="announcementStudentPhoneImageWrap">
-                      <img id="announcementStudentPhoneImage" alt="Student announcement preview image" />
+                      <img id="announcementStudentPhoneImage" alt="Push preview image" />
                     </div>
 
                     <div class="announcement-phone-link hidden" id="announcementStudentPhoneLinkWrap">
@@ -420,11 +420,11 @@
               </div>
             </div>
           </div>
-        </div><!-- end step two -->
+        </div><!-- step two -->
 
         <div class="announcement-modal-foot">
           <button class="btn btn-light" id="announcementCancelBtn" type="button">Cancel</button>
-          <button class="btn btn-light" id="announcementBackBtn" type="button">Back</button>
+          <button class="btn btn-light hidden" id="announcementBackBtn" type="button">Back</button>
           <button class="btn btn-light" id="announcementSaveDraftBtn" type="button">Save Draft</button>
           <button class="btn btn-primary" id="announcementNextBtn" type="button">Next</button>
           <button class="btn btn-primary hidden" id="announcementPublishBtn" type="button">Send Announcement</button>
@@ -433,7 +433,6 @@
     </div>
   </div>
 </section>
-
 <style>
   .announcements-panel {
     overflow: hidden;
@@ -1584,8 +1583,8 @@
 
 <script>
 (function () {
-  if (window.__hosAnnouncementSystemInitializedV3) return;
-  window.__hosAnnouncementSystemInitializedV3 = true;
+  if (window.__hosAnnouncementSystemInitializedV4) return;
+  window.__hosAnnouncementSystemInitializedV4 = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
@@ -1595,28 +1594,34 @@
   const announcementState = {
     sb: null,
     session: null,
+
     items: [],
     filteredItems: [],
     selectedId: null,
     activeStatus: "all",
     search: "",
+
     composeMode: "create",
     editingId: null,
+    composeStep: 1,
+
     audienceMode: "all_students",
     programmeTargets: [],
-    deliveryMode: "published",
     matchedStudents: [],
     loadingMatched: false,
+
+    deliveryMode: "published",
     programmes: [],
+
     uploadedImageUrl: "",
     uploadedFileUrl: "",
     uploadedFileName: "",
     uploadingImage: false,
     uploadingFile: false,
 
-    composeStep: 1,
-    studentNoticeTitle: "",
-    studentNoticeBody: ""
+    // push notification fields only
+    notificationTitle: "",
+    notificationBody: ""
   };
 
   function $(id) {
@@ -1648,6 +1653,7 @@
     } catch (err) {
       console.error("Announcement supabase init failed:", err);
     }
+
     return null;
   }
 
@@ -1667,9 +1673,11 @@
     if (role === "hos") {
       return { hos_admin_id: account.id || session.id || "" };
     }
+
     if (role === "form_agent") {
       return { form_agent_id: account.id || session.id || "" };
     }
+
     return { hos_admin_id: account.id || session.id || "" };
   }
 
@@ -1760,7 +1768,6 @@
       scheduleWrap: $("announcementScheduleWrap"),
       scheduleInput: $("announcementScheduleInput"),
 
-      // new step ui ids you will add in html
       stepOneWrap: $("announcementStepOne"),
       stepTwoWrap: $("announcementStepTwo"),
       stepBadgeOne: $("announcementStepBadgeOne"),
@@ -1770,6 +1777,7 @@
       publishBtn: $("announcementPublishBtn"),
       saveDraftBtn: $("announcementSaveDraftBtn"),
 
+      // keep existing IDs for step 2 html
       studentTitleInput: $("announcementStudentTitleInput"),
       studentBodyInput: $("announcementStudentBodyInput"),
       studentPhoneTitle: $("announcementStudentPhoneTitle"),
@@ -1886,9 +1894,13 @@
 
       announcementState.programmes = Array.isArray(data) ? data : [];
 
-      els.programmeSelect.innerHTML = `<option value="">Select programme</option>` +
+      els.programmeSelect.innerHTML =
+        `<option value="">Select programme</option>` +
         announcementState.programmes
-          .map((row) => `<option value="${escapeHtml(row.programme_name)}">${escapeHtml(row.programme_name)}</option>`)
+          .map(
+            (row) =>
+              `<option value="${escapeHtml(row.programme_name)}">${escapeHtml(row.programme_name)}</option>`
+          )
           .join("");
     } catch (err) {
       console.error("Load programmes error:", err);
@@ -2031,7 +2043,9 @@
     }
 
     if (els.previewAuthor) els.previewAuthor.textContent = item.created_by_admin_name || "Admin";
-    if (els.previewTime) els.previewTime.textContent = formatAnnouncementTime(item.published_at || item.updated_at || item.created_at);
+    if (els.previewTime) {
+      els.previewTime.textContent = formatAnnouncementTime(item.published_at || item.updated_at || item.created_at);
+    }
 
     if (item.image_url) {
       els.previewImageWrap?.classList.remove("hidden");
@@ -2051,7 +2065,9 @@
 
     if (item.file_url) {
       els.previewFileWrap?.classList.remove("hidden");
-      if (els.previewFileUrl) els.previewFileUrl.textContent = item.file_url;
+      if (els.previewFileUrl) {
+        els.previewFileUrl.textContent = item.file_url;
+      }
     } else {
       els.previewFileWrap?.classList.add("hidden");
     }
@@ -2074,7 +2090,9 @@
           item.body,
           item.created_by_admin_name,
           buildAnnouncementAudienceText(item)
-        ].join(" ").toLowerCase();
+        ]
+          .join(" ")
+          .toLowerCase();
 
         return haystack.includes(search);
       });
@@ -2117,31 +2135,33 @@
 
   function resetAnnouncementComposeState() {
     announcementState.composeStep = 1;
-    announcementState.studentNoticeTitle = "";
-    announcementState.studentNoticeBody = "";
+    announcementState.notificationTitle = "";
+    announcementState.notificationBody = "";
     announcementState.audienceMode = "all_students";
     announcementState.programmeTargets = [];
     announcementState.deliveryMode = "published";
     announcementState.matchedStudents = [];
   }
 
-  function syncStudentNoticeDefaults() {
+  function syncNotificationDefaults() {
     const els = announcementEls();
-    const mainTitle = els.titleInput?.value?.trim() || "";
-    const mainBody = els.bodyInput?.value?.trim() || "";
+    const internalTitle = els.titleInput?.value?.trim() || "";
+    const internalBody = els.bodyInput?.value?.trim() || "";
 
-    if (!announcementState.studentNoticeTitle.trim()) {
-      announcementState.studentNoticeTitle = mainTitle;
+    if (!announcementState.notificationTitle.trim()) {
+      announcementState.notificationTitle = internalTitle;
     }
-    if (!announcementState.studentNoticeBody.trim()) {
-      announcementState.studentNoticeBody = mainBody;
+
+    if (!announcementState.notificationBody.trim()) {
+      announcementState.notificationBody = internalBody;
     }
 
     if (els.studentTitleInput && document.activeElement !== els.studentTitleInput) {
-      els.studentTitleInput.value = announcementState.studentNoticeTitle;
+      els.studentTitleInput.value = announcementState.notificationTitle;
     }
+
     if (els.studentBodyInput && document.activeElement !== els.studentBodyInput) {
-      els.studentBodyInput.value = announcementState.studentNoticeBody;
+      els.studentBodyInput.value = announcementState.notificationBody;
     }
   }
 
@@ -2158,10 +2178,6 @@
     els.backBtn?.classList.toggle("hidden", step === 1);
     els.nextBtn?.classList.toggle("hidden", step !== 1);
     els.publishBtn?.classList.toggle("hidden", step !== 2);
-
-    if (els.saveDraftBtn) {
-      els.saveDraftBtn.textContent = "Save Draft";
-    }
 
     if (els.nextBtn) {
       els.nextBtn.textContent = "Next";
@@ -2210,16 +2226,20 @@
     });
   }
 
-  function refreshStudentPhonePreview() {
+  function refreshPushNotificationPreview() {
     const els = announcementEls();
 
-    syncStudentNoticeDefaults();
+    syncNotificationDefaults();
 
-    const title = announcementState.studentNoticeTitle.trim() || "Announcement title";
-    const body = announcementState.studentNoticeBody.trim() || "This is how the announcement will look on the student's phone.";
-    const audienceText = announcementState.audienceMode === "programme_filter"
-      ? buildAnnouncementAudienceText({ audience_mode: "programme_filter", programme_targets: announcementState.programmeTargets })
-      : "All students";
+    const title = announcementState.notificationTitle.trim() || "Push notification title";
+    const body = announcementState.notificationBody.trim() || "Push notification body will show here.";
+    const audienceText =
+      announcementState.audienceMode === "programme_filter"
+        ? buildAnnouncementAudienceText({
+            audience_mode: "programme_filter",
+            programme_targets: announcementState.programmeTargets
+          })
+        : "All students";
 
     const count = Array.isArray(announcementState.matchedStudents)
       ? announcementState.matchedStudents.length
@@ -2229,55 +2249,36 @@
     if (els.studentPhoneBody) els.studentPhoneBody.textContent = body;
     if (els.studentPhoneAudience) els.studentPhoneAudience.textContent = audienceText;
     if (els.studentAudienceLine) els.studentAudienceLine.textContent = audienceText;
-    if (els.studentMatchedCount) els.studentMatchedCount.textContent = `${count} student${count === 1 ? "" : "s"}`;
-
-    const linkLabel = els.linkLabelInput?.value?.trim() || "Open link";
-    const linkUrl = els.linkUrlInput?.value?.trim();
-    const imageUrl = announcementState.uploadedImageUrl;
-    const fileUrl = announcementState.uploadedFileUrl;
-
-    if (imageUrl) {
-      els.studentPhoneImageWrap?.classList.remove("hidden");
-      if (els.studentPhoneImage) els.studentPhoneImage.src = imageUrl;
-    } else {
-      els.studentPhoneImageWrap?.classList.add("hidden");
-      els.studentPhoneImage?.removeAttribute("src");
+    if (els.studentMatchedCount) {
+      els.studentMatchedCount.textContent = `${count} student${count === 1 ? "" : "s"}`;
     }
 
-    if (linkUrl) {
-      els.studentPhoneLinkWrap?.classList.remove("hidden");
-      if (els.studentPhoneLinkLabel) els.studentPhoneLinkLabel.textContent = linkLabel;
-      if (els.studentPhoneLinkUrl) els.studentPhoneLinkUrl.textContent = linkUrl;
-    } else {
-      els.studentPhoneLinkWrap?.classList.add("hidden");
-    }
-
-    if (fileUrl) {
-      els.studentPhoneFileWrap?.classList.remove("hidden");
-      if (els.studentPhoneFileUrl) {
-        els.studentPhoneFileUrl.textContent = announcementState.uploadedFileName || fileUrl;
-      }
-    } else {
-      els.studentPhoneFileWrap?.classList.add("hidden");
-    }
+    // push preview should not show full announcement extras by default
+    els.studentPhoneImageWrap?.classList.add("hidden");
+    els.studentPhoneLinkWrap?.classList.add("hidden");
+    els.studentPhoneFileWrap?.classList.add("hidden");
   }
 
   function refreshAnnouncementPreviewCard() {
     const els = announcementEls();
 
-    const title = els.titleInput?.value?.trim() || "Announcement title";
-    const body = els.bodyInput?.value?.trim() || "Your announcement message preview will show here.";
+    const internalTitle = els.titleInput?.value?.trim() || "Announcement title";
+    const internalBody = els.bodyInput?.value?.trim() || "Your internal announcement preview will show here.";
     const linkLabel = els.linkLabelInput?.value?.trim() || "Open link";
     const linkUrl = els.linkUrlInput?.value?.trim();
     const imageUrl = announcementState.uploadedImageUrl;
     const fileUrl = announcementState.uploadedFileUrl;
 
-    if (els.composePreviewTitle) els.composePreviewTitle.textContent = title;
-    if (els.composePreviewBody) els.composePreviewBody.textContent = body;
+    if (els.composePreviewTitle) els.composePreviewTitle.textContent = internalTitle;
+    if (els.composePreviewBody) els.composePreviewBody.textContent = internalBody;
 
-    const audienceText = announcementState.audienceMode === "programme_filter"
-      ? buildAnnouncementAudienceText({ audience_mode: "programme_filter", programme_targets: announcementState.programmeTargets })
-      : "All students";
+    const audienceText =
+      announcementState.audienceMode === "programme_filter"
+        ? buildAnnouncementAudienceText({
+            audience_mode: "programme_filter",
+            programme_targets: announcementState.programmeTargets
+          })
+        : "All students";
 
     if (els.audienceText) els.audienceText.textContent = audienceText;
     if (els.audienceTextMini) els.audienceTextMini.textContent = audienceText;
@@ -2287,7 +2288,9 @@
       : 0;
 
     if (els.matchedCount) els.matchedCount.textContent = String(count);
-    if (els.composePreviewMatched) els.composePreviewMatched.textContent = `${count} student${count === 1 ? "" : "s"}`;
+    if (els.composePreviewMatched) {
+      els.composePreviewMatched.textContent = `${count} student${count === 1 ? "" : "s"}`;
+    }
 
     const statusText =
       announcementState.deliveryMode === "scheduled"
@@ -2316,15 +2319,17 @@
 
     if (fileUrl) {
       els.composePreviewFileWrap?.classList.remove("hidden");
-      if (els.composePreviewFileUrl) els.composePreviewFileUrl.textContent = announcementState.uploadedFileName || fileUrl;
+      if (els.composePreviewFileUrl) {
+        els.composePreviewFileUrl.textContent = announcementState.uploadedFileName || fileUrl;
+      }
     } else {
       els.composePreviewFileWrap?.classList.add("hidden");
     }
 
     els.scheduleWrap?.classList.toggle("hidden", announcementState.deliveryMode !== "scheduled");
 
-    syncStudentNoticeDefaults();
-    refreshStudentPhonePreview();
+    syncNotificationDefaults();
+    refreshPushNotificationPreview();
     renderAnnouncementStepUI();
   }
 
@@ -2359,12 +2364,12 @@
     const body = els.bodyInput?.value?.trim() || "";
 
     if (!title) {
-      alert("Enter announcement title.");
+      alert("Enter internal announcement title.");
       return false;
     }
 
     if (!body) {
-      alert("Enter announcement message.");
+      alert("Enter internal announcement message.");
       return false;
     }
 
@@ -2381,10 +2386,29 @@
     return true;
   }
 
+  function validateAnnouncementStepTwo() {
+    const els = announcementEls();
+
+    const title = els.studentTitleInput?.value?.trim() || announcementState.notificationTitle.trim();
+    const body = els.studentBodyInput?.value?.trim() || announcementState.notificationBody.trim();
+
+    if (!title) {
+      alert("Enter notification title.");
+      return false;
+    }
+
+    if (!body) {
+      alert("Enter notification description.");
+      return false;
+    }
+
+    return true;
+  }
+
   function goToAnnouncementStep(step) {
     if (step === 2) {
       if (!validateAnnouncementStepOne()) return;
-      syncStudentNoticeDefaults();
+      syncNotificationDefaults();
     }
 
     announcementState.composeStep = step;
@@ -2396,8 +2420,10 @@
     const status = statusOverride || announcementState.deliveryMode;
 
     return {
-      title: announcementState.studentNoticeTitle?.trim() || els.titleInput?.value?.trim() || "",
-      body: announcementState.studentNoticeBody?.trim() || els.bodyInput?.value?.trim() || "",
+      title: els.titleInput?.value?.trim() || "",
+      body: els.bodyInput?.value?.trim() || "",
+      notification_title: announcementState.notificationTitle?.trim() || "",
+      notification_body: announcementState.notificationBody?.trim() || "",
       link_label: els.linkLabelInput?.value?.trim() || "",
       link_url: els.linkUrlInput?.value?.trim() || "",
       image_url: announcementState.uploadedImageUrl || "",
@@ -2413,12 +2439,22 @@
     const payload = collectAnnouncementPayload(statusOverride);
 
     if (!payload.title) {
-      alert("Enter the student-facing announcement title.");
+      alert("Enter internal announcement title.");
       return;
     }
 
     if (!payload.body) {
-      alert("Enter the student-facing announcement description.");
+      alert("Enter internal announcement message.");
+      return;
+    }
+
+    if (!payload.notification_title) {
+      alert("Enter notification title.");
+      return;
+    }
+
+    if (!payload.notification_body) {
+      alert("Enter notification description.");
       return;
     }
 
@@ -2522,6 +2558,13 @@
     });
   }
 
+  function toDateTimeLocal(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   function openAnnouncementComposer(mode = "create", item = null) {
     const els = announcementEls();
 
@@ -2529,30 +2572,45 @@
     announcementState.editingId = item?.id || null;
     announcementState.composeStep = 1;
     announcementState.audienceMode = item?.audience_mode || "all_students";
-    announcementState.programmeTargets = Array.isArray(item?.programme_targets) ? [...item.programme_targets] : [];
-    announcementState.deliveryMode = item?.status === "scheduled"
-      ? "scheduled"
-      : item?.status === "draft"
-      ? "draft"
-      : "published";
+    announcementState.programmeTargets = Array.isArray(item?.programme_targets)
+      ? JSON.parse(JSON.stringify(item.programme_targets))
+      : [];
+    announcementState.deliveryMode =
+      item?.status === "scheduled"
+        ? "scheduled"
+        : item?.status === "draft"
+        ? "draft"
+        : "published";
 
     announcementState.uploadedImageUrl = item?.image_url || "";
     announcementState.uploadedFileUrl = item?.file_url || "";
     announcementState.uploadedFileName = item?.file_url ? item.file_url.split("/").pop() : "";
-    announcementState.studentNoticeTitle = item?.title || "";
-    announcementState.studentNoticeBody = item?.body || "";
+
+    // internal announcement stays internal
+    if (els.titleInput) els.titleInput.value = item?.title || "";
+    if (els.bodyInput) els.bodyInput.value = item?.body || "";
+
+    if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
+    if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
+    if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
+
+    // push notification values
+    announcementState.notificationTitle =
+      item?.notification_title ||
+      item?.title ||
+      "";
+
+    announcementState.notificationBody =
+      item?.notification_body ||
+      item?.body ||
+      "";
+
+    if (els.studentTitleInput) els.studentTitleInput.value = announcementState.notificationTitle;
+    if (els.studentBodyInput) els.studentBodyInput.value = announcementState.notificationBody;
 
     if (els.composeTitle) {
       els.composeTitle.textContent = mode === "edit" ? "Edit Announcement" : "New Announcement";
     }
-
-    if (els.titleInput) els.titleInput.value = item?.title || "";
-    if (els.bodyInput) els.bodyInput.value = item?.body || "";
-    if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
-    if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
-    if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
-    if (els.studentTitleInput) els.studentTitleInput.value = announcementState.studentNoticeTitle || "";
-    if (els.studentBodyInput) els.studentBodyInput.value = announcementState.studentNoticeBody || "";
 
     document.querySelectorAll(".audience-mode-card").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.mode === announcementState.audienceMode);
@@ -2601,17 +2659,20 @@
 
     $("announcementSaveDraftBtn")?.addEventListener("click", () => {
       announcementState.deliveryMode = "draft";
+
       document.querySelectorAll(".delivery-option").forEach((label) => {
         const input = label.querySelector("input");
         const active = input && input.value === "draft";
         label.classList.toggle("active", active);
         if (input) input.checked = active;
       });
+
       refreshAnnouncementPreviewCard();
       saveAnnouncement("draft");
     });
 
     $("announcementPublishBtn")?.addEventListener("click", () => {
+      if (!validateAnnouncementStepTwo()) return;
       saveAnnouncement(announcementState.deliveryMode);
     });
 
@@ -2656,8 +2717,10 @@
       }
 
       mergeProgrammeTarget(programme, level);
+
       if (els.programmeSelect) els.programmeSelect.value = "";
       if (els.levelSelect) els.levelSelect.value = "";
+
       renderAnnouncementTargetList();
       refreshAnnouncementPreviewCard();
       refreshAnnouncementMatchedPreview();
@@ -2666,10 +2729,12 @@
     document.querySelectorAll('input[name="announcementDeliveryMode"]').forEach((input) => {
       input.addEventListener("change", () => {
         announcementState.deliveryMode = input.value;
+
         document.querySelectorAll(".delivery-option").forEach((label) => {
           const radio = label.querySelector("input");
           label.classList.toggle("active", radio && radio.value === input.value);
         });
+
         refreshAnnouncementPreviewCard();
       });
     });
@@ -2682,24 +2747,18 @@
       "announcementScheduleInput"
     ].forEach((id) => {
       $(id)?.addEventListener("input", () => {
-        if (id === "announcementTitleInput" && !$("announcementStudentTitleInput")?.matches(":focus")) {
-          announcementState.studentNoticeTitle = $("announcementTitleInput")?.value?.trim() || "";
-        }
-        if (id === "announcementBodyInput" && !$("announcementStudentBodyInput")?.matches(":focus")) {
-          announcementState.studentNoticeBody = $("announcementBodyInput")?.value?.trim() || "";
-        }
         refreshAnnouncementPreviewCard();
       });
     });
 
     $("announcementStudentTitleInput")?.addEventListener("input", (e) => {
-      announcementState.studentNoticeTitle = e.target.value || "";
-      refreshStudentPhonePreview();
+      announcementState.notificationTitle = e.target.value || "";
+      refreshPushNotificationPreview();
     });
 
     $("announcementStudentBodyInput")?.addEventListener("input", (e) => {
-      announcementState.studentNoticeBody = e.target.value || "";
-      refreshStudentPhonePreview();
+      announcementState.notificationBody = e.target.value || "";
+      refreshPushNotificationPreview();
     });
 
     $("announcementImageFileInput")?.addEventListener("change", async (e) => {
@@ -2746,12 +2805,14 @@
 
     $("announcementArchiveBtn")?.addEventListener("click", async () => {
       if (!announcementState.selectedId) return;
+
       try {
         await invokeAnnouncementManager({
           action: "archive_announcement",
           announcement_id: announcementState.selectedId,
           ...getActorPayload()
         });
+
         await loadAnnouncements(announcementState.activeStatus);
       } catch (err) {
         console.error("archive announcement failed:", err);
@@ -2769,19 +2830,13 @@
           announcement_id: announcementState.selectedId,
           ...getActorPayload()
         });
+
         await loadAnnouncements(announcementState.activeStatus);
       } catch (err) {
         console.error("delete announcement failed:", err);
         alert(err.message || "Failed to delete announcement.");
       }
     });
-  }
-
-  function toDateTimeLocal(value) {
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   async function initAnnouncementSystem() {
