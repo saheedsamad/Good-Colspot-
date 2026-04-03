@@ -1229,6 +1229,7 @@
   </section>
 </div>
 <script>
+(() => {
   window.studentClassActivityState = window.studentClassActivityState || {
     activities: [],
     forms: [],
@@ -1251,6 +1252,8 @@
     currentFormResponseId: null,
     timerInterval: null
   };
+
+  const state = window.studentClassActivityState;
 
   function studentReportEscape(value) {
     return String(value ?? "")
@@ -1307,6 +1310,19 @@
     return time < Date.now();
   }
 
+  function studentQuestionOptions(question) {
+    if (!question) return {};
+    if (question.options && typeof question.options === "object" && !Array.isArray(question.options)) {
+      return question.options;
+    }
+    return {
+      A: question.option_a || "",
+      B: question.option_b || "",
+      C: question.option_c || "",
+      D: question.option_d || ""
+    };
+  }
+
   async function studentEnsureUser() {
     if (typeof ensureCurrentUser === "function") {
       return await ensureCurrentUser();
@@ -1325,10 +1341,30 @@
     }
   }
 
+  async function studentInvokeHistoryManager(payload) {
+    if (typeof supabase === "undefined") {
+      throw new Error("Supabase is not available.");
+    }
+
+    const { data, error } = await supabase.functions.invoke("student-history-manager", {
+      body: payload
+    });
+
+    if (error) {
+      throw new Error(error.message || "Edge Function returned a non-2xx status code");
+    }
+
+    if (!data?.ok) {
+      throw new Error(data?.error || "Student history manager failed.");
+    }
+
+    return data;
+  }
+
   function studentStopTimer() {
-    if (window.studentClassActivityState.timerInterval) {
-      clearInterval(window.studentClassActivityState.timerInterval);
-      window.studentClassActivityState.timerInterval = null;
+    if (state.timerInterval) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
     }
   }
 
@@ -1355,7 +1391,7 @@
       return;
     }
 
-    window.studentClassActivityState.currentAttemptExpiresAt = expiresAt;
+    state.currentAttemptExpiresAt = expiresAt;
 
     const tick = () => {
       const endMs = new Date(expiresAt).getTime();
@@ -1378,7 +1414,7 @@
     };
 
     tick();
-    window.studentClassActivityState.timerInterval = setInterval(tick, 1000);
+    state.timerInterval = setInterval(tick, 1000);
   }
 
   function studentHideAllViews() {
@@ -1446,7 +1482,6 @@
   }
 
   function studentRenderFeedStats() {
-    const state = window.studentClassActivityState;
     const total = state.feedItems.length;
     const forms = state.forms.length;
     const activities = state.activities.length;
@@ -1477,7 +1512,6 @@
   }
 
   function studentComputeFeedItems() {
-    const state = window.studentClassActivityState;
     const merged = [...state.forms, ...state.activities, ...state.announcements];
 
     merged.sort((a, b) => {
@@ -1490,7 +1524,6 @@
   }
 
   function studentFilterFeedItems() {
-    const state = window.studentClassActivityState;
     const filter = state.currentFilter || "all";
     const q = studentNormalizeText(state.searchTerm).toLowerCase();
 
@@ -1529,9 +1562,7 @@
   }
 
   function studentFeedKindClass(item) {
-    if (item.item_type === "announcement") {
-      return item.is_read ? "submitted" : "revision";
-    }
+    if (item.item_type === "announcement") return item.is_read ? "submitted" : "revision";
     if (item.status === "closed" || item.status === "expired") return "closed";
     if (item.status === "submitted") return "submitted";
     if (item.item_type === "form") return "form";
@@ -1552,9 +1583,7 @@
   }
 
   function studentFeedStatusClass(item) {
-    if (item.item_type === "announcement") {
-      return item.is_read ? "submitted" : "not-started";
-    }
+    if (item.item_type === "announcement") return item.is_read ? "submitted" : "not-started";
     if (item.status === "submitted") return "submitted";
     if (item.status === "in-progress") return "in-progress";
     if (item.status === "closed") return "closed";
@@ -1563,9 +1592,7 @@
   }
 
   function studentFeedStatusLabel(item) {
-    if (item.item_type === "announcement") {
-      return item.is_read ? "Read" : "Unread";
-    }
+    if (item.item_type === "announcement") return item.is_read ? "Read" : "Unread";
     if (item.status === "submitted") return "Submitted";
     if (item.status === "in-progress") return "In progress";
     if (item.status === "closed") return "Closed";
@@ -1588,7 +1615,7 @@
     const wrap = document.getElementById("studentReportsFeedList");
     if (!wrap) return;
 
-    const items = window.studentClassActivityState.filteredFeedItems || [];
+    const items = state.filteredFeedItems || [];
 
     if (!items.length) {
       wrap.innerHTML = `<div class="feed-empty">No form, class activity, or announcement matched your current filter.</div>`;
@@ -1652,322 +1679,6 @@
     }).join("");
   }
 
-  async function studentLoadActivities() {
-    if (typeof supabase === "undefined") {
-      throw new Error("Supabase is not available.");
-    }
-
-    const user = await studentEnsureUser();
-    if (!user) {
-      throw new Error("Please sign in again to continue.");
-    }
-
-    const { data: memberships, error: membershipError } = await supabase
-      .from("course_memberships")
-      .select("course_id")
-      .eq("user_id", user.id);
-
-    if (membershipError) throw membershipError;
-
-    const classIds = (memberships || []).map((x) => x.course_id).filter(Boolean);
-
-    if (!classIds.length) {
-      window.studentClassActivityState.activities = [];
-      return [];
-    }
-
-    const { data: courses, error: coursesError } = await supabase
-      .from("courses")
-      .select("id, course_code, course_title")
-      .in("id", classIds);
-
-    if (coursesError) throw coursesError;
-
-    const courseMap = {};
-    (courses || []).forEach((c) => {
-      courseMap[c.id] = c;
-    });
-
-    const { data: activities, error: activitiesError } = await supabase
-      .from("class_activities")
-      .select("id, class_id, activity_type, title, due_at, time_limit_minutes, attempts_allowed, is_published, status, created_at")
-      .in("class_id", classIds)
-      .eq("is_published", true)
-      .eq("status", "published")
-      .order("created_at", { ascending: false });
-
-    if (activitiesError) throw activitiesError;
-
-    const activityIds = (activities || []).map((a) => a.id).filter(Boolean);
-
-    let attempts = [];
-    if (activityIds.length) {
-      const { data: attemptsData, error: attemptsError } = await supabase
-        .from("class_activity_attempts")
-        .select("id, activity_id, started_at, submitted_at, status, expires_at")
-        .eq("user_id", user.id)
-        .in("activity_id", activityIds);
-
-      if (attemptsError) throw attemptsError;
-      attempts = attemptsData || [];
-    }
-
-    let questionRows = [];
-    if (activityIds.length) {
-      const { data: qs, error: qsError } = await supabase
-        .from("class_activity_questions")
-        .select("id, activity_id")
-        .in("activity_id", activityIds);
-
-      if (qsError) throw qsError;
-      questionRows = qs || [];
-    }
-
-    const countMap = {};
-    questionRows.forEach((q) => {
-      const key = q.activity_id;
-      countMap[key] = (countMap[key] || 0) + 1;
-    });
-
-    const attemptMap = {};
-    attempts.forEach((a) => {
-      if (!attemptMap[a.activity_id]) {
-        attemptMap[a.activity_id] = a;
-      }
-    });
-
-    const items = (activities || []).map((a) => {
-      const attempt = attemptMap[a.id] || null;
-      const expiredByDueDate = studentIsExpiredByDate(a.due_at);
-      const expiredByTimer = !!(attempt?.expires_at && new Date(attempt.expires_at).getTime() < Date.now());
-
-      let status = "not-started";
-      if (attempt?.status === "submitted" || attempt?.submitted_at) {
-        status = "submitted";
-      } else if (attempt) {
-        status = "in-progress";
-      }
-
-      if ((expiredByDueDate || expiredByTimer) && status !== "submitted") {
-        status = "expired";
-      }
-
-      const course = courseMap[a.class_id] || {};
-
-      return {
-        id: a.id,
-        item_type: "activity",
-        class_id: a.class_id,
-        class_code: course.course_code || "Class",
-        class_title: course.course_title || "",
-        sub_title: course.course_title ? `${course.course_code} · ${course.course_title}` : (course.course_code || "Class"),
-        type: a.activity_type || "revision",
-        title: a.title || "Untitled activity",
-        description: "",
-        questions_count: countMap[a.id] || 0,
-        time_limit: a.time_limit_minutes || null,
-        due_at: a.due_at || null,
-        due_text: studentFmtDateTime(a.due_at),
-        sort_at: a.created_at || a.due_at || null,
-        status,
-        attempt_id: attempt?.id || null,
-        expires_at: attempt?.expires_at || null,
-        created_at: a.created_at || null
-      };
-    });
-
-    window.studentClassActivityState.activities = items;
-    return items;
-  }
-
-  async function studentLoadForms() {
-    if (typeof supabase === "undefined") {
-      throw new Error("Supabase is not available.");
-    }
-
-    const user = await studentEnsureUser();
-    if (!user) {
-      throw new Error("Please sign in again to continue.");
-    }
-
-    const { data: notifications, error: notifError } = await supabase
-      .from("form_notifications")
-      .select("id, form_id, user_id, title, message, school_name, programme, level, is_read, read_at, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (notifError) throw notifError;
-
-    const formIds = [...new Set((notifications || []).map((x) => x.form_id).filter(Boolean))];
-
-    if (!formIds.length) {
-      window.studentClassActivityState.forms = [];
-      return [];
-    }
-
-    const { data: forms, error: formsError } = await supabase
-      .from("forms")
-      .select("id, title, description, school_name, status, response_rule, identity_mode, open_at, close_at, published_at, created_at, audience_mode, programme_targets, is_active")
-      .in("id", formIds);
-
-    if (formsError) throw formsError;
-
-    const formMap = {};
-    (forms || []).forEach((f) => {
-      formMap[f.id] = f;
-    });
-
-    const { data: questionRows, error: questionError } = await supabase
-      .from("form_questions")
-      .select("id, form_id")
-      .in("form_id", formIds);
-
-    if (questionError) throw questionError;
-
-    const questionCountMap = {};
-    (questionRows || []).forEach((q) => {
-      questionCountMap[q.form_id] = (questionCountMap[q.form_id] || 0) + 1;
-    });
-
-    const { data: responseRows, error: responseError } = await supabase
-      .from("form_responses")
-      .select("id, form_id, submitted_by, submitted_at, status")
-      .eq("submitted_by", user.id)
-      .in("form_id", formIds);
-
-    if (responseError) throw responseError;
-
-    const responseMap = {};
-    (responseRows || []).forEach((r) => {
-      if (!responseMap[r.form_id]) responseMap[r.form_id] = r;
-    });
-
-    const items = (notifications || []).map((n) => {
-      const form = formMap[n.form_id];
-      if (!form) return null;
-
-      const response = responseMap[form.id] || null;
-      const closePassed = !!(form.close_at && studentIsExpiredByDate(form.close_at));
-      const isClosed = form.status === "closed" || form.status === "archived" || closePassed || form.is_active === false;
-
-      let status = "not-started";
-      if (response?.submitted_at) {
-        status = "submitted";
-      } else if (isClosed) {
-        status = "closed";
-      }
-
-      return {
-        id: form.id,
-        item_type: "form",
-        notification_id: n.id,
-        title: form.title || n.title || "School form",
-        sub_title: n.message || form.description || "School form sent to you",
-        description: form.description || "",
-        school_name: form.school_name || n.school_name || "",
-        programme: n.programme || null,
-        level: n.level || null,
-        questions_count: questionCountMap[form.id] || 0,
-        response_rule: form.response_rule || "one",
-        response_rule_text: form.response_rule === "many" ? "Multiple responses" : "One response only",
-        identity_mode: form.identity_mode || "auto",
-        open_at: form.open_at || null,
-        close_at: form.close_at || null,
-        due_text: studentFmtDateTime(form.close_at, "No close date"),
-        close_text: studentFmtDateTime(form.close_at, "No close date"),
-        sort_at: n.created_at || form.published_at || form.created_at || null,
-        published_at: form.published_at || form.created_at || null,
-        created_at: n.created_at || null,
-        form_notification_created_at: n.created_at || null,
-        status,
-        is_read: !!n.is_read,
-        read_at: n.read_at || null,
-        response_id: response?.id || null,
-        response_submitted_at: response?.submitted_at || null,
-        audience_mode: form.audience_mode || "all_students",
-        programme_targets: form.programme_targets || [],
-        raw_form: form
-      };
-    }).filter(Boolean);
-
-    window.studentClassActivityState.forms = items;
-    return items;
-  }
-
-  async function studentLoadAnnouncements() {
-    if (typeof supabase === "undefined") {
-      throw new Error("Supabase is not available.");
-    }
-
-    const user = await studentEnsureUser();
-    if (!user) {
-      throw new Error("Please sign in again to continue.");
-    }
-
-    const { data: notifRows, error: notifError } = await supabase
-      .from("announcement_notifications")
-      .select("id, announcement_id, user_id, title, message, school_name, programme, level, is_read, read_at, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (notifError) throw notifError;
-
-    const announcementIds = [...new Set((notifRows || []).map((x) => x.announcement_id).filter(Boolean))];
-
-    if (!announcementIds.length) {
-      window.studentClassActivityState.announcements = [];
-      return [];
-    }
-
-    const { data: announcementRows, error: annError } = await supabase
-      .from("school_announcements")
-      .select("id, title, body, notification_title, notification_body, link_url, link_label, image_url, file_url, school_name, audience_mode, programme_targets, created_by_admin_name, published_at, created_at, updated_at, status")
-      .in("id", announcementIds);
-
-    if (annError) throw annError;
-
-    const annMap = {};
-    (announcementRows || []).forEach((row) => {
-      annMap[row.id] = row;
-    });
-
-    const items = (notifRows || []).map((n) => {
-      const ann = annMap[n.announcement_id];
-      if (!ann) return null;
-
-      return {
-        id: ann.id,
-        item_type: "announcement",
-        notification_id: n.id,
-        title: ann.title || n.title || "School announcement",
-        sub_title: ann.notification_body || n.message || "Announcement received",
-        body: ann.body || "",
-        notification_title: ann.notification_title || n.title || "",
-        notification_body: ann.notification_body || n.message || "",
-        school_name: ann.school_name || n.school_name || "",
-        programme: n.programme || null,
-        level: n.level || null,
-        link_url: ann.link_url || "",
-        link_label: ann.link_label || "",
-        image_url: ann.image_url || "",
-        file_url: ann.file_url || "",
-        created_by_admin_name: ann.created_by_admin_name || "School admin",
-        audience_mode: ann.audience_mode || "all_students",
-        programme_targets: ann.programme_targets || [],
-        status: "announcement",
-        is_read: !!n.is_read,
-        read_at: n.read_at || null,
-        created_at: n.created_at || ann.created_at || ann.published_at || null,
-        published_at: ann.published_at || ann.created_at || null,
-        sort_at: n.created_at || ann.published_at || ann.created_at || null,
-        raw_announcement: ann
-      };
-    }).filter(Boolean);
-
-    window.studentClassActivityState.announcements = items;
-    return items;
-  }
-
   async function studentLoadReportsFeed() {
     const wrap = document.getElementById("studentReportsFeedList");
     if (wrap) {
@@ -1975,11 +1686,19 @@
     }
 
     try {
-      await Promise.all([
-        studentLoadActivities(),
-        studentLoadForms(),
-        studentLoadAnnouncements()
-      ]);
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
+
+      const data = await studentInvokeHistoryManager({
+        action: "student_feed_bundle",
+        user_id: user.id
+      });
+
+      const feedItems = studentEnsureArray(data.feed_items);
+
+      state.activities = feedItems.filter((item) => item.item_type === "activity");
+      state.forms = feedItems.filter((item) => item.item_type === "form");
+      state.announcements = feedItems.filter((item) => item.item_type === "announcement");
 
       studentComputeFeedItems();
       studentRenderFeedList();
@@ -1992,7 +1711,7 @@
   }
 
   async function studentOpenActivityIntro(activityId) {
-    const found = (window.studentClassActivityState.activities || []).find((x) => x.id === activityId);
+    const found = (state.activities || []).find((x) => x.id === activityId);
     if (!found) return;
 
     const titleEl = document.getElementById("studentActivityIntroTitle");
@@ -2003,9 +1722,9 @@
     const warningEl = document.getElementById("studentActivityStartWarning");
     const startBtn = document.getElementById("studentStartActivityBtn");
 
-    if (titleEl) titleEl.textContent = found.title;
-    if (courseEl) courseEl.textContent = `${found.class_code} - ${found.class_title}`.trim();
-    if (questionsEl) questionsEl.textContent = `${found.questions_count} Questions`;
+    if (titleEl) titleEl.textContent = found.title || "Activity";
+    if (courseEl) courseEl.textContent = `${found.class_code || ""}${found.class_title ? " - " + found.class_title : ""}`.trim();
+    if (questionsEl) questionsEl.textContent = `${found.questions_count || 0} Questions`;
     if (timeEl) timeEl.textContent = found.time_limit ? studentFormatDuration(found.time_limit) : "No limit";
     if (dueEl) dueEl.textContent = found.due_text || "No due date";
 
@@ -2019,37 +1738,34 @@
       startBtn.textContent = found.status === "in-progress" ? "Continue activity" : "Start activity";
     }
 
-    window.studentClassActivityState.currentActivity = found;
-    window.studentClassActivityState.activityQuestions = [];
-    window.studentClassActivityState.activityAnswers = {};
-    window.studentClassActivityState.currentActivityIndex = 0;
-    window.studentClassActivityState.currentAttemptId = found.attempt_id || null;
-    window.studentClassActivityState.currentAttemptExpiresAt = found.expires_at || null;
+    state.currentActivity = found;
+    state.activityQuestions = [];
+    state.activityAnswers = {};
+    state.currentActivityIndex = 0;
+    state.currentAttemptId = found.attempt_id || null;
+    state.currentAttemptExpiresAt = found.expires_at || null;
 
     studentShowReportsView("studentActivityIntroView");
   }
 
   async function studentOpenAnnouncementDetails(announcementId) {
-    const found = (window.studentClassActivityState.announcements || []).find((x) => x.id === announcementId);
+    const found = (state.announcements || []).find((x) => x.id === announcementId);
     if (!found) return;
 
     try {
-      if (typeof supabase !== "undefined" && found.notification_id) {
-        const { error } = await supabase
-          .from("announcement_notifications")
-          .update({
-            is_read: true,
-            read_at: new Date().toISOString()
-          })
-          .eq("id", found.notification_id);
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
 
-        if (!error) {
-          found.is_read = true;
-          found.read_at = new Date().toISOString();
-          studentComputeFeedItems();
-          studentRenderFeedList();
-        }
-      }
+      await studentInvokeHistoryManager({
+        action: "mark_announcement_read",
+        user_id: user.id,
+        announcement_id: announcementId
+      });
+
+      found.is_read = true;
+      found.read_at = new Date().toISOString();
+      studentComputeFeedItems();
+      studentRenderFeedList();
 
       localStorage.setItem("student_announcement_view_details", JSON.stringify(found));
       window.location.href = `view_details.html?type=announcement&id=${encodeURIComponent(announcementId)}`;
@@ -2059,69 +1775,89 @@
     }
   }
 
+  async function studentOpenFormDetails(formId) {
+    const found = (state.forms || []).find((x) => x.id === formId);
+    if (!found) return;
+
+    state.currentForm = found;
+    state.formQuestions = [];
+    state.formAnswers = {};
+    state.currentFormIndex = 0;
+    state.currentFormResponseId = found.response_id || null;
+
+    const titleEl = document.getElementById("studentFormDetailsTitle");
+    const schoolEl = document.getElementById("studentFormDetailsSchool");
+    const descEl = document.getElementById("studentFormDetailsDescription");
+    const questionsEl = document.getElementById("studentFormDetailsQuestions");
+    const ruleEl = document.getElementById("studentFormDetailsRule");
+    const identityEl = document.getElementById("studentFormDetailsIdentity");
+    const openEl = document.getElementById("studentFormDetailsOpenAt");
+    const closeEl = document.getElementById("studentFormDetailsCloseAt");
+    const msgEl = document.getElementById("studentFormDetailsMessage");
+    const startBtn = document.getElementById("studentStartFormBtn");
+
+    if (titleEl) titleEl.textContent = found.title || "School Form";
+    if (schoolEl) schoolEl.textContent = found.school_name || "School";
+    if (descEl) descEl.textContent = found.description || "No description";
+    if (questionsEl) questionsEl.textContent = `${found.questions_count || 0} Questions`;
+    if (ruleEl) ruleEl.textContent = found.response_rule_text || "One response only";
+    if (identityEl) identityEl.textContent = found.identity_mode || "auto";
+    if (openEl) openEl.textContent = studentFmtDateTime(found.open_at, "Now");
+    if (closeEl) closeEl.textContent = studentFmtDateTime(found.close_at, "No close date");
+    if (msgEl) {
+      msgEl.textContent = found.status === "submitted"
+        ? "You have already submitted this form."
+        : "Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.";
+    }
+    if (startBtn) {
+      startBtn.disabled = found.status === "submitted" || found.status === "closed";
+      startBtn.textContent = found.status === "submitted" ? "Already submitted" : "Start form";
+    }
+
+    studentShowReportsView("studentFormDetailsView");
+  }
+
   async function studentEnsureAttempt() {
-    const activity = window.studentClassActivityState.currentActivity;
+    const activity = state.currentActivity;
     if (!activity) return null;
 
     const user = await studentEnsureUser();
     if (!user) return null;
 
-    if (window.studentClassActivityState.currentAttemptId) {
-      return window.studentClassActivityState.currentAttemptId;
+    if (state.currentAttemptId) {
+      return state.currentAttemptId;
     }
 
-    const { data: existing, error: existingError } = await supabase
-      .from("class_activity_attempts")
-      .select("id, status, submitted_at, expires_at")
-      .eq("activity_id", activity.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const data = await studentInvokeHistoryManager({
+      action: "start_activity_attempt",
+      user_id: user.id,
+      activity_id: activity.id
+    });
 
-    if (existingError) throw existingError;
-
-    if (existing) {
-      window.studentClassActivityState.currentAttemptId = existing.id;
-      window.studentClassActivityState.currentAttemptExpiresAt = existing.expires_at || null;
-      return existing.id;
-    }
-
-    const { data: created, error: createError } = await supabase
-      .from("class_activity_attempts")
-      .insert([{
-        activity_id: activity.id,
-        user_id: user.id,
-        status: "in_progress",
-        started_at: new Date().toISOString()
-      }])
-      .select("id, expires_at")
-      .single();
-
-    if (createError) throw createError;
-
-    window.studentClassActivityState.currentAttemptId = created.id;
-    window.studentClassActivityState.currentAttemptExpiresAt = created.expires_at || null;
-    return created.id;
-  }
-
-  async function studentLoadAnswersForAttempt(attemptId) {
-    if (!attemptId) return {};
-    const { data, error } = await supabase
-      .from("class_activity_answers")
-      .select("question_id, selected_option")
-      .eq("attempt_id", attemptId);
-
-    if (error) throw error;
+    state.currentAttemptId = data?.attempt?.id || null;
+    state.currentAttemptExpiresAt = data?.attempt?.expires_at || null;
+    state.activityQuestions = studentEnsureArray(data?.questions).map((q) => ({
+      ...q,
+      question: q.question_text || q.question || "",
+      options: studentQuestionOptions(q)
+    }));
 
     const answers = {};
-    (data || []).forEach((row) => {
-      answers[row.question_id] = row.selected_option;
+    studentEnsureArray(data?.answers).forEach((row) => {
+      if (row?.question_id) answers[row.question_id] = row.selected_option || "";
     });
-    return answers;
+    state.activityAnswers = answers;
+
+    return state.currentAttemptId;
+  }
+
+  async function studentLoadAnswersForAttempt() {
+    return state.activityAnswers || {};
   }
 
   async function studentStartActivity() {
-    const activity = window.studentClassActivityState.currentActivity;
-    if (!activity || typeof supabase === "undefined") return;
+    const activity = state.currentActivity;
+    if (!activity) return;
 
     if (studentIsExpiredByDate(activity.due_at)) {
       alert("This activity has expired.");
@@ -2137,47 +1873,36 @@
     }
 
     try {
-      const { data: questions, error: questionError } = await supabase
-        .from("class_activity_questions")
-        .select("id, question_text, option_a, option_b, option_c, option_d, position")
-        .eq("activity_id", activity.id)
-        .order("position", { ascending: true });
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
 
-      if (questionError) throw questionError;
+      const data = await studentInvokeHistoryManager({
+        action: "start_activity_attempt",
+        user_id: user.id,
+        activity_id: activity.id
+      });
 
-      window.studentClassActivityState.activityQuestions = (questions || []).map((q) => ({
-        id: q.id,
-        question: q.question_text,
-        options: {
-          A: q.option_a,
-          B: q.option_b,
-          C: q.option_c,
-          D: q.option_d
-        },
-        position: q.position
+      state.activityQuestions = studentEnsureArray(data?.questions).map((q) => ({
+        ...q,
+        question: q.question_text || q.question || "",
+        options: studentQuestionOptions(q)
       }));
+      state.currentAttemptId = data?.attempt?.id || null;
+      state.currentAttemptExpiresAt = data?.attempt?.expires_at || null;
 
-      const attemptId = await studentEnsureAttempt();
-      const savedAnswers = await studentLoadAnswersForAttempt(attemptId);
+      const answers = {};
+      studentEnsureArray(data?.answers).forEach((row) => {
+        if (row?.question_id) answers[row.question_id] = row.selected_option || "";
+      });
+      state.activityAnswers = answers;
+      state.currentActivityIndex = 0;
 
-      window.studentClassActivityState.activityAnswers = savedAnswers || {};
-      window.studentClassActivityState.currentActivityIndex = 0;
-
-      if (window.studentClassActivityState.currentAttemptExpiresAt) {
-        const endMs = new Date(window.studentClassActivityState.currentAttemptExpiresAt).getTime();
-        if (!Number.isNaN(endMs) && Date.now() >= endMs) {
-          alert("This activity time has already expired.");
-          studentBackToReportsHome();
-          return;
-        }
-      }
-
-      studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
+      studentStartTimer(state.currentAttemptExpiresAt);
       studentRenderActivityQuestion();
       studentShowReportsView("studentActivityQuestionView");
     } catch (err) {
       console.error("studentStartActivity failed:", err);
-      alert("Could not open this activity right now.");
+      alert(err?.message || "Could not start this activity.");
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -2187,90 +1912,70 @@
   }
 
   function studentRenderActivityQuestion() {
-    const state = window.studentClassActivityState;
-    const questions = state.activityQuestions || [];
-    const index = Number(state.currentActivityIndex || 0);
-    const q = questions[index];
-    if (!q) return;
+    const question = state.activityQuestions[state.currentActivityIndex];
+    if (!question) return;
 
+    const total = state.activityQuestions.length;
+    const current = state.currentActivityIndex + 1;
+    const selected = state.activityAnswers[question.id] || "";
+
+    const progressText = document.getElementById("studentActivityProgressText");
+    const progressPercent = document.getElementById("studentActivityProgressPercent");
+    const progressBar = document.getElementById("studentActivityProgressBar");
     const titleEl = document.getElementById("studentActivityQuestionTitle");
     const listEl = document.getElementById("studentActivityOptionList");
-    const progressTextEl = document.getElementById("studentActivityProgressText");
-    const progressPercentEl = document.getElementById("studentActivityProgressPercent");
-    const progressBarEl = document.getElementById("studentActivityProgressBar");
     const prevBtn = document.getElementById("studentActivityPrevBtn");
     const nextBtn = document.getElementById("studentActivityNextBtn");
 
-    if (titleEl) titleEl.textContent = q.question || "Question";
-
-    const total = questions.length || 1;
-    const percent = Math.round(((index + 1) / total) * 100);
-
-    if (progressTextEl) progressTextEl.textContent = `Question ${index + 1} of ${total}`;
-    if (progressPercentEl) progressPercentEl.textContent = `${percent}%`;
-    if (progressBarEl) progressBarEl.style.width = `${percent}%`;
-
-    if (prevBtn) prevBtn.textContent = "Back";
-    if (nextBtn) nextBtn.textContent = index === total - 1 ? "Review" : "Next";
-
-    const selected = state.activityAnswers[q.id] || "";
+    if (progressText) progressText.textContent = `Question ${current} of ${total}`;
+    const percent = total ? Math.round((current / total) * 100) : 0;
+    if (progressPercent) progressPercent.textContent = `${percent}%`;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (titleEl) titleEl.textContent = question.question || "Question";
 
     if (listEl) {
-      const keys = ["A", "B", "C", "D"].filter((key) => studentNormalizeText(q.options[key]));
-      listEl.innerHTML = keys.map((key) => {
-        const active = selected === key;
-        return `
-          <div class="choice-option ${active ? "active" : ""}" data-activity-option="${studentReportEscape(key)}">
+      const options = question.options || {};
+      listEl.innerHTML = Object.entries(options)
+        .filter(([, text]) => String(text || "").trim())
+        .map(([key, text]) => `
+          <button type="button" class="choice-option ${selected === key ? "active" : ""}" data-activity-choice="${studentReportEscape(key)}">
             <div class="choice-mark">${studentReportEscape(key)}</div>
-            <div class="choice-text">${studentReportEscape(q.options[key])}</div>
-          </div>
-        `;
-      }).join("");
+            <div class="choice-text">${studentReportEscape(text)}</div>
+          </button>
+        `)
+        .join("");
     }
+
+    if (prevBtn) prevBtn.textContent = current === 1 ? "Back" : "Previous";
+    if (nextBtn) nextBtn.textContent = current === total ? "Review" : "Next";
   }
 
   async function studentSaveCurrentActivityAnswer() {
-    const state = window.studentClassActivityState;
-    const questions = state.activityQuestions || [];
-    const q = questions[state.currentActivityIndex];
-    if (!q) return;
+    const question = state.activityQuestions[state.currentActivityIndex];
+    if (!question) return;
 
-    const selected = state.activityAnswers[q.id];
-    if (!selected) {
-      throw new Error("Please select one option before continuing.");
-    }
+    const selected = state.activityAnswers[question.id];
+    if (!selected) throw new Error("Please select an answer before moving on.");
 
-    const attemptId = await studentEnsureAttempt();
-    if (!attemptId) throw new Error("Missing activity attempt.");
+    const user = await studentEnsureUser();
+    if (!user) throw new Error("Please sign in again to continue.");
 
-    const { error } = await supabase
-      .from("class_activity_answers")
-      .upsert([{
-        attempt_id: attemptId,
-        question_id: q.id,
-        selected_option: selected
-      }], { onConflict: "attempt_id,question_id" });
+    await studentEnsureAttempt();
 
-    if (error) throw error;
-  }
-
-  function studentGoPrevQuestion() {
-    const state = window.studentClassActivityState;
-    if (state.currentActivityIndex <= 0) {
-      studentShowReportsView("studentActivityIntroView");
-      return;
-    }
-    state.currentActivityIndex -= 1;
-    studentRenderActivityQuestion();
+    await studentInvokeHistoryManager({
+      action: "save_activity_answer",
+      user_id: user.id,
+      activity_id: state.currentActivity.id,
+      question_id: question.id,
+      selected_option: selected
+    });
   }
 
   async function studentGoNextQuestion() {
     try {
       await studentSaveCurrentActivityAnswer();
 
-      const state = window.studentClassActivityState;
-      const total = (state.activityQuestions || []).length;
-
+      const total = state.activityQuestions.length;
       if (state.currentActivityIndex >= total - 1) {
         studentRenderActivityReview();
         studentShowReportsView("studentActivityReviewView");
@@ -2285,14 +1990,23 @@
     }
   }
 
+  function studentGoPrevQuestion() {
+    if (state.currentActivityIndex <= 0) {
+      studentShowReportsView("studentActivityIntroView");
+      return;
+    }
+    state.currentActivityIndex -= 1;
+    studentRenderActivityQuestion();
+  }
+
   function studentRenderActivityReview() {
-    const state = window.studentClassActivityState;
     const wrap = document.getElementById("studentActivityReviewList");
     if (!wrap) return;
 
-    wrap.innerHTML = (state.activityQuestions || []).map((q, index) => {
+    wrap.innerHTML = state.activityQuestions.map((q, index) => {
+      const options = q.options || {};
       const selected = state.activityAnswers[q.id];
-      const selectedText = selected && q.options[selected] ? `${selected}. ${q.options[selected]}` : "No answer selected";
+      const selectedText = selected && options[selected] ? `${selected}. ${options[selected]}` : "No answer selected";
       return `
         <div class="review-item" data-review-activity-index="${index}">
           <div class="review-q">${studentReportEscape(`Question ${index + 1}: ${q.question}`)}</div>
@@ -2307,14 +2021,11 @@
     const oldText = btn ? btn.textContent : "Submit activity";
 
     try {
-      const state = window.studentClassActivityState;
-      const attemptId = await studentEnsureAttempt();
-      if (!attemptId) throw new Error("Missing activity attempt.");
-
-      const questions = state.activityQuestions || [];
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
 
       if (!fromTimer) {
-        for (const q of questions) {
+        for (const q of state.activityQuestions) {
           if (!state.activityAnswers[q.id]) {
             throw new Error("Please answer all questions before submitting.");
           }
@@ -2326,32 +2037,23 @@
         btn.textContent = "Submitting...";
       }
 
-      for (const q of questions) {
-        const selected = state.activityAnswers[q.id];
-        if (!selected) continue;
+      const answers = state.activityQuestions
+        .map((q) => ({
+          question_id: q.id,
+          selected_option: state.activityAnswers[q.id] || ""
+        }))
+        .filter((row) => row.question_id && row.selected_option);
 
-        const { error: answerError } = await supabase
-          .from("class_activity_answers")
-          .upsert([{
-            attempt_id: attemptId,
-            question_id: q.id,
-            selected_option: selected
-          }], { onConflict: "attempt_id,question_id" });
-
-        if (answerError) throw answerError;
-      }
-
-      const { error: submitError } = await supabase
-        .from("class_activity_attempts")
-        .update({
-          status: "submitted",
-          submitted_at: new Date().toISOString()
-        })
-        .eq("id", attemptId);
-
-      if (submitError) throw submitError;
+      await studentInvokeHistoryManager({
+        action: "submit_activity_attempt",
+        user_id: user.id,
+        activity_id: state.currentActivity.id,
+        answers
+      });
 
       studentStopTimer();
+      state.currentAttemptId = null;
+      state.currentAttemptExpiresAt = null;
       studentShowReportsView("studentActivitySubmittedView");
       await studentLoadReportsFeed();
     } catch (err) {
@@ -2365,7 +2067,73 @@
     }
   }
 
-  function studentHideFormQuestionBlocks() {
+  async function studentStartForm() {
+    const form = state.currentForm;
+    if (!form) return;
+
+    if (form.status === "submitted") {
+      alert("You have already submitted this form.");
+      return;
+    }
+
+    if (form.status === "closed") {
+      alert("This form is closed.");
+      return;
+    }
+
+    try {
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
+
+      const data = await studentInvokeHistoryManager({
+        action: "student_item_details",
+        user_id: user.id,
+        item_id: form.id,
+        item_type: "form"
+      });
+
+      state.formQuestions = studentEnsureArray(data.questions).map((q) => ({
+        ...q,
+        question: q.question_text || q.question || q.title || "",
+        type: (q.question_type || q.type || "short_answer").toLowerCase(),
+        options: q.options || q.choice_options || q.choices || []
+      }));
+      state.currentFormResponseId = data?.response?.id || null;
+      state.currentFormIndex = 0;
+      state.formAnswers = {};
+
+      studentEnsureArray(data.answers).forEach((answer) => {
+        const qid = answer.question_id;
+        if (!qid) return;
+        if (answer.answer_json != null) {
+          state.formAnswers[qid] = answer.answer_json;
+        } else if (answer.answer_text != null) {
+          state.formAnswers[qid] = answer.answer_text;
+        } else if (answer.answer_value != null) {
+          state.formAnswers[qid] = answer.answer_value;
+        }
+      });
+
+      studentRenderFormQuestion();
+      studentShowReportsView("studentFormQuestionView");
+    } catch (err) {
+      console.error("studentStartForm failed:", err);
+      alert(err?.message || "Could not start this form.");
+    }
+  }
+
+  function studentFormQuestionOptions(question) {
+    if (Array.isArray(question.options)) return question.options;
+    if (typeof question.options === "string") {
+      try {
+        const parsed = JSON.parse(question.options);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  }
+
+  function studentResetFormInputBlocks() {
     [
       "studentFormShortAnswerBlock",
       "studentFormParagraphBlock",
@@ -2381,363 +2149,214 @@
     });
   }
 
-  function studentGetCurrentFormQuestion() {
-    const state = window.studentClassActivityState;
-    return (state.formQuestions || [])[state.currentFormIndex] || null;
-  }
-
-  function studentSetFieldNote(text = "") {
-    const el = document.getElementById("studentFormFieldNote");
-    if (el) el.textContent = text;
-  }
-
-  function studentSetCurrentFormValue(value) {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return;
-    window.studentClassActivityState.formAnswers[q.id] = value;
-  }
-
-  async function studentOpenFormDetails(formId) {
-    const user = await studentEnsureUser();
-    if (!user || typeof supabase === "undefined") {
-      alert("Please sign in again.");
-      return;
-    }
-
-    try {
-      const { data: form, error: formError } = await supabase
-        .from("forms")
-        .select("id, title, description, school_name, status, response_rule, identity_mode, open_at, close_at, published_at, created_at, audience_mode, programme_targets, is_active")
-        .eq("id", formId)
-        .maybeSingle();
-
-      if (formError) throw formError;
-      if (!form) throw new Error("Form not found.");
-
-      const { data: questions, error: questionError } = await supabase
-        .from("form_questions")
-        .select("*")
-        .eq("form_id", formId)
-        .order("sort_order", { ascending: true });
-
-      if (questionError) throw questionError;
-
-      const { data: response, error: responseError } = await supabase
-        .from("form_responses")
-        .select("*")
-        .eq("form_id", formId)
-        .eq("submitted_by", user.id)
-        .maybeSingle();
-
-      if (responseError) throw responseError;
-
-      let answers = [];
-      if (response?.id) {
-        const { data: answerRows, error: answerError } = await supabase
-          .from("form_answers")
-          .select("*")
-          .eq("response_id", response.id);
-
-        if (answerError) throw answerError;
-        answers = answerRows || [];
-      }
-
-      const titleEl = document.getElementById("studentFormDetailsTitle");
-      const schoolEl = document.getElementById("studentFormDetailsSchool");
-      const descriptionEl = document.getElementById("studentFormDetailsDescription");
-      const questionsEl = document.getElementById("studentFormDetailsQuestions");
-      const ruleEl = document.getElementById("studentFormDetailsRule");
-      const identityEl = document.getElementById("studentFormDetailsIdentity");
-      const openEl = document.getElementById("studentFormDetailsOpenAt");
-      const closeEl = document.getElementById("studentFormDetailsCloseAt");
-      const messageEl = document.getElementById("studentFormDetailsMessage");
-      const startBtn = document.getElementById("studentStartFormBtn");
-
-      if (titleEl) titleEl.textContent = form.title || "School Form";
-      if (schoolEl) schoolEl.textContent = form.school_name || "School";
-      if (descriptionEl) descriptionEl.textContent = form.description || "No description";
-      if (questionsEl) questionsEl.textContent = `${(questions || []).length} Questions`;
-      if (ruleEl) ruleEl.textContent = form.response_rule === "many" ? "Multiple responses allowed" : "One response only";
-      if (identityEl) identityEl.textContent = form.identity_mode === "anonymous" ? "Anonymous response" : "Logged in identity";
-      if (openEl) openEl.textContent = studentFmtDateTime(form.open_at, "Now");
-      if (closeEl) closeEl.textContent = studentFmtDateTime(form.close_at, "No close date");
-
-      if (messageEl) {
-        messageEl.textContent = response?.submitted_at
-          ? "You already submitted this form. You can still review the details here."
-          : "Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.";
-      }
-
-      if (startBtn) {
-        startBtn.textContent = response?.submitted_at ? "View form" : "Start form";
-      }
-
-      const state = window.studentClassActivityState;
-      state.currentForm = {
-        ...form,
-        id: form.id
-      };
-      state.formQuestions = questions || [];
-      state.formAnswers = {};
-      state.currentFormIndex = 0;
-      state.currentFormResponseId = response?.id || null;
-
-      answers.forEach((row) => {
-        const key = row.question_id;
-        if (!key) return;
-
-        if (Array.isArray(row.selected_options_json)) {
-          state.formAnswers[key] = row.selected_options_json;
-        } else if (row.answer_text != null) {
-          state.formAnswers[key] = row.answer_text;
-        } else if (row.file_url) {
-          state.formAnswers[key] = row.file_url;
-        } else if (Array.isArray(row.file_urls)) {
-          state.formAnswers[key] = row.file_urls;
-        } else if (row.answer_json != null) {
-          state.formAnswers[key] = row.answer_json;
-        }
-      });
-
-      studentShowReportsView("studentFormDetailsView");
-    } catch (err) {
-      console.error("studentOpenFormDetails failed:", err);
-      alert(err?.message || "Could not open this form.");
-    }
-  }
-
   function studentRenderFormQuestion() {
-    const state = window.studentClassActivityState;
-    const questions = state.formQuestions || [];
-    const index = Number(state.currentFormIndex || 0);
-    const q = questions[index];
-    if (!q) return;
+    const question = state.formQuestions[state.currentFormIndex];
+    if (!question) return;
 
+    const total = state.formQuestions.length;
+    const current = state.currentFormIndex + 1;
+    const percent = total ? Math.round((current / total) * 100) : 0;
+    const answerValue = state.formAnswers[question.id];
+
+    const progressText = document.getElementById("studentFormProgressText");
+    const progressPercent = document.getElementById("studentFormProgressPercent");
+    const progressBar = document.getElementById("studentFormProgressBar");
     const titleEl = document.getElementById("studentFormQuestionTitle");
     const helpEl = document.getElementById("studentFormQuestionHelp");
-    const progressTextEl = document.getElementById("studentFormProgressText");
-    const progressPercentEl = document.getElementById("studentFormProgressPercent");
-    const progressBarEl = document.getElementById("studentFormProgressBar");
+    const noteEl = document.getElementById("studentFormFieldNote");
+    const prevBtn = document.getElementById("studentFormPrevBtn");
     const nextBtn = document.getElementById("studentFormNextBtn");
 
-    if (titleEl) titleEl.textContent = q.question_text || q.question || "Question";
-
+    if (progressText) progressText.textContent = `Question ${current} of ${total}`;
+    if (progressPercent) progressPercent.textContent = `${percent}%`;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (titleEl) titleEl.textContent = question.question || "Question";
     if (helpEl) {
-      const help = q.help_text || "";
-      helpEl.textContent = help;
-      helpEl.classList.toggle("hidden", !help);
+      const helpText = question.help_text || question.description || "";
+      helpEl.textContent = helpText;
+      helpEl.classList.toggle("hidden", !helpText);
     }
+    if (noteEl) noteEl.textContent = question.required ? "This field is required." : "";
+    if (prevBtn) prevBtn.textContent = current === 1 ? "Back" : "Previous";
+    if (nextBtn) nextBtn.textContent = current === total ? "Review" : "Next";
 
-    const total = questions.length || 1;
-    const percent = Math.round(((index + 1) / total) * 100);
+    studentResetFormInputBlocks();
 
-    if (progressTextEl) progressTextEl.textContent = `Question ${index + 1} of ${total}`;
-    if (progressPercentEl) progressPercentEl.textContent = `${percent}%`;
-    if (progressBarEl) progressBarEl.style.width = `${percent}%`;
-    if (nextBtn) nextBtn.textContent = index === total - 1 ? "Review" : "Next";
+    const type = String(question.type || "short_answer").toLowerCase();
+    const options = studentFormQuestionOptions(question);
 
-    studentHideFormQuestionBlocks();
-    studentSetFieldNote("");
-
-    const answer = state.formAnswers[q.id];
-    const type = q.question_type;
-
-    if (type === "short_answer") {
-      const block = document.getElementById("studentFormShortAnswerBlock");
-      const input = document.getElementById("studentFormShortAnswerInput");
-      if (block) block.classList.remove("hidden");
-      if (input) {
-        input.value = answer || "";
-        input.placeholder = q.placeholder_text || "Type your answer";
-      }
-    } else if (type === "paragraph") {
+    if (type === "paragraph" || type === "long_text") {
       const block = document.getElementById("studentFormParagraphBlock");
       const input = document.getElementById("studentFormParagraphInput");
       if (block) block.classList.remove("hidden");
-      if (input) {
-        input.value = answer || "";
-        input.placeholder = q.placeholder_text || "Type your answer here";
-      }
-    } else if (type === "multiple_choice") {
+      if (input) input.value = typeof answerValue === "string" ? answerValue : "";
+      return;
+    }
+
+    if (type === "multiple_choice" || type === "radio") {
       const block = document.getElementById("studentFormMultipleChoiceBlock");
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = studentEnsureArray(q.options_json).map((option) => `
-          <div class="choice-option ${answer === option ? "active" : ""}" data-form-single-option="${studentReportEscape(option)}">
-            <div class="choice-mark">•</div>
-            <div class="choice-text">${studentReportEscape(option)}</div>
-          </div>
-        `).join("");
+        block.innerHTML = options.map((opt, index) => {
+          const value = typeof opt === "string" ? opt : (opt.value || opt.label || `Option ${index + 1}`);
+          return `
+            <button type="button" class="choice-option ${answerValue === value ? "active" : ""}" data-form-radio="${studentReportEscape(value)}">
+              <div class="choice-mark">${studentReportEscape(String.fromCharCode(65 + index))}</div>
+              <div class="choice-text">${studentReportEscape(value)}</div>
+            </button>
+          `;
+        }).join("");
       }
-    } else if (type === "checkboxes") {
+      return;
+    }
+
+    if (type === "checkbox") {
+      const selectedValues = Array.isArray(answerValue) ? answerValue : [];
       const block = document.getElementById("studentFormCheckboxBlock");
-      const arr = Array.isArray(answer) ? answer : [];
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = studentEnsureArray(q.options_json).map((option) => `
-          <div class="choice-option ${arr.includes(option) ? "active" : ""}" data-form-check-option="${studentReportEscape(option)}">
-            <div class="choice-mark">✓</div>
-            <div class="choice-text">${studentReportEscape(option)}</div>
-          </div>
-        `).join("");
+        block.innerHTML = options.map((opt, index) => {
+          const value = typeof opt === "string" ? opt : (opt.value || opt.label || `Option ${index + 1}`);
+          const active = selectedValues.includes(value);
+          return `
+            <button type="button" class="choice-option ${active ? "active" : ""}" data-form-checkbox="${studentReportEscape(value)}">
+              <div class="choice-mark">${active ? "✓" : String.fromCharCode(65 + index)}</div>
+              <div class="choice-text">${studentReportEscape(value)}</div>
+            </button>
+          `;
+        }).join("");
       }
-    } else if (type === "dropdown") {
+      return;
+    }
+
+    if (type === "dropdown" || type === "select") {
       const block = document.getElementById("studentFormDropdownBlock");
       const input = document.getElementById("studentFormDropdownInput");
       if (block) block.classList.remove("hidden");
       if (input) {
-        input.innerHTML = `<option value="">Select an option</option>` +
-          studentEnsureArray(q.options_json).map((option) => `
-            <option value="${studentReportEscape(option)}" ${answer === option ? "selected" : ""}>${studentReportEscape(option)}</option>
-          `).join("");
+        input.innerHTML = `<option value="">Select an option</option>` + options.map((opt) => {
+          const value = typeof opt === "string" ? opt : (opt.value || opt.label || "");
+          return `<option value="${studentReportEscape(value)}">${studentReportEscape(value)}</option>`;
+        }).join("");
+        input.value = typeof answerValue === "string" ? answerValue : "";
       }
-    } else if (type === "yes_no") {
+      return;
+    }
+
+    if (type === "yes_no" || type === "boolean") {
       const block = document.getElementById("studentFormYesNoBlock");
-      const yesNoOptions = ["Yes", "No"];
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = yesNoOptions.map((option) => `
-          <div class="choice-option ${answer === option ? "active" : ""}" data-form-single-option="${studentReportEscape(option)}">
-            <div class="choice-mark">•</div>
-            <div class="choice-text">${studentReportEscape(option)}</div>
-          </div>
-        `).join("");
+        ["Yes", "No"].forEach((value, index) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `choice-option ${answerValue === value ? "active" : ""}`;
+          btn.dataset.formRadio = value;
+          btn.innerHTML = `
+            <div class="choice-mark">${studentReportEscape(String.fromCharCode(65 + index))}</div>
+            <div class="choice-text">${studentReportEscape(value)}</div>
+          `;
+          block.appendChild(btn);
+        });
       }
-    } else if (type === "date") {
+      return;
+    }
+
+    if (type === "date") {
       const block = document.getElementById("studentFormDateBlock");
       const input = document.getElementById("studentFormDateInput");
       if (block) block.classList.remove("hidden");
-      if (input) input.value = answer || "";
-    } else if (type === "file_upload") {
-      const block = document.getElementById("studentFormFileBlock");
-      const rules = document.getElementById("studentFormFileRules");
-      const fileInput = document.getElementById("studentFormFileInput");
-      if (block) block.classList.remove("hidden");
-
-      if (rules) {
-        const types = studentEnsureArray(q.allowed_file_types).join(", ") || "Any allowed format";
-        rules.textContent = `Allowed types: ${types}. Max files: ${q.max_files || 1}. Max size: ${q.max_file_size_mb || 5}MB each.`;
-      }
-
-      if (fileInput) {
-        fileInput.value = "";
-        fileInput.multiple = Number(q.max_files || 1) > 1;
-      }
-
-      if (Array.isArray(answer) && answer.length) {
-        studentSetFieldNote(`${answer.length} file(s) selected.`);
-      } else if (typeof answer === "string" && answer) {
-        studentSetFieldNote("1 file selected.");
-      }
-    }
-
-    if (q.is_required) {
-      const note = document.getElementById("studentFormFieldNote");
-      if (note) {
-        note.textContent = `${note.textContent ? note.textContent + " " : ""}This question is required.`;
-      }
-    }
-  }
-
-  function studentValidateCurrentFormQuestion() {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return true;
-
-    const answer = window.studentClassActivityState.formAnswers[q.id];
-
-    if (!q.is_required) return true;
-
-    if (q.question_type === "checkboxes") {
-      return Array.isArray(answer) && answer.length > 0;
-    }
-
-    if (q.question_type === "file_upload") {
-      if (Array.isArray(answer)) return answer.length > 0;
-      return !!answer;
-    }
-
-    return !!studentNormalizeText(answer);
-  }
-
-  async function studentHandleFormFileSelection() {
-    const q = studentGetCurrentFormQuestion();
-    const input = document.getElementById("studentFormFileInput");
-    if (!q || !input || !input.files) return;
-
-    const files = Array.from(input.files || []);
-    if (!files.length) return;
-
-    const maxFiles = Number(q.max_files || 1);
-    const maxMb = Number(q.max_file_size_mb || 5);
-    const maxBytes = maxMb * 1024 * 1024;
-    const allowed = studentEnsureArray(q.allowed_file_types);
-
-    if (files.length > maxFiles) {
-      alert(`You can only upload ${maxFiles} file(s) for this question.`);
-      input.value = "";
+      if (input) input.value = typeof answerValue === "string" ? answerValue : "";
       return;
     }
 
-    for (const file of files) {
-      if (file.size > maxBytes) {
-        alert(`${file.name} is larger than ${maxMb}MB.`);
-        input.value = "";
-        return;
+    if (type === "file" || type === "upload") {
+      const block = document.getElementById("studentFormFileBlock");
+      const rules = document.getElementById("studentFormFileRules");
+      if (block) block.classList.remove("hidden");
+      if (rules) {
+        rules.textContent = typeof answerValue === "string" && answerValue
+          ? `Selected file: ${answerValue}`
+          : "Choose a file from your device.";
       }
-
-      if (allowed.length) {
-        const extension = "." + file.name.split(".").pop().toLowerCase();
-        const mime = file.type || "";
-        const matches = allowed.some((type) => {
-          const t = String(type || "").toLowerCase();
-          return t === mime.toLowerCase() || t === extension || t === file.name.toLowerCase();
-        });
-
-        if (!matches) {
-          alert(`${file.name} is not an allowed file type.`);
-          input.value = "";
-          return;
-        }
-      }
+      return;
     }
 
-    const uploadedUrls = [];
+    const block = document.getElementById("studentFormShortAnswerBlock");
+    const input = document.getElementById("studentFormShortAnswerInput");
+    if (block) block.classList.remove("hidden");
+    if (input) input.value = typeof answerValue === "string" ? answerValue : "";
+  }
 
-    for (const file of files) {
-      const fileExt = file.name.includes(".") ? file.name.split(".").pop() : "bin";
-      const path = `student-form-uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+  function studentCaptureCurrentFormAnswer() {
+    const question = state.formQuestions[state.currentFormIndex];
+    if (!question) return;
 
-      const { error: uploadError } = await supabase.storage
-        .from("form-uploads")
-        .upload(path, file, { upsert: false });
+    const type = String(question.type || "short_answer").toLowerCase();
 
-      if (uploadError) {
-        console.error("Form file upload failed:", uploadError);
-        alert(uploadError.message || "Could not upload file.");
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("form-uploads")
-        .getPublicUrl(path);
-
-      uploadedUrls.push(publicUrlData?.publicUrl || "");
+    if (type === "paragraph" || type === "long_text") {
+      const input = document.getElementById("studentFormParagraphInput");
+      state.formAnswers[question.id] = input ? input.value.trim() : "";
+      return;
     }
 
-    studentSetCurrentFormValue(maxFiles > 1 ? uploadedUrls : uploadedUrls[0]);
-    studentSetFieldNote(`${uploadedUrls.length} file(s) uploaded successfully.`);
+    if (type === "dropdown" || type === "select") {
+      const input = document.getElementById("studentFormDropdownInput");
+      state.formAnswers[question.id] = input ? input.value : "";
+      return;
+    }
+
+    if (type === "date") {
+      const input = document.getElementById("studentFormDateInput");
+      state.formAnswers[question.id] = input ? input.value : "";
+      return;
+    }
+
+    if (type === "file" || type === "upload") {
+      return;
+    }
+
+    if (type === "checkbox") {
+      if (!Array.isArray(state.formAnswers[question.id])) state.formAnswers[question.id] = [];
+      return;
+    }
+
+    const input = document.getElementById("studentFormShortAnswerInput");
+    state.formAnswers[question.id] = input ? input.value.trim() : "";
+  }
+
+  function studentValidateCurrentFormAnswer() {
+    const question = state.formQuestions[state.currentFormIndex];
+    if (!question) return true;
+
+    if (!question.required) return true;
+
+    const value = state.formAnswers[question.id];
+
+    if (Array.isArray(value)) return value.length > 0;
+    return !!String(value ?? "").trim();
+  }
+
+  function studentGoPrevFormQuestion() {
+    if (state.currentFormIndex <= 0) {
+      studentShowReportsView("studentFormDetailsView");
+      return;
+    }
+
+    studentCaptureCurrentFormAnswer();
+    state.currentFormIndex -= 1;
+    studentRenderFormQuestion();
   }
 
   function studentGoNextFormQuestion() {
-    const checked = studentStoreCurrentFormAnswer();
-    if (!checked.ok) {
-      alert(checked.message || "Please answer this required question before continuing.");
+    studentCaptureCurrentFormAnswer();
+
+    if (!studentValidateCurrentFormAnswer()) {
+      alert("Please answer this question before moving on.");
       return;
     }
 
-    const state = window.studentClassActivityState;
-    const total = (state.formQuestions || []).length;
-
+    const total = state.formQuestions.length;
     if (state.currentFormIndex >= total - 1) {
       studentRenderFormReview();
       studentShowReportsView("studentFormReviewView");
@@ -2748,193 +2367,102 @@
     studentRenderFormQuestion();
   }
 
-  function studentGoPrevFormQuestion() {
-    const state = window.studentClassActivityState;
-    if (state.currentFormIndex > 0) {
-      state.currentFormIndex -= 1;
-      studentRenderFormQuestion();
-    } else {
-      studentShowReportsView("studentFormDetailsView");
-    }
-  }
-
-  function studentFormatFormAnswerPreview(q, answer) {
-    if (q.question_type === "checkboxes") {
-      return Array.isArray(answer) && answer.length ? answer.join(", ") : "No answer";
-    }
-
-    if (q.question_type === "file_upload") {
-      if (Array.isArray(answer) && answer.length) return `${answer.length} file(s) uploaded`;
-      if (typeof answer === "string" && answer) return "1 file uploaded";
-      return "No file uploaded";
-    }
-
-    return studentNormalizeText(answer) || "No answer";
-  }
-
   function studentRenderFormReview() {
-    const state = window.studentClassActivityState;
     const wrap = document.getElementById("studentFormReviewList");
     if (!wrap) return;
 
-    wrap.innerHTML = (state.formQuestions || []).map((q, index) => {
-      const answer = state.formAnswers[q.id];
+    wrap.innerHTML = state.formQuestions.map((q, index) => {
+      const value = state.formAnswers[q.id];
+      let answerText = "No answer";
+      if (Array.isArray(value)) answerText = value.join(", ");
+      else if (typeof value === "string" && value.trim()) answerText = value.trim();
+
       return `
         <div class="review-item" data-review-form-index="${index}">
-          <div class="review-q">${studentReportEscape(q.question_text || "Question")}</div>
-          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(studentFormatFormAnswerPreview(q, answer))}</div>
+          <div class="review-q">${studentReportEscape(`Question ${index + 1}: ${q.question}`)}</div>
+          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(answerText)}</div>
         </div>
       `;
     }).join("");
-  }
-
-  async function studentStartForm() {
-    const state = window.studentClassActivityState;
-    if (!state.currentForm) return;
-
-    state.currentFormIndex = 0;
-    studentRenderFormQuestion();
-    studentShowReportsView("studentFormQuestionView");
-  }
-
-  function studentStoreCurrentFormAnswer() {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return { ok: true };
-
-    const type = q.question_type;
-
-    if (type === "short_answer") {
-      const input = document.getElementById("studentFormShortAnswerInput");
-      studentSetCurrentFormValue(input ? input.value || "" : "");
-    } else if (type === "paragraph") {
-      const input = document.getElementById("studentFormParagraphInput");
-      studentSetCurrentFormValue(input ? input.value || "" : "");
-    } else if (type === "dropdown") {
-      const input = document.getElementById("studentFormDropdownInput");
-      studentSetCurrentFormValue(input ? input.value || "" : "");
-    } else if (type === "date") {
-      const input = document.getElementById("studentFormDateInput");
-      studentSetCurrentFormValue(input ? input.value || "" : "");
-    }
-
-    if (!studentValidateCurrentFormQuestion()) {
-      return {
-        ok: false,
-        message: "Please answer this required question before continuing."
-      };
-    }
-
-    return { ok: true };
-  }
-
-  function studentBuildFormAnswersPayload(responseId) {
-    const state = window.studentClassActivityState;
-    return (state.formQuestions || []).map((q) => {
-      const rawValue = state.formAnswers[q.id];
-
-      let answerText = null;
-      let answerJson = null;
-
-      if (q.question_type === "checkboxes") {
-        answerJson = Array.isArray(rawValue) ? rawValue : [];
-      } else if (q.question_type === "file_upload") {
-        answerJson = Array.isArray(rawValue) ? rawValue : (rawValue ? [rawValue] : []);
-      } else {
-        answerText = rawValue != null ? String(rawValue) : null;
-      }
-
-      return {
-        response_id: responseId,
-        question_id: q.id,
-        answer_text: answerText,
-        answer_json: answerJson
-      };
-    });
   }
 
   async function studentSubmitForm() {
     const btn = document.getElementById("studentSubmitFormBtn");
     const oldText = btn ? btn.textContent : "Submit form";
 
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
-
     try {
-      const user = await studentEnsureUser();
-      if (!user) throw new Error("Please sign in again.");
+      studentCaptureCurrentFormAnswer();
 
-      const state = window.studentClassActivityState;
-      const form = state.currentForm;
-      if (!form) throw new Error("Missing form.");
-
-      for (let i = 0; i < state.formQuestions.length; i += 1) {
-        state.currentFormIndex = i;
-        const checked = studentStoreCurrentFormAnswer();
-        if (!checked.ok) throw new Error(checked.message || "Please complete all required questions.");
+      for (const q of state.formQuestions) {
+        if (q.required) {
+          const value = state.formAnswers[q.id];
+          if ((Array.isArray(value) && !value.length) || (!Array.isArray(value) && !String(value ?? "").trim())) {
+            throw new Error("Please answer all required questions before submitting.");
+          }
+        }
       }
 
-      const existingResponseId = state.currentFormResponseId || null;
+      const user = await studentEnsureUser();
+      if (!user) throw new Error("Please sign in again to continue.");
+      if (typeof supabase === "undefined") throw new Error("Supabase is not available.");
 
-      if (existingResponseId) {
-        const { error: deleteError } = await supabase
-          .from("form_answers")
-          .delete()
-          .eq("response_id", existingResponseId);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+      }
 
-        if (deleteError) throw deleteError;
+      let responseId = state.currentFormResponseId;
 
-        const rows = studentBuildFormAnswersPayload(existingResponseId);
-        if (rows.length) {
-          const { error: answerError } = await supabase
-            .from("form_answers")
-            .insert(rows);
-          if (answerError) throw answerError;
-        }
-
-        const { error: updateResponseError } = await supabase
-          .from("form_responses")
-          .update({
-            status: "submitted",
-            submitted_at: new Date().toISOString()
-          })
-          .eq("id", existingResponseId);
-
-        if (updateResponseError) throw updateResponseError;
-      } else {
-        const { data: createdResponse, error: responseError } = await supabase
+      if (!responseId) {
+        const { data: response, error: responseError } = await supabase
           .from("form_responses")
           .insert([{
-            form_id: form.id,
+            form_id: state.currentForm.id,
             submitted_by: user.id,
-            submitted_by_role: "student",
-            submitter_name: user.user_metadata?.full_name || user.email || "Student",
-            submitter_email: user.email || null,
-            school_name: form.school_name || null,
+            submitted_at: new Date().toISOString(),
             status: "submitted"
           }])
           .select("id")
           .single();
 
         if (responseError) throw responseError;
+        responseId = response.id;
+      } else {
+        const { error: updateResponseError } = await supabase
+          .from("form_responses")
+          .update({
+            submitted_at: new Date().toISOString(),
+            status: "submitted"
+          })
+          .eq("id", responseId);
 
-        state.currentFormResponseId = createdResponse.id;
+        if (updateResponseError) throw updateResponseError;
+      }
 
-        const rows = studentBuildFormAnswersPayload(createdResponse.id);
-        if (rows.length) {
-          const { error: answerError } = await supabase
-            .from("form_answers")
-            .insert(rows);
-          if (answerError) throw answerError;
-        }
+      state.currentFormResponseId = responseId;
+
+      for (const q of state.formQuestions) {
+        const rawValue = state.formAnswers[q.id];
+        const answer_text = Array.isArray(rawValue) ? rawValue.join(", ") : String(rawValue ?? "");
+
+        const { error: answerError } = await supabase
+          .from("form_answers")
+          .upsert([{
+            response_id: responseId,
+            question_id: q.id,
+            answer_text
+          }], {
+            onConflict: "response_id,question_id"
+          });
+
+        if (answerError) throw answerError;
       }
 
       studentShowReportsView("studentFormSubmittedView");
       await studentLoadReportsFeed();
     } catch (err) {
       console.error("studentSubmitForm failed:", err);
-      alert(err?.message || "Could not submit this form right now.");
+      alert(err?.message || "Could not submit this form.");
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -2943,149 +2471,68 @@
     }
   }
 
-  function studentHandleFeedOpen(itemId, itemType) {
-    if (itemType === "form") {
-      studentOpenFormDetails(itemId);
-      return;
-    }
-
-    if (itemType === "announcement") {
-      studentOpenAnnouncementDetails(itemId);
-      return;
-    }
-
-    studentOpenActivityIntro(itemId);
-  }
-
   function studentBackToReportsHome() {
+    state.currentActivity = null;
+    state.currentForm = null;
+    state.currentAnnouncement = null;
+    state.activityQuestions = [];
+    state.formQuestions = [];
+    state.activityAnswers = {};
+    state.formAnswers = {};
+    state.currentActivityIndex = 0;
+    state.currentFormIndex = 0;
+    state.currentAttemptId = null;
+    state.currentAttemptExpiresAt = null;
+    state.currentFormResponseId = null;
     studentStopTimer();
     studentShowReportsView("studentReportsHomeView");
-    studentLoadReportsFeed();
   }
 
   function studentBindReportsEvents() {
     const tabsWrap = document.getElementById("studentReportsTabs");
     if (tabsWrap && !tabsWrap.dataset.bound) {
       tabsWrap.dataset.bound = "1";
-      tabsWrap.addEventListener("click", (e) => {
-        const btn = e.target.closest(".reports-tab");
+      tabsWrap.addEventListener("click", (event) => {
+        const btn = event.target.closest(".reports-tab");
         if (!btn) return;
 
-        tabsWrap.querySelectorAll(".reports-tab").forEach((el) => el.classList.remove("active"));
-        btn.classList.add("active");
+        const filter = btn.dataset.feedFilter || "all";
+        state.currentFilter = filter;
 
-        window.studentClassActivityState.currentFilter = btn.getAttribute("data-feed-filter") || "all";
+        tabsWrap.querySelectorAll(".reports-tab").forEach((tab) => {
+          tab.classList.toggle("active", tab === btn);
+        });
+
         studentRenderFeedList();
       });
     }
 
-    const searchInput = document.getElementById("studentReportsSearchInput");
-    if (searchInput && !searchInput.dataset.bound) {
-      searchInput.dataset.bound = "1";
-      searchInput.addEventListener("input", () => {
-        window.studentClassActivityState.searchTerm = searchInput.value || "";
+    const input = document.getElementById("studentReportsSearchInput");
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = "1";
+      input.addEventListener("input", () => {
+        state.searchTerm = input.value || "";
         studentRenderFeedList();
       });
     }
 
-    const feedWrap = document.getElementById("studentReportsFeedList");
-    if (feedWrap && !feedWrap.dataset.bound) {
-      feedWrap.dataset.bound = "1";
-      feedWrap.addEventListener("click", (e) => {
-        const openBtn = e.target.closest("[data-item-open]");
-        const card = e.target.closest(".feed-card");
+    const feedList = document.getElementById("studentReportsFeedList");
+    if (feedList && !feedList.dataset.bound) {
+      feedList.dataset.bound = "1";
+      feedList.addEventListener("click", async (event) => {
+        const openBtn = event.target.closest("[data-item-open]");
+        if (!openBtn) return;
 
-        if (openBtn) {
-          const itemId = openBtn.getAttribute("data-item-open");
-          const itemType = openBtn.getAttribute("data-item-type");
-          const item = (window.studentClassActivityState.feedItems || []).find((x) => x.id === itemId && x.item_type === itemType);
+        const itemId = openBtn.dataset.itemOpen;
+        const itemType = openBtn.dataset.itemType;
 
-          if (!item) return;
-
-          if (item.item_type === "announcement") {
-            studentHandleFeedOpen(itemId, itemType);
-            return;
-          }
-
-          if (!(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
-            studentHandleFeedOpen(itemId, itemType);
-          }
-          return;
+        if (itemType === "activity") {
+          await studentOpenActivityIntro(itemId);
+        } else if (itemType === "form") {
+          await studentOpenFormDetails(itemId);
+        } else if (itemType === "announcement") {
+          await studentOpenAnnouncementDetails(itemId);
         }
-
-        if (card) {
-          const itemId = card.getAttribute("data-item-id");
-          const itemType = card.getAttribute("data-item-type");
-          const item = (window.studentClassActivityState.feedItems || []).find((x) => x.id === itemId && x.item_type === itemType);
-
-          if (!item) return;
-
-          if (item.item_type === "announcement") {
-            studentHandleFeedOpen(itemId, itemType);
-            return;
-          }
-
-          if (!(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
-            studentHandleFeedOpen(itemId, itemType);
-          }
-        }
-      });
-    }
-
-    document.querySelectorAll("#studentActivityIntroView .panel-back-btn").forEach((btn) => {
-      if (!btn.dataset.bound) {
-        btn.dataset.bound = "1";
-        btn.addEventListener("click", studentBackToReportsHome);
-      }
-    });
-
-    const formDetailsBack = document.querySelector("#studentFormDetailsView .panel-back-btn");
-    if (formDetailsBack && !formDetailsBack.dataset.bound) {
-      formDetailsBack.dataset.bound = "1";
-      formDetailsBack.addEventListener("click", studentBackToReportsHome);
-    }
-
-    const activityQuestionBack = document.querySelector("#studentActivityQuestionView .panel-back-btn");
-    if (activityQuestionBack && !activityQuestionBack.dataset.bound) {
-      activityQuestionBack.dataset.bound = "1";
-      activityQuestionBack.addEventListener("click", () => {
-        if (window.studentClassActivityState.currentActivityIndex > 0) {
-          window.studentClassActivityState.currentActivityIndex -= 1;
-          studentRenderActivityQuestion();
-        } else {
-          studentShowReportsView("studentActivityIntroView");
-          studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-        }
-      });
-    }
-
-    const activityReviewBack = document.querySelector("#studentActivityReviewView .panel-back-btn");
-    if (activityReviewBack && !activityReviewBack.dataset.bound) {
-      activityReviewBack.dataset.bound = "1";
-      activityReviewBack.addEventListener("click", () => {
-        studentShowReportsView("studentActivityQuestionView");
-        studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-      });
-    }
-
-    const formQuestionBack = document.querySelector("#studentFormQuestionView .panel-back-btn");
-    if (formQuestionBack && !formQuestionBack.dataset.bound) {
-      formQuestionBack.dataset.bound = "1";
-      formQuestionBack.addEventListener("click", () => {
-        if (window.studentClassActivityState.currentFormIndex > 0) {
-          window.studentClassActivityState.currentFormIndex -= 1;
-          studentRenderFormQuestion();
-        } else {
-          studentShowReportsView("studentFormDetailsView");
-        }
-      });
-    }
-
-    const formReviewBack = document.querySelector("#studentFormReviewView .panel-back-btn");
-    if (formReviewBack && !formReviewBack.dataset.bound) {
-      formReviewBack.dataset.bound = "1";
-      formReviewBack.addEventListener("click", () => {
-        studentShowReportsView("studentFormQuestionView");
       });
     }
 
@@ -3107,32 +2554,10 @@
       activityNextBtn.addEventListener("click", studentGoNextQuestion);
     }
 
-    const activityOptionList = document.getElementById("studentActivityOptionList");
-    if (activityOptionList && !activityOptionList.dataset.bound) {
-      activityOptionList.dataset.bound = "1";
-      activityOptionList.addEventListener("click", (e) => {
-        const option = e.target.closest("[data-activity-option]");
-        if (!option) return;
-
-        const state = window.studentClassActivityState;
-        const q = (state.activityQuestions || [])[state.currentActivityIndex];
-        if (!q) return;
-
-        state.activityAnswers[q.id] = option.getAttribute("data-activity-option");
-        studentRenderActivityQuestion();
-      });
-    }
-
     const submitActivityBtn = document.getElementById("studentSubmitActivityBtn");
     if (submitActivityBtn && !submitActivityBtn.dataset.bound) {
       submitActivityBtn.dataset.bound = "1";
       submitActivityBtn.addEventListener("click", () => studentSubmitActivity(false));
-    }
-
-    const activitySubmittedBack = document.querySelector("#studentActivitySubmittedView .primary-btn");
-    if (activitySubmittedBack && !activitySubmittedBack.dataset.bound) {
-      activitySubmittedBack.dataset.bound = "1";
-      activitySubmittedBack.addEventListener("click", studentBackToReportsHome);
     }
 
     const startFormBtn = document.getElementById("studentStartFormBtn");
@@ -3153,48 +2578,83 @@
       formNextBtn.addEventListener("click", studentGoNextFormQuestion);
     }
 
-    const formMulti = document.getElementById("studentFormMultipleChoiceBlock");
-    if (formMulti && !formMulti.dataset.bound) {
-      formMulti.dataset.bound = "1";
-      formMulti.addEventListener("click", (e) => {
-        const option = e.target.closest("[data-form-single-option]");
-        if (!option) return;
-        studentSetCurrentFormValue(option.getAttribute("data-form-single-option"));
-        studentRenderFormQuestion();
+    const activityOptionList = document.getElementById("studentActivityOptionList");
+    if (activityOptionList && !activityOptionList.dataset.bound) {
+      activityOptionList.dataset.bound = "1";
+      activityOptionList.addEventListener("click", (event) => {
+        const choice = event.target.closest("[data-activity-choice]");
+        if (!choice) return;
+        const question = state.activityQuestions[state.currentActivityIndex];
+        if (!question) return;
+        state.activityAnswers[question.id] = choice.dataset.activityChoice;
+        studentRenderActivityQuestion();
       });
     }
 
-    const formYesNo = document.getElementById("studentFormYesNoBlock");
-    if (formYesNo && !formYesNo.dataset.bound) {
-      formYesNo.dataset.bound = "1";
-      formYesNo.addEventListener("click", (e) => {
-        const option = e.target.closest("[data-form-single-option]");
-        if (!option) return;
-        studentSetCurrentFormValue(option.getAttribute("data-form-single-option"));
-        studentRenderFormQuestion();
+    const activityReviewList = document.getElementById("studentActivityReviewList");
+    if (activityReviewList && !activityReviewList.dataset.bound) {
+      activityReviewList.dataset.bound = "1";
+      activityReviewList.addEventListener("click", (event) => {
+        const item = event.target.closest("[data-review-activity-index]");
+        if (!item) return;
+        const idx = Number(item.dataset.reviewActivityIndex);
+        if (!Number.isFinite(idx)) return;
+        state.currentActivityIndex = idx;
+        studentShowReportsView("studentActivityQuestionView");
+        studentRenderActivityQuestion();
+        studentStartTimer(state.currentAttemptExpiresAt);
       });
     }
 
-    const formChecks = document.getElementById("studentFormCheckboxBlock");
-    if (formChecks && !formChecks.dataset.bound) {
-      formChecks.dataset.bound = "1";
-      formChecks.addEventListener("click", (e) => {
-        const option = e.target.closest("[data-form-check-option]");
-        if (!option) return;
+    const activityIntroBack = document.querySelector("#studentActivityIntroView .panel-back-btn");
+    if (activityIntroBack && !activityIntroBack.dataset.bound) {
+      activityIntroBack.dataset.bound = "1";
+      activityIntroBack.addEventListener("click", studentBackToReportsHome);
+    }
 
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
+    const activityQuestionBack = document.querySelector("#studentActivityQuestionView .panel-back-btn");
+    if (activityQuestionBack && !activityQuestionBack.dataset.bound) {
+      activityQuestionBack.dataset.bound = "1";
+      activityQuestionBack.addEventListener("click", () => {
+        studentShowReportsView("studentActivityIntroView");
+      });
+    }
 
-        const value = option.getAttribute("data-form-check-option");
-        const current = Array.isArray(window.studentClassActivityState.formAnswers[q.id])
-          ? [...window.studentClassActivityState.formAnswers[q.id]]
-          : [];
+    const activityReviewBack = document.querySelector("#studentActivityReviewView .panel-back-btn");
+    if (activityReviewBack && !activityReviewBack.dataset.bound) {
+      activityReviewBack.dataset.bound = "1";
+      activityReviewBack.addEventListener("click", () => {
+        studentShowReportsView("studentActivityQuestionView");
+        studentRenderActivityQuestion();
+        studentStartTimer(state.currentAttemptExpiresAt);
+      });
+    }
 
-        const idx = current.indexOf(value);
-        if (idx >= 0) current.splice(idx, 1);
-        else current.push(value);
+    const activitySubmittedBack = document.querySelector("#studentActivitySubmittedView .primary-btn");
+    if (activitySubmittedBack && !activitySubmittedBack.dataset.bound) {
+      activitySubmittedBack.dataset.bound = "1";
+      activitySubmittedBack.addEventListener("click", studentBackToReportsHome);
+    }
 
-        studentSetCurrentFormValue(current);
+    const formDetailsBack = document.querySelector("#studentFormDetailsView .panel-back-btn");
+    if (formDetailsBack && !formDetailsBack.dataset.bound) {
+      formDetailsBack.dataset.bound = "1";
+      formDetailsBack.addEventListener("click", studentBackToReportsHome);
+    }
+
+    const formQuestionBack = document.querySelector("#studentFormQuestionView .panel-back-btn");
+    if (formQuestionBack && !formQuestionBack.dataset.bound) {
+      formQuestionBack.dataset.bound = "1";
+      formQuestionBack.addEventListener("click", () => {
+        studentShowReportsView("studentFormDetailsView");
+      });
+    }
+
+    const formReviewBack = document.querySelector("#studentFormReviewView .panel-back-btn");
+    if (formReviewBack && !formReviewBack.dataset.bound) {
+      formReviewBack.dataset.bound = "1";
+      formReviewBack.addEventListener("click", () => {
+        studentShowReportsView("studentFormQuestionView");
         studentRenderFormQuestion();
       });
     }
@@ -3203,7 +2663,9 @@
     if (shortInput && !shortInput.dataset.bound) {
       shortInput.dataset.bound = "1";
       shortInput.addEventListener("input", () => {
-        studentSetCurrentFormValue(shortInput.value || "");
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = shortInput.value || "";
       });
     }
 
@@ -3211,7 +2673,9 @@
     if (paragraphInput && !paragraphInput.dataset.bound) {
       paragraphInput.dataset.bound = "1";
       paragraphInput.addEventListener("input", () => {
-        studentSetCurrentFormValue(paragraphInput.value || "");
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = paragraphInput.value || "";
       });
     }
 
@@ -3219,7 +2683,9 @@
     if (dropdownInput && !dropdownInput.dataset.bound) {
       dropdownInput.dataset.bound = "1";
       dropdownInput.addEventListener("change", () => {
-        studentSetCurrentFormValue(dropdownInput.value || "");
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = dropdownInput.value || "";
       });
     }
 
@@ -3227,7 +2693,56 @@
     if (dateInput && !dateInput.dataset.bound) {
       dateInput.dataset.bound = "1";
       dateInput.addEventListener("change", () => {
-        studentSetCurrentFormValue(dateInput.value || "");
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = dateInput.value || "";
+      });
+    }
+
+    const formMultipleChoiceBlock = document.getElementById("studentFormMultipleChoiceBlock");
+    if (formMultipleChoiceBlock && !formMultipleChoiceBlock.dataset.bound) {
+      formMultipleChoiceBlock.dataset.bound = "1";
+      formMultipleChoiceBlock.addEventListener("click", (e) => {
+        const item = e.target.closest("[data-form-radio]");
+        if (!item) return;
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = item.getAttribute("data-form-radio");
+        studentRenderFormQuestion();
+      });
+    }
+
+    const formCheckboxBlock = document.getElementById("studentFormCheckboxBlock");
+    if (formCheckboxBlock && !formCheckboxBlock.dataset.bound) {
+      formCheckboxBlock.dataset.bound = "1";
+      formCheckboxBlock.addEventListener("click", (e) => {
+        const item = e.target.closest("[data-form-checkbox]");
+        if (!item) return;
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+
+        const value = item.getAttribute("data-form-checkbox");
+        const current = Array.isArray(state.formAnswers[question.id]) ? [...state.formAnswers[question.id]] : [];
+        const idx = current.indexOf(value);
+
+        if (idx >= 0) current.splice(idx, 1);
+        else current.push(value);
+
+        state.formAnswers[question.id] = current;
+        studentRenderFormQuestion();
+      });
+    }
+
+    const formYesNoBlock = document.getElementById("studentFormYesNoBlock");
+    if (formYesNoBlock && !formYesNoBlock.dataset.bound) {
+      formYesNoBlock.dataset.bound = "1";
+      formYesNoBlock.addEventListener("click", (e) => {
+        const item = e.target.closest("[data-form-radio]");
+        if (!item) return;
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        state.formAnswers[question.id] = item.getAttribute("data-form-radio");
+        studentRenderFormQuestion();
       });
     }
 
@@ -3241,7 +2756,17 @@
 
     if (fileInput && !fileInput.dataset.bound) {
       fileInput.dataset.bound = "1";
-      fileInput.addEventListener("change", studentHandleFormFileSelection);
+      fileInput.addEventListener("change", () => {
+        const question = state.formQuestions[state.currentFormIndex];
+        if (!question) return;
+        const file = fileInput.files && fileInput.files[0];
+        const name = file ? file.name : "";
+        state.formAnswers[question.id] = name;
+        const fileRules = document.getElementById("studentFormFileRules");
+        if (fileRules) {
+          fileRules.textContent = name ? `Selected file: ${name}` : "Choose a file from your device.";
+        }
+      });
     }
 
     const formReviewList = document.getElementById("studentFormReviewList");
@@ -3252,7 +2777,7 @@
         if (!item) return;
         const idx = Number(item.getAttribute("data-review-form-index"));
         if (!Number.isFinite(idx)) return;
-        window.studentClassActivityState.currentFormIndex = idx;
+        state.currentFormIndex = idx;
         studentRenderFormQuestion();
         studentShowReportsView("studentFormQuestionView");
       });
@@ -3283,4 +2808,5 @@
   window.studentOpenActivityIntro = studentOpenActivityIntro;
   window.studentOpenFormDetails = studentOpenFormDetails;
   window.studentOpenAnnouncementDetails = studentOpenAnnouncementDetails;
+})();
 </script>
