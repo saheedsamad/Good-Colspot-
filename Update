@@ -1245,12 +1245,14 @@
   window.studentClassActivityState = window.studentClassActivityState || {
     activities: [],
     forms: [],
+    announcements: [],
     feedItems: [],
     filteredFeedItems: [],
     currentFilter: "all",
     searchTerm: "",
     currentActivity: null,
     currentForm: null,
+    currentAnnouncement: null,
     activityQuestions: [],
     formQuestions: [],
     activityAnswers: {},
@@ -1276,12 +1278,8 @@
     return String(value ?? "").trim().replace(/\s+/g, " ");
   }
 
-  function studentNormalizeUpper(value) {
-    return studentNormalizeText(value).toUpperCase();
-  }
-
-  function studentNormalizeLevel(value) {
-    return studentNormalizeUpper(value).replace(/\bLEVEL\b/g, "").replace(/\s+/g, " ").trim();
+  function studentEnsureArray(value) {
+    return Array.isArray(value) ? value : [];
   }
 
   function studentFmtDateTime(value, fallback = "No date") {
@@ -1295,21 +1293,6 @@
         day: "numeric",
         hour: "numeric",
         minute: "2-digit"
-      });
-    } catch {
-      return fallback;
-    }
-  }
-
-  function studentFmtDateOnly(value, fallback = "No date") {
-    if (!value) return fallback;
-    try {
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return fallback;
-      return d.toLocaleDateString([], {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
       });
     } catch {
       return fallback;
@@ -1332,13 +1315,9 @@
 
   function studentIsExpiredByDate(value) {
     if (!value) return false;
-    const t = new Date(value).getTime();
-    if (Number.isNaN(t)) return false;
-    return Date.now() > t;
-  }
-
-  function studentEnsureArray(value) {
-    return Array.isArray(value) ? value : [];
+    const time = new Date(value).getTime();
+    if (Number.isNaN(time)) return false;
+    return time < Date.now();
   }
 
   async function studentEnsureUser() {
@@ -1452,6 +1431,7 @@
 
   function studentPendingItemCount(items) {
     return studentEnsureArray(items).filter((item) => {
+      if (item.item_type === "announcement") return !item.is_read;
       return item.status === "not-started" || item.status === "in-progress";
     }).length;
   }
@@ -1483,6 +1463,7 @@
     const total = state.feedItems.length;
     const forms = state.forms.length;
     const activities = state.activities.length;
+    const announcements = state.announcements.length;
     const pending = studentPendingItemCount(state.feedItems);
 
     const setText = (id, value) => {
@@ -1493,9 +1474,11 @@
     setText("studentReportsTotalCount", total);
     setText("studentReportsFormCount", forms);
     setText("studentReportsActivityCount", activities);
+    setText("studentReportsAnnouncementCount", announcements);
     setText("studentReportsAllCount", total);
     setText("studentReportsFormsCount", forms);
     setText("studentReportsActivitiesCount", activities);
+    setText("studentReportsAnnouncementsCount", announcements);
     setText("studentReportsPendingCount", pending);
 
     const pendingBadge = document.getElementById("studentReportsPendingBadge");
@@ -1508,7 +1491,7 @@
 
   function studentComputeFeedItems() {
     const state = window.studentClassActivityState;
-    const merged = [...state.forms, ...state.activities];
+    const merged = [...state.forms, ...state.activities, ...state.announcements];
 
     merged.sort((a, b) => {
       const aTime = new Date(a.sort_at || a.created_at || a.published_at || a.due_at || 0).getTime() || 0;
@@ -1530,8 +1513,13 @@
       list = list.filter((item) => item.item_type === "form");
     } else if (filter === "activities") {
       list = list.filter((item) => item.item_type === "activity");
+    } else if (filter === "announcements") {
+      list = list.filter((item) => item.item_type === "announcement");
     } else if (filter === "pending") {
-      list = list.filter((item) => item.status === "not-started" || item.status === "in-progress");
+      list = list.filter((item) => {
+        if (item.item_type === "announcement") return !item.is_read;
+        return item.status === "not-started" || item.status === "in-progress";
+      });
     }
 
     if (q) {
@@ -1542,7 +1530,9 @@
           item.class_code,
           item.class_title,
           item.school_name,
-          item.description
+          item.description,
+          item.body,
+          item.notification_body
         ].join(" ").toLowerCase();
         return hay.includes(q);
       });
@@ -1552,6 +1542,9 @@
   }
 
   function studentFeedKindClass(item) {
+    if (item.item_type === "announcement") {
+      return item.is_read ? "submitted" : "revision";
+    }
     if (item.status === "closed" || item.status === "expired") return "closed";
     if (item.status === "submitted") return "submitted";
     if (item.item_type === "form") return "form";
@@ -1561,9 +1554,10 @@
   }
 
   function studentFeedKindLabel(item) {
+    if (item.item_type === "announcement") return "Announcement";
     if (item.status === "closed") return "Closed";
     if (item.status === "expired") return "Expired";
-    if (item.status === "submitted") return item.item_type === "form" ? "Submitted" : "Submitted";
+    if (item.status === "submitted") return "Submitted";
     if (item.item_type === "form") return "Form";
     if (item.type === "assignment") return "Assignment";
     if (item.type === "test") return "Test";
@@ -1571,6 +1565,9 @@
   }
 
   function studentFeedStatusClass(item) {
+    if (item.item_type === "announcement") {
+      return item.is_read ? "submitted" : "not-started";
+    }
     if (item.status === "submitted") return "submitted";
     if (item.status === "in-progress") return "in-progress";
     if (item.status === "closed") return "closed";
@@ -1579,6 +1576,9 @@
   }
 
   function studentFeedStatusLabel(item) {
+    if (item.item_type === "announcement") {
+      return item.is_read ? "Read" : "Unread";
+    }
     if (item.status === "submitted") return "Submitted";
     if (item.status === "in-progress") return "In progress";
     if (item.status === "closed") return "Closed";
@@ -1587,6 +1587,7 @@
   }
 
   function studentFeedButtonLabel(item) {
+    if (item.item_type === "announcement") return "View message";
     if (item.status === "submitted") return "Submitted";
     if (item.status === "in-progress") return "Continue";
     if (item.status === "closed" || item.status === "expired") return item.status === "closed" ? "Closed" : "Expired";
@@ -1603,7 +1604,7 @@
     const items = window.studentClassActivityState.filteredFeedItems || [];
 
     if (!items.length) {
-      wrap.innerHTML = `<div class="feed-empty">No form or class activity matched your current filter.</div>`;
+      wrap.innerHTML = `<div class="feed-empty">No form, class activity, or announcement matched your current filter.</div>`;
       return;
     }
 
@@ -1613,13 +1614,23 @@
       const statusClass = studentFeedStatusClass(item);
       const statusLabel = studentFeedStatusLabel(item);
       const btnLabel = studentFeedButtonLabel(item);
-      const blocked = item.status === "submitted" || item.status === "closed" || item.status === "expired";
+
+      const blocked =
+        item.item_type !== "announcement" &&
+        (item.status === "submitted" || item.status === "closed" || item.status === "expired");
+
+      const sourceLabel =
+        item.item_type === "form"
+          ? "School form"
+          : item.item_type === "announcement"
+          ? "School announcement"
+          : (item.class_code || "Class activity");
 
       return `
         <article class="feed-card" data-item-id="${studentReportEscape(item.id)}" data-item-type="${studentReportEscape(item.item_type)}">
           <div class="feed-card-top">
             <div class="feed-card-head">
-              <div class="feed-source">${studentReportEscape(item.item_type === "form" ? "School form" : (item.class_code || "Class activity"))}</div>
+              <div class="feed-source">${studentReportEscape(sourceLabel)}</div>
               <div class="feed-title">${studentReportEscape(item.title || "Untitled")}</div>
               <div class="feed-subtitle">${studentReportEscape(item.sub_title || "")}</div>
             </div>
@@ -1627,10 +1638,20 @@
           </div>
 
           <div class="feed-meta">
-            ${item.questions_count != null ? `<div class="feed-pill">${studentReportEscape(item.questions_count)} Questions</div>` : ""}
-            ${item.item_type === "activity" ? `<div class="feed-pill">${studentReportEscape(item.time_limit ? studentFormatDuration(item.time_limit) : "No limit")}</div>` : ""}
-            <div class="feed-pill">${studentReportEscape(item.due_text || item.close_text || "No due date")}</div>
-            ${item.item_type === "form" && item.response_rule_text ? `<div class="feed-pill">${studentReportEscape(item.response_rule_text)}</div>` : ""}
+            ${
+              item.item_type === "announcement"
+                ? `
+                  <div class="feed-pill">${studentReportEscape(item.is_read ? "Read" : "Unread")}</div>
+                  <div class="feed-pill">${studentReportEscape(studentFmtDateTime(item.created_at, "No date"))}</div>
+                  ${item.image_url || item.file_url || item.link_url ? `<div class="feed-pill">Has media</div>` : ""}
+                `
+                : `
+                  ${item.questions_count != null ? `<div class="feed-pill">${studentReportEscape(item.questions_count)} Questions</div>` : ""}
+                  ${item.item_type === "activity" ? `<div class="feed-pill">${studentReportEscape(item.time_limit ? studentFormatDuration(item.time_limit) : "No limit")}</div>` : ""}
+                  <div class="feed-pill">${studentReportEscape(item.due_text || item.close_text || "No due date")}</div>
+                  ${item.item_type === "form" && item.response_rule_text ? `<div class="feed-pill">${studentReportEscape(item.response_rule_text)}</div>` : ""}
+                `
+            }
           </div>
 
           <div class="feed-status-row">
@@ -1723,7 +1744,9 @@
 
     const attemptMap = {};
     attempts.forEach((a) => {
-      attemptMap[a.activity_id] = a;
+      if (!attemptMap[a.activity_id]) {
+        attemptMap[a.activity_id] = a;
+      }
     });
 
     const items = (activities || []).map((a) => {
@@ -1884,16 +1907,91 @@
     return items;
   }
 
+  async function studentLoadAnnouncements() {
+    if (typeof supabase === "undefined") {
+      throw new Error("Supabase is not available.");
+    }
+
+    const user = await studentEnsureUser();
+    if (!user) {
+      throw new Error("Please sign in again to continue.");
+    }
+
+    const { data: notifRows, error: notifError } = await supabase
+      .from("announcement_notifications")
+      .select("id, announcement_id, user_id, title, message, school_name, programme, level, is_read, read_at, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (notifError) throw notifError;
+
+    const announcementIds = [...new Set((notifRows || []).map((x) => x.announcement_id).filter(Boolean))];
+
+    if (!announcementIds.length) {
+      window.studentClassActivityState.announcements = [];
+      return [];
+    }
+
+    const { data: announcementRows, error: annError } = await supabase
+      .from("school_announcements")
+      .select("id, title, body, notification_title, notification_body, link_url, link_label, image_url, file_url, school_name, audience_mode, programme_targets, created_by_admin_name, published_at, created_at, updated_at, status")
+      .in("id", announcementIds);
+
+    if (annError) throw annError;
+
+    const annMap = {};
+    (announcementRows || []).forEach((row) => {
+      annMap[row.id] = row;
+    });
+
+    const items = (notifRows || []).map((n) => {
+      const ann = annMap[n.announcement_id];
+      if (!ann) return null;
+
+      return {
+        id: ann.id,
+        item_type: "announcement",
+        notification_id: n.id,
+        title: ann.title || n.title || "School announcement",
+        sub_title: ann.notification_body || n.message || "Announcement received",
+        body: ann.body || "",
+        notification_title: ann.notification_title || n.title || "",
+        notification_body: ann.notification_body || n.message || "",
+        school_name: ann.school_name || n.school_name || "",
+        programme: n.programme || null,
+        level: n.level || null,
+        link_url: ann.link_url || "",
+        link_label: ann.link_label || "",
+        image_url: ann.image_url || "",
+        file_url: ann.file_url || "",
+        created_by_admin_name: ann.created_by_admin_name || "School admin",
+        audience_mode: ann.audience_mode || "all_students",
+        programme_targets: ann.programme_targets || [],
+        status: "announcement",
+        is_read: !!n.is_read,
+        read_at: n.read_at || null,
+        created_at: n.created_at || ann.created_at || ann.published_at || null,
+        published_at: ann.published_at || ann.created_at || null,
+        sort_at: n.created_at || ann.published_at || ann.created_at || null,
+        raw_announcement: ann
+      };
+    }).filter(Boolean);
+
+    window.studentClassActivityState.announcements = items;
+    return items;
+  }
+
   async function studentLoadReportsFeed() {
     const wrap = document.getElementById("studentReportsFeedList");
     if (wrap) {
-      wrap.innerHTML = `<div class="feed-empty">Loading your school forms and class activities...</div>`;
+      wrap.innerHTML = `<div class="feed-empty">Loading your school forms, class activities, and announcements...</div>`;
     }
 
     try {
       await Promise.all([
         studentLoadActivities(),
-        studentLoadForms()
+        studentLoadForms(),
+        studentLoadAnnouncements()
       ]);
 
       studentComputeFeedItems();
@@ -1901,7 +1999,7 @@
     } catch (err) {
       console.error("studentLoadReportsFeed failed:", err);
       if (wrap) {
-        wrap.innerHTML = `<div class="feed-empty">Could not load your forms and class activities right now.</div>`;
+        wrap.innerHTML = `<div class="feed-empty">Could not load your forms, class activities, and announcements right now.</div>`;
       }
     }
   }
@@ -1942,6 +2040,36 @@
     window.studentClassActivityState.currentAttemptExpiresAt = found.expires_at || null;
 
     studentShowReportsView("studentActivityIntroView");
+  }
+
+  async function studentOpenAnnouncementDetails(announcementId) {
+    const found = (window.studentClassActivityState.announcements || []).find((x) => x.id === announcementId);
+    if (!found) return;
+
+    try {
+      if (typeof supabase !== "undefined" && found.notification_id) {
+        const { error } = await supabase
+          .from("announcement_notifications")
+          .update({
+            is_read: true,
+            read_at: new Date().toISOString()
+          })
+          .eq("id", found.notification_id);
+
+        if (!error) {
+          found.is_read = true;
+          found.read_at = new Date().toISOString();
+          studentComputeFeedItems();
+          studentRenderFeedList();
+        }
+      }
+
+      localStorage.setItem("student_announcement_view_details", JSON.stringify(found));
+      window.location.href = `view_details.html?type=announcement&id=${encodeURIComponent(announcementId)}`;
+    } catch (err) {
+      console.error("studentOpenAnnouncementDetails failed:", err);
+      alert(err?.message || "Could not open this announcement.");
+    }
   }
 
   async function studentEnsureAttempt() {
@@ -2095,7 +2223,7 @@
     if (progressPercentEl) progressPercentEl.textContent = `${percent}%`;
     if (progressBarEl) progressBarEl.style.width = `${percent}%`;
 
-    if (prevBtn) prevBtn.textContent = index === 0 ? "Back" : "Back";
+    if (prevBtn) prevBtn.textContent = "Back";
     if (nextBtn) nextBtn.textContent = index === total - 1 ? "Review" : "Next";
 
     const selected = state.activityAnswers[q.id] || "";
@@ -2187,34 +2315,46 @@
     }).join("");
   }
 
-  function studentBackToLastQuestion() {
-    const state = window.studentClassActivityState;
-    const total = (state.activityQuestions || []).length;
-    state.currentActivityIndex = total > 0 ? total - 1 : 0;
-    studentRenderActivityQuestion();
-    studentShowReportsView("studentActivityQuestionView");
-    studentStartTimer(state.currentAttemptExpiresAt);
-  }
-
   async function studentSubmitActivity(fromTimer = false) {
     const btn = document.getElementById("studentSubmitActivityBtn");
     const oldText = btn ? btn.textContent : "Submit activity";
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
 
     try {
-      const questions = window.studentClassActivityState.activityQuestions || [];
-      for (let i = 0; i < questions.length; i += 1) {
-        window.studentClassActivityState.currentActivityIndex = i;
-        await studentSaveCurrentActivityAnswer();
+      const state = window.studentClassActivityState;
+      const attemptId = await studentEnsureAttempt();
+      if (!attemptId) throw new Error("Missing activity attempt.");
+
+      const questions = state.activityQuestions || [];
+
+      if (!fromTimer) {
+        for (const q of questions) {
+          if (!state.activityAnswers[q.id]) {
+            throw new Error("Please answer all questions before submitting.");
+          }
+        }
       }
 
-      const attemptId = await studentEnsureAttempt();
-      if (!attemptId) throw new Error("Missing attempt.");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+      }
 
-      const { error } = await supabase
+      for (const q of questions) {
+        const selected = state.activityAnswers[q.id];
+        if (!selected) continue;
+
+        const { error: answerError } = await supabase
+          .from("class_activity_answers")
+          .upsert([{
+            attempt_id: attemptId,
+            question_id: q.id,
+            selected_option: selected
+          }], { onConflict: "attempt_id,question_id" });
+
+        if (answerError) throw answerError;
+      }
+
+      const { error: submitError } = await supabase
         .from("class_activity_attempts")
         .update({
           status: "submitted",
@@ -2222,14 +2362,14 @@
         })
         .eq("id", attemptId);
 
-      if (error) throw error;
+      if (submitError) throw submitError;
 
       studentStopTimer();
       studentShowReportsView("studentActivitySubmittedView");
       await studentLoadReportsFeed();
     } catch (err) {
       console.error("studentSubmitActivity failed:", err);
-      alert(fromTimer ? "Time ended, but submission failed. Please try again now." : "Could not submit activity right now.");
+      alert(err?.message || "Could not submit this activity right now.");
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -2238,138 +2378,7 @@
     }
   }
 
-  async function studentOpenFormDetails(formId) {
-    const found = (window.studentClassActivityState.forms || []).find((x) => x.id === formId);
-    if (!found) return;
-
-    window.studentClassActivityState.currentForm = found;
-    window.studentClassActivityState.formQuestions = [];
-    window.studentClassActivityState.formAnswers = {};
-    window.studentClassActivityState.currentFormIndex = 0;
-    window.studentClassActivityState.currentFormResponseId = found.response_id || null;
-
-    const titleEl = document.getElementById("studentFormDetailsTitle");
-    const schoolEl = document.getElementById("studentFormDetailsSchool");
-    const descEl = document.getElementById("studentFormDetailsDescription");
-    const qCountEl = document.getElementById("studentFormDetailsQuestions");
-    const ruleEl = document.getElementById("studentFormDetailsRule");
-    const identityEl = document.getElementById("studentFormDetailsIdentity");
-    const openEl = document.getElementById("studentFormDetailsOpenAt");
-    const closeEl = document.getElementById("studentFormDetailsCloseAt");
-    const msgEl = document.getElementById("studentFormDetailsMessage");
-    const startBtn = document.getElementById("studentStartFormBtn");
-
-    if (titleEl) titleEl.textContent = found.title || "School Form";
-    if (schoolEl) schoolEl.textContent = found.school_name || "School";
-    if (descEl) descEl.textContent = found.description || "No description";
-    if (qCountEl) qCountEl.textContent = `${found.questions_count || 0} Questions`;
-    if (ruleEl) ruleEl.textContent = found.response_rule === "many" ? "Multiple responses allowed" : "One response only";
-    if (identityEl) {
-      identityEl.textContent =
-        found.identity_mode === "anonymous" ? "Anonymous" :
-        found.identity_mode === "manual" ? "Manual identity" :
-        "Logged in identity";
-    }
-    if (openEl) openEl.textContent = studentFmtDateTime(found.open_at, "Now");
-    if (closeEl) closeEl.textContent = studentFmtDateTime(found.close_at, "No close date");
-
-    if (msgEl) {
-      if (found.status === "submitted" && found.response_rule !== "many") {
-        msgEl.textContent = "You have already submitted this form.";
-        msgEl.className = "info-box green";
-      } else if (found.status === "closed") {
-        msgEl.textContent = "This form is closed and no longer accepting responses.";
-        msgEl.className = "info-box amber";
-      } else {
-        msgEl.textContent = "Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.";
-        msgEl.className = "info-box blue";
-      }
-    }
-
-    if (startBtn) {
-      if (found.status === "submitted" && found.response_rule !== "many") {
-        startBtn.textContent = "Already submitted";
-        startBtn.disabled = true;
-        startBtn.style.opacity = "0.7";
-      } else if (found.status === "closed") {
-        startBtn.textContent = "Form closed";
-        startBtn.disabled = true;
-        startBtn.style.opacity = "0.7";
-      } else {
-        startBtn.textContent = "Start form";
-        startBtn.disabled = false;
-        startBtn.style.opacity = "1";
-      }
-    }
-
-    await studentMarkFormNotificationRead(found.notification_id);
-    studentShowReportsView("studentFormDetailsView");
-  }
-
-  async function studentMarkFormNotificationRead(notificationId) {
-    if (!notificationId || typeof supabase === "undefined") return;
-    try {
-      await supabase
-        .from("form_notifications")
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq("id", notificationId);
-    } catch (err) {
-      console.error("studentMarkFormNotificationRead failed:", err);
-    }
-  }
-
-  async function studentStartForm() {
-    const form = window.studentClassActivityState.currentForm;
-    if (!form || typeof supabase === "undefined") return;
-
-    if (form.status === "closed") {
-      alert("This form is closed.");
-      return;
-    }
-
-    if (form.status === "submitted" && form.response_rule !== "many") {
-      alert("You have already submitted this form.");
-      return;
-    }
-
-    const btn = document.getElementById("studentStartFormBtn");
-    const oldText = btn ? btn.textContent : "Start form";
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Opening...";
-    }
-
-    try {
-      const { data: questions, error } = await supabase
-        .from("form_questions")
-        .select("*")
-        .eq("form_id", form.id)
-        .order("sort_order", { ascending: true });
-
-      if (error) throw error;
-
-      window.studentClassActivityState.formQuestions = questions || [];
-      window.studentClassActivityState.formAnswers = {};
-      window.studentClassActivityState.currentFormIndex = 0;
-      window.studentClassActivityState.currentFormResponseId = null;
-
-      studentRenderFormQuestion();
-      studentShowReportsView("studentFormQuestionView");
-    } catch (err) {
-      console.error("studentStartForm failed:", err);
-      alert("Could not open this form right now.");
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-  }
-
-  function studentHideFormBlocks() {
+  function studentHideFormQuestionBlocks() {
     [
       "studentFormShortAnswerBlock",
       "studentFormParagraphBlock",
@@ -2385,62 +2394,137 @@
     });
   }
 
-  function studentSetFormFieldNote(text) {
-    const el = document.getElementById("studentFormFieldNote");
-    if (!el) return;
-    el.textContent = text || "";
-  }
-
   function studentGetCurrentFormQuestion() {
     const state = window.studentClassActivityState;
     return (state.formQuestions || [])[state.currentFormIndex] || null;
   }
 
-  function studentGetFormAnswer(questionId) {
-    return window.studentClassActivityState.formAnswers[questionId];
+  function studentSetFieldNote(text = "") {
+    const el = document.getElementById("studentFormFieldNote");
+    if (el) el.textContent = text;
   }
 
-  function studentSetFormAnswer(questionId, value) {
-    window.studentClassActivityState.formAnswers[questionId] = value;
+  function studentSetCurrentFormValue(value) {
+    const q = studentGetCurrentFormQuestion();
+    if (!q) return;
+    window.studentClassActivityState.formAnswers[q.id] = value;
   }
 
-  function studentBindChoiceGroup(containerId, questionId, multiple = false) {
-    const wrap = document.getElementById(containerId);
-    if (!wrap) return;
+  async function studentOpenFormDetails(formId) {
+    const user = await studentEnsureUser();
+    if (!user || typeof supabase === "undefined") {
+      alert("Please sign in again.");
+      return;
+    }
 
-    wrap.querySelectorAll(".choice-option").forEach((node) => {
-      node.addEventListener("click", () => {
-        const value = node.getAttribute("data-choice-value") || "";
-        if (!value) return;
+    try {
+      const { data: form, error: formError } = await supabase
+        .from("forms")
+        .select("id, title, description, school_name, status, response_rule, identity_mode, open_at, close_at, published_at, created_at, audience_mode, programme_targets, is_active")
+        .eq("id", formId)
+        .maybeSingle();
 
-        if (multiple) {
-          const current = Array.isArray(studentGetFormAnswer(questionId)) ? [...studentGetFormAnswer(questionId)] : [];
-          const exists = current.includes(value);
-          const next = exists ? current.filter((x) => x !== value) : [...current, value];
-          studentSetFormAnswer(questionId, next);
+      if (formError) throw formError;
+      if (!form) throw new Error("Form not found.");
 
-          wrap.querySelectorAll(".choice-option").forEach((el) => {
-            const v = el.getAttribute("data-choice-value") || "";
-            el.classList.toggle("active", next.includes(v));
-          });
-        } else {
-          studentSetFormAnswer(questionId, value);
-          wrap.querySelectorAll(".choice-option").forEach((el) => {
-            el.classList.toggle("active", el.getAttribute("data-choice-value") === value);
-          });
+      const { data: questions, error: questionError } = await supabase
+        .from("form_questions")
+        .select("*")
+        .eq("form_id", formId)
+        .order("sort_order", { ascending: true });
+
+      if (questionError) throw questionError;
+
+      const { data: response, error: responseError } = await supabase
+        .from("form_responses")
+        .select("*")
+        .eq("form_id", formId)
+        .eq("submitted_by", user.id)
+        .maybeSingle();
+
+      if (responseError) throw responseError;
+
+      let answers = [];
+      if (response?.id) {
+        const { data: answerRows, error: answerError } = await supabase
+          .from("form_answers")
+          .select("*")
+          .eq("response_id", response.id);
+
+        if (answerError) throw answerError;
+        answers = answerRows || [];
+      }
+
+      const titleEl = document.getElementById("studentFormDetailsTitle");
+      const schoolEl = document.getElementById("studentFormDetailsSchool");
+      const descriptionEl = document.getElementById("studentFormDetailsDescription");
+      const questionsEl = document.getElementById("studentFormDetailsQuestions");
+      const ruleEl = document.getElementById("studentFormDetailsRule");
+      const identityEl = document.getElementById("studentFormDetailsIdentity");
+      const openEl = document.getElementById("studentFormDetailsOpenAt");
+      const closeEl = document.getElementById("studentFormDetailsCloseAt");
+      const messageEl = document.getElementById("studentFormDetailsMessage");
+      const startBtn = document.getElementById("studentStartFormBtn");
+
+      if (titleEl) titleEl.textContent = form.title || "School Form";
+      if (schoolEl) schoolEl.textContent = form.school_name || "School";
+      if (descriptionEl) descriptionEl.textContent = form.description || "No description";
+      if (questionsEl) questionsEl.textContent = `${(questions || []).length} Questions`;
+      if (ruleEl) ruleEl.textContent = form.response_rule === "many" ? "Multiple responses allowed" : "One response only";
+      if (identityEl) identityEl.textContent = form.identity_mode === "anonymous" ? "Anonymous response" : "Logged in identity";
+      if (openEl) openEl.textContent = studentFmtDateTime(form.open_at, "Now");
+      if (closeEl) closeEl.textContent = studentFmtDateTime(form.close_at, "No close date");
+
+      if (messageEl) {
+        messageEl.textContent = response?.submitted_at
+          ? "You already submitted this form. You can still review the details here."
+          : "Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.";
+      }
+
+      if (startBtn) {
+        startBtn.textContent = response?.submitted_at ? "View form" : "Start form";
+      }
+
+      const state = window.studentClassActivityState;
+      state.currentForm = {
+        ...form,
+        id: form.id
+      };
+      state.formQuestions = questions || [];
+      state.formAnswers = {};
+      state.currentFormIndex = 0;
+      state.currentFormResponseId = response?.id || null;
+
+      answers.forEach((row) => {
+        const key = row.question_id;
+        if (!key) return;
+
+        if (Array.isArray(row.selected_options_json)) {
+          state.formAnswers[key] = row.selected_options_json;
+        } else if (row.answer_text != null) {
+          state.formAnswers[key] = row.answer_text;
+        } else if (row.file_url) {
+          state.formAnswers[key] = row.file_url;
+        } else if (Array.isArray(row.file_urls)) {
+          state.formAnswers[key] = row.file_urls;
+        } else if (row.answer_json != null) {
+          state.formAnswers[key] = row.answer_json;
         }
       });
-    });
+
+      studentShowReportsView("studentFormDetailsView");
+    } catch (err) {
+      console.error("studentOpenFormDetails failed:", err);
+      alert(err?.message || "Could not open this form.");
+    }
   }
 
   function studentRenderFormQuestion() {
     const state = window.studentClassActivityState;
-    const q = studentGetCurrentFormQuestion();
+    const questions = state.formQuestions || [];
+    const index = Number(state.currentFormIndex || 0);
+    const q = questions[index];
     if (!q) return;
-
-    const total = state.formQuestions.length || 1;
-    const current = state.currentFormIndex + 1;
-    const percent = Math.round((current / total) * 100);
 
     const titleEl = document.getElementById("studentFormQuestionTitle");
     const helpEl = document.getElementById("studentFormQuestionHelp");
@@ -2449,29 +2533,34 @@
     const progressBarEl = document.getElementById("studentFormProgressBar");
     const nextBtn = document.getElementById("studentFormNextBtn");
 
-    if (titleEl) titleEl.textContent = q.question_text || "Question";
+    if (titleEl) titleEl.textContent = q.question_text || q.question || "Question";
+
     if (helpEl) {
-      helpEl.textContent = q.help_text || "";
-      helpEl.classList.toggle("hidden", !studentNormalizeText(q.help_text));
+      const help = q.help_text || "";
+      helpEl.textContent = help;
+      helpEl.classList.toggle("hidden", !help);
     }
-    if (progressTextEl) progressTextEl.textContent = `Question ${current} of ${total}`;
+
+    const total = questions.length || 1;
+    const percent = Math.round(((index + 1) / total) * 100);
+
+    if (progressTextEl) progressTextEl.textContent = `Question ${index + 1} of ${total}`;
     if (progressPercentEl) progressPercentEl.textContent = `${percent}%`;
     if (progressBarEl) progressBarEl.style.width = `${percent}%`;
-    if (nextBtn) nextBtn.textContent = current === total ? "Review" : "Next";
+    if (nextBtn) nextBtn.textContent = index === total - 1 ? "Review" : "Next";
 
-    studentHideFormBlocks();
-    studentSetFormFieldNote("");
+    studentHideFormQuestionBlocks();
+    studentSetFieldNote("");
 
-    const answer = studentGetFormAnswer(q.id);
-    const type = q.question_type || "short_answer";
-    const options = studentEnsureArray(q.options_json);
+    const answer = state.formAnswers[q.id];
+    const type = q.question_type;
 
     if (type === "short_answer") {
       const block = document.getElementById("studentFormShortAnswerBlock");
       const input = document.getElementById("studentFormShortAnswerInput");
       if (block) block.classList.remove("hidden");
       if (input) {
-        input.value = typeof answer === "string" ? answer : "";
+        input.value = answer || "";
         input.placeholder = q.placeholder_text || "Type your answer";
       }
     } else if (type === "paragraph") {
@@ -2479,180 +2568,221 @@
       const input = document.getElementById("studentFormParagraphInput");
       if (block) block.classList.remove("hidden");
       if (input) {
-        input.value = typeof answer === "string" ? answer : "";
+        input.value = answer || "";
         input.placeholder = q.placeholder_text || "Type your answer here";
       }
     } else if (type === "multiple_choice") {
       const block = document.getElementById("studentFormMultipleChoiceBlock");
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = options.map((opt, index) => {
-          const value = String(opt);
-          const active = answer === value;
-          const mark = String.fromCharCode(65 + index);
-          return `
-            <div class="choice-option ${active ? "active" : ""}" data-choice-value="${studentReportEscape(value)}">
-              <div class="choice-mark">${studentReportEscape(mark)}</div>
-              <div class="choice-text">${studentReportEscape(value)}</div>
-            </div>
-          `;
-        }).join("");
-        studentBindChoiceGroup("studentFormMultipleChoiceBlock", q.id, false);
+        block.innerHTML = studentEnsureArray(q.options_json).map((option) => `
+          <div class="choice-option ${answer === option ? "active" : ""}" data-form-single-option="${studentReportEscape(option)}">
+            <div class="choice-mark">•</div>
+            <div class="choice-text">${studentReportEscape(option)}</div>
+          </div>
+        `).join("");
       }
     } else if (type === "checkboxes") {
       const block = document.getElementById("studentFormCheckboxBlock");
-      const selected = Array.isArray(answer) ? answer : [];
+      const arr = Array.isArray(answer) ? answer : [];
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = options.map((opt, index) => {
-          const value = String(opt);
-          const active = selected.includes(value);
-          const mark = String.fromCharCode(65 + index);
-          return `
-            <div class="choice-option ${active ? "active" : ""}" data-choice-value="${studentReportEscape(value)}">
-              <div class="choice-mark">${studentReportEscape(mark)}</div>
-              <div class="choice-text">${studentReportEscape(value)}</div>
-            </div>
-          `;
-        }).join("");
-        studentBindChoiceGroup("studentFormCheckboxBlock", q.id, true);
+        block.innerHTML = studentEnsureArray(q.options_json).map((option) => `
+          <div class="choice-option ${arr.includes(option) ? "active" : ""}" data-form-check-option="${studentReportEscape(option)}">
+            <div class="choice-mark">✓</div>
+            <div class="choice-text">${studentReportEscape(option)}</div>
+          </div>
+        `).join("");
       }
     } else if (type === "dropdown") {
       const block = document.getElementById("studentFormDropdownBlock");
-      const select = document.getElementById("studentFormDropdownInput");
+      const input = document.getElementById("studentFormDropdownInput");
       if (block) block.classList.remove("hidden");
-      if (select) {
-        select.innerHTML = `<option value="">Select an option</option>` + options.map((opt) => {
-          const value = String(opt);
-          return `<option value="${studentReportEscape(value)}">${studentReportEscape(value)}</option>`;
-        }).join("");
-        select.value = typeof answer === "string" ? answer : "";
+      if (input) {
+        input.innerHTML = `<option value="">Select an option</option>` +
+          studentEnsureArray(q.options_json).map((option) => `
+            <option value="${studentReportEscape(option)}" ${answer === option ? "selected" : ""}>${studentReportEscape(option)}</option>
+          `).join("");
       }
     } else if (type === "yes_no") {
       const block = document.getElementById("studentFormYesNoBlock");
-      const values = options.length ? options : ["Yes", "No"];
+      const yesNoOptions = ["Yes", "No"];
       if (block) {
         block.classList.remove("hidden");
-        block.innerHTML = values.map((opt, index) => {
-          const value = String(opt);
-          const active = answer === value;
-          const mark = index === 0 ? "Y" : "N";
-          return `
-            <div class="choice-option ${active ? "active" : ""}" data-choice-value="${studentReportEscape(value)}">
-              <div class="choice-mark">${studentReportEscape(mark)}</div>
-              <div class="choice-text">${studentReportEscape(value)}</div>
-            </div>
-          `;
-        }).join("");
-        studentBindChoiceGroup("studentFormYesNoBlock", q.id, false);
+        block.innerHTML = yesNoOptions.map((option) => `
+          <div class="choice-option ${answer === option ? "active" : ""}" data-form-single-option="${studentReportEscape(option)}">
+            <div class="choice-mark">•</div>
+            <div class="choice-text">${studentReportEscape(option)}</div>
+          </div>
+        `).join("");
       }
     } else if (type === "date") {
       const block = document.getElementById("studentFormDateBlock");
       const input = document.getElementById("studentFormDateInput");
       if (block) block.classList.remove("hidden");
-      if (input) input.value = typeof answer === "string" ? answer : "";
+      if (input) input.value = answer || "";
     } else if (type === "file_upload") {
       const block = document.getElementById("studentFormFileBlock");
-      const fileRules = document.getElementById("studentFormFileRules");
-      const input = document.getElementById("studentFormFileInput");
+      const rules = document.getElementById("studentFormFileRules");
+      const fileInput = document.getElementById("studentFormFileInput");
       if (block) block.classList.remove("hidden");
 
-      const allowedTypes = studentEnsureArray(q.allowed_file_types).join(", ") || "Any supported file";
-      const maxFiles = Number(q.max_files || 1);
-      const maxSize = Number(q.max_file_size_mb || 5);
-
-      if (fileRules) {
-        fileRules.textContent = `${allowedTypes} · Max ${maxFiles} file${maxFiles > 1 ? "s" : ""} · Max ${maxSize}MB`;
+      if (rules) {
+        const types = studentEnsureArray(q.allowed_file_types).join(", ") || "Any allowed format";
+        rules.textContent = `Allowed types: ${types}. Max files: ${q.max_files || 1}. Max size: ${q.max_file_size_mb || 5}MB each.`;
       }
 
-      if (input) {
-        input.value = "";
-        input.multiple = maxFiles > 1;
+      if (fileInput) {
+        fileInput.value = "";
+        fileInput.multiple = Number(q.max_files || 1) > 1;
       }
 
-      const existingFiles = Array.isArray(answer?.files) ? answer.files : [];
-      studentSetFormFieldNote(existingFiles.length ? `${existingFiles.length} file selected.` : "Choose file to attach.");
-    } else {
-      const block = document.getElementById("studentFormShortAnswerBlock");
-      const input = document.getElementById("studentFormShortAnswerInput");
-      if (block) block.classList.remove("hidden");
-      if (input) {
-        input.value = typeof answer === "string" ? answer : "";
-        input.placeholder = q.placeholder_text || "Type your answer";
+      if (Array.isArray(answer) && answer.length) {
+        studentSetFieldNote(`${answer.length} file(s) selected.`);
+      } else if (typeof answer === "string" && answer) {
+        studentSetFieldNote("1 file selected.");
       }
     }
-  }
-
-  function studentReadCurrentFormAnswer() {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return null;
-
-    const type = q.question_type || "short_answer";
-
-    if (type === "short_answer") {
-      return studentNormalizeText(document.getElementById("studentFormShortAnswerInput")?.value || "");
-    }
-
-    if (type === "paragraph") {
-      return studentNormalizeText(document.getElementById("studentFormParagraphInput")?.value || "");
-    }
-
-    if (type === "dropdown") {
-      return studentNormalizeText(document.getElementById("studentFormDropdownInput")?.value || "");
-    }
-
-    if (type === "date") {
-      return studentNormalizeText(document.getElementById("studentFormDateInput")?.value || "");
-    }
-
-    if (type === "file_upload") {
-      return studentGetFormAnswer(q.id) || null;
-    }
-
-    return studentGetFormAnswer(q.id) || null;
-  }
-
-  function studentValidateCurrentFormAnswer() {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return { ok: false, message: "Missing question." };
-
-    const value = studentReadCurrentFormAnswer();
 
     if (q.is_required) {
-      if (q.question_type === "checkboxes") {
-        if (!Array.isArray(value) || !value.length) {
-          return { ok: false, message: "Please select at least one option." };
+      const note = document.getElementById("studentFormFieldNote");
+      if (note) {
+        note.textContent = `${note.textContent ? note.textContent + " " : ""}This question is required.`;
+      }
+    }
+  }
+
+  function studentValidateCurrentFormQuestion() {
+    const q = studentGetCurrentFormQuestion();
+    if (!q) return true;
+
+    const answer = window.studentClassActivityState.formAnswers[q.id];
+
+    if (!q.is_required) return true;
+
+    if (q.question_type === "checkboxes") {
+      return Array.isArray(answer) && answer.length > 0;
+    }
+
+    if (q.question_type === "file_upload") {
+      if (Array.isArray(answer)) return answer.length > 0;
+      return !!answer;
+    }
+
+    return !!studentNormalizeText(answer);
+  }
+
+  async function studentHandleFormFileSelection() {
+    const q = studentGetCurrentFormQuestion();
+    const input = document.getElementById("studentFormFileInput");
+    if (!q || !input || !input.files) return;
+
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+
+    const maxFiles = Number(q.max_files || 1);
+    const maxMb = Number(q.max_file_size_mb || 5);
+    const maxBytes = maxMb * 1024 * 1024;
+    const allowed = studentEnsureArray(q.allowed_file_types);
+
+    if (files.length > maxFiles) {
+      alert(`You can only upload ${maxFiles} file(s) for this question.`);
+      input.value = "";
+      return;
+    }
+
+    for (const file of files) {
+      if (file.size > maxBytes) {
+        alert(`${file.name} is larger than ${maxMb}MB.`);
+        input.value = "";
+        return;
+      }
+
+      if (allowed.length) {
+        const extension = "." + file.name.split(".").pop().toLowerCase();
+        const mime = file.type || "";
+        const matches = allowed.some((type) => {
+          const t = String(type || "").toLowerCase();
+          return t === mime.toLowerCase() || t === extension || t === file.name.toLowerCase();
+        });
+
+        if (!matches) {
+          alert(`${file.name} is not an allowed file type.`);
+          input.value = "";
+          return;
         }
-      } else if (q.question_type === "file_upload") {
-        if (!value || !Array.isArray(value.files) || !value.files.length) {
-          return { ok: false, message: "Please choose a file before continuing." };
-        }
-      } else if (!value || (typeof value === "string" && !studentNormalizeText(value))) {
-        return { ok: false, message: "This question is required." };
       }
     }
 
-    return { ok: true, value };
-  }
+    const uploadedUrls = [];
 
-  function studentStoreCurrentFormAnswer() {
-    const q = studentGetCurrentFormQuestion();
-    if (!q) return { ok: false, message: "Missing question." };
+    for (const file of files) {
+      const fileExt = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+      const path = `student-form-uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
-    const checked = studentValidateCurrentFormAnswer();
-    if (!checked.ok) return checked;
+      const { error: uploadError } = await supabase.storage
+        .from("form-uploads")
+        .upload(path, file, { upsert: false });
 
-    studentSetFormAnswer(q.id, checked.value);
-    return { ok: true };
-  }
+      if (uploadError) {
+        console.error("Form file upload failed:", uploadError);
+        alert(uploadError.message || "Could not upload file.");
+        return;
+      }
 
-  function studentFormAnswerSummary(question, answer) {
-    if (answer == null || answer === "") return "No answer";
-    if (Array.isArray(answer)) return answer.join(", ");
-    if (typeof answer === "object" && Array.isArray(answer.files)) {
-      return answer.files.map((f) => f.name || "File").join(", ");
+      const { data: publicUrlData } = supabase.storage
+        .from("form-uploads")
+        .getPublicUrl(path);
+
+      uploadedUrls.push(publicUrlData?.publicUrl || "");
     }
-    return String(answer);
+
+    studentSetCurrentFormValue(maxFiles > 1 ? uploadedUrls : uploadedUrls[0]);
+    studentSetFieldNote(`${uploadedUrls.length} file(s) uploaded successfully.`);
+  }
+
+  function studentGoNextFormQuestion() {
+    const checked = studentStoreCurrentFormAnswer();
+    if (!checked.ok) {
+      alert(checked.message || "Please answer this required question before continuing.");
+      return;
+    }
+
+    const state = window.studentClassActivityState;
+    const total = (state.formQuestions || []).length;
+
+    if (state.currentFormIndex >= total - 1) {
+      studentRenderFormReview();
+      studentShowReportsView("studentFormReviewView");
+      return;
+    }
+
+    state.currentFormIndex += 1;
+    studentRenderFormQuestion();
+  }
+
+  function studentGoPrevFormQuestion() {
+    const state = window.studentClassActivityState;
+    if (state.currentFormIndex > 0) {
+      state.currentFormIndex -= 1;
+      studentRenderFormQuestion();
+    } else {
+      studentShowReportsView("studentFormDetailsView");
+    }
+  }
+
+  function studentFormatFormAnswerPreview(q, answer) {
+    if (q.question_type === "checkboxes") {
+      return Array.isArray(answer) && answer.length ? answer.join(", ") : "No answer";
+    }
+
+    if (q.question_type === "file_upload") {
+      if (Array.isArray(answer) && answer.length) return `${answer.length} file(s) uploaded`;
+      if (typeof answer === "string" && answer) return "1 file uploaded";
+      return "No file uploaded";
+    }
+
+    return studentNormalizeText(answer) || "No answer";
   }
 
   function studentRenderFormReview() {
@@ -2664,61 +2794,66 @@
       const answer = state.formAnswers[q.id];
       return `
         <div class="review-item" data-review-form-index="${index}">
-          <div class="review-q">${studentReportEscape(`Question ${index + 1}: ${q.question_text}`)}</div>
-          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(studentFormAnswerSummary(q, answer))}</div>
+          <div class="review-q">${studentReportEscape(q.question_text || "Question")}</div>
+          <div class="review-a"><strong>Your answer:</strong> ${studentReportEscape(studentFormatFormAnswerPreview(q, answer))}</div>
         </div>
       `;
     }).join("");
   }
 
-  function studentGoPrevFormQuestion() {
+  async function studentStartForm() {
     const state = window.studentClassActivityState;
-    if (state.currentFormIndex <= 0) {
-      studentShowReportsView("studentFormDetailsView");
-      return;
+    if (!state.currentForm) return;
+
+    state.currentFormIndex = 0;
+    studentRenderFormQuestion();
+    studentShowReportsView("studentFormQuestionView");
+  }
+
+  function studentStoreCurrentFormAnswer() {
+    const q = studentGetCurrentFormQuestion();
+    if (!q) return { ok: true };
+
+    const type = q.question_type;
+
+    if (type === "short_answer") {
+      const input = document.getElementById("studentFormShortAnswerInput");
+      studentSetCurrentFormValue(input ? input.value || "" : "");
+    } else if (type === "paragraph") {
+      const input = document.getElementById("studentFormParagraphInput");
+      studentSetCurrentFormValue(input ? input.value || "" : "");
+    } else if (type === "dropdown") {
+      const input = document.getElementById("studentFormDropdownInput");
+      studentSetCurrentFormValue(input ? input.value || "" : "");
+    } else if (type === "date") {
+      const input = document.getElementById("studentFormDateInput");
+      studentSetCurrentFormValue(input ? input.value || "" : "");
     }
-    state.currentFormIndex -= 1;
-    studentRenderFormQuestion();
-  }
 
-  function studentGoToFormQuestion(index) {
-    const total = (window.studentClassActivityState.formQuestions || []).length;
-    if (index < 0 || index >= total) return;
-    window.studentClassActivityState.currentFormIndex = index;
-    studentRenderFormQuestion();
-    studentShowReportsView("studentFormQuestionView");
-  }
+    if (!studentValidateCurrentFormQuestion()) {
+      return {
+        ok: false,
+        message: "Please answer this required question before continuing."
+      };
+    }
 
-  function studentBackToFormQuestions() {
-    const total = (window.studentClassActivityState.formQuestions || []).length;
-    window.studentClassActivityState.currentFormIndex = total > 0 ? total - 1 : 0;
-    studentRenderFormQuestion();
-    studentShowReportsView("studentFormQuestionView");
+    return { ok: true };
   }
 
   function studentBuildFormAnswersPayload(responseId) {
     const state = window.studentClassActivityState;
     return (state.formQuestions || []).map((q) => {
-      const answer = state.formAnswers[q.id];
+      const rawValue = state.formAnswers[q.id];
+
       let answerText = null;
       let answerJson = null;
 
       if (q.question_type === "checkboxes") {
-        answerJson = Array.isArray(answer) ? answer : [];
+        answerJson = Array.isArray(rawValue) ? rawValue : [];
       } else if (q.question_type === "file_upload") {
-        answerJson = answer || null;
-      } else if (q.question_type === "date") {
-        answerText = answer ? String(answer) : null;
-      } else if (q.question_type === "multiple_choice" || q.question_type === "dropdown" || q.question_type === "yes_no") {
-        answerText = answer ? String(answer) : null;
-      } else if (q.question_type === "short_answer" || q.question_type === "paragraph") {
-        answerText = answer ? String(answer) : null;
+        answerJson = Array.isArray(rawValue) ? rawValue : (rawValue ? [rawValue] : []);
       } else {
-        if (typeof answer === "object") {
-          answerJson = answer;
-        } else {
-          answerText = answer ? String(answer) : null;
-        }
+        answerText = rawValue != null ? String(rawValue) : null;
       }
 
       return {
@@ -2824,9 +2959,15 @@
   function studentHandleFeedOpen(itemId, itemType) {
     if (itemType === "form") {
       studentOpenFormDetails(itemId);
-    } else {
-      studentOpenActivityIntro(itemId);
+      return;
     }
+
+    if (itemType === "announcement") {
+      studentOpenAnnouncementDetails(itemId);
+      return;
+    }
+
+    studentOpenActivityIntro(itemId);
   }
 
   function studentBackToReportsHome() {
@@ -2866,11 +3007,20 @@
       feedWrap.addEventListener("click", (e) => {
         const openBtn = e.target.closest("[data-item-open]");
         const card = e.target.closest(".feed-card");
+
         if (openBtn) {
           const itemId = openBtn.getAttribute("data-item-open");
           const itemType = openBtn.getAttribute("data-item-type");
           const item = (window.studentClassActivityState.feedItems || []).find((x) => x.id === itemId && x.item_type === itemType);
-          if (item && !(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
+
+          if (!item) return;
+
+          if (item.item_type === "announcement") {
+            studentHandleFeedOpen(itemId, itemType);
+            return;
+          }
+
+          if (!(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
             studentHandleFeedOpen(itemId, itemType);
           }
           return;
@@ -2880,83 +3030,82 @@
           const itemId = card.getAttribute("data-item-id");
           const itemType = card.getAttribute("data-item-type");
           const item = (window.studentClassActivityState.feedItems || []).find((x) => x.id === itemId && x.item_type === itemType);
-          if (item && !(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
+
+          if (!item) return;
+
+          if (item.item_type === "announcement") {
+            studentHandleFeedOpen(itemId, itemType);
+            return;
+          }
+
+          if (!(item.status === "submitted" || item.status === "closed" || item.status === "expired")) {
             studentHandleFeedOpen(itemId, itemType);
           }
         }
       });
     }
 
-    const activityOptionList = document.getElementById("studentActivityOptionList");
-    if (activityOptionList && !activityOptionList.dataset.bound) {
-      activityOptionList.dataset.bound = "1";
-      activityOptionList.addEventListener("click", (e) => {
-        const opt = e.target.closest("[data-activity-option]");
-        if (!opt) return;
+    document.querySelectorAll("#studentActivityIntroView .panel-back-btn").forEach((btn) => {
+      if (!btn.dataset.bound) {
+        btn.dataset.bound = "1";
+        btn.addEventListener("click", studentBackToReportsHome);
+      }
+    });
 
-        const q = (window.studentClassActivityState.activityQuestions || [])[window.studentClassActivityState.currentActivityIndex];
-        if (!q) return;
-
-        const value = opt.getAttribute("data-activity-option");
-        window.studentClassActivityState.activityAnswers[q.id] = value;
-
-        activityOptionList.querySelectorAll(".choice-option").forEach((el) => {
-          el.classList.toggle("active", el.getAttribute("data-activity-option") === value);
-        });
-      });
+    const formDetailsBack = document.querySelector("#studentFormDetailsView .panel-back-btn");
+    if (formDetailsBack && !formDetailsBack.dataset.bound) {
+      formDetailsBack.dataset.bound = "1";
+      formDetailsBack.addEventListener("click", studentBackToReportsHome);
     }
-
-    document.querySelectorAll("#studentActivityReviewList, #studentFormReviewList").forEach((wrap) => {
-      if (wrap.dataset.bound) return;
-      wrap.dataset.bound = "1";
-      wrap.addEventListener("click", (e) => {
-        const activityReview = e.target.closest("[data-review-activity-index]");
-        if (activityReview) {
-          const index = Number(activityReview.getAttribute("data-review-activity-index"));
-          window.studentClassActivityState.currentActivityIndex = index;
-          studentRenderActivityQuestion();
-          studentShowReportsView("studentActivityQuestionView");
-          studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
-          return;
-        }
-
-        const formReview = e.target.closest("[data-review-form-index]");
-        if (formReview) {
-          const index = Number(formReview.getAttribute("data-review-form-index"));
-          studentGoToFormQuestion(index);
-        }
-      });
-    });
-
-    const activityBackBtns = document.querySelectorAll("#studentActivityIntroView .panel-back-btn, #studentActivitySubmittedView .primary-btn");
-    activityBackBtns.forEach((btn) => {
-      if (btn.dataset.bound) return;
-      btn.dataset.bound = "1";
-      btn.addEventListener("click", studentBackToReportsHome);
-    });
 
     const activityQuestionBack = document.querySelector("#studentActivityQuestionView .panel-back-btn");
     if (activityQuestionBack && !activityQuestionBack.dataset.bound) {
       activityQuestionBack.dataset.bound = "1";
       activityQuestionBack.addEventListener("click", () => {
-        if (window.studentClassActivityState.currentActivityIndex <= 0) {
+        if (window.studentClassActivityState.currentActivityIndex > 0) {
+          window.studentClassActivityState.currentActivityIndex -= 1;
+          studentRenderActivityQuestion();
+        } else {
           studentShowReportsView("studentActivityIntroView");
-          return;
+          studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
         }
-        studentGoPrevQuestion();
       });
     }
 
     const activityReviewBack = document.querySelector("#studentActivityReviewView .panel-back-btn");
     if (activityReviewBack && !activityReviewBack.dataset.bound) {
       activityReviewBack.dataset.bound = "1";
-      activityReviewBack.addEventListener("click", studentBackToLastQuestion);
+      activityReviewBack.addEventListener("click", () => {
+        studentShowReportsView("studentActivityQuestionView");
+        studentStartTimer(window.studentClassActivityState.currentAttemptExpiresAt);
+      });
     }
 
-    const activityStartBtn = document.getElementById("studentStartActivityBtn");
-    if (activityStartBtn && !activityStartBtn.dataset.bound) {
-      activityStartBtn.dataset.bound = "1";
-      activityStartBtn.addEventListener("click", studentStartActivity);
+    const formQuestionBack = document.querySelector("#studentFormQuestionView .panel-back-btn");
+    if (formQuestionBack && !formQuestionBack.dataset.bound) {
+      formQuestionBack.dataset.bound = "1";
+      formQuestionBack.addEventListener("click", () => {
+        if (window.studentClassActivityState.currentFormIndex > 0) {
+          window.studentClassActivityState.currentFormIndex -= 1;
+          studentRenderFormQuestion();
+        } else {
+          studentShowReportsView("studentFormDetailsView");
+        }
+      });
+    }
+
+    const formReviewBack = document.querySelector("#studentFormReviewView .panel-back-btn");
+    if (formReviewBack && !formReviewBack.dataset.bound) {
+      formReviewBack.dataset.bound = "1";
+      formReviewBack.addEventListener("click", () => {
+        studentShowReportsView("studentFormQuestionView");
+      });
+    }
+
+    const startActivityBtn = document.getElementById("studentStartActivityBtn");
+    if (startActivityBtn && !startActivityBtn.dataset.bound) {
+      startActivityBtn.dataset.bound = "1";
+      startActivityBtn.addEventListener("click", studentStartActivity);
     }
 
     const activityPrevBtn = document.getElementById("studentActivityPrevBtn");
@@ -2971,35 +3120,38 @@
       activityNextBtn.addEventListener("click", studentGoNextQuestion);
     }
 
-    const activitySubmitBtn = document.getElementById("studentSubmitActivityBtn");
-    if (activitySubmitBtn && !activitySubmitBtn.dataset.bound) {
-      activitySubmitBtn.dataset.bound = "1";
-      activitySubmitBtn.addEventListener("click", () => studentSubmitActivity(false));
+    const activityOptionList = document.getElementById("studentActivityOptionList");
+    if (activityOptionList && !activityOptionList.dataset.bound) {
+      activityOptionList.dataset.bound = "1";
+      activityOptionList.addEventListener("click", (e) => {
+        const option = e.target.closest("[data-activity-option]");
+        if (!option) return;
+
+        const state = window.studentClassActivityState;
+        const q = (state.activityQuestions || [])[state.currentActivityIndex];
+        if (!q) return;
+
+        state.activityAnswers[q.id] = option.getAttribute("data-activity-option");
+        studentRenderActivityQuestion();
+      });
     }
 
-    const formBackToHomeBtns = document.querySelectorAll("#studentFormDetailsView .panel-back-btn, #studentFormSubmittedView .primary-btn");
-    formBackToHomeBtns.forEach((btn) => {
-      if (btn.dataset.bound) return;
-      btn.dataset.bound = "1";
-      btn.addEventListener("click", studentBackToReportsHome);
-    });
-
-    const formQuestionBack = document.querySelector("#studentFormQuestionView .panel-back-btn");
-    if (formQuestionBack && !formQuestionBack.dataset.bound) {
-      formQuestionBack.dataset.bound = "1";
-      formQuestionBack.addEventListener("click", studentGoPrevFormQuestion);
+    const submitActivityBtn = document.getElementById("studentSubmitActivityBtn");
+    if (submitActivityBtn && !submitActivityBtn.dataset.bound) {
+      submitActivityBtn.dataset.bound = "1";
+      submitActivityBtn.addEventListener("click", () => studentSubmitActivity(false));
     }
 
-    const formReviewBack = document.querySelector("#studentFormReviewView .panel-back-btn");
-    if (formReviewBack && !formReviewBack.dataset.bound) {
-      formReviewBack.dataset.bound = "1";
-      formReviewBack.addEventListener("click", studentBackToFormQuestions);
+    const activitySubmittedBack = document.querySelector("#studentActivitySubmittedView .primary-btn");
+    if (activitySubmittedBack && !activitySubmittedBack.dataset.bound) {
+      activitySubmittedBack.dataset.bound = "1";
+      activitySubmittedBack.addEventListener("click", studentBackToReportsHome);
     }
 
-    const formStartBtn = document.getElementById("studentStartFormBtn");
-    if (formStartBtn && !formStartBtn.dataset.bound) {
-      formStartBtn.dataset.bound = "1";
-      formStartBtn.addEventListener("click", studentStartForm);
+    const startFormBtn = document.getElementById("studentStartFormBtn");
+    if (startFormBtn && !startFormBtn.dataset.bound) {
+      startFormBtn.dataset.bound = "1";
+      startFormBtn.addEventListener("click", studentStartForm);
     }
 
     const formPrevBtn = document.getElementById("studentFormPrevBtn");
@@ -3011,48 +3163,68 @@
     const formNextBtn = document.getElementById("studentFormNextBtn");
     if (formNextBtn && !formNextBtn.dataset.bound) {
       formNextBtn.dataset.bound = "1";
-      formNextBtn.addEventListener("click", () => {
-        const checked = studentStoreCurrentFormAnswer();
-        if (!checked.ok) {
-          alert(checked.message || "Please complete this question.");
-          return;
-        }
+      formNextBtn.addEventListener("click", studentGoNextFormQuestion);
+    }
 
-        const total = (window.studentClassActivityState.formQuestions || []).length;
-        if (window.studentClassActivityState.currentFormIndex >= total - 1) {
-          studentRenderFormReview();
-          studentShowReportsView("studentFormReviewView");
-          return;
-        }
-
-        window.studentClassActivityState.currentFormIndex += 1;
+    const formMulti = document.getElementById("studentFormMultipleChoiceBlock");
+    if (formMulti && !formMulti.dataset.bound) {
+      formMulti.dataset.bound = "1";
+      formMulti.addEventListener("click", (e) => {
+        const option = e.target.closest("[data-form-single-option]");
+        if (!option) return;
+        studentSetCurrentFormValue(option.getAttribute("data-form-single-option"));
         studentRenderFormQuestion();
       });
     }
 
-    const formSubmitBtn = document.getElementById("studentSubmitFormBtn");
-    if (formSubmitBtn && !formSubmitBtn.dataset.bound) {
-      formSubmitBtn.dataset.bound = "1";
-      formSubmitBtn.addEventListener("click", studentSubmitForm);
+    const formYesNo = document.getElementById("studentFormYesNoBlock");
+    if (formYesNo && !formYesNo.dataset.bound) {
+      formYesNo.dataset.bound = "1";
+      formYesNo.addEventListener("click", (e) => {
+        const option = e.target.closest("[data-form-single-option]");
+        if (!option) return;
+        studentSetCurrentFormValue(option.getAttribute("data-form-single-option"));
+        studentRenderFormQuestion();
+      });
+    }
+
+    const formChecks = document.getElementById("studentFormCheckboxBlock");
+    if (formChecks && !formChecks.dataset.bound) {
+      formChecks.dataset.bound = "1";
+      formChecks.addEventListener("click", (e) => {
+        const option = e.target.closest("[data-form-check-option]");
+        if (!option) return;
+
+        const q = studentGetCurrentFormQuestion();
+        if (!q) return;
+
+        const value = option.getAttribute("data-form-check-option");
+        const current = Array.isArray(window.studentClassActivityState.formAnswers[q.id])
+          ? [...window.studentClassActivityState.formAnswers[q.id]]
+          : [];
+
+        const idx = current.indexOf(value);
+        if (idx >= 0) current.splice(idx, 1);
+        else current.push(value);
+
+        studentSetCurrentFormValue(current);
+        studentRenderFormQuestion();
+      });
     }
 
     const shortInput = document.getElementById("studentFormShortAnswerInput");
     if (shortInput && !shortInput.dataset.bound) {
       shortInput.dataset.bound = "1";
       shortInput.addEventListener("input", () => {
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
-        studentSetFormAnswer(q.id, shortInput.value);
+        studentSetCurrentFormValue(shortInput.value || "");
       });
     }
 
-    const paraInput = document.getElementById("studentFormParagraphInput");
-    if (paraInput && !paraInput.dataset.bound) {
-      paraInput.dataset.bound = "1";
-      paraInput.addEventListener("input", () => {
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
-        studentSetFormAnswer(q.id, paraInput.value);
+    const paragraphInput = document.getElementById("studentFormParagraphInput");
+    if (paragraphInput && !paragraphInput.dataset.bound) {
+      paragraphInput.dataset.bound = "1";
+      paragraphInput.addEventListener("input", () => {
+        studentSetCurrentFormValue(paragraphInput.value || "");
       });
     }
 
@@ -3060,9 +3232,7 @@
     if (dropdownInput && !dropdownInput.dataset.bound) {
       dropdownInput.dataset.bound = "1";
       dropdownInput.addEventListener("change", () => {
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
-        studentSetFormAnswer(q.id, dropdownInput.value);
+        studentSetCurrentFormValue(dropdownInput.value || "");
       });
     }
 
@@ -3070,95 +3240,60 @@
     if (dateInput && !dateInput.dataset.bound) {
       dateInput.dataset.bound = "1";
       dateInput.addEventListener("change", () => {
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
-        studentSetFormAnswer(q.id, dateInput.value);
+        studentSetCurrentFormValue(dateInput.value || "");
       });
     }
 
     const chooseFileBtn = document.getElementById("studentFormChooseFileBtn");
     const fileInput = document.getElementById("studentFormFileInput");
+
     if (chooseFileBtn && fileInput && !chooseFileBtn.dataset.bound) {
       chooseFileBtn.dataset.bound = "1";
       chooseFileBtn.addEventListener("click", () => fileInput.click());
+    }
 
-      fileInput.addEventListener("change", () => {
-        const q = studentGetCurrentFormQuestion();
-        if (!q) return;
+    if (fileInput && !fileInput.dataset.bound) {
+      fileInput.dataset.bound = "1";
+      fileInput.addEventListener("change", studentHandleFormFileSelection);
+    }
 
-        const files = Array.from(fileInput.files || []);
-        const maxFiles = Number(q.max_files || 1);
-        const maxSizeMb = Number(q.max_file_size_mb || 5);
-        const allowedTypes = studentEnsureArray(q.allowed_file_types).map((x) => String(x).toLowerCase());
-
-        if (files.length > maxFiles) {
-          alert(`You can only choose up to ${maxFiles} file${maxFiles > 1 ? "s" : ""}.`);
-          fileInput.value = "";
-          return;
-        }
-
-        const tooLarge = files.find((f) => (f.size / (1024 * 1024)) > maxSizeMb);
-        if (tooLarge) {
-          alert(`"${tooLarge.name}" is larger than ${maxSizeMb}MB.`);
-          fileInput.value = "";
-          return;
-        }
-
-        if (allowedTypes.length) {
-          const invalid = files.find((f) => {
-            const name = f.name.toLowerCase();
-            return !allowedTypes.some((type) => {
-              const t = type.toLowerCase().trim();
-              if (!t) return false;
-              if (t.startsWith(".")) return name.endsWith(t);
-              if (t.includes("/")) return f.type.toLowerCase() === t;
-              return name.endsWith(`.${t}`);
-            });
-          });
-
-          if (invalid) {
-            alert(`"${invalid.name}" is not an allowed file type.`);
-            fileInput.value = "";
-            return;
-          }
-        }
-
-        studentSetFormAnswer(q.id, {
-          files: files.map((f) => ({
-            name: f.name,
-            size: f.size,
-            type: f.type || "",
-            lastModified: f.lastModified || null
-          }))
-        });
-
-        studentSetFormFieldNote(files.length ? `${files.length} file selected.` : "Choose file to attach.");
+    const formReviewList = document.getElementById("studentFormReviewList");
+    if (formReviewList && !formReviewList.dataset.bound) {
+      formReviewList.dataset.bound = "1";
+      formReviewList.addEventListener("click", (e) => {
+        const item = e.target.closest("[data-review-form-index]");
+        if (!item) return;
+        const idx = Number(item.getAttribute("data-review-form-index"));
+        if (!Number.isFinite(idx)) return;
+        window.studentClassActivityState.currentFormIndex = idx;
+        studentRenderFormQuestion();
+        studentShowReportsView("studentFormQuestionView");
       });
+    }
+
+    const submitFormBtn = document.getElementById("studentSubmitFormBtn");
+    if (submitFormBtn && !submitFormBtn.dataset.bound) {
+      submitFormBtn.dataset.bound = "1";
+      submitFormBtn.addEventListener("click", studentSubmitForm);
+    }
+
+    const formSubmittedBack = document.querySelector("#studentFormSubmittedView .primary-btn");
+    if (formSubmittedBack && !formSubmittedBack.dataset.bound) {
+      formSubmittedBack.dataset.bound = "1";
+      formSubmittedBack.addEventListener("click", studentBackToReportsHome);
     }
   }
 
-  (function bindStudentReportsScreen() {
-    const originalShowScreen = window.showScreen;
+  function studentInitReportsScreen() {
+    studentBindReportsEvents();
+    studentShowReportsView("studentReportsHomeView");
+    studentLoadReportsFeed();
+  }
 
-    if (!window.__studentReportsShowScreenWrapped && typeof originalShowScreen === "function") {
-      window.showScreen = function(name) {
-        originalShowScreen(name);
-        if (name === "reports") {
-          studentBackToReportsHome();
-        }
-      };
-      window.__studentReportsShowScreenWrapped = true;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      studentBindReportsEvents();
-      studentLoadReportsFeed();
-    });
-
-    window.studentLoadReportsFeed = studentLoadReportsFeed;
-    window.studentBackToReportsHome = studentBackToReportsHome;
-    window.studentOpenActivityIntro = studentOpenActivityIntro;
-    window.studentOpenFormDetails = studentOpenFormDetails;
-  })();
+  window.studentInitReportsScreen = studentInitReportsScreen;
+  window.studentLoadReportsFeed = studentLoadReportsFeed;
+  window.studentBackToReportsHome = studentBackToReportsHome;
+  window.studentOpenActivityIntro = studentOpenActivityIntro;
+  window.studentOpenFormDetails = studentOpenFormDetails;
+  window.studentOpenAnnouncementDetails = studentOpenAnnouncementDetails;
 </script>
-<!-- 🔹 STUDENT CLASS + SCHOOL FORMS SCREEN END -->
