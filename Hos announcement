@@ -157,18 +157,50 @@
             </section>
 
             <section class="announcement-compose-section">
-              <div class="announcement-compose-section-title">Media</div>
+              <div class="announcement-compose-section-title">Media Upload</div>
 
-              <div class="field-grid two">
-                <label class="field">
-                  <span class="field-label">Image URL</span>
-                  <input id="announcementImageUrlInput" type="text" placeholder="Paste image URL" />
-                </label>
+              <div class="announcement-upload-grid">
+                <div class="announcement-upload-card">
+                  <div class="announcement-upload-top">
+                    <div>
+                      <div class="announcement-upload-title">Image</div>
+                      <div class="announcement-upload-sub">Upload banner, flyer, or photo</div>
+                    </div>
+                    <label class="btn btn-light announcement-upload-btn">
+                      Upload Image
+                      <input id="announcementImageFileInput" type="file" accept="image/*" hidden />
+                    </label>
+                  </div>
 
-                <label class="field">
-                  <span class="field-label">File URL</span>
-                  <input id="announcementFileUrlInput" type="text" placeholder="Paste file URL" />
-                </label>
+                  <div class="announcement-upload-status" id="announcementImageUploadStatus">No image selected</div>
+
+                  <div class="announcement-upload-preview hidden" id="announcementImageUploadPreview">
+                    <img id="announcementImageUploadPreviewImg" alt="Uploaded announcement image preview" />
+                    <div class="announcement-upload-actions">
+                      <button class="btn btn-light" id="announcementRemoveImageBtn" type="button">Remove Image</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="announcement-upload-card">
+                  <div class="announcement-upload-top">
+                    <div>
+                      <div class="announcement-upload-title">Attachment</div>
+                      <div class="announcement-upload-sub">Upload PDF, DOCX, image, or file</div>
+                    </div>
+                    <label class="btn btn-light announcement-upload-btn">
+                      Upload File
+                      <input id="announcementFileAttachmentInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.txt" hidden />
+                    </label>
+                  </div>
+
+                  <div class="announcement-upload-status" id="announcementFileUploadStatus">No file selected</div>
+
+                  <div class="announcement-file-chip hidden" id="announcementFileChip">
+                    <div class="announcement-file-chip-name" id="announcementFileChipName">document.pdf</div>
+                    <button class="announcement-file-chip-remove" id="announcementRemoveFileBtn" type="button">&times;</button>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -191,12 +223,23 @@
                 <div class="field-grid three">
                   <label class="field">
                     <span class="field-label">Programme</span>
-                    <input id="announcementProgrammeInput" type="text" placeholder="Entrepreneurship" />
+                    <select id="announcementProgrammeSelect">
+                      <option value="">Select programme</option>
+                    </select>
                   </label>
 
                   <label class="field">
-                    <span class="field-label">Levels</span>
-                    <input id="announcementLevelsInput" type="text" placeholder="100, 200, 300" />
+                    <span class="field-label">Level</span>
+                    <select id="announcementLevelSelect">
+                      <option value="">Select level</option>
+                      <option value="100">100</option>
+                      <option value="200">200</option>
+                      <option value="300">300</option>
+                      <option value="400">400</option>
+                      <option value="500">500</option>
+                      <option value="600">600</option>
+                      <option value="700">700</option>
+                    </select>
                   </label>
 
                   <div class="field add-target-field">
@@ -793,7 +836,8 @@
   }
 
   .field input,
-  .field textarea {
+  .field textarea,
+  .field select {
     width: 100%;
     border: 1px solid #d9dfef;
     border-radius: 14px;
@@ -825,6 +869,97 @@
 
   .add-target-field {
     justify-content: flex-end;
+  }
+
+  .announcement-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .announcement-upload-card {
+    border: 1px solid #e1e7f4;
+    border-radius: 18px;
+    padding: 16px;
+    background: #f9fbff;
+  }
+
+  .announcement-upload-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .announcement-upload-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #18233a;
+  }
+
+  .announcement-upload-sub {
+    font-size: 13px;
+    color: #72809b;
+    margin-top: 4px;
+  }
+
+  .announcement-upload-btn {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .announcement-upload-status {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #5f6d88;
+    font-weight: 700;
+  }
+
+  .announcement-upload-preview {
+    margin-top: 12px;
+  }
+
+  .announcement-upload-preview img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid #dfe6f4;
+    display: block;
+  }
+
+  .announcement-upload-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .announcement-file-chip {
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #dfe6f4;
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: #fff;
+    max-width: 100%;
+  }
+
+  .announcement-file-chip-name {
+    font-size: 13px;
+    color: #2b3857;
+    font-weight: 800;
+    word-break: break-word;
+  }
+
+  .announcement-file-chip-remove {
+    border: 0;
+    background: transparent;
+    color: #a33f50;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
   }
 
   .audience-mode-cards {
@@ -1074,10 +1209,7 @@
       grid-template-columns: 1fr;
     }
 
-    .announcement-preview-panel {
-      position: static;
-    }
-
+    .announcement-preview-panel,
     .compose-preview-card {
       position: static;
     }
@@ -1095,7 +1227,8 @@
 
     .field-grid.two,
     .field-grid.three,
-    .audience-mode-cards {
+    .audience-mode-cards,
+    .announcement-upload-grid {
       grid-template-columns: 1fr;
     }
 
@@ -1120,12 +1253,13 @@
 
 <script>
 (function () {
-  if (window.__hosAnnouncementSystemInitializedV1) return;
-  window.__hosAnnouncementSystemInitializedV1 = true;
+  if (window.__hosAnnouncementSystemInitializedV2) return;
+  window.__hosAnnouncementSystemInitializedV2 = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
   const ANNOUNCEMENT_FUNCTION = "announcement-manager";
+  const ANNOUNCEMENT_BUCKET = "announcement-media";
 
   const announcementState = {
     sb: null,
@@ -1141,7 +1275,13 @@
     programmeTargets: [],
     deliveryMode: "published",
     matchedStudents: [],
-    loadingMatched: false
+    loadingMatched: false,
+    programmes: [],
+    uploadedImageUrl: "",
+    uploadedFileUrl: "",
+    uploadedFileName: "",
+    uploadingImage: false,
+    uploadingFile: false
   };
 
   function $(id) {
@@ -1244,11 +1384,19 @@
       bodyInput: $("announcementBodyInput"),
       linkLabelInput: $("announcementLinkLabelInput"),
       linkUrlInput: $("announcementLinkUrlInput"),
-      imageUrlInput: $("announcementImageUrlInput"),
-      fileUrlInput: $("announcementFileUrlInput"),
+      imageFileInput: $("announcementImageFileInput"),
+      fileAttachmentInput: $("announcementFileAttachmentInput"),
+      imageUploadStatus: $("announcementImageUploadStatus"),
+      fileUploadStatus: $("announcementFileUploadStatus"),
+      imageUploadPreview: $("announcementImageUploadPreview"),
+      imageUploadPreviewImg: $("announcementImageUploadPreviewImg"),
+      fileChip: $("announcementFileChip"),
+      fileChipName: $("announcementFileChipName"),
+      removeImageBtn: $("announcementRemoveImageBtn"),
+      removeFileBtn: $("announcementRemoveFileBtn"),
       programmeFilterBox: $("announcementProgrammeFilterBox"),
-      programmeInput: $("announcementProgrammeInput"),
-      levelsInput: $("announcementLevelsInput"),
+      programmeSelect: $("announcementProgrammeSelect"),
+      levelSelect: $("announcementLevelSelect"),
       targetList: $("announcementTargetList"),
       matchedCount: $("announcementMatchedCount"),
       audienceText: $("announcementAudienceText"),
@@ -1309,6 +1457,107 @@
 
   function announcementStatusClass(status) {
     return `announcement-status-${String(status || "draft").toLowerCase()}`;
+  }
+
+  function getStoragePublicUrl(path) {
+    const { data } = announcementState.sb.storage.from(ANNOUNCEMENT_BUCKET).getPublicUrl(path);
+    return data?.publicUrl || "";
+  }
+
+  function safeFileName(name) {
+    return String(name || "file")
+      .toLowerCase()
+      .replace(/[^a-z0-9.\-_]+/g, "-")
+      .replace(/-+/g, "-");
+  }
+
+  async function uploadAnnouncementAsset(file, folder) {
+    if (!announcementState.sb) {
+      throw new Error("Supabase client not ready.");
+    }
+
+    const actor = getActorPayload();
+    const actorId = actor.hos_admin_id || actor.form_agent_id || "unknown";
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    const stamp = Date.now();
+    const fileName = safeFileName(file.name || `${folder}-${stamp}.${ext || "bin"}`);
+    const path = `${actorId}/${folder}/${stamp}-${fileName}`;
+
+    const { error } = await announcementState.sb.storage
+      .from(ANNOUNCEMENT_BUCKET)
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: true
+      });
+
+    if (error) {
+      throw new Error(error.message || "Upload failed.");
+    }
+
+    return {
+      path,
+      publicUrl: getStoragePublicUrl(path),
+      fileName: file.name || fileName
+    };
+  }
+
+  async function loadProgrammes() {
+    const els = announcementEls();
+    if (!announcementState.sb || !els.programmeSelect) return;
+
+    try {
+      const { data, error } = await announcementState.sb
+        .from("programmes")
+        .select("id, programme_name")
+        .eq("is_active", true)
+        .order("programme_name", { ascending: true });
+
+      if (error) throw error;
+
+      announcementState.programmes = Array.isArray(data) ? data : [];
+
+      els.programmeSelect.innerHTML = `<option value="">Select programme</option>` +
+        announcementState.programmes
+          .map((row) => `<option value="${escapeHtml(row.programme_name)}">${escapeHtml(row.programme_name)}</option>`)
+          .join("");
+    } catch (err) {
+      console.error("Load programmes error:", err);
+      els.programmeSelect.innerHTML = `<option value="">Unable to load programmes</option>`;
+    }
+  }
+
+  function renderImageUploadState() {
+    const els = announcementEls();
+
+    if (announcementState.uploadedImageUrl) {
+      els.imageUploadStatus.textContent = "Image uploaded";
+      els.imageUploadPreview.classList.remove("hidden");
+      els.imageUploadPreviewImg.src = announcementState.uploadedImageUrl;
+    } else {
+      els.imageUploadStatus.textContent = announcementState.uploadingImage
+        ? "Uploading image..."
+        : "No image selected";
+      els.imageUploadPreview.classList.add("hidden");
+      els.imageUploadPreviewImg.removeAttribute("src");
+      if (els.imageFileInput) els.imageFileInput.value = "";
+    }
+  }
+
+  function renderFileUploadState() {
+    const els = announcementEls();
+
+    if (announcementState.uploadedFileUrl) {
+      els.fileUploadStatus.textContent = "File uploaded";
+      els.fileChip.classList.remove("hidden");
+      els.fileChipName.textContent = announcementState.uploadedFileName || "Attached file";
+    } else {
+      els.fileUploadStatus.textContent = announcementState.uploadingFile
+        ? "Uploading file..."
+        : "No file selected";
+      els.fileChip.classList.add("hidden");
+      els.fileChipName.textContent = "";
+      if (els.fileAttachmentInput) els.fileAttachmentInput.value = "";
+    }
   }
 
   function renderAnnouncementList() {
@@ -1482,6 +1731,16 @@
     }
   }
 
+  function resetAnnouncementUploads() {
+    announcementState.uploadedImageUrl = "";
+    announcementState.uploadedFileUrl = "";
+    announcementState.uploadedFileName = "";
+    announcementState.uploadingImage = false;
+    announcementState.uploadingFile = false;
+    renderImageUploadState();
+    renderFileUploadState();
+  }
+
   function openAnnouncementComposer(mode = "create", item = null) {
     const els = announcementEls();
 
@@ -1495,6 +1754,10 @@
       ? "draft"
       : "published";
 
+    announcementState.uploadedImageUrl = item?.image_url || "";
+    announcementState.uploadedFileUrl = item?.file_url || "";
+    announcementState.uploadedFileName = item?.file_url ? item.file_url.split("/").pop() : "";
+
     if (els.composeTitle) {
       els.composeTitle.textContent = mode === "edit" ? "Edit Announcement" : "New Announcement";
     }
@@ -1503,8 +1766,6 @@
     if (els.bodyInput) els.bodyInput.value = item?.body || "";
     if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
     if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
-    if (els.imageUrlInput) els.imageUrlInput.value = item?.image_url || "";
-    if (els.fileUrlInput) els.fileUrlInput.value = item?.file_url || "";
     if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
 
     document.querySelectorAll(".audience-mode-card").forEach((btn) => {
@@ -1518,6 +1779,8 @@
       if (input) input.checked = active;
     });
 
+    renderImageUploadState();
+    renderFileUploadState();
     refreshAnnouncementAudienceModeUI();
     renderAnnouncementTargetList();
     refreshAnnouncementPreviewCard();
@@ -1574,8 +1837,8 @@
     const body = els.bodyInput?.value?.trim() || "Your announcement message preview will show here.";
     const linkLabel = els.linkLabelInput?.value?.trim() || "Open link";
     const linkUrl = els.linkUrlInput?.value?.trim();
-    const imageUrl = els.imageUrlInput?.value?.trim();
-    const fileUrl = els.fileUrlInput?.value?.trim();
+    const imageUrl = announcementState.uploadedImageUrl;
+    const fileUrl = announcementState.uploadedFileUrl;
 
     if (els.composePreviewTitle) els.composePreviewTitle.textContent = title;
     if (els.composePreviewBody) els.composePreviewBody.textContent = body;
@@ -1621,7 +1884,7 @@
 
     if (fileUrl) {
       els.composePreviewFileWrap?.classList.remove("hidden");
-      if (els.composePreviewFileUrl) els.composePreviewFileUrl.textContent = fileUrl;
+      if (els.composePreviewFileUrl) els.composePreviewFileUrl.textContent = announcementState.uploadedFileName || fileUrl;
     } else {
       els.composePreviewFileWrap?.classList.add("hidden");
     }
@@ -1655,7 +1918,6 @@
 
   function collectAnnouncementPayload(statusOverride = null) {
     const els = announcementEls();
-
     const status = statusOverride || announcementState.deliveryMode;
 
     return {
@@ -1663,8 +1925,8 @@
       body: els.bodyInput?.value?.trim() || "",
       link_label: els.linkLabelInput?.value?.trim() || "",
       link_url: els.linkUrlInput?.value?.trim() || "",
-      image_url: els.imageUrlInput?.value?.trim() || "",
-      file_url: els.fileUrlInput?.value?.trim() || "",
+      image_url: announcementState.uploadedImageUrl || "",
+      file_url: announcementState.uploadedFileUrl || "",
       audience_mode: announcementState.audienceMode,
       programme_targets: announcementState.programmeTargets,
       status,
@@ -1722,8 +1984,72 @@
     }
   }
 
+  async function handleAnnouncementImageUpload(file) {
+    if (!file) return;
+    announcementState.uploadingImage = true;
+    renderImageUploadState();
+
+    try {
+      const result = await uploadAnnouncementAsset(file, "images");
+      announcementState.uploadedImageUrl = result.publicUrl;
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      alert(err.message || "Image upload failed.");
+      announcementState.uploadedImageUrl = "";
+    } finally {
+      announcementState.uploadingImage = false;
+      renderImageUploadState();
+      refreshAnnouncementPreviewCard();
+    }
+  }
+
+  async function handleAnnouncementFileUpload(file) {
+    if (!file) return;
+    announcementState.uploadingFile = true;
+    renderFileUploadState();
+
+    try {
+      const result = await uploadAnnouncementAsset(file, "files");
+      announcementState.uploadedFileUrl = result.publicUrl;
+      announcementState.uploadedFileName = result.fileName;
+    } catch (err) {
+      console.error("File upload failed:", err);
+      alert(err.message || "File upload failed.");
+      announcementState.uploadedFileUrl = "";
+      announcementState.uploadedFileName = "";
+    } finally {
+      announcementState.uploadingFile = false;
+      renderFileUploadState();
+      refreshAnnouncementPreviewCard();
+    }
+  }
+
+  function mergeProgrammeTarget(programmeName, levelValue) {
+    const programme = normalizeText(programmeName).toUpperCase();
+    const level = normalizeText(levelValue);
+
+    if (!programme || !level) return;
+
+    const existing = announcementState.programmeTargets.find(
+      (item) => String(item.programme_name || "").toUpperCase() === programme
+    );
+
+    if (existing) {
+      const levelSet = new Set(Array.isArray(existing.levels) ? existing.levels : []);
+      levelSet.add(level);
+      existing.levels = Array.from(levelSet);
+      return;
+    }
+
+    announcementState.programmeTargets.push({
+      programme_name: programme,
+      levels: [level]
+    });
+  }
+
   function bindAnnouncementEvents() {
     $("announcementNewBtn")?.addEventListener("click", () => {
+      resetAnnouncementUploads();
       openAnnouncementComposer("create");
     });
 
@@ -1774,26 +2100,22 @@
 
     $("announcementAddTargetBtn")?.addEventListener("click", () => {
       const els = announcementEls();
-      const programme = els.programmeInput?.value?.trim() || "";
-      const levelsRaw = els.levelsInput?.value?.trim() || "";
+      const programme = els.programmeSelect?.value || "";
+      const level = els.levelSelect?.value || "";
 
       if (!programme) {
-        alert("Enter programme.");
+        alert("Select programme.");
         return;
       }
 
-      const levels = levelsRaw
-        ? levelsRaw.split(",").map((x) => x.trim()).filter(Boolean)
-        : [];
+      if (!level) {
+        alert("Select level.");
+        return;
+      }
 
-      announcementState.programmeTargets.push({
-        programme_name: programme.toUpperCase(),
-        levels
-      });
-
-      if (els.programmeInput) els.programmeInput.value = "";
-      if (els.levelsInput) els.levelsInput.value = "";
-
+      mergeProgrammeTarget(programme, level);
+      if (els.programmeSelect) els.programmeSelect.value = "";
+      if (els.levelSelect) els.levelSelect.value = "";
       renderAnnouncementTargetList();
       refreshAnnouncementPreviewCard();
       refreshAnnouncementMatchedPreview();
@@ -1815,11 +2137,32 @@
       "announcementBodyInput",
       "announcementLinkLabelInput",
       "announcementLinkUrlInput",
-      "announcementImageUrlInput",
-      "announcementFileUrlInput",
       "announcementScheduleInput"
     ].forEach((id) => {
       $(id)?.addEventListener("input", refreshAnnouncementPreviewCard);
+    });
+
+    $("announcementImageFileInput")?.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      await handleAnnouncementImageUpload(file);
+    });
+
+    $("announcementFileAttachmentInput")?.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      await handleAnnouncementFileUpload(file);
+    });
+
+    $("announcementRemoveImageBtn")?.addEventListener("click", () => {
+      announcementState.uploadedImageUrl = "";
+      renderImageUploadState();
+      refreshAnnouncementPreviewCard();
+    });
+
+    $("announcementRemoveFileBtn")?.addEventListener("click", () => {
+      announcementState.uploadedFileUrl = "";
+      announcementState.uploadedFileName = "";
+      renderFileUploadState();
+      refreshAnnouncementPreviewCard();
     });
 
     $("announcementEditBtn")?.addEventListener("click", () => {
@@ -1891,6 +2234,9 @@
     }
 
     bindAnnouncementEvents();
+    renderImageUploadState();
+    renderFileUploadState();
+    await loadProgrammes();
     await loadAnnouncements("all");
   }
 
