@@ -1,0 +1,1837 @@
+<section id="screen-announcements" class="screen">
+  <div class="section-shell">
+    <article class="panel announcements-panel">
+      <div class="panel-head announcements-head">
+        <div>
+          <div class="panel-title">Announcements</div>
+          <div class="panel-sub">Send updates, links, and media to students.</div>
+        </div>
+
+        <div class="announcements-head-actions">
+          <button class="btn btn-primary" id="announcementNewBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            New Announcement
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-body announcements-body">
+        <div class="announcements-layout">
+          <div class="announcements-main">
+            <div class="announcement-toolbar">
+              <div class="announcement-tabs" id="announcementTabs">
+                <button class="announcement-tab active" type="button" data-status="all">All</button>
+                <button class="announcement-tab" type="button" data-status="published">Published</button>
+                <button class="announcement-tab" type="button" data-status="scheduled">Scheduled</button>
+                <button class="announcement-tab" type="button" data-status="draft">Draft</button>
+                <button class="announcement-tab" type="button" data-status="archived">Archived</button>
+              </div>
+
+              <div class="announcement-search-wrap">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <path d="M20 20l-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input
+                  id="announcementSearchInput"
+                  type="text"
+                  placeholder="Search announcements..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="announcement-list" id="announcementList">
+              <div class="announcement-empty" id="announcementEmptyState">
+                No announcements yet.
+              </div>
+            </div>
+          </div>
+
+          <aside class="announcement-preview-panel" id="announcementPreviewPanel">
+            <div class="announcement-preview-empty" id="announcementPreviewEmpty">
+              Select an announcement to preview it here.
+            </div>
+
+            <div class="announcement-preview-card hidden" id="announcementPreviewCard">
+              <div class="announcement-preview-top">
+                <div class="announcement-preview-title-wrap">
+                  <h3 id="announcementPreviewTitle">Announcement title</h3>
+                  <div class="announcement-preview-status" id="announcementPreviewStatus">Draft</div>
+                </div>
+                <div class="announcement-preview-audience" id="announcementPreviewAudience">All students</div>
+              </div>
+
+              <p class="announcement-preview-body" id="announcementPreviewBody">
+                Announcement body preview will show here.
+              </p>
+
+              <div class="announcement-preview-image hidden" id="announcementPreviewImageWrap">
+                <img id="announcementPreviewImage" alt="Announcement image preview" />
+              </div>
+
+              <div class="announcement-preview-link hidden" id="announcementPreviewLinkWrap">
+                <div class="announcement-preview-link-label" id="announcementPreviewLinkLabel">Open link</div>
+                <div class="announcement-preview-link-url" id="announcementPreviewLinkUrl">example.com</div>
+              </div>
+
+              <div class="announcement-preview-file hidden" id="announcementPreviewFileWrap">
+                <div class="announcement-preview-file-label">Attached file</div>
+                <div class="announcement-preview-file-url" id="announcementPreviewFileUrl">file.pdf</div>
+              </div>
+
+              <div class="announcement-preview-meta">
+                <div class="announcement-preview-meta-row">
+                  <span>Matched audience</span>
+                  <strong id="announcementPreviewMatchedCount">0 students</strong>
+                </div>
+                <div class="announcement-preview-meta-row">
+                  <span>Created by</span>
+                  <strong id="announcementPreviewAuthor">Admin</strong>
+                </div>
+                <div class="announcement-preview-meta-row">
+                  <span>Time</span>
+                  <strong id="announcementPreviewTime">Now</strong>
+                </div>
+              </div>
+
+              <div class="announcement-preview-actions">
+                <button class="btn btn-light" id="announcementEditBtn" type="button">Edit</button>
+                <button class="btn btn-light" id="announcementDuplicateBtn" type="button">Duplicate</button>
+                <button class="btn btn-light" id="announcementArchiveBtn" type="button">Archive</button>
+                <button class="btn btn-danger-soft" id="announcementDeleteBtn" type="button">Delete</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="announcement-modal hidden" id="announcementComposerModal">
+    <div class="announcement-modal-backdrop" id="announcementComposerBackdrop"></div>
+
+    <div class="announcement-modal-dialog">
+      <div class="announcement-modal-head">
+        <div>
+          <div class="announcement-modal-title" id="announcementComposerTitle">New Announcement</div>
+          <div class="announcement-modal-sub">Create a message students will receive.</div>
+        </div>
+
+        <button class="announcement-close-btn" id="announcementComposerCloseBtn" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="announcement-modal-body">
+        <div class="announcement-compose-grid">
+          <div class="announcement-compose-left">
+            <section class="announcement-compose-section">
+              <div class="announcement-compose-section-title">Announcement Details</div>
+
+              <label class="field">
+                <span class="field-label">Title</span>
+                <input id="announcementTitleInput" type="text" placeholder="Enter announcement title" />
+              </label>
+
+              <label class="field">
+                <span class="field-label">Message</span>
+                <textarea id="announcementBodyInput" rows="6" placeholder="Write your announcement message"></textarea>
+              </label>
+
+              <div class="field-grid two">
+                <label class="field">
+                  <span class="field-label">CTA Text</span>
+                  <input id="announcementLinkLabelInput" type="text" placeholder="Open registration" />
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Link URL</span>
+                  <input id="announcementLinkUrlInput" type="text" placeholder="https://example.com" />
+                </label>
+              </div>
+            </section>
+
+            <section class="announcement-compose-section">
+              <div class="announcement-compose-section-title">Media</div>
+
+              <div class="field-grid two">
+                <label class="field">
+                  <span class="field-label">Image URL</span>
+                  <input id="announcementImageUrlInput" type="text" placeholder="Paste image URL" />
+                </label>
+
+                <label class="field">
+                  <span class="field-label">File URL</span>
+                  <input id="announcementFileUrlInput" type="text" placeholder="Paste file URL" />
+                </label>
+              </div>
+            </section>
+
+            <section class="announcement-compose-section">
+              <div class="announcement-compose-section-title">Audience</div>
+
+              <div class="audience-mode-cards">
+                <button class="audience-mode-card active" type="button" data-mode="all_students" id="announcementAudienceAllBtn">
+                  <div class="audience-mode-card-title">All students</div>
+                  <div class="audience-mode-card-sub">Send to every student in this school.</div>
+                </button>
+
+                <button class="audience-mode-card" type="button" data-mode="programme_filter" id="announcementAudienceFilterBtn">
+                  <div class="audience-mode-card-title">Filter audience</div>
+                  <div class="audience-mode-card-sub">Choose programme and level.</div>
+                </button>
+              </div>
+
+              <div class="audience-target-box hidden" id="announcementProgrammeFilterBox">
+                <div class="field-grid three">
+                  <label class="field">
+                    <span class="field-label">Programme</span>
+                    <input id="announcementProgrammeInput" type="text" placeholder="Entrepreneurship" />
+                  </label>
+
+                  <label class="field">
+                    <span class="field-label">Levels</span>
+                    <input id="announcementLevelsInput" type="text" placeholder="100, 200, 300" />
+                  </label>
+
+                  <div class="field add-target-field">
+                    <span class="field-label">&nbsp;</span>
+                    <button class="btn btn-light" id="announcementAddTargetBtn" type="button">Add Target</button>
+                  </div>
+                </div>
+
+                <div class="announcement-target-list" id="announcementTargetList"></div>
+              </div>
+
+              <div class="announcement-audience-summary">
+                <div class="announcement-audience-count-card">
+                  <div class="announcement-audience-count-label">Matched Students</div>
+                  <div class="announcement-audience-count-value" id="announcementMatchedCount">0</div>
+                  <div class="announcement-audience-count-sub" id="announcementAudienceTextMini">All students</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="announcement-compose-section">
+              <div class="announcement-compose-section-title">Delivery</div>
+
+              <div class="delivery-options">
+                <label class="delivery-option active" data-delivery="published">
+                  <input type="radio" name="announcementDeliveryMode" value="published" checked />
+                  <span>Send now</span>
+                </label>
+
+                <label class="delivery-option" data-delivery="draft">
+                  <input type="radio" name="announcementDeliveryMode" value="draft" />
+                  <span>Save as draft</span>
+                </label>
+
+                <label class="delivery-option" data-delivery="scheduled">
+                  <input type="radio" name="announcementDeliveryMode" value="scheduled" />
+                  <span>Schedule</span>
+                </label>
+              </div>
+
+              <div class="field hidden" id="announcementScheduleWrap">
+                <span class="field-label">Schedule Time</span>
+                <input id="announcementScheduleInput" type="datetime-local" />
+              </div>
+            </section>
+          </div>
+
+          <div class="announcement-compose-right">
+            <div class="compose-preview-card">
+              <div class="compose-preview-title">Preview</div>
+
+              <div class="compose-preview-message-card">
+                <h3 id="announcementComposePreviewTitle">Announcement title</h3>
+                <div class="compose-preview-audience-pill" id="announcementAudienceText">All students</div>
+
+                <p id="announcementComposePreviewBody">
+                  Your announcement message preview will show here.
+                </p>
+
+                <div class="compose-preview-image hidden" id="announcementComposePreviewImageWrap">
+                  <img id="announcementComposePreviewImage" alt="Announcement preview image" />
+                </div>
+
+                <div class="compose-preview-link hidden" id="announcementComposePreviewLinkWrap">
+                  <div class="compose-preview-link-main" id="announcementComposePreviewLinkLabel">Open link</div>
+                  <div class="compose-preview-link-sub" id="announcementComposePreviewLinkUrl">https://example.com</div>
+                </div>
+
+                <div class="compose-preview-file hidden" id="announcementComposePreviewFileWrap">
+                  <div class="compose-preview-file-main">Attached file</div>
+                  <div class="compose-preview-file-sub" id="announcementComposePreviewFileUrl">file.pdf</div>
+                </div>
+
+                <div class="compose-preview-summary">
+                  <div class="compose-preview-summary-row">
+                    <span>Matched audience</span>
+                    <strong id="announcementComposePreviewMatched">0 students</strong>
+                  </div>
+                  <div class="compose-preview-summary-row">
+                    <span>Status</span>
+                    <strong id="announcementComposePreviewStatus">Send now</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="announcement-modal-foot">
+          <button class="btn btn-light" id="announcementCancelBtn" type="button">Cancel</button>
+          <button class="btn btn-light" id="announcementSaveDraftBtn" type="button">Save Draft</button>
+          <button class="btn btn-primary" id="announcementPublishBtn" type="button">Send Announcement</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .announcements-panel {
+    overflow: hidden;
+  }
+
+  .announcements-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .announcements-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .announcements-head-actions .btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .announcements-body {
+    padding-top: 8px;
+  }
+
+  .announcements-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.85fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .announcement-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .announcement-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .announcement-tab {
+    border: 1px solid #d8deef;
+    background: #fff;
+    color: #24324f;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+
+  .announcement-tab.active {
+    background: linear-gradient(135deg, #2f6cf6, #5a8cff);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 10px 24px rgba(47,108,246,.18);
+  }
+
+  .announcement-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #d8deef;
+    background: #fff;
+    border-radius: 16px;
+    padding: 0 14px;
+    height: 52px;
+  }
+
+  .announcement-search-wrap svg {
+    width: 18px;
+    height: 18px;
+    color: #7d8aa8;
+    flex: 0 0 auto;
+  }
+
+  .announcement-search-wrap input {
+    border: 0;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    font-size: 15px;
+    color: #18233a;
+  }
+
+  .announcement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .announcement-empty,
+  .announcement-preview-empty {
+    border: 1px dashed #d9dfef;
+    background: #f8faff;
+    border-radius: 18px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #73809b;
+    font-size: 15px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .announcement-item {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 16px;
+    border: 1px solid #e0e6f3;
+    border-radius: 20px;
+    background: #fff;
+    padding: 14px;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+
+  .announcement-item:hover,
+  .announcement-item.active {
+    border-color: #b8c8f5;
+    box-shadow: 0 12px 26px rgba(27,39,94,.08);
+    transform: translateY(-1px);
+  }
+
+  .announcement-item-thumb {
+    width: 112px;
+    height: 92px;
+    border-radius: 16px;
+    background: #eef3ff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a88a8;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .announcement-item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .announcement-item-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .announcement-item-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .announcement-item-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #16213b;
+    line-height: 1.2;
+  }
+
+  .announcement-item-status {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: capitalize;
+    background: #eef3ff;
+    color: #3658b3;
+  }
+
+  .announcement-status-published {
+    background: #edf8ef;
+    color: #1d8b48;
+  }
+
+  .announcement-status-draft {
+    background: #f4f5f8;
+    color: #67758f;
+  }
+
+  .announcement-status-scheduled {
+    background: #f8f3e8;
+    color: #936d19;
+  }
+
+  .announcement-status-archived {
+    background: #f1eefb;
+    color: #7252b0;
+  }
+
+  .announcement-item-audience {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: #f7f9fd;
+    color: #425270;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .announcement-item-body {
+    color: #5d6b86;
+    font-size: 14px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .announcement-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    color: #7a87a2;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .announcement-item-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  .announcement-item-actions .mini-btn {
+    border: 1px solid #dbe2f2;
+    background: #fff;
+    color: #2e3b59;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .announcement-preview-panel {
+    position: sticky;
+    top: 12px;
+  }
+
+  .announcement-preview-card {
+    border: 1px solid #e0e6f3;
+    background: #fff;
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 0 10px 24px rgba(27,39,94,.05);
+  }
+
+  .announcement-preview-top {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .announcement-preview-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .announcement-preview-title-wrap h3 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.15;
+    color: #13203c;
+  }
+
+  .announcement-preview-status {
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    background: #eef3ff;
+    color: #3658b3;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+
+  .announcement-preview-audience {
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #f8f9fd;
+    color: #4b5a76;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .announcement-preview-body {
+    margin: 0 0 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #42506d;
+  }
+
+  .announcement-preview-image,
+  .announcement-preview-link,
+  .announcement-preview-file {
+    margin-bottom: 14px;
+    border-radius: 18px;
+    border: 1px solid #e4eaf6;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .announcement-preview-image img {
+    width: 100%;
+    display: block;
+    max-height: 220px;
+    object-fit: cover;
+  }
+
+  .announcement-preview-link,
+  .announcement-preview-file {
+    padding: 14px 16px;
+  }
+
+  .announcement-preview-link-label,
+  .announcement-preview-file-label {
+    font-size: 15px;
+    font-weight: 800;
+    color: #16213b;
+    margin-bottom: 6px;
+  }
+
+  .announcement-preview-link-url,
+  .announcement-preview-file-url {
+    font-size: 14px;
+    color: #5d6b86;
+    word-break: break-word;
+  }
+
+  .announcement-preview-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #edf1f8;
+  }
+
+  .announcement-preview-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    color: #64728f;
+    font-size: 14px;
+  }
+
+  .announcement-preview-meta-row strong {
+    color: #18233a;
+  }
+
+  .announcement-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .announcement-modal.hidden,
+  .hidden {
+    display: none !important;
+  }
+
+  .announcement-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+  }
+
+  .announcement-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 15, 36, 0.48);
+    backdrop-filter: blur(4px);
+  }
+
+  .announcement-modal-dialog {
+    position: relative;
+    width: min(1180px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    margin: 16px auto;
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 26px 70px rgba(8, 15, 36, 0.28);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .announcement-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 26px 18px;
+    border-bottom: 1px solid #edf1f8;
+  }
+
+  .announcement-modal-title {
+    font-size: 34px;
+    font-weight: 900;
+    color: #13203c;
+    line-height: 1.05;
+  }
+
+  .announcement-modal-sub {
+    margin-top: 6px;
+    color: #72819b;
+    font-size: 15px;
+  }
+
+  .announcement-close-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid #d8deef;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #425270;
+  }
+
+  .announcement-close-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .announcement-modal-body {
+    padding: 24px 26px 24px;
+    overflow: auto;
+  }
+
+  .announcement-compose-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+    gap: 20px;
+  }
+
+  .announcement-compose-left,
+  .announcement-compose-right {
+    min-width: 0;
+  }
+
+  .announcement-compose-section {
+    border: 1px solid #e3e8f5;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 16px;
+    background: #fff;
+  }
+
+  .announcement-compose-section-title {
+    font-size: 22px;
+    font-weight: 850;
+    color: #16213b;
+    margin-bottom: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .field-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #22304c;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    border: 1px solid #d9dfef;
+    border-radius: 14px;
+    padding: 14px 15px;
+    font-size: 15px;
+    color: #18233a;
+    background: #fff;
+    outline: none;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 128px;
+  }
+
+  .field-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .field-grid.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .field-grid.three {
+    grid-template-columns: 1.25fr .9fr auto;
+    align-items: end;
+  }
+
+  .add-target-field {
+    justify-content: flex-end;
+  }
+
+  .audience-mode-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .audience-mode-card {
+    text-align: left;
+    border: 1px solid #dbe2f2;
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+
+  .audience-mode-card.active {
+    border-color: #94b1ff;
+    background: #f5f8ff;
+    box-shadow: inset 0 0 0 1px rgba(47,108,246,.08);
+  }
+
+  .audience-mode-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #18233a;
+    margin-bottom: 6px;
+  }
+
+  .audience-mode-card-sub {
+    font-size: 13px;
+    color: #6f7d98;
+    line-height: 1.45;
+  }
+
+  .announcement-target-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .announcement-target-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #3155b2;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .announcement-target-chip button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .announcement-audience-summary {
+    margin-top: 8px;
+  }
+
+  .announcement-audience-count-card {
+    border: 1px solid #e3e8f5;
+    border-radius: 18px;
+    padding: 16px;
+    background: #f8fbff;
+  }
+
+  .announcement-audience-count-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: #73809b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .announcement-audience-count-value {
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 900;
+    color: #13203c;
+    margin: 10px 0 6px;
+  }
+
+  .announcement-audience-count-sub {
+    font-size: 14px;
+    color: #6f7d98;
+  }
+
+  .delivery-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .delivery-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #dbe2f2;
+    background: #fff;
+    color: #32405f;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .delivery-option.active {
+    border-color: #8fb0ff;
+    background: #f4f8ff;
+  }
+
+  .delivery-option input {
+    margin: 0;
+  }
+
+  .compose-preview-card {
+    position: sticky;
+    top: 0;
+    border: 1px solid #e3e8f5;
+    border-radius: 20px;
+    padding: 18px;
+    background: #fbfcff;
+  }
+
+  .compose-preview-title {
+    font-size: 20px;
+    font-weight: 850;
+    color: #13203c;
+    margin-bottom: 14px;
+  }
+
+  .compose-preview-message-card {
+    border: 1px solid #e4eaf6;
+    border-radius: 18px;
+    background: #fff;
+    padding: 18px;
+  }
+
+  .compose-preview-message-card h3 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    line-height: 1.12;
+    color: #14203b;
+  }
+
+  .compose-preview-audience-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #f7f9fd;
+    color: #4b5a76;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+
+  .compose-preview-message-card p {
+    margin: 0 0 14px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #43506a;
+  }
+
+  .compose-preview-image img {
+    width: 100%;
+    display: block;
+    border-radius: 16px;
+    max-height: 220px;
+    object-fit: cover;
+    margin-bottom: 14px;
+  }
+
+  .compose-preview-link,
+  .compose-preview-file {
+    border: 1px solid #e4eaf6;
+    border-radius: 16px;
+    padding: 13px 14px;
+    margin-bottom: 14px;
+  }
+
+  .compose-preview-link-main,
+  .compose-preview-file-main {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1a2743;
+    margin-bottom: 4px;
+  }
+
+  .compose-preview-link-sub,
+  .compose-preview-file-sub {
+    font-size: 14px;
+    color: #5d6b86;
+    word-break: break-word;
+  }
+
+  .compose-preview-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #edf1f8;
+  }
+
+  .compose-preview-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    color: #67758f;
+  }
+
+  .compose-preview-summary-row strong {
+    color: #18233a;
+  }
+
+  .announcement-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 4px;
+  }
+
+  .btn-danger-soft {
+    border: 1px solid #f1cfd2;
+    background: #fff5f6;
+    color: #b64856;
+  }
+
+  @media (max-width: 1200px) {
+    .announcements-layout,
+    .announcement-compose-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .announcement-preview-panel {
+      position: static;
+    }
+
+    .compose-preview-card {
+      position: static;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .announcement-item {
+      grid-template-columns: 1fr;
+    }
+
+    .announcement-item-thumb {
+      width: 100%;
+      height: 170px;
+    }
+
+    .field-grid.two,
+    .field-grid.three,
+    .audience-mode-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .announcement-modal-dialog {
+      width: calc(100vw - 14px);
+      max-height: calc(100vh - 14px);
+      margin: 7px auto;
+      border-radius: 20px;
+    }
+
+    .announcement-modal-head,
+    .announcement-modal-body {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .announcement-modal-title {
+      font-size: 26px;
+    }
+  }
+</style>
+
+<script>
+  let announcementState = {
+    items: [],
+    filteredItems: [],
+    selectedId: null,
+    activeStatus: "all",
+    search: "",
+    composeMode: "create",
+    editingId: null,
+    audienceMode: "all_students",
+    programmeTargets: [],
+    deliveryMode: "published",
+    matchedStudents: [],
+    loadingMatched: false
+  };
+
+  function getAnnouncementActorPayload() {
+    const hosAdminId =
+      window.currentHosAdminId ||
+      window.currentAdminId ||
+      window.currentUserId ||
+      "";
+    if (!hosAdminId) return {};
+    return { hos_admin_id: hosAdminId };
+  }
+
+  async function invokeAnnouncementManager(payload) {
+    const sb = window.supabase || window.sb || window.supabaseClient;
+    if (!sb) throw new Error("Supabase client not found.");
+
+    const { data, error } = await sb.functions.invoke("announcement-manager", {
+      body: payload
+    });
+
+    console.log("ANNOUNCEMENT BODY SENT:", payload);
+    console.log("ANNOUNCEMENT RAW DATA:", data);
+    console.log("ANNOUNCEMENT RAW ERROR:", error);
+
+    if (error) {
+      throw new Error(error.message || "Announcement manager request failed.");
+    }
+
+    return data;
+  }
+
+  function announcementEls() {
+    return {
+      list: document.getElementById("announcementList"),
+      empty: document.getElementById("announcementEmptyState"),
+      previewEmpty: document.getElementById("announcementPreviewEmpty"),
+      previewCard: document.getElementById("announcementPreviewCard"),
+      previewTitle: document.getElementById("announcementPreviewTitle"),
+      previewStatus: document.getElementById("announcementPreviewStatus"),
+      previewAudience: document.getElementById("announcementPreviewAudience"),
+      previewBody: document.getElementById("announcementPreviewBody"),
+      previewImageWrap: document.getElementById("announcementPreviewImageWrap"),
+      previewImage: document.getElementById("announcementPreviewImage"),
+      previewLinkWrap: document.getElementById("announcementPreviewLinkWrap"),
+      previewLinkLabel: document.getElementById("announcementPreviewLinkLabel"),
+      previewLinkUrl: document.getElementById("announcementPreviewLinkUrl"),
+      previewFileWrap: document.getElementById("announcementPreviewFileWrap"),
+      previewFileUrl: document.getElementById("announcementPreviewFileUrl"),
+      previewMatchedCount: document.getElementById("announcementPreviewMatchedCount"),
+      previewAuthor: document.getElementById("announcementPreviewAuthor"),
+      previewTime: document.getElementById("announcementPreviewTime"),
+      modal: document.getElementById("announcementComposerModal"),
+      composeTitle: document.getElementById("announcementComposerTitle"),
+      titleInput: document.getElementById("announcementTitleInput"),
+      bodyInput: document.getElementById("announcementBodyInput"),
+      linkLabelInput: document.getElementById("announcementLinkLabelInput"),
+      linkUrlInput: document.getElementById("announcementLinkUrlInput"),
+      imageUrlInput: document.getElementById("announcementImageUrlInput"),
+      fileUrlInput: document.getElementById("announcementFileUrlInput"),
+      programmeFilterBox: document.getElementById("announcementProgrammeFilterBox"),
+      programmeInput: document.getElementById("announcementProgrammeInput"),
+      levelsInput: document.getElementById("announcementLevelsInput"),
+      targetList: document.getElementById("announcementTargetList"),
+      matchedCount: document.getElementById("announcementMatchedCount"),
+      audienceText: document.getElementById("announcementAudienceText"),
+      audienceTextMini: document.getElementById("announcementAudienceTextMini"),
+      composePreviewTitle: document.getElementById("announcementComposePreviewTitle"),
+      composePreviewBody: document.getElementById("announcementComposePreviewBody"),
+      composePreviewImageWrap: document.getElementById("announcementComposePreviewImageWrap"),
+      composePreviewImage: document.getElementById("announcementComposePreviewImage"),
+      composePreviewLinkWrap: document.getElementById("announcementComposePreviewLinkWrap"),
+      composePreviewLinkLabel: document.getElementById("announcementComposePreviewLinkLabel"),
+      composePreviewLinkUrl: document.getElementById("announcementComposePreviewLinkUrl"),
+      composePreviewFileWrap: document.getElementById("announcementComposePreviewFileWrap"),
+      composePreviewFileUrl: document.getElementById("announcementComposePreviewFileUrl"),
+      composePreviewMatched: document.getElementById("announcementComposePreviewMatched"),
+      composePreviewStatus: document.getElementById("announcementComposePreviewStatus"),
+      scheduleWrap: document.getElementById("announcementScheduleWrap"),
+      scheduleInput: document.getElementById("announcementScheduleInput")
+    };
+  }
+
+  function formatAnnouncementStatus(status) {
+    const value = String(status || "draft").toLowerCase();
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  function formatAnnouncementTime(value) {
+    if (!value) return "Now";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+  }
+
+  function truncateAnnouncementText(value, max = 160) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    return text.length > max ? text.slice(0, max - 3) + "..." : text;
+  }
+
+  function buildAnnouncementAudienceText(item) {
+    const mode = String(item?.audience_mode || announcementState.audienceMode || "all_students");
+    if (mode !== "programme_filter") return "All students";
+
+    const targets = Array.isArray(item?.programme_targets)
+      ? item.programme_targets
+      : announcementState.programmeTargets;
+
+    if (!targets.length) return "Filtered audience";
+
+    return targets
+      .map((target) => {
+        const programme = String(target.programme_name || "").trim();
+        const levels = Array.isArray(target.levels) ? target.levels.filter(Boolean).join(", ") : "";
+        return levels ? `${programme} (${levels})` : programme;
+      })
+      .filter(Boolean)
+      .join(" • ");
+  }
+
+  function announcementStatusClass(status) {
+    return `announcement-status-${String(status || "draft").toLowerCase()}`;
+  }
+
+  function renderAnnouncementList() {
+    const els = announcementEls();
+    if (!els.list) return;
+
+    els.list.innerHTML = "";
+
+    const items = announcementState.filteredItems;
+    if (!items.length) {
+      if (els.empty) els.empty.classList.remove("hidden");
+      els.list.appendChild(els.empty);
+      renderAnnouncementPreview();
+      return;
+    }
+
+    if (els.empty) els.empty.classList.add("hidden");
+
+    items.forEach((item) => {
+      const card = document.createElement("div");
+      card.className = `announcement-item${announcementState.selectedId === item.id ? " active" : ""}`;
+      card.dataset.id = item.id;
+
+      const thumb = item.image_url
+        ? `<img src="${item.image_url}" alt="">`
+        : `<span>No Image</span>`;
+
+      card.innerHTML = `
+        <div class="announcement-item-thumb">${thumb}</div>
+        <div class="announcement-item-main">
+          <div class="announcement-item-top">
+            <div class="announcement-item-title">${escapeHtml(item.title || "Untitled announcement")}</div>
+            <div class="announcement-item-status ${announcementStatusClass(item.status)}">
+              ${escapeHtml(formatAnnouncementStatus(item.status))}
+            </div>
+          </div>
+
+          <div class="announcement-item-audience">${escapeHtml(buildAnnouncementAudienceText(item))}</div>
+
+          <div class="announcement-item-body">${escapeHtml(truncateAnnouncementText(item.body || "", 180))}</div>
+
+          <div class="announcement-item-meta">
+            <span>${escapeHtml(item.created_by_admin_name || "Admin")}</span>
+            <span>${escapeHtml(formatAnnouncementTime(item.published_at || item.updated_at || item.created_at))}</span>
+            <span>${item.link_url ? "Has link" : "No link"}</span>
+            <span>${item.file_url ? "Has file" : "No file"}</span>
+          </div>
+
+          <div class="announcement-item-actions">
+            <button class="mini-btn" type="button" data-action="open">Open</button>
+            <button class="mini-btn" type="button" data-action="edit">Edit</button>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener("click", (e) => {
+        const action = e.target?.dataset?.action;
+        announcementState.selectedId = item.id;
+        renderAnnouncementList();
+        renderAnnouncementPreview();
+
+        if (action === "edit") {
+          openAnnouncementComposer("edit", item);
+        }
+      });
+
+      els.list.appendChild(card);
+    });
+  }
+
+  function renderAnnouncementPreview() {
+    const els = announcementEls();
+    const item = announcementState.items.find((x) => x.id === announcementState.selectedId);
+
+    if (!item) {
+      els.previewEmpty?.classList.remove("hidden");
+      els.previewCard?.classList.add("hidden");
+      return;
+    }
+
+    els.previewEmpty?.classList.add("hidden");
+    els.previewCard?.classList.remove("hidden");
+
+    if (els.previewTitle) els.previewTitle.textContent = item.title || "Untitled announcement";
+    if (els.previewStatus) {
+      els.previewStatus.textContent = formatAnnouncementStatus(item.status);
+      els.previewStatus.className = `announcement-preview-status ${announcementStatusClass(item.status)}`;
+    }
+    if (els.previewAudience) els.previewAudience.textContent = buildAnnouncementAudienceText(item);
+    if (els.previewBody) els.previewBody.textContent = item.body || "";
+    if (els.previewMatchedCount) {
+      const count = Number(item.matched_students_count || 0);
+      els.previewMatchedCount.textContent = `${count} student${count === 1 ? "" : "s"}`;
+    }
+    if (els.previewAuthor) els.previewAuthor.textContent = item.created_by_admin_name || "Admin";
+    if (els.previewTime) els.previewTime.textContent = formatAnnouncementTime(item.published_at || item.updated_at || item.created_at);
+
+    if (item.image_url) {
+      els.previewImageWrap?.classList.remove("hidden");
+      if (els.previewImage) els.previewImage.src = item.image_url;
+    } else {
+      els.previewImageWrap?.classList.add("hidden");
+      if (els.previewImage) els.previewImage.removeAttribute("src");
+    }
+
+    if (item.link_url) {
+      els.previewLinkWrap?.classList.remove("hidden");
+      if (els.previewLinkLabel) els.previewLinkLabel.textContent = item.link_label || "Open link";
+      if (els.previewLinkUrl) els.previewLinkUrl.textContent = item.link_url;
+    } else {
+      els.previewLinkWrap?.classList.add("hidden");
+    }
+
+    if (item.file_url) {
+      els.previewFileWrap?.classList.remove("hidden");
+      if (els.previewFileUrl) els.previewFileUrl.textContent = item.file_url;
+    } else {
+      els.previewFileWrap?.classList.add("hidden");
+    }
+  }
+
+  function applyAnnouncementFilters() {
+    const status = announcementState.activeStatus;
+    const search = announcementState.search.trim().toLowerCase();
+
+    let items = [...announcementState.items];
+
+    if (status !== "all") {
+      items = items.filter((item) => String(item.status || "").toLowerCase() === status);
+    }
+
+    if (search) {
+      items = items.filter((item) => {
+        const haystack = [
+          item.title,
+          item.body,
+          item.created_by_admin_name,
+          buildAnnouncementAudienceText(item)
+        ].join(" ").toLowerCase();
+
+        return haystack.includes(search);
+      });
+    }
+
+    announcementState.filteredItems = items;
+
+    if (!announcementState.selectedId || !items.some((item) => item.id === announcementState.selectedId)) {
+      announcementState.selectedId = items[0]?.id || null;
+    }
+
+    renderAnnouncementList();
+  }
+
+  async function loadAnnouncements(statusOverride = null) {
+    try {
+      const payload = {
+        action: "list_announcements",
+        ...(statusOverride && statusOverride !== "all" ? { status: statusOverride } : {}),
+        ...getAnnouncementActorPayload()
+      };
+
+      const res = await invokeAnnouncementManager(payload);
+      announcementState.items = Array.isArray(res.announcements) ? res.announcements : [];
+      applyAnnouncementFilters();
+    } catch (err) {
+      console.error("loadAnnouncements failed:", err);
+    }
+  }
+
+  function openAnnouncementComposer(mode = "create", item = null) {
+    const els = announcementEls();
+
+    announcementState.composeMode = mode;
+    announcementState.editingId = item?.id || null;
+    announcementState.audienceMode = item?.audience_mode || "all_students";
+    announcementState.programmeTargets = Array.isArray(item?.programme_targets) ? [...item.programme_targets] : [];
+    announcementState.deliveryMode = item?.status === "scheduled"
+      ? "scheduled"
+      : item?.status === "draft"
+      ? "draft"
+      : "published";
+
+    if (els.composeTitle) {
+      els.composeTitle.textContent = mode === "edit" ? "Edit Announcement" : "New Announcement";
+    }
+
+    if (els.titleInput) els.titleInput.value = item?.title || "";
+    if (els.bodyInput) els.bodyInput.value = item?.body || "";
+    if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
+    if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
+    if (els.imageUrlInput) els.imageUrlInput.value = item?.image_url || "";
+    if (els.fileUrlInput) els.fileUrlInput.value = item?.file_url || "";
+    if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
+
+    document.querySelectorAll(".audience-mode-card").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === announcementState.audienceMode);
+    });
+
+    document.querySelectorAll(".delivery-option").forEach((label) => {
+      const input = label.querySelector("input");
+      const active = input && input.value === announcementState.deliveryMode;
+      label.classList.toggle("active", active);
+      if (input) input.checked = active;
+    });
+
+    refreshAnnouncementAudienceModeUI();
+    renderAnnouncementTargetList();
+    refreshAnnouncementPreviewCard();
+    refreshAnnouncementMatchedPreview();
+
+    els.modal?.classList.remove("hidden");
+  }
+
+  function closeAnnouncementComposer() {
+    announcementEls().modal?.classList.add("hidden");
+  }
+
+  function refreshAnnouncementAudienceModeUI() {
+    const els = announcementEls();
+    const isFilter = announcementState.audienceMode === "programme_filter";
+    els.programmeFilterBox?.classList.toggle("hidden", !isFilter);
+  }
+
+  function renderAnnouncementTargetList() {
+    const els = announcementEls();
+    if (!els.targetList) return;
+
+    els.targetList.innerHTML = "";
+
+    if (!announcementState.programmeTargets.length) return;
+
+    announcementState.programmeTargets.forEach((target, index) => {
+      const chip = document.createElement("div");
+      chip.className = "announcement-target-chip";
+
+      const programme = String(target.programme_name || "").trim();
+      const levels = Array.isArray(target.levels) ? target.levels.join(", ") : "";
+
+      chip.innerHTML = `
+        <span>${escapeHtml(programme)}${levels ? ` (${escapeHtml(levels)})` : ""}</span>
+        <button type="button" data-index="${index}">&times;</button>
+      `;
+
+      chip.querySelector("button")?.addEventListener("click", () => {
+        announcementState.programmeTargets.splice(index, 1);
+        renderAnnouncementTargetList();
+        refreshAnnouncementPreviewCard();
+        refreshAnnouncementMatchedPreview();
+      });
+
+      els.targetList.appendChild(chip);
+    });
+  }
+
+  function refreshAnnouncementPreviewCard() {
+    const els = announcementEls();
+
+    const title = els.titleInput?.value?.trim() || "Announcement title";
+    const body = els.bodyInput?.value?.trim() || "Your announcement message preview will show here.";
+    const linkLabel = els.linkLabelInput?.value?.trim() || "Open link";
+    const linkUrl = els.linkUrlInput?.value?.trim();
+    const imageUrl = els.imageUrlInput?.value?.trim();
+    const fileUrl = els.fileUrlInput?.value?.trim();
+
+    if (els.composePreviewTitle) els.composePreviewTitle.textContent = title;
+    if (els.composePreviewBody) els.composePreviewBody.textContent = body;
+
+    const audienceText = announcementState.audienceMode === "programme_filter"
+      ? buildAnnouncementAudienceText({ audience_mode: "programme_filter", programme_targets: announcementState.programmeTargets })
+      : "All students";
+
+    if (els.audienceText) els.audienceText.textContent = audienceText;
+    if (els.audienceTextMini) els.audienceTextMini.textContent = audienceText;
+
+    const count = Array.isArray(announcementState.matchedStudents)
+      ? announcementState.matchedStudents.length
+      : 0;
+
+    if (els.matchedCount) els.matchedCount.textContent = String(count);
+    if (els.composePreviewMatched) els.composePreviewMatched.textContent = `${count} student${count === 1 ? "" : "s"}`;
+
+    const statusText =
+      announcementState.deliveryMode === "scheduled"
+        ? "Scheduled"
+        : announcementState.deliveryMode === "draft"
+        ? "Draft"
+        : "Send now";
+
+    if (els.composePreviewStatus) els.composePreviewStatus.textContent = statusText;
+
+    if (imageUrl) {
+      els.composePreviewImageWrap?.classList.remove("hidden");
+      if (els.composePreviewImage) els.composePreviewImage.src = imageUrl;
+    } else {
+      els.composePreviewImageWrap?.classList.add("hidden");
+    }
+
+    if (linkUrl) {
+      els.composePreviewLinkWrap?.classList.remove("hidden");
+      if (els.composePreviewLinkLabel) els.composePreviewLinkLabel.textContent = linkLabel;
+      if (els.composePreviewLinkUrl) els.composePreviewLinkUrl.textContent = linkUrl;
+    } else {
+      els.composePreviewLinkWrap?.classList.add("hidden");
+    }
+
+    if (fileUrl) {
+      els.composePreviewFileWrap?.classList.remove("hidden");
+      if (els.composePreviewFileUrl) els.composePreviewFileUrl.textContent = fileUrl;
+    } else {
+      els.composePreviewFileWrap?.classList.add("hidden");
+    }
+
+    els.scheduleWrap?.classList.toggle("hidden", announcementState.deliveryMode !== "scheduled");
+  }
+
+  async function refreshAnnouncementMatchedPreview() {
+    try {
+      announcementState.loadingMatched = true;
+      refreshAnnouncementPreviewCard();
+
+      const payload = {
+        action: "preview_matched_students",
+        audience_mode: announcementState.audienceMode,
+        programme_targets: announcementState.programmeTargets,
+        ...getAnnouncementActorPayload()
+      };
+
+      const res = await invokeAnnouncementManager(payload);
+      announcementState.matchedStudents = Array.isArray(res.matched_students) ? res.matched_students : [];
+      refreshAnnouncementPreviewCard();
+    } catch (err) {
+      console.error("refreshAnnouncementMatchedPreview failed:", err);
+      announcementState.matchedStudents = [];
+      refreshAnnouncementPreviewCard();
+    } finally {
+      announcementState.loadingMatched = false;
+    }
+  }
+
+  function collectAnnouncementPayload(statusOverride = null) {
+    const els = announcementEls();
+
+    const status = statusOverride || announcementState.deliveryMode;
+
+    return {
+      title: els.titleInput?.value?.trim() || "",
+      body: els.bodyInput?.value?.trim() || "",
+      link_label: els.linkLabelInput?.value?.trim() || "",
+      link_url: els.linkUrlInput?.value?.trim() || "",
+      image_url: els.imageUrlInput?.value?.trim() || "",
+      file_url: els.fileUrlInput?.value?.trim() || "",
+      audience_mode: announcementState.audienceMode,
+      programme_targets: announcementState.programmeTargets,
+      status,
+      scheduled_at: status === "scheduled" ? (els.scheduleInput?.value || "") : ""
+    };
+  }
+
+  async function saveAnnouncement(statusOverride = null) {
+    const payload = collectAnnouncementPayload(statusOverride);
+
+    if (!payload.title) {
+      alert("Enter announcement title.");
+      return;
+    }
+
+    if (!payload.body) {
+      alert("Enter announcement message.");
+      return;
+    }
+
+    if (payload.status === "scheduled" && !payload.scheduled_at) {
+      alert("Choose a schedule date and time.");
+      return;
+    }
+
+    try {
+      if (announcementState.composeMode === "edit" && announcementState.editingId) {
+        await invokeAnnouncementManager({
+          action: "update_announcement",
+          announcement_id: announcementState.editingId,
+          ...payload,
+          ...getAnnouncementActorPayload()
+        });
+
+        if (payload.status === "published") {
+          await invokeAnnouncementManager({
+            action: "publish_announcement",
+            announcement_id: announcementState.editingId,
+            ...getAnnouncementActorPayload()
+          });
+        }
+      } else {
+        await invokeAnnouncementManager({
+          action: "create_announcement",
+          ...payload,
+          ...getAnnouncementActorPayload()
+        });
+      }
+
+      closeAnnouncementComposer();
+      await loadAnnouncements(announcementState.activeStatus);
+    } catch (err) {
+      console.error("saveAnnouncement failed:", err);
+      alert(err.message || "Failed to save announcement.");
+    }
+  }
+
+  function bindAnnouncementEvents() {
+    document.getElementById("announcementNewBtn")?.addEventListener("click", () => {
+      openAnnouncementComposer("create");
+    });
+
+    document.getElementById("announcementComposerCloseBtn")?.addEventListener("click", closeAnnouncementComposer);
+    document.getElementById("announcementComposerBackdrop")?.addEventListener("click", closeAnnouncementComposer);
+    document.getElementById("announcementCancelBtn")?.addEventListener("click", closeAnnouncementComposer);
+
+    document.getElementById("announcementSaveDraftBtn")?.addEventListener("click", () => {
+      announcementState.deliveryMode = "draft";
+      document.querySelectorAll(".delivery-option").forEach((label) => {
+        const input = label.querySelector("input");
+        const active = input && input.value === "draft";
+        label.classList.toggle("active", active);
+        if (input) input.checked = active;
+      });
+      refreshAnnouncementPreviewCard();
+      saveAnnouncement("draft");
+    });
+
+    document.getElementById("announcementPublishBtn")?.addEventListener("click", () => {
+      saveAnnouncement(announcementState.deliveryMode);
+    });
+
+    document.querySelectorAll(".announcement-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".announcement-tab").forEach((btn) => btn.classList.remove("active"));
+        tab.classList.add("active");
+        announcementState.activeStatus = tab.dataset.status || "all";
+        loadAnnouncements(announcementState.activeStatus);
+      });
+    });
+
+    document.getElementById("announcementSearchInput")?.addEventListener("input", (e) => {
+      announcementState.search = e.target.value || "";
+      applyAnnouncementFilters();
+    });
+
+    document.querySelectorAll(".audience-mode-card").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        announcementState.audienceMode = btn.dataset.mode || "all_students";
+        document.querySelectorAll(".audience-mode-card").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        refreshAnnouncementAudienceModeUI();
+        refreshAnnouncementPreviewCard();
+        refreshAnnouncementMatchedPreview();
+      });
+    });
+
+    document.getElementById("announcementAddTargetBtn")?.addEventListener("click", () => {
+      const els = announcementEls();
+      const programme = els.programmeInput?.value?.trim() || "";
+      const levelsRaw = els.levelsInput?.value?.trim() || "";
+
+      if (!programme) {
+        alert("Enter programme.");
+        return;
+      }
+
+      const levels = levelsRaw
+        ? levelsRaw.split(",").map((x) => x.trim()).filter(Boolean)
+        : [];
+
+      announcementState.programmeTargets.push({
+        programme_name: programme.toUpperCase(),
+        levels
+      });
+
+      if (els.programmeInput) els.programmeInput.value = "";
+      if (els.levelsInput) els.levelsInput.value = "";
+
+      renderAnnouncementTargetList();
+      refreshAnnouncementPreviewCard();
+      refreshAnnouncementMatchedPreview();
+    });
+
+    document.querySelectorAll('input[name="announcementDeliveryMode"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        announcementState.deliveryMode = input.value;
+        document.querySelectorAll(".delivery-option").forEach((label) => {
+          const radio = label.querySelector("input");
+          label.classList.toggle("active", radio && radio.value === input.value);
+        });
+        refreshAnnouncementPreviewCard();
+      });
+    });
+
+    [
+      "announcementTitleInput",
+      "announcementBodyInput",
+      "announcementLinkLabelInput",
+      "announcementLinkUrlInput",
+      "announcementImageUrlInput",
+      "announcementFileUrlInput",
+      "announcementScheduleInput"
+    ].forEach((id) => {
+      document.getElementById(id)?.addEventListener("input", refreshAnnouncementPreviewCard);
+    });
+
+    document.getElementById("announcementEditBtn")?.addEventListener("click", () => {
+      const item = announcementState.items.find((x) => x.id === announcementState.selectedId);
+      if (item) openAnnouncementComposer("edit", item);
+    });
+
+    document.getElementById("announcementDuplicateBtn")?.addEventListener("click", () => {
+      const item = announcementState.items.find((x) => x.id === announcementState.selectedId);
+      if (!item) return;
+
+      const clone = {
+        ...item,
+        id: null,
+        title: `${item.title || "Announcement"} Copy`,
+        status: "draft"
+      };
+
+      openAnnouncementComposer("create", clone);
+    });
+
+    document.getElementById("announcementArchiveBtn")?.addEventListener("click", async () => {
+      if (!announcementState.selectedId) return;
+      try {
+        await invokeAnnouncementManager({
+          action: "archive_announcement",
+          announcement_id: announcementState.selectedId,
+          ...getAnnouncementActorPayload()
+        });
+        await loadAnnouncements(announcementState.activeStatus);
+      } catch (err) {
+        console.error("archive announcement failed:", err);
+        alert(err.message || "Failed to archive announcement.");
+      }
+    });
+
+    document.getElementById("announcementDeleteBtn")?.addEventListener("click", async () => {
+      if (!announcementState.selectedId) return;
+      if (!confirm("Delete this announcement?")) return;
+
+      try {
+        await invokeAnnouncementManager({
+          action: "delete_announcement",
+          announcement_id: announcementState.selectedId,
+          ...getAnnouncementActorPayload()
+        });
+        await loadAnnouncements(announcementState.activeStatus);
+      } catch (err) {
+        console.error("delete announcement failed:", err);
+        alert(err.message || "Failed to delete announcement.");
+      }
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function toDateTimeLocal(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    bindAnnouncementEvents();
+    await loadAnnouncements("all");
+  });
+</script>
