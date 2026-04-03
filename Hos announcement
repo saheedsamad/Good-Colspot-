@@ -128,210 +128,306 @@
       </div>
 
       <div class="announcement-modal-body">
-        <div class="announcement-compose-grid">
-          <div class="announcement-compose-left">
-            <section class="announcement-compose-section">
-              <div class="announcement-compose-section-title">Announcement Details</div>
-
-              <label class="field">
-                <span class="field-label">Title</span>
-                <input id="announcementTitleInput" type="text" placeholder="Enter announcement title" />
-              </label>
-
-              <label class="field">
-                <span class="field-label">Message</span>
-                <textarea id="announcementBodyInput" rows="6" placeholder="Write your announcement message"></textarea>
-              </label>
-
-              <div class="field-grid two">
-                <label class="field">
-                  <span class="field-label">CTA Text</span>
-                  <input id="announcementLinkLabelInput" type="text" placeholder="Open registration" />
-                </label>
-
-                <label class="field">
-                  <span class="field-label">Link URL</span>
-                  <input id="announcementLinkUrlInput" type="text" placeholder="https://example.com" />
-                </label>
-              </div>
-            </section>
-
-            <section class="announcement-compose-section">
-              <div class="announcement-compose-section-title">Media Upload</div>
-
-              <div class="announcement-upload-grid">
-                <div class="announcement-upload-card">
-                  <div class="announcement-upload-top">
-                    <div>
-                      <div class="announcement-upload-title">Image</div>
-                      <div class="announcement-upload-sub">Upload banner, flyer, or photo</div>
-                    </div>
-                    <label class="btn btn-light announcement-upload-btn">
-                      Upload Image
-                      <input id="announcementImageFileInput" type="file" accept="image/*" hidden />
-                    </label>
-                  </div>
-
-                  <div class="announcement-upload-status" id="announcementImageUploadStatus">No image selected</div>
-
-                  <div class="announcement-upload-preview hidden" id="announcementImageUploadPreview">
-                    <img id="announcementImageUploadPreviewImg" alt="Uploaded announcement image preview" />
-                    <div class="announcement-upload-actions">
-                      <button class="btn btn-light" id="announcementRemoveImageBtn" type="button">Remove Image</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="announcement-upload-card">
-                  <div class="announcement-upload-top">
-                    <div>
-                      <div class="announcement-upload-title">Attachment</div>
-                      <div class="announcement-upload-sub">Upload PDF, DOCX, image, or file</div>
-                    </div>
-                    <label class="btn btn-light announcement-upload-btn">
-                      Upload File
-                      <input id="announcementFileAttachmentInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.txt" hidden />
-                    </label>
-                  </div>
-
-                  <div class="announcement-upload-status" id="announcementFileUploadStatus">No file selected</div>
-
-                  <div class="announcement-file-chip hidden" id="announcementFileChip">
-                    <div class="announcement-file-chip-name" id="announcementFileChipName">document.pdf</div>
-                    <button class="announcement-file-chip-remove" id="announcementRemoveFileBtn" type="button">&times;</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="announcement-compose-section">
-              <div class="announcement-compose-section-title">Audience</div>
-
-              <div class="audience-mode-cards">
-                <button class="audience-mode-card active" type="button" data-mode="all_students" id="announcementAudienceAllBtn">
-                  <div class="audience-mode-card-title">All students</div>
-                  <div class="audience-mode-card-sub">Send to every student in this school.</div>
-                </button>
-
-                <button class="audience-mode-card" type="button" data-mode="programme_filter" id="announcementAudienceFilterBtn">
-                  <div class="audience-mode-card-title">Filter audience</div>
-                  <div class="audience-mode-card-sub">Choose programme and level.</div>
-                </button>
-              </div>
-
-              <div class="audience-target-box hidden" id="announcementProgrammeFilterBox">
-                <div class="field-grid three">
-                  <label class="field">
-                    <span class="field-label">Programme</span>
-                    <select id="announcementProgrammeSelect">
-                      <option value="">Select programme</option>
-                    </select>
-                  </label>
-
-                  <label class="field">
-                    <span class="field-label">Level</span>
-                    <select id="announcementLevelSelect">
-                      <option value="">Select level</option>
-                      <option value="100">100</option>
-                      <option value="200">200</option>
-                      <option value="300">300</option>
-                      <option value="400">400</option>
-                      <option value="500">500</option>
-                      <option value="600">600</option>
-                      <option value="700">700</option>
-                    </select>
-                  </label>
-
-                  <div class="field add-target-field">
-                    <span class="field-label">&nbsp;</span>
-                    <button class="btn btn-light" id="announcementAddTargetBtn" type="button">Add Target</button>
-                  </div>
-                </div>
-
-                <div class="announcement-target-list" id="announcementTargetList"></div>
-              </div>
-
-              <div class="announcement-audience-summary">
-                <div class="announcement-audience-count-card">
-                  <div class="announcement-audience-count-label">Matched Students</div>
-                  <div class="announcement-audience-count-value" id="announcementMatchedCount">0</div>
-                  <div class="announcement-audience-count-sub" id="announcementAudienceTextMini">All students</div>
-                </div>
-              </div>
-            </section>
-
-            <section class="announcement-compose-section">
-              <div class="announcement-compose-section-title">Delivery</div>
-
-              <div class="delivery-options">
-                <label class="delivery-option active" data-delivery="published">
-                  <input type="radio" name="announcementDeliveryMode" value="published" checked />
-                  <span>Send now</span>
-                </label>
-
-                <label class="delivery-option" data-delivery="draft">
-                  <input type="radio" name="announcementDeliveryMode" value="draft" />
-                  <span>Save as draft</span>
-                </label>
-
-                <label class="delivery-option" data-delivery="scheduled">
-                  <input type="radio" name="announcementDeliveryMode" value="scheduled" />
-                  <span>Schedule</span>
-                </label>
-              </div>
-
-              <div class="field hidden" id="announcementScheduleWrap">
-                <span class="field-label">Schedule Time</span>
-                <input id="announcementScheduleInput" type="datetime-local" />
-              </div>
-            </section>
+        <div class="announcement-step-header">
+          <div class="announcement-step-badge active" id="announcementStepBadgeOne">
+            <span class="announcement-step-number">1</span>
+            <div class="announcement-step-copy">
+              <strong>Compose</strong>
+              <small>Details, media, audience</small>
+            </div>
           </div>
 
-          <div class="announcement-compose-right">
-            <div class="compose-preview-card">
-              <div class="compose-preview-title">Preview</div>
+          <div class="announcement-step-line"></div>
 
-              <div class="compose-preview-message-card">
-                <h3 id="announcementComposePreviewTitle">Announcement title</h3>
-                <div class="compose-preview-audience-pill" id="announcementAudienceText">All students</div>
+          <div class="announcement-step-badge" id="announcementStepBadgeTwo">
+            <span class="announcement-step-number">2</span>
+            <div class="announcement-step-copy">
+              <strong>Student View</strong>
+              <small>What students will see</small>
+            </div>
+          </div>
+        </div>
 
-                <p id="announcementComposePreviewBody">
-                  Your announcement message preview will show here.
-                </p>
+        <div class="announcement-step" id="announcementStepOne">
+          <div class="announcement-compose-grid">
+            <div class="announcement-compose-left">
+              <section class="announcement-compose-section">
+                <div class="announcement-compose-section-title">Announcement Details</div>
 
-                <div class="compose-preview-image hidden" id="announcementComposePreviewImageWrap">
-                  <img id="announcementComposePreviewImage" alt="Announcement preview image" />
+                <label class="field">
+                  <span class="field-label">Internal Title</span>
+                  <input id="announcementTitleInput" type="text" placeholder="Enter internal announcement title" />
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Internal Message</span>
+                  <textarea id="announcementBodyInput" rows="6" placeholder="Write the announcement content"></textarea>
+                </label>
+
+                <div class="field-grid two">
+                  <label class="field">
+                    <span class="field-label">CTA Text</span>
+                    <input id="announcementLinkLabelInput" type="text" placeholder="Open registration" />
+                  </label>
+
+                  <label class="field">
+                    <span class="field-label">Link URL</span>
+                    <input id="announcementLinkUrlInput" type="text" placeholder="https://example.com" />
+                  </label>
                 </div>
+              </section>
 
-                <div class="compose-preview-link hidden" id="announcementComposePreviewLinkWrap">
-                  <div class="compose-preview-link-main" id="announcementComposePreviewLinkLabel">Open link</div>
-                  <div class="compose-preview-link-sub" id="announcementComposePreviewLinkUrl">https://example.com</div>
-                </div>
+              <section class="announcement-compose-section">
+                <div class="announcement-compose-section-title">Media Upload</div>
 
-                <div class="compose-preview-file hidden" id="announcementComposePreviewFileWrap">
-                  <div class="compose-preview-file-main">Attached file</div>
-                  <div class="compose-preview-file-sub" id="announcementComposePreviewFileUrl">file.pdf</div>
-                </div>
+                <div class="announcement-upload-grid">
+                  <div class="announcement-upload-card">
+                    <div class="announcement-upload-top">
+                      <div>
+                        <div class="announcement-upload-title">Image</div>
+                        <div class="announcement-upload-sub">Upload banner, flyer, or photo</div>
+                      </div>
+                      <label class="btn btn-light announcement-upload-btn">
+                        Upload Image
+                        <input id="announcementImageFileInput" type="file" accept="image/*" hidden />
+                      </label>
+                    </div>
 
-                <div class="compose-preview-summary">
-                  <div class="compose-preview-summary-row">
-                    <span>Matched audience</span>
-                    <strong id="announcementComposePreviewMatched">0 students</strong>
+                    <div class="announcement-upload-status" id="announcementImageUploadStatus">No image selected</div>
+
+                    <div class="announcement-upload-preview hidden" id="announcementImageUploadPreview">
+                      <img id="announcementImageUploadPreviewImg" alt="Uploaded announcement image preview" />
+                      <div class="announcement-upload-actions">
+                        <button class="btn btn-light" id="announcementRemoveImageBtn" type="button">Remove Image</button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="compose-preview-summary-row">
-                    <span>Status</span>
-                    <strong id="announcementComposePreviewStatus">Send now</strong>
+
+                  <div class="announcement-upload-card">
+                    <div class="announcement-upload-top">
+                      <div>
+                        <div class="announcement-upload-title">Attachment</div>
+                        <div class="announcement-upload-sub">Upload PDF, DOCX, image, or file</div>
+                      </div>
+                      <label class="btn btn-light announcement-upload-btn">
+                        Upload File
+                        <input id="announcementFileAttachmentInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.txt" hidden />
+                      </label>
+                    </div>
+
+                    <div class="announcement-upload-status" id="announcementFileUploadStatus">No file selected</div>
+
+                    <div class="announcement-file-chip hidden" id="announcementFileChip">
+                      <div class="announcement-file-chip-name" id="announcementFileChipName">document.pdf</div>
+                      <button class="announcement-file-chip-remove" id="announcementRemoveFileBtn" type="button">&times;</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="announcement-compose-section">
+                <div class="announcement-compose-section-title">Audience</div>
+
+                <div class="audience-mode-cards">
+                  <button class="audience-mode-card active" type="button" data-mode="all_students" id="announcementAudienceAllBtn">
+                    <div class="audience-mode-card-title">All students</div>
+                    <div class="audience-mode-card-sub">Send to every student in this school.</div>
+                  </button>
+
+                  <button class="audience-mode-card" type="button" data-mode="programme_filter" id="announcementAudienceFilterBtn">
+                    <div class="audience-mode-card-title">Filter audience</div>
+                    <div class="audience-mode-card-sub">Choose programme and level.</div>
+                  </button>
+                </div>
+
+                <div class="audience-target-box hidden" id="announcementProgrammeFilterBox">
+                  <div class="field-grid three">
+                    <label class="field">
+                      <span class="field-label">Programme</span>
+                      <select id="announcementProgrammeSelect">
+                        <option value="">Select programme</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span class="field-label">Level</span>
+                      <select id="announcementLevelSelect">
+                        <option value="">Select level</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="300">300</option>
+                        <option value="400">400</option>
+                        <option value="500">500</option>
+                        <option value="600">600</option>
+                        <option value="700">700</option>
+                      </select>
+                    </label>
+
+                    <div class="field add-target-field">
+                      <span class="field-label">&nbsp;</span>
+                      <button class="btn btn-light" id="announcementAddTargetBtn" type="button">Add Target</button>
+                    </div>
+                  </div>
+
+                  <div class="announcement-target-list" id="announcementTargetList"></div>
+                </div>
+
+                <div class="announcement-audience-summary">
+                  <div class="announcement-audience-count-card">
+                    <div class="announcement-audience-count-label">Matched Students</div>
+                    <div class="announcement-audience-count-value" id="announcementMatchedCount">0</div>
+                    <div class="announcement-audience-count-sub" id="announcementAudienceTextMini">All students</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="announcement-compose-section">
+                <div class="announcement-compose-section-title">Delivery</div>
+
+                <div class="delivery-options">
+                  <label class="delivery-option active" data-delivery="published">
+                    <input type="radio" name="announcementDeliveryMode" value="published" checked />
+                    <span>Send now</span>
+                  </label>
+
+                  <label class="delivery-option" data-delivery="draft">
+                    <input type="radio" name="announcementDeliveryMode" value="draft" />
+                    <span>Save as draft</span>
+                  </label>
+
+                  <label class="delivery-option" data-delivery="scheduled">
+                    <input type="radio" name="announcementDeliveryMode" value="scheduled" />
+                    <span>Schedule</span>
+                  </label>
+                </div>
+
+                <div class="field hidden" id="announcementScheduleWrap">
+                  <span class="field-label">Schedule Time</span>
+                  <input id="announcementScheduleInput" type="datetime-local" />
+                </div>
+              </section>
+            </div>
+
+            <div class="announcement-compose-right">
+              <div class="compose-preview-card">
+                <div class="compose-preview-title">Internal Preview</div>
+
+                <div class="compose-preview-message-card">
+                  <h3 id="announcementComposePreviewTitle">Announcement title</h3>
+                  <div class="compose-preview-audience-pill" id="announcementAudienceText">All students</div>
+
+                  <p id="announcementComposePreviewBody">
+                    Your announcement message preview will show here.
+                  </p>
+
+                  <div class="compose-preview-image hidden" id="announcementComposePreviewImageWrap">
+                    <img id="announcementComposePreviewImage" alt="Announcement preview image" />
+                  </div>
+
+                  <div class="compose-preview-link hidden" id="announcementComposePreviewLinkWrap">
+                    <div class="compose-preview-link-main" id="announcementComposePreviewLinkLabel">Open link</div>
+                    <div class="compose-preview-link-sub" id="announcementComposePreviewLinkUrl">https://example.com</div>
+                  </div>
+
+                  <div class="compose-preview-file hidden" id="announcementComposePreviewFileWrap">
+                    <div class="compose-preview-file-main">Attached file</div>
+                    <div class="compose-preview-file-sub" id="announcementComposePreviewFileUrl">file.pdf</div>
+                  </div>
+
+                  <div class="compose-preview-summary">
+                    <div class="compose-preview-summary-row">
+                      <span>Matched audience</span>
+                      <strong id="announcementComposePreviewMatched">0 students</strong>
+                    </div>
+                    <div class="compose-preview-summary-row">
+                      <span>Status</span>
+                      <strong id="announcementComposePreviewStatus">Send now</strong>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </div><!-- end step one -->
+
+        <div class="announcement-step hidden" id="announcementStepTwo">
+          <div class="announcement-step-two-grid">
+            <div class="announcement-step-two-left">
+              <section class="announcement-compose-section">
+                <div class="announcement-compose-section-title">Student Announcement Details</div>
+                <div class="announcement-step-note">
+                  This is what students will see on their phone when the announcement is delivered.
+                </div>
+
+                <label class="field">
+                  <span class="field-label">Student Title</span>
+                  <input id="announcementStudentTitleInput" type="text" placeholder="Enter the title students will see" />
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Student Description</span>
+                  <textarea id="announcementStudentBodyInput" rows="7" placeholder="Write the student-facing description"></textarea>
+                </label>
+
+                <div class="announcement-step-summary-card">
+                  <div class="announcement-step-summary-row">
+                    <span>Audience</span>
+                    <strong id="announcementStudentAudienceLine">All students</strong>
+                  </div>
+                  <div class="announcement-step-summary-row">
+                    <span>Matched Students</span>
+                    <strong id="announcementStudentMatchedCount">0 students</strong>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="announcement-step-two-right">
+              <div class="announcement-phone-shell">
+                <div class="announcement-phone-topbar">
+                  <span></span>
+                  <div class="announcement-phone-notch"></div>
+                  <span></span>
+                </div>
+
+                <div class="announcement-phone-content">
+                  <div class="announcement-phone-label">Student Preview</div>
+
+                  <div class="announcement-phone-card">
+                    <div class="announcement-phone-chip" id="announcementStudentPhoneAudience">All students</div>
+
+                    <h3 id="announcementStudentPhoneTitle">Announcement title</h3>
+
+                    <p id="announcementStudentPhoneBody">
+                      This is how the announcement will look on the student's phone.
+                    </p>
+
+                    <div class="announcement-phone-image hidden" id="announcementStudentPhoneImageWrap">
+                      <img id="announcementStudentPhoneImage" alt="Student announcement preview image" />
+                    </div>
+
+                    <div class="announcement-phone-link hidden" id="announcementStudentPhoneLinkWrap">
+                      <div class="announcement-phone-link-main" id="announcementStudentPhoneLinkLabel">Open link</div>
+                      <div class="announcement-phone-link-sub" id="announcementStudentPhoneLinkUrl">https://example.com</div>
+                    </div>
+
+                    <div class="announcement-phone-file hidden" id="announcementStudentPhoneFileWrap">
+                      <div class="announcement-phone-file-main">Attached file</div>
+                      <div class="announcement-phone-file-sub" id="announcementStudentPhoneFileUrl">file.pdf</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- end step two -->
 
         <div class="announcement-modal-foot">
           <button class="btn btn-light" id="announcementCancelBtn" type="button">Cancel</button>
+          <button class="btn btn-light" id="announcementBackBtn" type="button">Back</button>
           <button class="btn btn-light" id="announcementSaveDraftBtn" type="button">Save Draft</button>
-          <button class="btn btn-primary" id="announcementPublishBtn" type="button">Send Announcement</button>
+          <button class="btn btn-primary" id="announcementNextBtn" type="button">Next</button>
+          <button class="btn btn-primary hidden" id="announcementPublishBtn" type="button">Send Announcement</button>
         </div>
       </div>
     </div>
@@ -796,14 +892,88 @@
     overflow: auto;
   }
 
+  .announcement-step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .announcement-step-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid #dde4f2;
+    border-radius: 18px;
+    background: #fff;
+    min-width: 0;
+  }
+
+  .announcement-step-badge.active {
+    border-color: #94b1ff;
+    background: #f5f8ff;
+    box-shadow: inset 0 0 0 1px rgba(47,108,246,.08);
+  }
+
+  .announcement-step-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef3ff;
+    color: #3155b2;
+    font-weight: 900;
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
+
+  .announcement-step-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .announcement-step-copy strong {
+    font-size: 14px;
+    color: #17233d;
+  }
+
+  .announcement-step-copy small {
+    font-size: 12px;
+    color: #74819c;
+  }
+
+  .announcement-step-line {
+    height: 1px;
+    background: #dde4f2;
+    flex: 1;
+    min-width: 18px;
+  }
+
+  .announcement-step {
+    min-width: 0;
+  }
+
   .announcement-compose-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
     gap: 20px;
   }
 
+  .announcement-step-two-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 20px;
+    align-items: start;
+  }
+
   .announcement-compose-left,
-  .announcement-compose-right {
+  .announcement-compose-right,
+  .announcement-step-two-left,
+  .announcement-step-two-right {
     min-width: 0;
   }
 
@@ -820,6 +990,39 @@
     font-weight: 850;
     color: #16213b;
     margin-bottom: 14px;
+  }
+
+  .announcement-step-note {
+    margin-bottom: 14px;
+    color: #687793;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .announcement-step-summary-card {
+    border: 1px solid #e3e8f5;
+    border-radius: 18px;
+    background: #f8fbff;
+    padding: 14px 16px;
+    margin-top: 10px;
+  }
+
+  .announcement-step-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    color: #5f6d88;
+  }
+
+  .announcement-step-summary-row + .announcement-step-summary-row {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e6ecf7;
+  }
+
+  .announcement-step-summary-row strong {
+    color: #17233d;
   }
 
   .field {
@@ -1190,11 +1393,120 @@
     color: #18233a;
   }
 
+  .announcement-phone-shell {
+    width: 100%;
+    max-width: 390px;
+    margin: 0 auto;
+    border-radius: 34px;
+    padding: 16px 14px 18px;
+    background: linear-gradient(180deg, #17243f 0%, #0f172a 100%);
+    box-shadow: 0 28px 70px rgba(15,23,42,.28);
+  }
+
+  .announcement-phone-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    margin-bottom: 14px;
+  }
+
+  .announcement-phone-notch {
+    width: 126px;
+    height: 26px;
+    border-radius: 999px;
+    background: #0a0f1a;
+  }
+
+  .announcement-phone-content {
+    border-radius: 26px;
+    background: #f6f8fd;
+    padding: 16px;
+    min-height: 540px;
+  }
+
+  .announcement-phone-label {
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #7d8aa4;
+    margin-bottom: 12px;
+  }
+
+  .announcement-phone-card {
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid #e6ebf7;
+    padding: 16px;
+    box-shadow: 0 10px 24px rgba(15,23,42,.05);
+  }
+
+  .announcement-phone-chip {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: #eef3ff;
+    color: #3155b2;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+
+  .announcement-phone-card h3 {
+    margin: 0 0 10px;
+    font-size: 25px;
+    line-height: 1.18;
+    color: #15223d;
+  }
+
+  .announcement-phone-card p {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #4b5975;
+  }
+
+  .announcement-phone-image img {
+    width: 100%;
+    display: block;
+    border-radius: 16px;
+    max-height: 220px;
+    object-fit: cover;
+    margin-bottom: 14px;
+  }
+
+  .announcement-phone-link,
+  .announcement-phone-file {
+    border: 1px solid #e4eaf6;
+    border-radius: 16px;
+    padding: 13px 14px;
+    margin-bottom: 14px;
+    background: #f9fbff;
+  }
+
+  .announcement-phone-link-main,
+  .announcement-phone-file-main {
+    font-size: 15px;
+    font-weight: 800;
+    color: #17233d;
+    margin-bottom: 4px;
+  }
+
+  .announcement-phone-link-sub,
+  .announcement-phone-file-sub {
+    font-size: 13px;
+    color: #62708c;
+    word-break: break-word;
+  }
+
   .announcement-modal-foot {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding-top: 4px;
+    padding-top: 10px;
   }
 
   .btn-danger-soft {
@@ -1205,7 +1517,8 @@
 
   @media (max-width: 1200px) {
     .announcements-layout,
-    .announcement-compose-grid {
+    .announcement-compose-grid,
+    .announcement-step-two-grid {
       grid-template-columns: 1fr;
     }
 
@@ -1248,13 +1561,31 @@
     .announcement-modal-title {
       font-size: 26px;
     }
+
+    .announcement-step-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .announcement-step-line {
+      display: none;
+    }
+
+    .announcement-modal-foot {
+      flex-wrap: wrap;
+    }
+
+    .announcement-modal-foot .btn {
+      flex: 1 1 calc(50% - 8px);
+    }
   }
 </style>
 
 <script>
 (function () {
-  if (window.__hosAnnouncementSystemInitializedV2) return;
-  window.__hosAnnouncementSystemInitializedV2 = true;
+  if (window.__hosAnnouncementSystemInitializedV3) return;
+  window.__hosAnnouncementSystemInitializedV3 = true;
 
   const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
@@ -1281,7 +1612,11 @@
     uploadedFileUrl: "",
     uploadedFileName: "",
     uploadingImage: false,
-    uploadingFile: false
+    uploadingFile: false,
+
+    composeStep: 1,
+    studentNoticeTitle: "",
+    studentNoticeBody: ""
   };
 
   function $(id) {
@@ -1303,6 +1638,10 @@
 
   function createClientSafe() {
     try {
+      if (window.sb && typeof window.sb.functions?.invoke === "function") {
+        return window.sb;
+      }
+
       if (window.supabase && typeof window.supabase.createClient === "function") {
         return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
@@ -1378,12 +1717,15 @@
       previewMatchedCount: $("announcementPreviewMatchedCount"),
       previewAuthor: $("announcementPreviewAuthor"),
       previewTime: $("announcementPreviewTime"),
+
       modal: $("announcementComposerModal"),
       composeTitle: $("announcementComposerTitle"),
+
       titleInput: $("announcementTitleInput"),
       bodyInput: $("announcementBodyInput"),
       linkLabelInput: $("announcementLinkLabelInput"),
       linkUrlInput: $("announcementLinkUrlInput"),
+
       imageFileInput: $("announcementImageFileInput"),
       fileAttachmentInput: $("announcementFileAttachmentInput"),
       imageUploadStatus: $("announcementImageUploadStatus"),
@@ -1394,6 +1736,7 @@
       fileChipName: $("announcementFileChipName"),
       removeImageBtn: $("announcementRemoveImageBtn"),
       removeFileBtn: $("announcementRemoveFileBtn"),
+
       programmeFilterBox: $("announcementProgrammeFilterBox"),
       programmeSelect: $("announcementProgrammeSelect"),
       levelSelect: $("announcementLevelSelect"),
@@ -1401,6 +1744,7 @@
       matchedCount: $("announcementMatchedCount"),
       audienceText: $("announcementAudienceText"),
       audienceTextMini: $("announcementAudienceTextMini"),
+
       composePreviewTitle: $("announcementComposePreviewTitle"),
       composePreviewBody: $("announcementComposePreviewBody"),
       composePreviewImageWrap: $("announcementComposePreviewImageWrap"),
@@ -1412,8 +1756,34 @@
       composePreviewFileUrl: $("announcementComposePreviewFileUrl"),
       composePreviewMatched: $("announcementComposePreviewMatched"),
       composePreviewStatus: $("announcementComposePreviewStatus"),
+
       scheduleWrap: $("announcementScheduleWrap"),
-      scheduleInput: $("announcementScheduleInput")
+      scheduleInput: $("announcementScheduleInput"),
+
+      // new step ui ids you will add in html
+      stepOneWrap: $("announcementStepOne"),
+      stepTwoWrap: $("announcementStepTwo"),
+      stepBadgeOne: $("announcementStepBadgeOne"),
+      stepBadgeTwo: $("announcementStepBadgeTwo"),
+      backBtn: $("announcementBackBtn"),
+      nextBtn: $("announcementNextBtn"),
+      publishBtn: $("announcementPublishBtn"),
+      saveDraftBtn: $("announcementSaveDraftBtn"),
+
+      studentTitleInput: $("announcementStudentTitleInput"),
+      studentBodyInput: $("announcementStudentBodyInput"),
+      studentPhoneTitle: $("announcementStudentPhoneTitle"),
+      studentPhoneBody: $("announcementStudentPhoneBody"),
+      studentPhoneAudience: $("announcementStudentPhoneAudience"),
+      studentPhoneImageWrap: $("announcementStudentPhoneImageWrap"),
+      studentPhoneImage: $("announcementStudentPhoneImage"),
+      studentPhoneLinkWrap: $("announcementStudentPhoneLinkWrap"),
+      studentPhoneLinkLabel: $("announcementStudentPhoneLinkLabel"),
+      studentPhoneLinkUrl: $("announcementStudentPhoneLinkUrl"),
+      studentPhoneFileWrap: $("announcementStudentPhoneFileWrap"),
+      studentPhoneFileUrl: $("announcementStudentPhoneFileUrl"),
+      studentMatchedCount: $("announcementStudentMatchedCount"),
+      studentAudienceLine: $("announcementStudentAudienceLine")
     };
   }
 
@@ -1530,15 +1900,17 @@
     const els = announcementEls();
 
     if (announcementState.uploadedImageUrl) {
-      els.imageUploadStatus.textContent = "Image uploaded";
-      els.imageUploadPreview.classList.remove("hidden");
-      els.imageUploadPreviewImg.src = announcementState.uploadedImageUrl;
+      if (els.imageUploadStatus) els.imageUploadStatus.textContent = "Image uploaded";
+      els.imageUploadPreview?.classList.remove("hidden");
+      if (els.imageUploadPreviewImg) els.imageUploadPreviewImg.src = announcementState.uploadedImageUrl;
     } else {
-      els.imageUploadStatus.textContent = announcementState.uploadingImage
-        ? "Uploading image..."
-        : "No image selected";
-      els.imageUploadPreview.classList.add("hidden");
-      els.imageUploadPreviewImg.removeAttribute("src");
+      if (els.imageUploadStatus) {
+        els.imageUploadStatus.textContent = announcementState.uploadingImage
+          ? "Uploading image..."
+          : "No image selected";
+      }
+      els.imageUploadPreview?.classList.add("hidden");
+      els.imageUploadPreviewImg?.removeAttribute("src");
       if (els.imageFileInput) els.imageFileInput.value = "";
     }
   }
@@ -1547,15 +1919,17 @@
     const els = announcementEls();
 
     if (announcementState.uploadedFileUrl) {
-      els.fileUploadStatus.textContent = "File uploaded";
-      els.fileChip.classList.remove("hidden");
-      els.fileChipName.textContent = announcementState.uploadedFileName || "Attached file";
+      if (els.fileUploadStatus) els.fileUploadStatus.textContent = "File uploaded";
+      els.fileChip?.classList.remove("hidden");
+      if (els.fileChipName) els.fileChipName.textContent = announcementState.uploadedFileName || "Attached file";
     } else {
-      els.fileUploadStatus.textContent = announcementState.uploadingFile
-        ? "Uploading file..."
-        : "No file selected";
-      els.fileChip.classList.add("hidden");
-      els.fileChipName.textContent = "";
+      if (els.fileUploadStatus) {
+        els.fileUploadStatus.textContent = announcementState.uploadingFile
+          ? "Uploading file..."
+          : "No file selected";
+      }
+      els.fileChip?.classList.add("hidden");
+      if (els.fileChipName) els.fileChipName.textContent = "";
       if (els.fileAttachmentInput) els.fileAttachmentInput.value = "";
     }
   }
@@ -1664,7 +2038,7 @@
       if (els.previewImage) els.previewImage.src = item.image_url;
     } else {
       els.previewImageWrap?.classList.add("hidden");
-      if (els.previewImage) els.previewImage.removeAttribute("src");
+      els.previewImage?.removeAttribute("src");
     }
 
     if (item.link_url) {
@@ -1741,56 +2115,62 @@
     renderFileUploadState();
   }
 
-  function openAnnouncementComposer(mode = "create", item = null) {
-    const els = announcementEls();
-
-    announcementState.composeMode = mode;
-    announcementState.editingId = item?.id || null;
-    announcementState.audienceMode = item?.audience_mode || "all_students";
-    announcementState.programmeTargets = Array.isArray(item?.programme_targets) ? [...item.programme_targets] : [];
-    announcementState.deliveryMode = item?.status === "scheduled"
-      ? "scheduled"
-      : item?.status === "draft"
-      ? "draft"
-      : "published";
-
-    announcementState.uploadedImageUrl = item?.image_url || "";
-    announcementState.uploadedFileUrl = item?.file_url || "";
-    announcementState.uploadedFileName = item?.file_url ? item.file_url.split("/").pop() : "";
-
-    if (els.composeTitle) {
-      els.composeTitle.textContent = mode === "edit" ? "Edit Announcement" : "New Announcement";
-    }
-
-    if (els.titleInput) els.titleInput.value = item?.title || "";
-    if (els.bodyInput) els.bodyInput.value = item?.body || "";
-    if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
-    if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
-    if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
-
-    document.querySelectorAll(".audience-mode-card").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.mode === announcementState.audienceMode);
-    });
-
-    document.querySelectorAll(".delivery-option").forEach((label) => {
-      const input = label.querySelector("input");
-      const active = input && input.value === announcementState.deliveryMode;
-      label.classList.toggle("active", active);
-      if (input) input.checked = active;
-    });
-
-    renderImageUploadState();
-    renderFileUploadState();
-    refreshAnnouncementAudienceModeUI();
-    renderAnnouncementTargetList();
-    refreshAnnouncementPreviewCard();
-    refreshAnnouncementMatchedPreview();
-
-    els.modal?.classList.remove("hidden");
+  function resetAnnouncementComposeState() {
+    announcementState.composeStep = 1;
+    announcementState.studentNoticeTitle = "";
+    announcementState.studentNoticeBody = "";
+    announcementState.audienceMode = "all_students";
+    announcementState.programmeTargets = [];
+    announcementState.deliveryMode = "published";
+    announcementState.matchedStudents = [];
   }
 
-  function closeAnnouncementComposer() {
-    announcementEls().modal?.classList.add("hidden");
+  function syncStudentNoticeDefaults() {
+    const els = announcementEls();
+    const mainTitle = els.titleInput?.value?.trim() || "";
+    const mainBody = els.bodyInput?.value?.trim() || "";
+
+    if (!announcementState.studentNoticeTitle.trim()) {
+      announcementState.studentNoticeTitle = mainTitle;
+    }
+    if (!announcementState.studentNoticeBody.trim()) {
+      announcementState.studentNoticeBody = mainBody;
+    }
+
+    if (els.studentTitleInput && document.activeElement !== els.studentTitleInput) {
+      els.studentTitleInput.value = announcementState.studentNoticeTitle;
+    }
+    if (els.studentBodyInput && document.activeElement !== els.studentBodyInput) {
+      els.studentBodyInput.value = announcementState.studentNoticeBody;
+    }
+  }
+
+  function renderAnnouncementStepUI() {
+    const els = announcementEls();
+    const step = announcementState.composeStep;
+
+    els.stepOneWrap?.classList.toggle("hidden", step !== 1);
+    els.stepTwoWrap?.classList.toggle("hidden", step !== 2);
+
+    els.stepBadgeOne?.classList.toggle("active", step === 1);
+    els.stepBadgeTwo?.classList.toggle("active", step === 2);
+
+    els.backBtn?.classList.toggle("hidden", step === 1);
+    els.nextBtn?.classList.toggle("hidden", step !== 1);
+    els.publishBtn?.classList.toggle("hidden", step !== 2);
+
+    if (els.saveDraftBtn) {
+      els.saveDraftBtn.textContent = "Save Draft";
+    }
+
+    if (els.nextBtn) {
+      els.nextBtn.textContent = "Next";
+    }
+
+    if (els.publishBtn) {
+      els.publishBtn.textContent =
+        announcementState.deliveryMode === "scheduled" ? "Schedule Announcement" : "Send Announcement";
+    }
   }
 
   function refreshAnnouncementAudienceModeUI() {
@@ -1828,6 +2208,58 @@
 
       els.targetList.appendChild(chip);
     });
+  }
+
+  function refreshStudentPhonePreview() {
+    const els = announcementEls();
+
+    syncStudentNoticeDefaults();
+
+    const title = announcementState.studentNoticeTitle.trim() || "Announcement title";
+    const body = announcementState.studentNoticeBody.trim() || "This is how the announcement will look on the student's phone.";
+    const audienceText = announcementState.audienceMode === "programme_filter"
+      ? buildAnnouncementAudienceText({ audience_mode: "programme_filter", programme_targets: announcementState.programmeTargets })
+      : "All students";
+
+    const count = Array.isArray(announcementState.matchedStudents)
+      ? announcementState.matchedStudents.length
+      : 0;
+
+    if (els.studentPhoneTitle) els.studentPhoneTitle.textContent = title;
+    if (els.studentPhoneBody) els.studentPhoneBody.textContent = body;
+    if (els.studentPhoneAudience) els.studentPhoneAudience.textContent = audienceText;
+    if (els.studentAudienceLine) els.studentAudienceLine.textContent = audienceText;
+    if (els.studentMatchedCount) els.studentMatchedCount.textContent = `${count} student${count === 1 ? "" : "s"}`;
+
+    const linkLabel = els.linkLabelInput?.value?.trim() || "Open link";
+    const linkUrl = els.linkUrlInput?.value?.trim();
+    const imageUrl = announcementState.uploadedImageUrl;
+    const fileUrl = announcementState.uploadedFileUrl;
+
+    if (imageUrl) {
+      els.studentPhoneImageWrap?.classList.remove("hidden");
+      if (els.studentPhoneImage) els.studentPhoneImage.src = imageUrl;
+    } else {
+      els.studentPhoneImageWrap?.classList.add("hidden");
+      els.studentPhoneImage?.removeAttribute("src");
+    }
+
+    if (linkUrl) {
+      els.studentPhoneLinkWrap?.classList.remove("hidden");
+      if (els.studentPhoneLinkLabel) els.studentPhoneLinkLabel.textContent = linkLabel;
+      if (els.studentPhoneLinkUrl) els.studentPhoneLinkUrl.textContent = linkUrl;
+    } else {
+      els.studentPhoneLinkWrap?.classList.add("hidden");
+    }
+
+    if (fileUrl) {
+      els.studentPhoneFileWrap?.classList.remove("hidden");
+      if (els.studentPhoneFileUrl) {
+        els.studentPhoneFileUrl.textContent = announcementState.uploadedFileName || fileUrl;
+      }
+    } else {
+      els.studentPhoneFileWrap?.classList.add("hidden");
+    }
   }
 
   function refreshAnnouncementPreviewCard() {
@@ -1871,7 +2303,7 @@
       if (els.composePreviewImage) els.composePreviewImage.src = imageUrl;
     } else {
       els.composePreviewImageWrap?.classList.add("hidden");
-      if (els.composePreviewImage) els.composePreviewImage.removeAttribute("src");
+      els.composePreviewImage?.removeAttribute("src");
     }
 
     if (linkUrl) {
@@ -1890,6 +2322,10 @@
     }
 
     els.scheduleWrap?.classList.toggle("hidden", announcementState.deliveryMode !== "scheduled");
+
+    syncStudentNoticeDefaults();
+    refreshStudentPhonePreview();
+    renderAnnouncementStepUI();
   }
 
   async function refreshAnnouncementMatchedPreview() {
@@ -1916,13 +2352,52 @@
     }
   }
 
+  function validateAnnouncementStepOne() {
+    const els = announcementEls();
+
+    const title = els.titleInput?.value?.trim() || "";
+    const body = els.bodyInput?.value?.trim() || "";
+
+    if (!title) {
+      alert("Enter announcement title.");
+      return false;
+    }
+
+    if (!body) {
+      alert("Enter announcement message.");
+      return false;
+    }
+
+    if (announcementState.audienceMode === "programme_filter" && !announcementState.programmeTargets.length) {
+      alert("Add at least one programme and level target.");
+      return false;
+    }
+
+    if (announcementState.deliveryMode === "scheduled" && !(els.scheduleInput?.value || "")) {
+      alert("Choose a schedule date and time.");
+      return false;
+    }
+
+    return true;
+  }
+
+  function goToAnnouncementStep(step) {
+    if (step === 2) {
+      if (!validateAnnouncementStepOne()) return;
+      syncStudentNoticeDefaults();
+    }
+
+    announcementState.composeStep = step;
+    refreshAnnouncementPreviewCard();
+  }
+
   function collectAnnouncementPayload(statusOverride = null) {
     const els = announcementEls();
     const status = statusOverride || announcementState.deliveryMode;
 
     return {
-      title: els.titleInput?.value?.trim() || "",
-      body: els.bodyInput?.value?.trim() || "",
+      title: announcementState.studentNoticeTitle?.trim() || els.titleInput?.value?.trim() || "",
+      body: announcementState.studentNoticeBody?.trim() || els.bodyInput?.value?.trim() || "",
       link_label: els.linkLabelInput?.value?.trim() || "",
       link_url: els.linkUrlInput?.value?.trim() || "",
       image_url: announcementState.uploadedImageUrl || "",
@@ -1938,12 +2413,12 @@
     const payload = collectAnnouncementPayload(statusOverride);
 
     if (!payload.title) {
-      alert("Enter announcement title.");
+      alert("Enter the student-facing announcement title.");
       return;
     }
 
     if (!payload.body) {
-      alert("Enter announcement message.");
+      alert("Enter the student-facing announcement description.");
       return;
     }
 
@@ -2047,8 +2522,67 @@
     });
   }
 
+  function openAnnouncementComposer(mode = "create", item = null) {
+    const els = announcementEls();
+
+    announcementState.composeMode = mode;
+    announcementState.editingId = item?.id || null;
+    announcementState.composeStep = 1;
+    announcementState.audienceMode = item?.audience_mode || "all_students";
+    announcementState.programmeTargets = Array.isArray(item?.programme_targets) ? [...item.programme_targets] : [];
+    announcementState.deliveryMode = item?.status === "scheduled"
+      ? "scheduled"
+      : item?.status === "draft"
+      ? "draft"
+      : "published";
+
+    announcementState.uploadedImageUrl = item?.image_url || "";
+    announcementState.uploadedFileUrl = item?.file_url || "";
+    announcementState.uploadedFileName = item?.file_url ? item.file_url.split("/").pop() : "";
+    announcementState.studentNoticeTitle = item?.title || "";
+    announcementState.studentNoticeBody = item?.body || "";
+
+    if (els.composeTitle) {
+      els.composeTitle.textContent = mode === "edit" ? "Edit Announcement" : "New Announcement";
+    }
+
+    if (els.titleInput) els.titleInput.value = item?.title || "";
+    if (els.bodyInput) els.bodyInput.value = item?.body || "";
+    if (els.linkLabelInput) els.linkLabelInput.value = item?.link_label || "";
+    if (els.linkUrlInput) els.linkUrlInput.value = item?.link_url || "";
+    if (els.scheduleInput) els.scheduleInput.value = item?.scheduled_at ? toDateTimeLocal(item.scheduled_at) : "";
+    if (els.studentTitleInput) els.studentTitleInput.value = announcementState.studentNoticeTitle || "";
+    if (els.studentBodyInput) els.studentBodyInput.value = announcementState.studentNoticeBody || "";
+
+    document.querySelectorAll(".audience-mode-card").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === announcementState.audienceMode);
+    });
+
+    document.querySelectorAll(".delivery-option").forEach((label) => {
+      const input = label.querySelector("input");
+      const active = input && input.value === announcementState.deliveryMode;
+      label.classList.toggle("active", active);
+      if (input) input.checked = active;
+    });
+
+    renderImageUploadState();
+    renderFileUploadState();
+    refreshAnnouncementAudienceModeUI();
+    renderAnnouncementTargetList();
+    refreshAnnouncementPreviewCard();
+    refreshAnnouncementMatchedPreview();
+    renderAnnouncementStepUI();
+
+    els.modal?.classList.remove("hidden");
+  }
+
+  function closeAnnouncementComposer() {
+    announcementEls().modal?.classList.add("hidden");
+  }
+
   function bindAnnouncementEvents() {
     $("announcementNewBtn")?.addEventListener("click", () => {
+      resetAnnouncementComposeState();
       resetAnnouncementUploads();
       openAnnouncementComposer("create");
     });
@@ -2056,6 +2590,14 @@
     $("announcementComposerCloseBtn")?.addEventListener("click", closeAnnouncementComposer);
     $("announcementComposerBackdrop")?.addEventListener("click", closeAnnouncementComposer);
     $("announcementCancelBtn")?.addEventListener("click", closeAnnouncementComposer);
+
+    $("announcementBackBtn")?.addEventListener("click", () => {
+      goToAnnouncementStep(1);
+    });
+
+    $("announcementNextBtn")?.addEventListener("click", () => {
+      goToAnnouncementStep(2);
+    });
 
     $("announcementSaveDraftBtn")?.addEventListener("click", () => {
       announcementState.deliveryMode = "draft";
@@ -2139,7 +2681,25 @@
       "announcementLinkUrlInput",
       "announcementScheduleInput"
     ].forEach((id) => {
-      $(id)?.addEventListener("input", refreshAnnouncementPreviewCard);
+      $(id)?.addEventListener("input", () => {
+        if (id === "announcementTitleInput" && !$("announcementStudentTitleInput")?.matches(":focus")) {
+          announcementState.studentNoticeTitle = $("announcementTitleInput")?.value?.trim() || "";
+        }
+        if (id === "announcementBodyInput" && !$("announcementStudentBodyInput")?.matches(":focus")) {
+          announcementState.studentNoticeBody = $("announcementBodyInput")?.value?.trim() || "";
+        }
+        refreshAnnouncementPreviewCard();
+      });
+    });
+
+    $("announcementStudentTitleInput")?.addEventListener("input", (e) => {
+      announcementState.studentNoticeTitle = e.target.value || "";
+      refreshStudentPhonePreview();
+    });
+
+    $("announcementStudentBodyInput")?.addEventListener("input", (e) => {
+      announcementState.studentNoticeBody = e.target.value || "";
+      refreshStudentPhonePreview();
     });
 
     $("announcementImageFileInput")?.addEventListener("change", async (e) => {
@@ -2236,6 +2796,7 @@
     bindAnnouncementEvents();
     renderImageUploadState();
     renderFileUploadState();
+    renderAnnouncementStepUI();
     await loadProgrammes();
     await loadAnnouncements("all");
   }
