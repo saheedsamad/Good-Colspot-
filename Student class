@@ -2,221 +2,208 @@
 <div id="screen-reports" class="screen">
   <style>
     #screen-reports{
-      --reports-blue:#2563eb;
-      --reports-blue-dark:#1d4ed8;
-      --reports-blue-soft:#eff6ff;
-      --reports-purple:#7c3aed;
-      --reports-purple-soft:#f5f3ff;
-      --reports-green:#16a34a;
-      --reports-green-soft:#ecfdf5;
-      --reports-amber:#d97706;
-      --reports-amber-soft:#fffbeb;
-      --reports-red:#dc2626;
-      --reports-red-soft:#fef2f2;
-      --reports-text:#0f172a;
-      --reports-muted:#64748b;
-      --reports-line:#e5e7eb;
-      --reports-line-2:#dbeafe;
-      --reports-card:#ffffff;
-      --reports-bg:#f8fbff;
-      --reports-shadow:0 10px 30px rgba(15,23,42,.06);
-      --reports-shadow-strong:0 18px 44px rgba(15,23,42,.08);
+      --uh-bg:#f6f7fb;
+      --uh-card:#ffffff;
+      --uh-card-2:#fbfcff;
+      --uh-line:#e8ebf3;
+      --uh-line-soft:#f1f3f8;
+      --uh-text:#15213c;
+      --uh-muted:#7a8195;
+      --uh-blue:#2f5fdb;
+      --uh-blue-2:#3d6cf0;
+      --uh-blue-soft:#edf3ff;
+      --uh-blue-soft-2:#f4f7ff;
+      --uh-red:#b74254;
+      --uh-red-soft:#fff1f4;
+      --uh-green:#1c9a63;
+      --uh-green-soft:#ecfbf4;
+      --uh-shadow:0 8px 26px rgba(19,33,61,.06);
+      --uh-shadow-2:0 14px 34px rgba(19,33,61,.08);
+      --uh-radius-xxl:32px;
+      --uh-radius-xl:26px;
+      --uh-radius-lg:22px;
+      --uh-radius-md:18px;
+      --uh-radius-sm:14px;
+      --uh-pill:999px;
 
-      padding:8px 6px 100px;
+      min-height:100%;
+      background:var(--uh-bg);
+      padding:0 0 110px;
       overflow-y:auto;
       -webkit-overflow-scrolling:touch;
-      background:
-        radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 28%),
-        linear-gradient(180deg,#f8fbff 0%, #f6f9ff 38%, #f8fbff 100%);
+      box-sizing:border-box;
     }
 
     #screen-reports *{
       box-sizing:border-box;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     #screen-reports .hidden{
       display:none !important;
     }
 
-    #screen-reports .reports-shell{
+    #screen-reports .reports-shell,
+    #screen-reports #studentActivityIntroView,
+    #screen-reports #studentActivityQuestionView,
+    #screen-reports #studentActivityReviewView,
+    #screen-reports #studentActivitySubmittedView,
+    #screen-reports #studentFormDetailsView,
+    #screen-reports #studentFormQuestionView,
+    #screen-reports #studentFormReviewView,
+    #screen-reports #studentFormSubmittedView{
+      min-height:100%;
+      background:var(--uh-bg);
+    }
+
+    /* HOME HEADER */
+    #screen-reports .uh-page{
+      min-height:100%;
+      background:var(--uh-bg);
+    }
+
+    #screen-reports .uh-header{
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(246,247,251,.96);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--uh-line);
+      padding:16px 16px 14px;
+    }
+
+    #screen-reports .uh-header-row{
+      position:relative;
       display:flex;
-      flex-direction:column;
-      gap:12px;
+      align-items:center;
+      justify-content:center;
+      min-height:46px;
     }
 
-    #screen-reports .hero{
-      padding:4px 4px 2px;
-      margin-bottom:2px;
+    #screen-reports .uh-back-btn{
+      position:absolute;
+      left:0;
+      top:50%;
+      transform:translateY(-50%);
+      width:42px;
+      height:42px;
+      border:none;
+      background:transparent;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      color:var(--uh-blue);
     }
 
-    #screen-reports .hero-line-1{
-      font-size:12px;
-      font-weight:600;
-      color:var(--reports-muted);
-      margin-bottom:4px;
-      letter-spacing:.02em;
-      text-transform:uppercase;
+    #screen-reports .uh-back-btn svg{
+      width:24px;
+      height:24px;
+      stroke:currentColor;
+      stroke-width:2.2;
+      fill:none;
     }
 
-    #screen-reports .hero-title{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-0.04em;
-      line-height:1.15;
-      color:var(--reports-text);
+    #screen-reports .uh-page-title{
       margin:0;
-    }
-
-    #screen-reports .hero-title span{
-      color:var(--reports-blue);
-      font-weight:800;
-    }
-
-    #screen-reports .hero-sub{
-      font-size:12px;
-      color:var(--reports-muted);
-      margin:7px 0 0;
-      line-height:1.5;
-    }
-
-    #screen-reports .reports-top-card{
-      border-radius:22px;
-      background:linear-gradient(135deg,#eff6ff,#ffffff);
-      border:1px solid var(--reports-line-2);
-      padding:14px 14px 12px;
-      box-shadow:var(--reports-shadow);
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin:2px 2px 2px;
-    }
-
-    #screen-reports .reports-top-head{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:flex-start;
-    }
-
-    #screen-reports .reports-top-title{
-      font-size:15px;
-      font-weight:800;
-      color:var(--reports-text);
-      margin-bottom:4px;
-    }
-
-    #screen-reports .reports-top-sub{
-      font-size:12px;
-      color:var(--reports-muted);
-      line-height:1.45;
-    }
-
-    #screen-reports .reports-pending-badge{
-      min-width:54px;
-      border-radius:999px;
-      padding:8px 10px;
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
-      color:#fff;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
-      box-shadow:0 12px 30px rgba(37,99,235,.20);
-      white-space:nowrap;
-    }
-
-    #screen-reports .reports-stats{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:10px;
-    }
-
-    #screen-reports .reports-stat{
-      min-height:78px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid #e7eef8;
-      padding:12px;
-      box-shadow:0 8px 24px rgba(15,23,42,.04);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      gap:8px;
-    }
-
-    #screen-reports .reports-stat-label{
-      font-size:11px;
-      font-weight:700;
-      color:var(--reports-muted);
-      text-transform:uppercase;
-      letter-spacing:.03em;
-    }
-
-    #screen-reports .reports-stat-value{
       font-size:20px;
       font-weight:900;
       letter-spacing:-.03em;
-      color:var(--reports-text);
+      color:var(--uh-text);
+      text-align:center;
     }
 
-    #screen-reports .reports-toolbar{
+    /* TOP TOOLBAR */
+    #screen-reports .uh-top-controls{
+      padding:14px 16px 10px;
+      border-bottom:1px solid var(--uh-line);
+      background:var(--uh-bg);
+    }
+
+    #screen-reports .uh-top-row{
       display:flex;
-      flex-direction:column;
+      align-items:center;
       gap:10px;
-      margin:0 2px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
     }
 
     #screen-reports .reports-tabs{
-      display:flex;
-      gap:8px;
-      overflow-x:auto;
-      padding-bottom:2px;
-      scrollbar-width:none;
-    }
-
-    #screen-reports .reports-tabs::-webkit-scrollbar{
-      display:none;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      background:#fff;
+      border:1px solid var(--uh-line);
+      border-radius:var(--uh-pill);
+      box-shadow:0 4px 14px rgba(19,33,61,.03);
     }
 
     #screen-reports .reports-tab{
       border:none;
-      background:#fff;
-      color:var(--reports-text);
-      border:1px solid var(--reports-line);
-      padding:10px 14px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:700;
-      white-space:nowrap;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      box-shadow:0 6px 18px rgba(15,23,42,.04);
-    }
-
-    #screen-reports .reports-tab.active{
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
-      color:#fff;
-      border-color:transparent;
-      box-shadow:0 14px 34px rgba(37,99,235,.22);
-    }
-
-    #screen-reports .reports-tab-count{
-      min-width:20px;
-      height:20px;
-      border-radius:999px;
+      background:transparent;
+      color:var(--uh-muted);
+      min-height:42px;
+      padding:0 18px;
+      border-radius:var(--uh-pill);
+      font-size:15px;
+      font-weight:800;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      font-size:11px;
-      font-weight:800;
-      background:rgba(15,23,42,.06);
-      color:inherit;
-      padding:0 6px;
+      gap:7px;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:.18s ease;
     }
 
-    #screen-reports .reports-tab.active .reports-tab-count{
-      background:rgba(255,255,255,.18);
+    #screen-reports .reports-tab.active{
+      background:#edf1fb;
+      color:var(--uh-text);
+      box-shadow:inset 0 0 0 1px #e3e8f4;
+    }
+
+    #screen-reports .reports-tab-count{
+      display:none;
+    }
+
+    #screen-reports .uh-filter-wrap{
+      margin-left:auto;
+      position:relative;
+    }
+
+    #screen-reports .uh-filter-btn{
+      min-height:42px;
+      border:1px solid var(--uh-line);
+      background:#fff;
+      color:var(--uh-text);
+      border-radius:var(--uh-pill);
+      padding:0 14px;
+      font-size:14px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      box-shadow:0 4px 14px rgba(19,33,61,.03);
+    }
+
+    #screen-reports .uh-filter-btn svg{
+      width:16px;
+      height:16px;
+      stroke:currentColor;
+      stroke-width:2;
+      fill:none;
+    }
+
+    #screen-reports .uh-filter-select{
+      appearance:none;
+      -webkit-appearance:none;
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
     }
 
     #screen-reports .reports-search{
@@ -225,48 +212,64 @@
 
     #screen-reports .reports-search svg{
       position:absolute;
-      left:12px;
+      left:16px;
       top:50%;
       transform:translateY(-50%);
-      width:16px;
-      height:16px;
-      color:#94a3b8;
+      width:20px;
+      height:20px;
+      color:#8b92a7;
       pointer-events:none;
     }
 
     #screen-reports .reports-search input{
       width:100%;
-      border-radius:16px;
-      border:1px solid var(--reports-line);
+      height:54px;
+      border-radius:var(--uh-pill);
+      border:1px solid var(--uh-line);
       background:#fff;
-      color:var(--reports-text);
-      font-size:13px;
-      padding:12px 12px 12px 38px;
       outline:none;
-      box-shadow:0 8px 24px rgba(15,23,42,.04);
+      padding:0 18px 0 48px;
+      font-size:16px;
+      color:var(--uh-text);
+      box-shadow:0 4px 14px rgba(19,33,61,.03);
+    }
+
+    #screen-reports .reports-search input::placeholder{
+      color:#8b92a7;
     }
 
     #screen-reports .reports-search input:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 3px rgba(37,99,235,.10);
+      border-color:#d8deef;
+      box-shadow:0 0 0 4px rgba(47,95,219,.07);
     }
 
+    /* FEED LIST */
     #screen-reports .feed-list{
+      padding:14px 16px 0;
       display:flex;
       flex-direction:column;
-      gap:12px;
-      margin-top:2px;
-      padding:0 2px;
+      gap:16px;
+    }
+
+    #screen-reports .feed-empty{
+      border-radius:24px;
+      background:#fff;
+      border:1px solid var(--uh-line);
+      padding:28px 18px;
+      text-align:center;
+      color:var(--uh-muted);
+      font-size:14px;
+      box-shadow:var(--uh-shadow);
     }
 
     #screen-reports .feed-card{
-      border-radius:22px;
-      background:var(--reports-card);
-      border:1px solid var(--reports-line);
-      padding:13px;
-      box-shadow:var(--reports-shadow);
+      background:var(--uh-card);
+      border:1px solid var(--uh-line);
+      border-radius:32px;
+      overflow:hidden;
+      box-shadow:var(--uh-shadow);
       cursor:pointer;
-      transition:transform .05s ease, box-shadow .15s ease;
+      transition:transform .08s ease, box-shadow .18s ease;
     }
 
     #screen-reports .feed-card:active{
@@ -275,10 +278,10 @@
 
     #screen-reports .feed-card-top{
       display:flex;
-      gap:12px;
       justify-content:space-between;
       align-items:flex-start;
-      margin-bottom:10px;
+      gap:14px;
+      padding:18px 18px 14px;
     }
 
     #screen-reports .feed-card-head{
@@ -287,238 +290,286 @@
     }
 
     #screen-reports .feed-source{
-      font-size:11px;
-      font-weight:800;
-      color:var(--reports-muted);
-      text-transform:uppercase;
-      letter-spacing:.04em;
+      font-size:13px;
+      font-weight:900;
+      color:#7d8599;
+      letter-spacing:.01em;
       margin-bottom:4px;
+      text-transform:uppercase;
     }
 
     #screen-reports .feed-title{
-      font-size:15px;
-      font-weight:800;
-      line-height:1.35;
-      color:var(--reports-text);
-      margin:0 0 4px;
+      font-size:18px;
+      line-height:1.15;
+      font-weight:900;
+      color:var(--uh-text);
+      margin:0 0 6px;
       word-break:break-word;
     }
 
     #screen-reports .feed-subtitle{
-      font-size:12px;
-      color:var(--reports-muted);
+      font-size:13px;
       line-height:1.45;
+      color:var(--uh-muted);
       margin:0;
       word-break:break-word;
     }
 
     #screen-reports .feed-kind-badge{
+      flex-shrink:0;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      border-radius:999px;
-      padding:5px 10px;
-      font-size:11px;
-      font-weight:800;
-      white-space:nowrap;
+      min-height:40px;
+      padding:0 16px;
+      border-radius:var(--uh-pill);
+      font-size:13px;
+      font-weight:900;
       border:1px solid transparent;
+      white-space:nowrap;
     }
 
-    #screen-reports .feed-kind-badge.revision{
-      background:var(--reports-blue-soft);
-      color:var(--reports-blue-dark);
-    }
-
-    #screen-reports .feed-kind-badge.assignment{
-      background:var(--reports-purple-soft);
-      color:#6d28d9;
-    }
-
-    #screen-reports .feed-kind-badge.test{
-      background:var(--reports-amber-soft);
-      color:#b45309;
-    }
-
-    #screen-reports .feed-kind-badge.form{
-      background:#eef2ff;
-      color:#4338ca;
-    }
-
-    #screen-reports .feed-kind-badge.closed{
-      background:var(--reports-red-soft);
-      color:var(--reports-red);
-    }
-
+    #screen-reports .feed-kind-badge.revision,
+    #screen-reports .feed-kind-badge.assignment,
+    #screen-reports .feed-kind-badge.test,
+    #screen-reports .feed-kind-badge.form,
     #screen-reports .feed-kind-badge.submitted{
-      background:#f1f5f9;
-      color:#475569;
+      color:var(--uh-blue);
+      background:var(--uh-blue-soft-2);
+      border-color:#e4ebff;
+    }
+
+    #screen-reports .feed-kind-badge.closed,
+    #screen-reports .feed-kind-badge.expired{
+      color:var(--uh-red);
+      background:var(--uh-red-soft);
+      border-color:#f6dbe2;
     }
 
     #screen-reports .feed-meta{
       display:flex;
       flex-wrap:wrap;
-      gap:8px;
-      margin-bottom:12px;
+      gap:10px;
+      padding:0 18px 16px;
     }
 
     #screen-reports .feed-pill{
+      min-height:36px;
       display:inline-flex;
       align-items:center;
-      gap:6px;
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:11px;
-      font-weight:700;
-      background:#f8fafc;
-      border:1px solid #e5e7eb;
-      color:var(--reports-muted);
-      min-height:30px;
+      justify-content:center;
+      padding:0 14px;
+      border-radius:var(--uh-pill);
+      font-size:13px;
+      font-weight:800;
+      color:#61687d;
+      background:#f7f8fc;
+      border:1px solid #e7eaf2;
+      white-space:nowrap;
+    }
+
+    #screen-reports .feed-pill:first-child{
+      color:var(--uh-blue);
+      background:var(--uh-blue-soft);
+      border-color:#d9e5ff;
     }
 
     #screen-reports .feed-status-row{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:10px;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 18px;
+      border-top:1px solid var(--uh-line-soft);
+      background:#fff;
     }
 
     #screen-reports .feed-status{
-      font-size:12px;
-      font-weight:800;
-    }
-
-    #screen-reports .feed-status.not-started{
-      color:var(--reports-green);
-    }
-
-    #screen-reports .feed-status.in-progress{
-      color:var(--reports-blue-dark);
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:-.01em;
     }
 
     #screen-reports .feed-status.submitted{
-      color:#475569;
+      color:var(--uh-text);
+    }
+
+    #screen-reports .feed-status.not-started,
+    #screen-reports .feed-status.in-progress{
+      color:var(--uh-blue);
     }
 
     #screen-reports .feed-status.expired,
     #screen-reports .feed-status.closed{
-      color:var(--reports-red);
+      color:var(--uh-red);
     }
 
     #screen-reports .feed-open-btn{
       border:none;
-      border-radius:999px;
-      padding:9px 14px;
-      font-size:12px;
-      font-weight:800;
-      color:#fff;
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      min-height:42px;
+      padding:0 16px;
+      border-radius:var(--uh-pill);
+      background:var(--uh-blue-soft);
+      color:var(--uh-blue);
+      font-size:13px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
       cursor:pointer;
-      box-shadow:0 12px 28px rgba(37,99,235,.20);
+      white-space:nowrap;
+    }
+
+    #screen-reports .feed-open-btn::before{
+      content:"";
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      background:currentColor;
+      opacity:.14;
+      flex-shrink:0;
+      display:inline-block;
     }
 
     #screen-reports .feed-open-btn.disabled{
-      background:#cbd5e1;
-      box-shadow:none;
+      background:var(--uh-red-soft);
+      color:var(--uh-red);
       cursor:default;
-      color:#fff;
     }
 
-    #screen-reports .feed-empty{
-      border-radius:22px;
-      background:#fff;
-      border:1px solid var(--reports-line);
-      padding:18px 16px;
-      font-size:12px;
-      color:var(--reports-muted);
-      text-align:center;
-      box-shadow:var(--reports-shadow);
-      line-height:1.55;
+    /* DETAIL / QUESTION / REVIEW / SUBMITTED VIEWS */
+    #screen-reports .view-shell{
+      min-height:100%;
+      background:var(--uh-bg);
     }
 
-    #screen-reports .panel-card{
-      border-radius:22px;
-      background:#fff;
-      border:1px solid var(--reports-line);
-      padding:14px;
-      box-shadow:var(--reports-shadow);
-      margin:8px 2px 14px;
+    #screen-reports .panel-topbar{
+      position:sticky;
+      top:0;
+      z-index:25;
+      background:rgba(246,247,251,.96);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--uh-line);
+      padding:16px;
     }
 
     #screen-reports .panel-back-btn{
-      width:100%;
-      margin:0 2px 10px;
-      border-radius:999px;
-      border:1px solid var(--reports-line);
-      background:#fff;
-      color:var(--reports-text);
-      padding:11px 12px;
-      font-size:13px;
-      font-weight:700;
+      width:auto;
+      border:none;
+      background:transparent;
+      color:var(--uh-blue);
+      padding:0;
+      font-size:15px;
+      font-weight:900;
       cursor:pointer;
-      box-shadow:0 8px 24px rgba(15,23,42,.04);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    #screen-reports .panel-back-btn::before{
+      content:"";
+      width:9px;
+      height:9px;
+      border-left:2px solid currentColor;
+      border-bottom:2px solid currentColor;
+      transform:rotate(45deg);
+      display:inline-block;
+      margin-top:-1px;
+    }
+
+    #screen-reports .panel-wrap{
+      padding:16px;
+    }
+
+    #screen-reports .panel-card{
+      border-radius:30px;
+      background:#fff;
+      border:1px solid var(--uh-line);
+      padding:20px 18px;
+      box-shadow:var(--uh-shadow);
+      margin:0;
     }
 
     #screen-reports .panel-title{
-      font-size:19px;
+      font-size:22px;
       font-weight:900;
-      color:var(--reports-text);
+      color:var(--uh-text);
       letter-spacing:-.03em;
-      margin-bottom:8px;
+      margin-bottom:6px;
+      line-height:1.15;
     }
 
     #screen-reports .panel-course{
       font-size:14px;
-      font-weight:800;
-      color:var(--reports-text);
-      margin-bottom:10px;
+      font-weight:700;
+      color:var(--uh-muted);
+      margin-bottom:18px;
+      line-height:1.45;
     }
 
     #screen-reports .panel-meta{
       display:flex;
       flex-direction:column;
-      gap:8px;
-      margin-bottom:14px;
+      gap:10px;
+      margin-bottom:16px;
     }
 
     #screen-reports .panel-meta-item{
-      font-size:13px;
-      color:var(--reports-text);
+      font-size:14px;
+      color:var(--uh-text);
       display:flex;
       justify-content:space-between;
-      gap:10px;
-      padding-bottom:8px;
-      border-bottom:1px solid #f1f5f9;
+      align-items:flex-start;
+      gap:12px;
+      padding:13px 0;
+      border-bottom:1px solid var(--uh-line-soft);
+    }
+
+    #screen-reports .panel-meta-item:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    #screen-reports .panel-meta-item span{
+      color:var(--uh-muted);
+      font-weight:700;
     }
 
     #screen-reports .panel-meta-item strong{
       text-align:right;
+      font-weight:900;
+      color:var(--uh-text);
+      line-height:1.4;
     }
 
     #screen-reports .info-box{
-      border-radius:16px;
-      padding:12px;
-      font-size:12px;
+      border-radius:18px;
+      padding:14px;
+      font-size:13px;
       line-height:1.55;
-      margin-bottom:12px;
+      margin-bottom:16px;
       border:1px solid;
+      font-weight:600;
     }
 
     #screen-reports .info-box.blue{
-      background:var(--reports-blue-soft);
-      border-color:#dbeafe;
-      color:#1e3a8a;
+      background:var(--uh-blue-soft);
+      border-color:#d8e3ff;
+      color:#2446a5;
     }
 
     #screen-reports .info-box.green{
-      background:var(--reports-green-soft);
-      border-color:#bbf7d0;
-      color:#166534;
+      background:var(--uh-green-soft);
+      border-color:#ccefdc;
+      color:#166445;
     }
 
     #screen-reports .info-box.amber{
-      background:var(--reports-amber-soft);
-      border-color:#fde68a;
-      color:#92400e;
+      background:#fff8e7;
+      border-color:#f8e2a3;
+      color:#946300;
     }
 
     #screen-reports .timer-box{
@@ -526,30 +577,30 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      border-radius:16px;
-      background:var(--reports-blue-soft);
-      border:1px solid #dbeafe;
-      color:#1e3a8a;
-      padding:10px 12px;
-      margin-bottom:12px;
+      border-radius:18px;
+      background:var(--uh-blue-soft);
+      border:1px solid #d8e3ff;
+      color:#2446a5;
+      padding:12px 14px;
+      margin-bottom:16px;
     }
 
     #screen-reports .timer-label{
-      font-size:12px;
-      font-weight:800;
-      color:#1e3a8a;
+      font-size:13px;
+      font-weight:900;
+      color:#2446a5;
     }
 
     #screen-reports .timer-value{
-      font-size:18px;
+      font-size:20px;
       font-weight:900;
-      letter-spacing:.02em;
-      color:var(--reports-blue-dark);
+      letter-spacing:.03em;
+      color:var(--uh-blue);
       font-variant-numeric:tabular-nums;
     }
 
     #screen-reports .timer-value.warning{
-      color:var(--reports-red);
+      color:var(--uh-red);
     }
 
     #screen-reports .progress-top{
@@ -558,98 +609,99 @@
       align-items:center;
       gap:10px;
       margin-bottom:8px;
-      font-size:12px;
-      color:var(--reports-text);
-      font-weight:700;
+      font-size:13px;
+      color:var(--uh-text);
+      font-weight:800;
     }
 
     #screen-reports .progress-track{
       width:100%;
-      height:6px;
+      height:8px;
       border-radius:999px;
-      background:#e5e7eb;
+      background:#e9edf5;
       overflow:hidden;
-      margin-bottom:14px;
+      margin-bottom:18px;
     }
 
     #screen-reports .progress-bar{
       height:100%;
       width:0%;
       border-radius:999px;
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      background:linear-gradient(135deg,var(--uh-blue),var(--uh-blue-2));
     }
 
     #screen-reports .question-title{
-      font-size:17px;
-      font-weight:800;
-      line-height:1.45;
-      color:var(--reports-text);
+      font-size:20px;
+      font-weight:900;
+      line-height:1.4;
+      color:var(--uh-text);
       margin-bottom:14px;
+      letter-spacing:-.02em;
     }
 
     #screen-reports .question-help{
-      margin:-6px 0 14px;
-      font-size:12px;
-      color:var(--reports-muted);
-      line-height:1.5;
+      margin:-4px 0 14px;
+      font-size:13px;
+      color:var(--uh-muted);
+      line-height:1.55;
     }
 
     #screen-reports .question-block{
       display:flex;
       flex-direction:column;
       gap:12px;
-      margin-bottom:14px;
+      margin-bottom:18px;
     }
 
     #screen-reports .choice-list{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:12px;
     }
 
     #screen-reports .choice-option{
-      border-radius:16px;
-      border:1px solid #e5e7eb;
+      border-radius:18px;
+      border:1px solid #e8ebf3;
       background:#fff;
-      padding:12px;
+      padding:14px;
       display:flex;
       align-items:flex-start;
-      gap:10px;
+      gap:12px;
       cursor:pointer;
       transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
     }
 
     #screen-reports .choice-option.active{
-      border-color:var(--reports-blue);
-      background:var(--reports-blue-soft);
-      box-shadow:0 0 0 1px rgba(37,99,235,.18);
+      border-color:#cfdcff;
+      background:var(--uh-blue-soft);
+      box-shadow:0 0 0 1px rgba(47,95,219,.12);
     }
 
     #screen-reports .choice-mark{
-      width:28px;
-      height:28px;
+      width:30px;
+      height:30px;
       border-radius:10px;
-      background:#f3f4f6;
-      color:var(--reports-text);
+      background:#f4f6fb;
+      color:var(--uh-text);
       font-size:13px;
-      font-weight:800;
+      font-weight:900;
       display:flex;
       align-items:center;
       justify-content:center;
       flex-shrink:0;
-      border:1px solid #e5e7eb;
+      border:1px solid #e5e9f2;
     }
 
     #screen-reports .choice-option.active .choice-mark{
-      background:#dbeafe;
-      color:var(--reports-blue-dark);
-      border-color:#bfdbfe;
+      background:#dfe8ff;
+      color:var(--uh-blue);
+      border-color:#cfdcff;
     }
 
     #screen-reports .choice-text{
-      font-size:14px;
-      line-height:1.5;
-      color:var(--reports-text);
+      font-size:15px;
+      line-height:1.55;
+      color:var(--uh-text);
       flex:1;
       word-break:break-word;
     }
@@ -659,11 +711,11 @@
     #screen-reports .select-shell,
     #screen-reports .date-shell,
     #screen-reports .file-shell{
-      border-radius:18px;
+      border-radius:20px;
       background:#fff;
-      border:1px solid #e5e7eb;
-      padding:12px;
-      box-shadow:0 8px 20px rgba(15,23,42,.03);
+      border:1px solid #e8ebf3;
+      padding:14px;
+      box-shadow:0 6px 18px rgba(19,33,61,.03);
     }
 
     #screen-reports .text-input,
@@ -674,20 +726,20 @@
       border:none;
       outline:none;
       background:transparent;
-      color:var(--reports-text);
-      font-size:14px;
+      color:var(--uh-text);
+      font-size:15px;
       padding:0;
       resize:none;
     }
 
     #screen-reports .text-area{
       min-height:140px;
-      line-height:1.55;
+      line-height:1.6;
     }
 
     #screen-reports .file-shell{
       border-style:dashed;
-      border-color:#bfdbfe;
+      border-color:#cbd9ff;
       background:linear-gradient(180deg,#f8fbff 0%, #ffffff 100%);
     }
 
@@ -697,54 +749,67 @@
       align-items:center;
       justify-content:center;
       text-align:center;
-      gap:8px;
+      gap:10px;
       min-height:150px;
     }
 
     #screen-reports .file-drop-icon{
-      width:52px;
-      height:52px;
-      border-radius:16px;
-      background:#dbeafe;
-      color:var(--reports-blue-dark);
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      background:#dfe8ff;
+      color:var(--uh-blue);
       display:flex;
       align-items:center;
       justify-content:center;
     }
 
     #screen-reports .file-drop-title{
-      font-size:14px;
-      font-weight:800;
-      color:var(--reports-text);
+      font-size:15px;
+      font-weight:900;
+      color:var(--uh-text);
     }
 
     #screen-reports .file-drop-sub{
-      font-size:12px;
-      color:var(--reports-muted);
-      line-height:1.5;
+      font-size:13px;
+      color:var(--uh-muted);
+      line-height:1.55;
       max-width:260px;
     }
 
-    #screen-reports .file-drop-btn{
+    #screen-reports .file-drop-btn,
+    #screen-reports .primary-btn{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      min-height:40px;
-      padding:10px 16px;
-      border-radius:999px;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:var(--uh-pill);
       border:none;
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
+      background:linear-gradient(135deg,var(--uh-blue),var(--uh-blue-2));
       color:#fff;
-      font-size:12px;
-      font-weight:800;
+      font-size:14px;
+      font-weight:900;
       cursor:pointer;
-      box-shadow:0 12px 28px rgba(37,99,235,.18);
+      box-shadow:0 14px 30px rgba(47,95,219,.20);
+    }
+
+    #screen-reports .ghost-btn{
+      border-radius:var(--uh-pill);
+      border:1px solid #d8deeb;
+      min-height:48px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:800;
+      background:#fff;
+      color:var(--uh-text);
+      cursor:pointer;
     }
 
     #screen-reports .field-note{
-      font-size:11px;
-      color:var(--reports-muted);
-      line-height:1.45;
+      font-size:12px;
+      color:var(--uh-muted);
+      line-height:1.5;
       margin-top:2px;
     }
 
@@ -757,68 +822,45 @@
       flex:1;
     }
 
-    #screen-reports .ghost-btn{
-      border-radius:999px;
-      border:1px solid #d1d5db;
-      padding:11px 14px;
-      font-size:14px;
-      font-weight:700;
-      background:#fff;
-      color:var(--reports-text);
-      cursor:pointer;
-    }
-
-    #screen-reports .primary-btn{
-      border:none;
-      border-radius:999px;
-      padding:12px 16px;
-      font-size:14px;
-      font-weight:800;
-      background:linear-gradient(135deg,var(--reports-blue),var(--reports-blue-dark));
-      color:#fff;
-      cursor:pointer;
-      box-shadow:0 16px 36px rgba(37,99,235,.22);
-    }
-
     #screen-reports .review-list{
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-bottom:14px;
+      margin-bottom:16px;
     }
 
     #screen-reports .review-item{
-      border-radius:16px;
-      background:#f9fafb;
-      border:1px solid #e5e7eb;
-      padding:12px;
+      border-radius:18px;
+      background:#f9fbff;
+      border:1px solid #e8ebf3;
+      padding:14px;
       cursor:pointer;
     }
 
     #screen-reports .review-q{
-      font-size:13px;
-      font-weight:800;
-      color:var(--reports-text);
+      font-size:14px;
+      font-weight:900;
+      color:var(--uh-text);
       margin-bottom:8px;
-      line-height:1.45;
+      line-height:1.5;
     }
 
     #screen-reports .review-a{
-      font-size:13px;
-      color:var(--reports-muted);
-      line-height:1.5;
+      font-size:14px;
+      color:var(--uh-muted);
+      line-height:1.55;
       word-break:break-word;
     }
 
     #screen-reports .review-a strong{
-      color:var(--reports-text);
+      color:var(--uh-text);
     }
 
     #screen-reports .submit-note{
-      font-size:12px;
-      color:var(--reports-muted);
-      line-height:1.55;
-      margin-bottom:12px;
+      font-size:13px;
+      color:var(--uh-muted);
+      line-height:1.6;
+      margin-bottom:14px;
     }
 
     #screen-reports .success-wrap{
@@ -826,52 +868,63 @@
     }
 
     #screen-reports .success-icon{
-      width:80px;
-      height:80px;
+      width:86px;
+      height:86px;
       border-radius:999px;
-      background:var(--reports-green);
+      background:var(--uh-green);
       color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      margin:6px auto 14px;
-      box-shadow:0 12px 30px rgba(34,197,94,.25);
+      margin:6px auto 16px;
+      box-shadow:0 14px 32px rgba(28,154,99,.23);
     }
 
     #screen-reports .success-icon svg{
-      width:38px;
-      height:38px;
+      width:40px;
+      height:40px;
     }
 
     #screen-reports .success-text{
-      font-size:14px;
-      color:var(--reports-text);
+      font-size:15px;
+      color:var(--uh-text);
       text-align:center;
-      line-height:1.55;
+      line-height:1.6;
       margin-bottom:14px;
     }
 
     #screen-reports .success-note{
-      border-radius:16px;
-      background:var(--reports-blue-soft);
-      border:1px solid #dbeafe;
-      color:#1e3a8a;
-      padding:12px;
-      font-size:12px;
-      line-height:1.5;
-      margin-bottom:14px;
+      border-radius:18px;
+      background:var(--uh-blue-soft);
+      border:1px solid #d8e3ff;
+      color:#2446a5;
+      padding:14px;
+      font-size:13px;
+      line-height:1.55;
+      margin-bottom:16px;
       text-align:center;
     }
 
-    @media (max-width: 380px){
-      #screen-reports .reports-stats{
-        grid-template-columns:1fr;
+    @media (max-width:390px){
+      #screen-reports .feed-card-top{
+        padding:16px 16px 12px;
       }
 
-      #screen-reports .feed-status-row,
-      #screen-reports .reports-top-head{
-        flex-direction:column;
-        align-items:stretch;
+      #screen-reports .feed-meta{
+        padding:0 16px 14px;
+      }
+
+      #screen-reports .feed-status-row{
+        padding:12px 16px;
+      }
+
+      #screen-reports .feed-title{
+        font-size:17px;
+      }
+
+      #screen-reports .reports-tab{
+        padding:0 14px;
+        font-size:14px;
       }
 
       #screen-reports .nav-row{
@@ -880,65 +933,50 @@
     }
   </style>
 
-  <section class="reports-shell" id="studentReportsHomeView">
-    <section class="hero">
-      <div class="hero-line-1">School work</div>
-      <h1 class="hero-title">
-        Your <span>forms</span> and <span>class activities</span>
-      </h1>
-      <p class="hero-sub">
-        Revisions, tests, assignments, and school forms sent to you will show here in one clean place.
-      </p>
-    </section>
-
-    <article class="reports-top-card">
-      <div class="reports-top-head">
-        <div>
-          <div class="reports-top-title">Pending work</div>
-          <div class="reports-top-sub">
-            Open any item below to answer it. Activities and forms that still need your attention will appear here.
-          </div>
-        </div>
-        <div class="reports-pending-badge" id="studentReportsPendingBadge">0 Pending</div>
+  <!-- HOME / HISTORY VIEW -->
+  <section class="reports-shell uh-page" id="studentReportsHomeView">
+    <header class="uh-header">
+      <div class="uh-header-row">
+        <button class="uh-back-btn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </button>
+        <h1 class="uh-page-title">Update History</h1>
       </div>
+    </header>
 
-      <div class="reports-stats">
-        <div class="reports-stat">
-          <div class="reports-stat-label">Total items</div>
-          <div class="reports-stat-value" id="studentReportsTotalCount">0</div>
+    <div class="uh-top-controls">
+      <div class="uh-top-row">
+        <div class="reports-tabs" id="studentReportsTabs">
+          <button class="reports-tab active" type="button" data-feed-filter="all">
+            Recent
+            <span class="reports-tab-count" id="studentReportsAllCount">0</span>
+          </button>
+
+          <button class="reports-tab" type="button" data-feed-filter="pending">
+            All time
+            <span class="reports-tab-count" id="studentReportsPendingCount">0</span>
+          </button>
         </div>
-        <div class="reports-stat">
-          <div class="reports-stat-label">Forms</div>
-          <div class="reports-stat-value" id="studentReportsFormCount">0</div>
+
+        <div class="uh-filter-wrap">
+          <button class="uh-filter-btn" type="button">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 7h16M7 12h10M10 17h4" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            Filter
+          </button>
+
+          <select class="uh-filter-select" id="studentReportsFilterSelect">
+            <option value="all">All</option>
+            <option value="forms">Forms</option>
+            <option value="activities">Activities</option>
+            <option value="pending">Pending</option>
+            <option value="submitted">Submitted</option>
+            <option value="expired">Expired</option>
+          </select>
         </div>
-        <div class="reports-stat">
-          <div class="reports-stat-label">Activities</div>
-          <div class="reports-stat-value" id="studentReportsActivityCount">0</div>
-        </div>
-      </div>
-    </article>
-
-    <div class="reports-toolbar">
-      <div class="reports-tabs" id="studentReportsTabs">
-        <button class="reports-tab active" type="button" data-feed-filter="all">
-          All
-          <span class="reports-tab-count" id="studentReportsAllCount">0</span>
-        </button>
-
-        <button class="reports-tab" type="button" data-feed-filter="forms">
-          Forms
-          <span class="reports-tab-count" id="studentReportsFormsCount">0</span>
-        </button>
-
-        <button class="reports-tab" type="button" data-feed-filter="activities">
-          Revisions
-          <span class="reports-tab-count" id="studentReportsActivitiesCount">0</span>
-        </button>
-
-        <button class="reports-tab" type="button" data-feed-filter="pending">
-          Pending
-          <span class="reports-tab-count" id="studentReportsPendingCount">0</span>
-        </button>
       </div>
 
       <div class="reports-search">
@@ -948,7 +986,7 @@
         <input
           id="studentReportsSearchInput"
           type="text"
-          placeholder="Search title, class, form, or course"
+          placeholder="Search title, form, or course"
           autocomplete="off"
         />
       </div>
@@ -960,287 +998,300 @@
   </section>
 
   <!-- CLASS ACTIVITY INTRO -->
-  <section id="studentActivityIntroView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to activities</button>
+  <section id="studentActivityIntroView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back to activities</button>
+    </div>
 
-    <article class="panel-card">
-      <div class="panel-title" id="studentActivityIntroTitle">Activity</div>
-      <div class="panel-course" id="studentActivityIntroCourse">Class</div>
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="panel-title" id="studentActivityIntroTitle">Activity</div>
+        <div class="panel-course" id="studentActivityIntroCourse">Class</div>
 
-      <div class="panel-meta">
-        <div class="panel-meta-item">
-          <span>Questions</span>
-          <strong id="studentActivityIntroQuestions">0 Questions</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Time limit</span>
-          <strong id="studentActivityIntroTime">No limit</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Due</span>
-          <strong id="studentActivityIntroDue">No due date</strong>
-        </div>
-      </div>
-
-      <div class="info-box blue" id="studentActivityStartWarning">
-        You can only submit once. Your score will not show immediately. You will only see confirmation after submission.
-      </div>
-
-      <button id="studentStartActivityBtn" class="primary-btn" type="button">Start activity</button>
-    </article>
-  </section>
-
-  <!-- CLASS ACTIVITY QUESTION -->
-  <section id="studentActivityQuestionView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back</button>
-
-    <article class="panel-card">
-      <div class="timer-box">
-        <div class="timer-label">Time remaining</div>
-        <div id="studentActivityTimerValue" class="timer-value">--:--</div>
-      </div>
-
-      <div class="progress-top">
-        <span id="studentActivityProgressText">Question 1 of 1</span>
-        <span id="studentActivityProgressPercent">100%</span>
-      </div>
-
-      <div class="progress-track">
-        <div id="studentActivityProgressBar" class="progress-bar"></div>
-      </div>
-
-      <div id="studentActivityQuestionTitle" class="question-title">Question</div>
-
-      <div id="studentActivityOptionList" class="choice-list">
-        <!-- objective options render here -->
-      </div>
-
-      <div class="nav-row">
-        <button id="studentActivityPrevBtn" class="ghost-btn" type="button">Back</button>
-        <button id="studentActivityNextBtn" class="primary-btn" type="button">Next</button>
-      </div>
-    </article>
-  </section>
-
-  <!-- CLASS ACTIVITY REVIEW -->
-  <section id="studentActivityReviewView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to questions</button>
-
-    <article class="panel-card">
-      <div class="timer-box">
-        <div class="timer-label">Time remaining</div>
-        <div id="studentActivityReviewTimerValue" class="timer-value">--:--</div>
-      </div>
-
-      <div class="panel-title">Review your answers</div>
-      <div class="submit-note">
-        Check all your selected answers below before submitting. Tap any item if you want to go back and change it.
-      </div>
-
-      <div id="studentActivityReviewList" class="review-list"></div>
-
-      <button id="studentSubmitActivityBtn" class="primary-btn" type="button">Submit activity</button>
-    </article>
-  </section>
-
-  <!-- CLASS ACTIVITY SUBMITTED -->
-  <section id="studentActivitySubmittedView" class="hidden">
-    <article class="panel-card success-wrap">
-      <div class="success-icon">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-
-      <div class="panel-title" style="text-align:center;">Activity submitted</div>
-
-      <div class="success-text">
-        Your answers have been submitted successfully.
-      </div>
-
-      <div class="success-note">
-        You cannot retry this activity again. Your result will only show after the lecturer releases it.
-      </div>
-
-      <button class="primary-btn" type="button">Back to activities</button>
-    </article>
-  </section>
-
-  <!-- FORM DETAILS -->
-  <section id="studentFormDetailsView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to forms and activities</button>
-
-    <article class="panel-card">
-      <div class="panel-title" id="studentFormDetailsTitle">School Form</div>
-      <div class="panel-course" id="studentFormDetailsSchool">School</div>
-
-      <div class="panel-meta">
-        <div class="panel-meta-item">
-          <span>Description</span>
-          <strong id="studentFormDetailsDescription">No description</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Questions</span>
-          <strong id="studentFormDetailsQuestions">0 Questions</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Response rule</span>
-          <strong id="studentFormDetailsRule">One response only</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Identity mode</span>
-          <strong id="studentFormDetailsIdentity">Logged in identity</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Open date</span>
-          <strong id="studentFormDetailsOpenAt">Now</strong>
-        </div>
-        <div class="panel-meta-item">
-          <span>Close date</span>
-          <strong id="studentFormDetailsCloseAt">No close date</strong>
-        </div>
-      </div>
-
-      <div class="info-box blue" id="studentFormDetailsMessage">
-        Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.
-      </div>
-
-      <button id="studentStartFormBtn" class="primary-btn" type="button">Start form</button>
-    </article>
-  </section>
-
-  <!-- FORM QUESTION -->
-  <section id="studentFormQuestionView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back</button>
-
-    <article class="panel-card">
-      <div class="progress-top">
-        <span id="studentFormProgressText">Question 1 of 1</span>
-        <span id="studentFormProgressPercent">100%</span>
-      </div>
-
-      <div class="progress-track">
-        <div id="studentFormProgressBar" class="progress-bar"></div>
-      </div>
-
-      <div id="studentFormQuestionTitle" class="question-title">Question title</div>
-      <div id="studentFormQuestionHelp" class="question-help hidden">Question help text</div>
-
-      <!-- generic form question host -->
-      <div id="studentFormQuestionHost" class="question-block">
-
-        <!-- short answer -->
-        <div id="studentFormShortAnswerBlock" class="input-shell hidden">
-          <input
-            id="studentFormShortAnswerInput"
-            class="text-input"
-            type="text"
-            placeholder="Type your answer"
-          />
-        </div>
-
-        <!-- paragraph -->
-        <div id="studentFormParagraphBlock" class="textarea-shell hidden">
-          <textarea
-            id="studentFormParagraphInput"
-            class="text-area"
-            placeholder="Type your answer here"
-          ></textarea>
-        </div>
-
-        <!-- multiple choice -->
-        <div id="studentFormMultipleChoiceBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
-
-        <!-- checkboxes -->
-        <div id="studentFormCheckboxBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
-
-        <!-- dropdown -->
-        <div id="studentFormDropdownBlock" class="select-shell hidden">
-          <select id="studentFormDropdownInput" class="select-input">
-            <option value="">Select an option</option>
-          </select>
-        </div>
-
-        <!-- yes/no -->
-        <div id="studentFormYesNoBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
-
-        <!-- date -->
-        <div id="studentFormDateBlock" class="date-shell hidden">
-          <input id="studentFormDateInput" class="date-input" type="date" />
-        </div>
-
-        <!-- file upload -->
-        <div id="studentFormFileBlock" class="file-shell hidden">
-          <div class="file-drop">
-            <div class="file-drop-icon">
-              <svg viewBox="0 0 24 24" fill="none" width="26" height="26">
-                <path d="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="file-drop-title">Upload file</div>
-            <div class="file-drop-sub" id="studentFormFileRules">
-              Allowed file types and upload limit will show here.
-            </div>
-            <button id="studentFormChooseFileBtn" class="file-drop-btn" type="button">Choose file</button>
-            <input id="studentFormFileInput" type="file" class="hidden" />
+        <div class="panel-meta">
+          <div class="panel-meta-item">
+            <span>Questions</span>
+            <strong id="studentActivityIntroQuestions">0 Questions</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Time limit</span>
+            <strong id="studentActivityIntroTime">No limit</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Due</span>
+            <strong id="studentActivityIntroDue">No due date</strong>
           </div>
         </div>
 
-        <div id="studentFormFieldNote" class="field-note"></div>
-      </div>
+        <div class="info-box blue" id="studentActivityStartWarning">
+          You can only submit once. Your score will not show immediately. You will only see confirmation after submission.
+        </div>
 
-      <div class="nav-row">
-        <button id="studentFormPrevBtn" class="ghost-btn" type="button">Back</button>
-        <button id="studentFormNextBtn" class="primary-btn" type="button">Next</button>
-      </div>
-    </article>
+        <button id="studentStartActivityBtn" class="primary-btn" type="button">Start activity</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- CLASS ACTIVITY QUESTION -->
+  <section id="studentActivityQuestionView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back</button>
+    </div>
+
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="timer-box">
+          <div class="timer-label">Time remaining</div>
+          <div id="studentActivityTimerValue" class="timer-value">--:--</div>
+        </div>
+
+        <div class="progress-top">
+          <span id="studentActivityProgressText">Question 1 of 1</span>
+          <span id="studentActivityProgressPercent">100%</span>
+        </div>
+
+        <div class="progress-track">
+          <div id="studentActivityProgressBar" class="progress-bar"></div>
+        </div>
+
+        <div id="studentActivityQuestionTitle" class="question-title">Question</div>
+
+        <div id="studentActivityOptionList" class="choice-list">
+          <!-- objective options render here -->
+        </div>
+
+        <div class="nav-row">
+          <button id="studentActivityPrevBtn" class="ghost-btn" type="button">Back</button>
+          <button id="studentActivityNextBtn" class="primary-btn" type="button">Next</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CLASS ACTIVITY REVIEW -->
+  <section id="studentActivityReviewView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back to questions</button>
+    </div>
+
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="timer-box">
+          <div class="timer-label">Time remaining</div>
+          <div id="studentActivityReviewTimerValue" class="timer-value">--:--</div>
+        </div>
+
+        <div class="panel-title">Review your answers</div>
+        <div class="submit-note">
+          Check all your selected answers below before submitting. Tap any item if you want to go back and change it.
+        </div>
+
+        <div id="studentActivityReviewList" class="review-list"></div>
+
+        <button id="studentSubmitActivityBtn" class="primary-btn" type="button">Submit activity</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- CLASS ACTIVITY SUBMITTED -->
+  <section id="studentActivitySubmittedView" class="hidden view-shell">
+    <div class="panel-wrap">
+      <article class="panel-card success-wrap">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="panel-title" style="text-align:center;">Activity submitted</div>
+
+        <div class="success-text">
+          Your answers have been submitted successfully.
+        </div>
+
+        <div class="success-note">
+          You cannot retry this activity again. Your result will only show after the lecturer releases it.
+        </div>
+
+        <button class="primary-btn" type="button">Back to activities</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- FORM DETAILS -->
+  <section id="studentFormDetailsView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back to forms and activities</button>
+    </div>
+
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="panel-title" id="studentFormDetailsTitle">School Form</div>
+        <div class="panel-course" id="studentFormDetailsSchool">School</div>
+
+        <div class="panel-meta">
+          <div class="panel-meta-item">
+            <span>Description</span>
+            <strong id="studentFormDetailsDescription">No description</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Questions</span>
+            <strong id="studentFormDetailsQuestions">0 Questions</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Response rule</span>
+            <strong id="studentFormDetailsRule">One response only</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Identity mode</span>
+            <strong id="studentFormDetailsIdentity">Logged in identity</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Open date</span>
+            <strong id="studentFormDetailsOpenAt">Now</strong>
+          </div>
+          <div class="panel-meta-item">
+            <span>Close date</span>
+            <strong id="studentFormDetailsCloseAt">No close date</strong>
+          </div>
+        </div>
+
+        <div class="info-box blue" id="studentFormDetailsMessage">
+          Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.
+        </div>
+
+        <button id="studentStartFormBtn" class="primary-btn" type="button">Start form</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- FORM QUESTION -->
+  <section id="studentFormQuestionView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back</button>
+    </div>
+
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="progress-top">
+          <span id="studentFormProgressText">Question 1 of 1</span>
+          <span id="studentFormProgressPercent">100%</span>
+        </div>
+
+        <div class="progress-track">
+          <div id="studentFormProgressBar" class="progress-bar"></div>
+        </div>
+
+        <div id="studentFormQuestionTitle" class="question-title">Question title</div>
+        <div id="studentFormQuestionHelp" class="question-help hidden">Question help text</div>
+
+        <div id="studentFormQuestionHost" class="question-block">
+          <div id="studentFormShortAnswerBlock" class="input-shell hidden">
+            <input
+              id="studentFormShortAnswerInput"
+              class="text-input"
+              type="text"
+              placeholder="Type your answer"
+            />
+          </div>
+
+          <div id="studentFormParagraphBlock" class="textarea-shell hidden">
+            <textarea
+              id="studentFormParagraphInput"
+              class="text-area"
+              placeholder="Type your answer here"
+            ></textarea>
+          </div>
+
+          <div id="studentFormMultipleChoiceBlock" class="choice-list hidden"></div>
+
+          <div id="studentFormCheckboxBlock" class="choice-list hidden"></div>
+
+          <div id="studentFormDropdownBlock" class="select-shell hidden">
+            <select id="studentFormDropdownInput" class="select-input">
+              <option value="">Select an option</option>
+            </select>
+          </div>
+
+          <div id="studentFormYesNoBlock" class="choice-list hidden"></div>
+
+          <div id="studentFormDateBlock" class="date-shell hidden">
+            <input id="studentFormDateInput" class="date-input" type="date" />
+          </div>
+
+          <div id="studentFormFileBlock" class="file-shell hidden">
+            <div class="file-drop">
+              <div class="file-drop-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="26" height="26">
+                  <path d="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="file-drop-title">Upload file</div>
+              <div class="file-drop-sub" id="studentFormFileRules">
+                Allowed file types and upload limit will show here.
+              </div>
+              <button id="studentFormChooseFileBtn" class="file-drop-btn" type="button">Choose file</button>
+              <input id="studentFormFileInput" type="file" class="hidden" />
+            </div>
+          </div>
+
+          <div id="studentFormFieldNote" class="field-note"></div>
+        </div>
+
+        <div class="nav-row">
+          <button id="studentFormPrevBtn" class="ghost-btn" type="button">Back</button>
+          <button id="studentFormNextBtn" class="primary-btn" type="button">Next</button>
+        </div>
+      </article>
+    </div>
   </section>
 
   <!-- FORM REVIEW -->
-  <section id="studentFormReviewView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to questions</button>
+  <section id="studentFormReviewView" class="hidden view-shell">
+    <div class="panel-topbar">
+      <button class="panel-back-btn" type="button">Back to questions</button>
+    </div>
 
-    <article class="panel-card">
-      <div class="panel-title">Review your form</div>
-      <div class="submit-note">
-        Check your answers below before submitting the form. Tap any item to go back and edit it.
-      </div>
+    <div class="panel-wrap">
+      <article class="panel-card">
+        <div class="panel-title">Review your form</div>
+        <div class="submit-note">
+          Check your answers below before submitting the form. Tap any item to go back and edit it.
+        </div>
 
-      <div id="studentFormReviewList" class="review-list"></div>
+        <div id="studentFormReviewList" class="review-list"></div>
 
-      <button id="studentSubmitFormBtn" class="primary-btn" type="button">Submit form</button>
-    </article>
+        <button id="studentSubmitFormBtn" class="primary-btn" type="button">Submit form</button>
+      </article>
+    </div>
   </section>
 
   <!-- FORM SUBMITTED -->
-  <section id="studentFormSubmittedView" class="hidden">
-    <article class="panel-card success-wrap">
-      <div class="success-icon">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+  <section id="studentFormSubmittedView" class="hidden view-shell">
+    <div class="panel-wrap">
+      <article class="panel-card success-wrap">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
 
-      <div class="panel-title" style="text-align:center;">Form submitted</div>
+        <div class="panel-title" style="text-align:center;">Form submitted</div>
 
-      <div class="success-text">
-        Your response has been submitted successfully.
-      </div>
+        <div class="success-text">
+          Your response has been submitted successfully.
+        </div>
 
-      <div class="success-note">
-        If the form only allows one response, you will not be able to submit it again.
-      </div>
+        <div class="success-note">
+          If the form only allows one response, you will not be able to submit it again.
+        </div>
 
-      <button class="primary-btn" type="button">Back to forms and activities</button>
-    </article>
+        <button class="primary-btn" type="button">Back to forms and activities</button>
+      </article>
+    </div>
   </section>
 </div>
+<!-- 🔹 STUDENT CLASS + SCHOOL FORMS SCREEN END -->
 <script>
   window.studentClassActivityState = window.studentClassActivityState || {
     activities: [],
