@@ -1,4 +1,4 @@
-<!-- 🔹 STUDENT CLASS + SCHOOL FORMS SCREEN START -->
+<!-- 🔹 STUDENT CLASS + SCHOOL FORMS + ANNOUNCEMENTS SCREEN START -->
 <div id="screen-reports" class="screen">
   <style>
     #screen-reports{
@@ -126,7 +126,7 @@
 
     #screen-reports .reports-stats{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:repeat(4,minmax(0,1fr));
       gap:10px;
     }
 
@@ -863,6 +863,12 @@
       text-align:center;
     }
 
+    @media (max-width: 520px){
+      #screen-reports .reports-stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
     @media (max-width: 380px){
       #screen-reports .reports-stats{
         grid-template-columns:1fr;
@@ -884,10 +890,10 @@
     <section class="hero">
       <div class="hero-line-1">School work</div>
       <h1 class="hero-title">
-        Your <span>forms</span> and <span>class activities</span>
+        Your <span>forms</span>, <span>class activities</span>, and <span>announcements</span>
       </h1>
       <p class="hero-sub">
-        Revisions, tests, assignments, and school forms sent to you will show here in one clean place.
+        Revisions, tests, assignments, school forms, and announcements sent to you will show here in one clean place.
       </p>
     </section>
 
@@ -896,7 +902,7 @@
         <div>
           <div class="reports-top-title">Pending work</div>
           <div class="reports-top-sub">
-            Open any item below to answer it. Activities and forms that still need your attention will appear here.
+            Open any item below to answer it. Activities, forms, and unread announcements that still need your attention will appear here.
           </div>
         </div>
         <div class="reports-pending-badge" id="studentReportsPendingBadge">0 Pending</div>
@@ -914,6 +920,10 @@
         <div class="reports-stat">
           <div class="reports-stat-label">Activities</div>
           <div class="reports-stat-value" id="studentReportsActivityCount">0</div>
+        </div>
+        <div class="reports-stat">
+          <div class="reports-stat-label">Announcements</div>
+          <div class="reports-stat-value" id="studentReportsAnnouncementCount">0</div>
         </div>
       </div>
     </article>
@@ -935,6 +945,11 @@
           <span class="reports-tab-count" id="studentReportsActivitiesCount">0</span>
         </button>
 
+        <button class="reports-tab" type="button" data-feed-filter="announcements">
+          Announcements
+          <span class="reports-tab-count" id="studentReportsAnnouncementsCount">0</span>
+        </button>
+
         <button class="reports-tab" type="button" data-feed-filter="pending">
           Pending
           <span class="reports-tab-count" id="studentReportsPendingCount">0</span>
@@ -948,20 +963,20 @@
         <input
           id="studentReportsSearchInput"
           type="text"
-          placeholder="Search title, class, form, or course"
+          placeholder="Search title, class, form, announcement, or course"
           autocomplete="off"
         />
       </div>
     </div>
 
     <div id="studentReportsFeedList" class="feed-list">
-      <div class="feed-empty">Loading your school forms and class activities...</div>
+      <div class="feed-empty">Loading your school forms, class activities, and announcements...</div>
     </div>
   </section>
 
   <!-- CLASS ACTIVITY INTRO -->
   <section id="studentActivityIntroView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to activities</button>
+    <button class="panel-back-btn" type="button">← Back to history</button>
 
     <article class="panel-card">
       <div class="panel-title" id="studentActivityIntroTitle">Activity</div>
@@ -1011,9 +1026,7 @@
 
       <div id="studentActivityQuestionTitle" class="question-title">Question</div>
 
-      <div id="studentActivityOptionList" class="choice-list">
-        <!-- objective options render here -->
-      </div>
+      <div id="studentActivityOptionList" class="choice-list"></div>
 
       <div class="nav-row">
         <button id="studentActivityPrevBtn" class="ghost-btn" type="button">Back</button>
@@ -1062,13 +1075,13 @@
         You cannot retry this activity again. Your result will only show after the lecturer releases it.
       </div>
 
-      <button class="primary-btn" type="button">Back to activities</button>
+      <button class="primary-btn" type="button">Back to history</button>
     </article>
   </section>
 
   <!-- FORM DETAILS -->
   <section id="studentFormDetailsView" class="hidden">
-    <button class="panel-back-btn" type="button">← Back to forms and activities</button>
+    <button class="panel-back-btn" type="button">← Back to history</button>
 
     <article class="panel-card">
       <div class="panel-title" id="studentFormDetailsTitle">School Form</div>
@@ -1126,56 +1139,30 @@
       <div id="studentFormQuestionTitle" class="question-title">Question title</div>
       <div id="studentFormQuestionHelp" class="question-help hidden">Question help text</div>
 
-      <!-- generic form question host -->
       <div id="studentFormQuestionHost" class="question-block">
-
-        <!-- short answer -->
         <div id="studentFormShortAnswerBlock" class="input-shell hidden">
-          <input
-            id="studentFormShortAnswerInput"
-            class="text-input"
-            type="text"
-            placeholder="Type your answer"
-          />
+          <input id="studentFormShortAnswerInput" class="text-input" type="text" placeholder="Type your answer" />
         </div>
 
-        <!-- paragraph -->
         <div id="studentFormParagraphBlock" class="textarea-shell hidden">
-          <textarea
-            id="studentFormParagraphInput"
-            class="text-area"
-            placeholder="Type your answer here"
-          ></textarea>
+          <textarea id="studentFormParagraphInput" class="text-area" placeholder="Type your answer here"></textarea>
         </div>
 
-        <!-- multiple choice -->
-        <div id="studentFormMultipleChoiceBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
+        <div id="studentFormMultipleChoiceBlock" class="choice-list hidden"></div>
+        <div id="studentFormCheckboxBlock" class="choice-list hidden"></div>
 
-        <!-- checkboxes -->
-        <div id="studentFormCheckboxBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
-
-        <!-- dropdown -->
         <div id="studentFormDropdownBlock" class="select-shell hidden">
           <select id="studentFormDropdownInput" class="select-input">
             <option value="">Select an option</option>
           </select>
         </div>
 
-        <!-- yes/no -->
-        <div id="studentFormYesNoBlock" class="choice-list hidden">
-          <!-- render from js -->
-        </div>
+        <div id="studentFormYesNoBlock" class="choice-list hidden"></div>
 
-        <!-- date -->
         <div id="studentFormDateBlock" class="date-shell hidden">
           <input id="studentFormDateInput" class="date-input" type="date" />
         </div>
 
-        <!-- file upload -->
         <div id="studentFormFileBlock" class="file-shell hidden">
           <div class="file-drop">
             <div class="file-drop-icon">
@@ -1237,7 +1224,7 @@
         If the form only allows one response, you will not be able to submit it again.
       </div>
 
-      <button class="primary-btn" type="button">Back to forms and activities</button>
+      <button class="primary-btn" type="button">Back to history</button>
     </article>
   </section>
 </div>
