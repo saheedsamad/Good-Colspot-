@@ -7,19 +7,17 @@
     content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
   />
   <title>View Message</title>
+
   <style>
     :root{
-      --vm-blue:#1557b0;
-      --vm-blue-2:#2d6fd2;
-      --vm-bg:#f4f7fb;
-      --vm-card:#ffffff;
-      --vm-text:#18212f;
-      --vm-muted:#6d7786;
-      --vm-line:#e6ebf2;
-      --vm-soft:#eef4ff;
-      --vm-shadow:0 10px 28px rgba(17, 24, 39, 0.08);
-      --vm-radius:22px;
-      --vm-pill-radius:999px;
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --line:#e6ecf5;
+      --text:#182334;
+      --muted:#73819a;
+      --blue:#2f6cf6;
+      --blue-soft:#edf4ff;
+      --shadow:0 14px 35px rgba(15,23,42,.08);
       --safe-top:env(safe-area-inset-top, 0px);
       --safe-bottom:env(safe-area-inset-bottom, 0px);
     }
@@ -29,9 +27,9 @@
     html,body{
       margin:0;
       padding:0;
-      background:var(--vm-bg);
-      color:var(--vm-text);
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, Arial, sans-serif;
       -webkit-text-size-adjust:100%;
     }
 
@@ -41,50 +39,39 @@
       justify-content:center;
     }
 
-    .phone-shell{
+    .page-shell{
       width:100%;
       max-width:420px;
       min-height:100vh;
-      background:linear-gradient(180deg, #f7faff 0%, #f2f6fb 100%);
-      position:relative;
-      overflow-x:hidden;
+      background:
+        radial-gradient(circle at top right, rgba(47,108,246,.07), transparent 34%),
+        linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+      padding-bottom:calc(24px + var(--safe-bottom));
     }
 
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:30;
-      padding-top:var(--safe-top);
-      background:linear-gradient(135deg, var(--vm-blue) 0%, var(--vm-blue-2) 100%);
-      color:#fff;
-      box-shadow:0 6px 18px rgba(21,87,176,0.22);
+    .page-head{
+      padding:calc(var(--safe-top) + 14px) 16px 8px;
     }
 
-    .topbar-inner{
-      height:64px;
+    .head-row{
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:0 16px;
-      position:relative;
+      gap:12px;
     }
 
     .back-btn{
-      position:absolute;
-      left:14px;
-      top:50%;
-      transform:translateY(-50%);
       width:42px;
       height:42px;
       border:none;
-      border-radius:12px;
-      background:rgba(255,255,255,0.14);
-      color:#fff;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:var(--shadow);
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      backdrop-filter:blur(6px);
+      color:#1c2940;
+      flex-shrink:0;
     }
 
     .back-btn svg{
@@ -97,155 +84,185 @@
       stroke-linejoin:round;
     }
 
-    .topbar-title{
-      font-size:19px;
-      font-weight:700;
-      letter-spacing:.2px;
+    .head-copy{
+      min-width:0;
     }
 
-    .page{
-      padding:16px 14px calc(24px + var(--safe-bottom));
+    .eyebrow{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:2px;
     }
 
-    .card{
-      background:var(--vm-card);
-      border:1px solid rgba(230,235,242,.8);
-      border-radius:var(--vm-radius);
-      box-shadow:var(--vm-shadow);
+    .page-title{
+      font-size:22px;
+      font-weight:900;
+      color:#122033;
+      line-height:1.1;
+    }
+
+    .page-body{
+      padding:10px 16px 0;
+    }
+
+    .state-box{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:24px 18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .error-box{
+      background:#fff5f5;
+      border-color:#f3d1d1;
+      color:#b42318;
+    }
+
+    .announcement-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
 
-    .hero{
-      padding:18px 16px 14px;
+    .announcement-top{
+      padding:18px 18px 14px;
       background:
-        radial-gradient(circle at top right, rgba(60,130,255,.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(47,108,246,.11), transparent 32%),
         linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border-bottom:1px solid var(--line);
     }
 
     .badge{
       display:inline-flex;
       align-items:center;
-      gap:6px;
-      min-height:32px;
+      gap:8px;
+      min-height:34px;
       padding:0 14px;
-      border-radius:var(--vm-pill-radius);
-      background:linear-gradient(135deg, #eaf3ff 0%, #dbe9ff 100%);
-      border:1px solid #cfe0ff;
-      color:var(--vm-blue);
+      border-radius:999px;
+      background:var(--blue-soft);
+      color:var(--blue);
       font-size:12px;
-      font-weight:700;
+      font-weight:800;
       margin-bottom:14px;
+      max-width:100%;
     }
 
     .badge-dot{
       width:8px;
       height:8px;
       border-radius:50%;
-      background:var(--vm-blue);
-      opacity:.9;
+      background:var(--blue);
+      flex-shrink:0;
     }
 
     .announcement-title{
-      font-size:31px;
-      line-height:1.16;
-      font-weight:800;
+      font-size:30px;
+      line-height:1.14;
+      font-weight:900;
       letter-spacing:-.03em;
-      margin:0 0 12px;
+      margin:0 0 14px;
       color:#132034;
+      word-break:break-word;
     }
 
-    .meta-block{
-      display:flex;
-      flex-direction:column;
+    .meta{
+      display:grid;
       gap:4px;
-      padding-bottom:10px;
-      border-bottom:1px solid var(--vm-line);
     }
 
     .meta-author{
-      font-size:17px;
-      font-weight:700;
-      color:#1e2a3b;
+      font-size:16px;
+      font-weight:800;
+      color:#1b2940;
     }
 
-    .meta-date{
+    .meta-time{
       font-size:13px;
-      color:var(--vm-muted);
+      color:var(--muted);
     }
 
-    .body-wrap{
-      padding:14px 16px 18px;
+    .announcement-content{
+      padding:16px 18px 18px;
     }
 
-    .hero-image-wrap{
-      margin:0 0 16px;
-      border-radius:18px;
-      overflow:hidden;
-      background:#eef3fa;
-      border:1px solid #e8edf5;
-    }
-
-    .hero-image{
+    .hero-wrap{
       width:100%;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:#eef3fb;
+      margin-bottom:16px;
+    }
+
+    .hero-wrap img{
       display:block;
+      width:100%;
       aspect-ratio:16/9;
       object-fit:cover;
-      background:#edf3fb;
+      background:#eef3fb;
     }
 
-    .message-body{
+    .announcement-body{
       font-size:18px;
       line-height:1.75;
-      color:#1f2937;
+      color:#1f2b3d;
       white-space:pre-wrap;
       word-break:break-word;
     }
 
-    .message-body p{
+    .announcement-body p{
       margin:0 0 16px;
     }
 
-    .message-body p:last-child{
+    .announcement-body p:last-child{
       margin-bottom:0;
     }
 
-    .message-body strong{
-      color:#111827;
+    .resource-stack{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
     }
 
-    .link-card,
-    .file-card{
-      margin-top:14px;
+    .resource-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      padding:14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding:14px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid var(--vm-line);
-      box-shadow:0 8px 22px rgba(15,23,42,.05);
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
     }
 
     .resource-left{
       display:flex;
       align-items:center;
       gap:12px;
-      min-width:0;
       flex:1;
+      min-width:0;
     }
 
     .resource-icon{
       width:46px;
       height:46px;
-      border-radius:14px;
-      background:#f1f6ff;
-      color:var(--vm-blue);
+      border-radius:15px;
+      background:var(--blue-soft);
+      color:var(--blue);
       display:flex;
       align-items:center;
       justify-content:center;
       flex-shrink:0;
-      border:1px solid #d8e6ff;
     }
 
     .resource-icon svg{
@@ -258,52 +275,46 @@
       stroke-linejoin:round;
     }
 
-    .resource-text{
+    .resource-copy{
       min-width:0;
     }
 
     .resource-title{
-      font-size:18px;
-      font-weight:700;
-      color:#162236;
+      font-size:16px;
+      font-weight:800;
+      color:#16233d;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin-bottom:3px;
+      margin-bottom:4px;
     }
 
     .resource-sub{
       font-size:13px;
-      color:var(--vm-muted);
+      color:var(--muted);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .action-btn{
+    .resource-btn{
       border:none;
-      border-radius:12px;
-      background:linear-gradient(135deg, var(--vm-blue) 0%, var(--vm-blue-2) 100%);
+      border-radius:14px;
+      background:linear-gradient(135deg, #2f6cf6, #5b8cff);
       color:#fff;
-      height:44px;
+      min-height:42px;
       padding:0 16px;
-      font-size:14px;
-      font-weight:700;
+      font-size:13px;
+      font-weight:800;
       cursor:pointer;
-      white-space:nowrap;
-      box-shadow:0 10px 24px rgba(37,99,235,.24);
+      flex-shrink:0;
     }
 
-    .footer-card{
-      margin-top:16px;
-      padding:16px;
-      border-top:1px solid var(--vm-line);
-      background:linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-    }
-
-    .footer-grid{
+    .footer-box{
+      margin-top:18px;
+      padding-top:16px;
+      border-top:1px solid var(--line);
       display:grid;
-      grid-template-columns:1fr;
       gap:10px;
     }
 
@@ -316,168 +327,143 @@
     }
 
     .footer-label{
-      color:var(--vm-muted);
       min-width:84px;
+      color:var(--muted);
+      font-weight:700;
     }
 
     .footer-value{
-      color:#162236;
-      font-weight:600;
-      text-align:right;
       flex:1;
+      text-align:right;
+      color:#16233d;
+      font-weight:800;
       word-break:break-word;
     }
 
-    .empty,
-    .loading,
-    .error-state{
-      margin-top:20px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid var(--vm-line);
-      box-shadow:var(--vm-shadow);
-      padding:24px 16px;
-      text-align:center;
+    .hidden{
+      display:none !important;
     }
-
-    .loading{
-      color:var(--vm-muted);
-      font-size:15px;
-    }
-
-    .error-state{
-      color:#b91c1c;
-      background:#fff8f8;
-      border-color:#f1d6d6;
-    }
-
-    .empty-title{
-      font-size:20px;
-      font-weight:800;
-      margin:0 0 8px;
-      color:#1c2433;
-    }
-
-    .empty-sub{
-      margin:0;
-      color:var(--vm-muted);
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .hidden{ display:none !important; }
 
     @media (max-width:380px){
       .announcement-title{ font-size:27px; }
-      .resource-title{ font-size:16px; }
-      .message-body{ font-size:16px; }
-      .action-btn{ padding:0 12px; }
+      .announcement-body{ font-size:16px; }
     }
   </style>
 </head>
 <body>
-  <div class="phone-shell">
-    <header class="topbar">
-      <div class="topbar-inner">
-        <button class="back-btn" id="backBtn" type="button" aria-label="Go back">
+  <div class="page-shell">
+    <div class="page-head">
+      <div class="head-row">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6"></path>
           </svg>
         </button>
-        <div class="topbar-title">Announcement</div>
+
+        <div class="head-copy">
+          <div class="eyebrow">School Update</div>
+          <div class="page-title">Announcement</div>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <main class="page">
-      <div id="loadingState" class="loading">Loading announcement...</div>
+    <div class="page-body">
+      <div id="loadingState" class="state-box">Loading announcement...</div>
+      <div id="errorState" class="state-box error-box hidden"></div>
+      <div id="emptyState" class="state-box hidden">Announcement not found.</div>
 
-      <div id="errorState" class="error-state hidden"></div>
-
-      <div id="emptyState" class="empty hidden">
-        <h2 class="empty-title">No announcement found</h2>
-        <p class="empty-sub">The message could not be loaded from your history or backend.</p>
-      </div>
-
-      <section id="announcementCard" class="card hidden">
-        <div class="hero">
+      <section id="announcementCard" class="announcement-card hidden">
+        <div class="announcement-top">
           <div class="badge">
             <span class="badge-dot"></span>
             <span id="announcementBadge">School Update</span>
           </div>
 
-          <h1 class="announcement-title" id="announcementTitle">Announcement title</h1>
+          <h1 id="announcementTitle" class="announcement-title">Announcement title</h1>
 
-          <div class="meta-block">
-            <div class="meta-author" id="announcementAuthor">School Admin</div>
-            <div class="meta-date" id="announcementDate">Posted now</div>
+          <div class="meta">
+            <div id="announcementAuthor" class="meta-author">School Admin</div>
+            <div id="announcementDate" class="meta-time">Posted recently</div>
           </div>
         </div>
 
-        <div class="body-wrap">
-          <div class="hero-image-wrap hidden" id="imageWrap">
-            <img id="announcementImage" class="hero-image" alt="Announcement image" />
+        <div class="announcement-content">
+          <div id="imageWrap" class="hero-wrap hidden">
+            <img id="announcementImage" alt="Announcement image" />
           </div>
 
-          <div id="announcementBody" class="message-body"></div>
+          <div id="announcementBody" class="announcement-body"></div>
 
-          <div id="linkCard" class="link-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="9"></circle>
-                  <path d="M3 12h18"></path>
-                  <path d="M12 3a15 15 0 0 1 0 18"></path>
-                  <path d="M12 3a15 15 0 0 0 0 18"></path>
-                </svg>
+          <div class="resource-stack">
+            <div id="linkCard" class="resource-card hidden">
+              <div class="resource-left">
+                <div class="resource-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
+                    <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
+                  </svg>
+                </div>
+                <div class="resource-copy">
+                  <div id="linkTitle" class="resource-title">Open link</div>
+                  <div class="resource-sub">Visit attached resource</div>
+                </div>
               </div>
-              <div class="resource-text">
-                <div class="resource-title" id="linkTitle">Open resource</div>
-                <div class="resource-sub" id="linkSub">Tap to view attached link</div>
-              </div>
+              <button id="viewLinkBtn" type="button" class="resource-btn">View Link</button>
             </div>
-            <button type="button" class="action-btn" id="viewLinkBtn">View Link</button>
-          </div>
 
-          <div id="fileCard" class="file-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 1 1-2.12-2.12l8.49-8.48"></path>
-                </svg>
+            <div id="fileCard" class="resource-card hidden">
+              <div class="resource-left">
+                <div class="resource-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
+                    <path d="M14 2v5h5"></path>
+                  </svg>
+                </div>
+                <div class="resource-copy">
+                  <div id="fileTitle" class="resource-title">Attachment</div>
+                  <div id="fileSub" class="resource-sub">Download attached file</div>
+                </div>
               </div>
-              <div class="resource-text">
-                <div class="resource-title" id="fileTitle">Attachment</div>
-                <div class="resource-sub" id="fileSub">Download attached file</div>
-              </div>
+              <button id="downloadFileBtn" type="button" class="resource-btn">Download</button>
             </div>
-            <button type="button" class="action-btn" id="downloadFileBtn">Download</button>
           </div>
-        </div>
 
-        <div class="footer-card">
-          <div class="footer-grid">
+          <div class="footer-box">
             <div class="footer-row">
               <div class="footer-label">Sent to</div>
-              <div class="footer-value" id="announcementAudience">All Students</div>
+              <div id="announcementAudience" class="footer-value">All students</div>
             </div>
+
             <div class="footer-row">
               <div class="footer-label">By</div>
-              <div class="footer-value" id="announcementBy">School Admin</div>
+              <div id="announcementBy" class="footer-value">School Admin</div>
             </div>
+
             <div class="footer-row">
               <div class="footer-label">Time</div>
-              <div class="footer-value" id="announcementTimeFooter">-</div>
+              <div id="announcementTimeFooter" class="footer-value">—</div>
             </div>
           </div>
         </div>
       </section>
-    </main>
+    </div>
   </div>
 
   <script>
-    const VIEW_MESSAGE_STORAGE_KEY = "colspot_selected_announcement_history";
+    function getSupabaseClient() {
+      try {
+        if (window.sb && typeof window.sb.from === "function") return window.sb;
+        if (window.supabase && typeof window.supabase.from === "function") return window.supabase;
+      } catch (e) {}
+      return null;
+    }
 
-    function vmEscapeHtml(value) {
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || "";
+    }
+
+    function escapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -486,7 +472,7 @@
         .replaceAll("'", "&#039;");
     }
 
-    function vmFormatDateTime(value) {
+    function formatDateTime(value) {
       if (!value) return "Posted recently";
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return "Posted recently";
@@ -499,53 +485,78 @@
       });
     }
 
-    function vmBodyToHtml(text) {
-      const safe = vmEscapeHtml(text || "");
-      if (!safe.trim()) return "<p>No message body available.</p>";
+    function bodyToHtml(text) {
+      const safe = escapeHtml(text || "");
+      if (!safe.trim()) return "<p>No message available.</p>";
       return safe
         .split(/\n{2,}/)
         .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
         .join("");
     }
 
-    function vmGetQueryParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name) || "";
+    function setText(id, value, fallback = "") {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value || fallback);
     }
 
-    function vmShowLoading(show) {
+    function showLoading(show) {
       document.getElementById("loadingState").classList.toggle("hidden", !show);
     }
 
-    function vmShowError(message) {
+    function showError(message) {
       const el = document.getElementById("errorState");
       el.textContent = message || "Could not load announcement.";
       el.classList.remove("hidden");
     }
 
-    function vmHideError() {
-      document.getElementById("errorState").classList.add("hidden");
-      document.getElementById("errorState").textContent = "";
+    function hideError() {
+      const el = document.getElementById("errorState");
+      el.classList.add("hidden");
+      el.textContent = "";
     }
 
-    function vmShowEmpty(show) {
+    function showEmpty(show) {
       document.getElementById("emptyState").classList.toggle("hidden", !show);
     }
 
-    function vmShowCard(show) {
+    function showCard(show) {
       document.getElementById("announcementCard").classList.toggle("hidden", !show);
     }
 
-    function vmSetText(id, value, fallback = "") {
-      const el = document.getElementById(id);
-      if (el) el.textContent = value || fallback;
+    function getAudienceText(data) {
+      const mode = String(data?.audience_mode || "").trim().toLowerCase();
+      if (mode === "programme_filter") return "Selected students";
+      return "All students";
     }
 
-    function vmRenderAnnouncement(data) {
-      vmHideError();
-      vmShowEmpty(false);
-      vmShowCard(true);
+    function guessFileName(url) {
+      try {
+        if (!url) return "Attached file";
+        const clean = url.split("?")[0];
+        const name = decodeURIComponent(clean.substring(clean.lastIndexOf("/") + 1));
+        return name || "Attached file";
+      } catch (e) {
+        return "Attached file";
+      }
+    }
 
+    async function fetchAnnouncementById(announcementId) {
+      const sb = getSupabaseClient();
+      if (!sb) {
+        throw new Error("Supabase client not found on this page.");
+      }
+
+      const { data, error } = await sb
+        .from("school_announcements")
+        .select("id, school_name, title, body, notification_title, notification_body, link_label, link_url, image_url, file_url, created_by_admin_name, audience_mode, created_at, published_at, status")
+        .eq("id", announcementId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || null;
+    }
+
+    function renderAnnouncement(data) {
       const title =
         data.notification_title ||
         data.title ||
@@ -554,44 +565,42 @@
       const body =
         data.body ||
         data.notification_body ||
-        data.message ||
         "";
-
-      const author =
-        data.created_by_admin_name ||
-        data.author ||
-        "School Admin";
 
       const createdAt =
         data.created_at ||
         data.published_at ||
-        data.time ||
         "";
 
-      const audience =
-        data.audience_text ||
-        data.audience ||
-        data.school_name ||
-        "All Students";
+      const author =
+        data.created_by_admin_name ||
+        "School Admin";
 
-      vmSetText("announcementBadge", "School Update");
-      vmSetText("announcementTitle", title);
-      vmSetText("announcementAuthor", author);
-      vmSetText("announcementDate", `Posted on ${vmFormatDateTime(createdAt)}`);
-      vmSetText("announcementAudience", audience);
-      vmSetText("announcementBy", author);
-      vmSetText("announcementTimeFooter", vmFormatDateTime(createdAt));
+      const imageUrl = data.image_url || "";
+      const linkUrl = data.link_url || "";
+      const fileUrl = data.file_url || "";
+      const linkLabel = data.link_label || "Open attached link";
 
-      document.getElementById("announcementBody").innerHTML = vmBodyToHtml(body);
+      setText("announcementBadge", data.school_name || "School Update");
+      setText("announcementTitle", title);
+      setText("announcementAuthor", author);
+      setText("announcementDate", `Posted on ${formatDateTime(createdAt)}`);
+      setText("announcementAudience", getAudienceText(data));
+      setText("announcementBy", author);
+      setText("announcementTimeFooter", formatDateTime(createdAt));
+
+      document.getElementById("announcementBody").innerHTML = bodyToHtml(body);
 
       const imageWrap = document.getElementById("imageWrap");
       const imageEl = document.getElementById("announcementImage");
-      const imageUrl = data.image_url || data.image || "";
 
       if (imageUrl) {
         imageEl.src = imageUrl;
         imageEl.alt = title;
         imageWrap.classList.remove("hidden");
+        imageEl.onerror = () => {
+          imageWrap.classList.add("hidden");
+        };
       } else {
         imageEl.removeAttribute("src");
         imageWrap.classList.add("hidden");
@@ -599,111 +608,59 @@
 
       const linkCard = document.getElementById("linkCard");
       const viewLinkBtn = document.getElementById("viewLinkBtn");
-      const linkUrl = data.link_url || data.link || "";
-      const linkLabel = data.link_label || "Open attached link";
 
       if (linkUrl) {
-        vmSetText("linkTitle", linkLabel);
-        vmSetText("linkSub", "Visit attached resource");
+        setText("linkTitle", linkLabel);
         linkCard.classList.remove("hidden");
-        viewLinkBtn.onclick = () => {
-          window.open(linkUrl, "_blank", "noopener");
-        };
+        viewLinkBtn.onclick = () => window.open(linkUrl, "_blank", "noopener");
       } else {
         linkCard.classList.add("hidden");
         viewLinkBtn.onclick = null;
       }
 
       const fileCard = document.getElementById("fileCard");
-      const downloadBtn = document.getElementById("downloadFileBtn");
-      const fileUrl = data.file_url || data.file || "";
-      const fileName = data.file_name || data.attachment_name || "Attached file";
+      const downloadFileBtn = document.getElementById("downloadFileBtn");
 
       if (fileUrl) {
-        vmSetText("fileTitle", fileName);
-        vmSetText("fileSub", "Download attached file");
+        setText("fileTitle", guessFileName(fileUrl));
+        setText("fileSub", "Download attached file");
         fileCard.classList.remove("hidden");
-        downloadBtn.onclick = () => {
-          window.open(fileUrl, "_blank", "noopener");
-        };
+        downloadFileBtn.onclick = () => window.open(fileUrl, "_blank", "noopener");
       } else {
         fileCard.classList.add("hidden");
-        downloadBtn.onclick = null;
+        downloadFileBtn.onclick = null;
       }
     }
 
-    function vmReadStoredAnnouncement() {
-      try {
-        const raw = localStorage.getItem(VIEW_MESSAGE_STORAGE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return parsed && typeof parsed === "object" ? parsed : null;
-      } catch (e) {
-        console.error("Could not read stored announcement:", e);
-        return null;
-      }
-    }
-
-    async function vmFetchAnnouncementFromBackend(announcementId) {
-      if (!announcementId || typeof supabase === "undefined") return null;
+    async function initPage() {
+      showLoading(true);
+      hideError();
+      showEmpty(false);
+      showCard(false);
 
       try {
-        const { data, error } = await supabase
-          .from("school_announcements")
-          .select(`
-            id,
-            school_name,
-            title,
-            body,
-            notification_title,
-            notification_body,
-            link_url,
-            link_label,
-            image_url,
-            file_url,
-            created_by_admin_name,
-            created_at,
-            published_at,
-            audience_mode,
-            programme_targets,
-            status
-          `)
-          .eq("id", announcementId)
-          .maybeSingle();
-
-        if (error) {
-          console.error("view_message backend load error:", error);
-          return null;
+        const announcementId = getQueryParam("announcement_id");
+        if (!announcementId) {
+          showLoading(false);
+          showEmpty(true);
+          return;
         }
 
-        return data || null;
-      } catch (e) {
-        console.error("vmFetchAnnouncementFromBackend error:", e);
-        return null;
+        const data = await fetchAnnouncementById(announcementId);
+        showLoading(false);
+
+        if (!data) {
+          showEmpty(true);
+          return;
+        }
+
+        renderAnnouncement(data);
+        showCard(true);
+      } catch (err) {
+        console.error("view_message load error:", err);
+        showLoading(false);
+        showError(err?.message || "Could not load announcement.");
       }
-    }
-
-    async function vmInitPage() {
-      vmShowLoading(true);
-      vmHideError();
-      vmShowEmpty(false);
-      vmShowCard(false);
-
-      const announcementId = vmGetQueryParam("announcement_id");
-      let announcement = vmReadStoredAnnouncement();
-
-      if (!announcement || (announcementId && announcement.id !== announcementId)) {
-        announcement = await vmFetchAnnouncementFromBackend(announcementId);
-      }
-
-      vmShowLoading(false);
-
-      if (!announcement) {
-        vmShowEmpty(true);
-        return;
-      }
-
-      vmRenderAnnouncement(announcement);
     }
 
     document.getElementById("backBtn").addEventListener("click", () => {
@@ -714,7 +671,7 @@
       }
     });
 
-    document.addEventListener("DOMContentLoaded", vmInitPage);
+    initPage();
   </script>
 </body>
 </html>
