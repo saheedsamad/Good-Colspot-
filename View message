@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <title>View Message</title>
+  <style>
+    :root{
+      --vm-blue:#1557b0;
+      --vm-blue-2:#2d6fd2;
+      --vm-bg:#f4f7fb;
+      --vm-card:#ffffff;
+      --vm-text:#18212f;
+      --vm-muted:#6d7786;
+      --vm-line:#e6ebf2;
+      --vm-soft:#eef4ff;
+      --vm-shadow:0 10px 28px rgba(17, 24, 39, 0.08);
+      --vm-radius:22px;
+      --vm-pill-radius:999px;
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--vm-bg);
+      color:var(--vm-text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    body{
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:420px;
+      min-height:100vh;
+      background:linear-gradient(180deg, #f7faff 0%, #f2f6fb 100%);
+      position:relative;
+      overflow-x:hidden;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      padding-top:var(--safe-top);
+      background:linear-gradient(135deg, var(--vm-blue) 0%, var(--vm-blue-2) 100%);
+      color:#fff;
+      box-shadow:0 6px 18px rgba(21,87,176,0.22);
+    }
+
+    .topbar-inner{
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 16px;
+      position:relative;
+    }
+
+    .back-btn{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:12px;
+      background:rgba(255,255,255,0.14);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      backdrop-filter:blur(6px);
+    }
+
+    .back-btn svg{
+      width:22px;
+      height:22px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2.2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .topbar-title{
+      font-size:19px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+
+    .page{
+      padding:16px 14px calc(24px + var(--safe-bottom));
+    }
+
+    .card{
+      background:var(--vm-card);
+      border:1px solid rgba(230,235,242,.8);
+      border-radius:var(--vm-radius);
+      box-shadow:var(--vm-shadow);
+      overflow:hidden;
+    }
+
+    .hero{
+      padding:18px 16px 14px;
+      background:
+        radial-gradient(circle at top right, rgba(60,130,255,.14), transparent 34%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:32px;
+      padding:0 14px;
+      border-radius:var(--vm-pill-radius);
+      background:linear-gradient(135deg, #eaf3ff 0%, #dbe9ff 100%);
+      border:1px solid #cfe0ff;
+      color:var(--vm-blue);
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .badge-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--vm-blue);
+      opacity:.9;
+    }
+
+    .announcement-title{
+      font-size:31px;
+      line-height:1.16;
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:0 0 12px;
+      color:#132034;
+    }
+
+    .meta-block{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--vm-line);
+    }
+
+    .meta-author{
+      font-size:17px;
+      font-weight:700;
+      color:#1e2a3b;
+    }
+
+    .meta-date{
+      font-size:13px;
+      color:var(--vm-muted);
+    }
+
+    .body-wrap{
+      padding:14px 16px 18px;
+    }
+
+    .hero-image-wrap{
+      margin:0 0 16px;
+      border-radius:18px;
+      overflow:hidden;
+      background:#eef3fa;
+      border:1px solid #e8edf5;
+    }
+
+    .hero-image{
+      width:100%;
+      display:block;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#edf3fb;
+    }
+
+    .message-body{
+      font-size:18px;
+      line-height:1.75;
+      color:#1f2937;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .message-body p{
+      margin:0 0 16px;
+    }
+
+    .message-body p:last-child{
+      margin-bottom:0;
+    }
+
+    .message-body strong{
+      color:#111827;
+    }
+
+    .link-card,
+    .file-card{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid var(--vm-line);
+      box-shadow:0 8px 22px rgba(15,23,42,.05);
+    }
+
+    .resource-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .resource-icon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:#f1f6ff;
+      color:var(--vm-blue);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      border:1px solid #d8e6ff;
+    }
+
+    .resource-icon svg{
+      width:24px;
+      height:24px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .resource-text{
+      min-width:0;
+    }
+
+    .resource-title{
+      font-size:18px;
+      font-weight:700;
+      color:#162236;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:3px;
+    }
+
+    .resource-sub{
+      font-size:13px;
+      color:var(--vm-muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .action-btn{
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(135deg, var(--vm-blue) 0%, var(--vm-blue-2) 100%);
+      color:#fff;
+      height:44px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 10px 24px rgba(37,99,235,.24);
+    }
+
+    .footer-card{
+      margin-top:16px;
+      padding:16px;
+      border-top:1px solid var(--vm-line);
+      background:linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    }
+
+    .footer-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .footer-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      font-size:14px;
+    }
+
+    .footer-label{
+      color:var(--vm-muted);
+      min-width:84px;
+    }
+
+    .footer-value{
+      color:#162236;
+      font-weight:600;
+      text-align:right;
+      flex:1;
+      word-break:break-word;
+    }
+
+    .empty,
+    .loading,
+    .error-state{
+      margin-top:20px;
+      border-radius:20px;
+      background:#fff;
+      border:1px solid var(--vm-line);
+      box-shadow:var(--vm-shadow);
+      padding:24px 16px;
+      text-align:center;
+    }
+
+    .loading{
+      color:var(--vm-muted);
+      font-size:15px;
+    }
+
+    .error-state{
+      color:#b91c1c;
+      background:#fff8f8;
+      border-color:#f1d6d6;
+    }
+
+    .empty-title{
+      font-size:20px;
+      font-weight:800;
+      margin:0 0 8px;
+      color:#1c2433;
+    }
+
+    .empty-sub{
+      margin:0;
+      color:var(--vm-muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .hidden{ display:none !important; }
+
+    @media (max-width:380px){
+      .announcement-title{ font-size:27px; }
+      .resource-title{ font-size:16px; }
+      .message-body{ font-size:16px; }
+      .action-btn{ padding:0 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Go back">
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+        <div class="topbar-title">Announcement</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <div id="loadingState" class="loading">Loading announcement...</div>
+
+      <div id="errorState" class="error-state hidden"></div>
+
+      <div id="emptyState" class="empty hidden">
+        <h2 class="empty-title">No announcement found</h2>
+        <p class="empty-sub">The message could not be loaded from your history or backend.</p>
+      </div>
+
+      <section id="announcementCard" class="card hidden">
+        <div class="hero">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            <span id="announcementBadge">School Update</span>
+          </div>
+
+          <h1 class="announcement-title" id="announcementTitle">Announcement title</h1>
+
+          <div class="meta-block">
+            <div class="meta-author" id="announcementAuthor">School Admin</div>
+            <div class="meta-date" id="announcementDate">Posted now</div>
+          </div>
+        </div>
+
+        <div class="body-wrap">
+          <div class="hero-image-wrap hidden" id="imageWrap">
+            <img id="announcementImage" class="hero-image" alt="Announcement image" />
+          </div>
+
+          <div id="announcementBody" class="message-body"></div>
+
+          <div id="linkCard" class="link-card hidden">
+            <div class="resource-left">
+              <div class="resource-icon">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M3 12h18"></path>
+                  <path d="M12 3a15 15 0 0 1 0 18"></path>
+                  <path d="M12 3a15 15 0 0 0 0 18"></path>
+                </svg>
+              </div>
+              <div class="resource-text">
+                <div class="resource-title" id="linkTitle">Open resource</div>
+                <div class="resource-sub" id="linkSub">Tap to view attached link</div>
+              </div>
+            </div>
+            <button type="button" class="action-btn" id="viewLinkBtn">View Link</button>
+          </div>
+
+          <div id="fileCard" class="file-card hidden">
+            <div class="resource-left">
+              <div class="resource-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 1 1-2.12-2.12l8.49-8.48"></path>
+                </svg>
+              </div>
+              <div class="resource-text">
+                <div class="resource-title" id="fileTitle">Attachment</div>
+                <div class="resource-sub" id="fileSub">Download attached file</div>
+              </div>
+            </div>
+            <button type="button" class="action-btn" id="downloadFileBtn">Download</button>
+          </div>
+        </div>
+
+        <div class="footer-card">
+          <div class="footer-grid">
+            <div class="footer-row">
+              <div class="footer-label">Sent to</div>
+              <div class="footer-value" id="announcementAudience">All Students</div>
+            </div>
+            <div class="footer-row">
+              <div class="footer-label">By</div>
+              <div class="footer-value" id="announcementBy">School Admin</div>
+            </div>
+            <div class="footer-row">
+              <div class="footer-label">Time</div>
+              <div class="footer-value" id="announcementTimeFooter">-</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const VIEW_MESSAGE_STORAGE_KEY = "colspot_selected_announcement_history";
+
+    function vmEscapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function vmFormatDateTime(value) {
+      if (!value) return "Posted recently";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Posted recently";
+      return d.toLocaleString([], {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function vmBodyToHtml(text) {
+      const safe = vmEscapeHtml(text || "");
+      if (!safe.trim()) return "<p>No message body available.</p>";
+      return safe
+        .split(/\n{2,}/)
+        .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+        .join("");
+    }
+
+    function vmGetQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || "";
+    }
+
+    function vmShowLoading(show) {
+      document.getElementById("loadingState").classList.toggle("hidden", !show);
+    }
+
+    function vmShowError(message) {
+      const el = document.getElementById("errorState");
+      el.textContent = message || "Could not load announcement.";
+      el.classList.remove("hidden");
+    }
+
+    function vmHideError() {
+      document.getElementById("errorState").classList.add("hidden");
+      document.getElementById("errorState").textContent = "";
+    }
+
+    function vmShowEmpty(show) {
+      document.getElementById("emptyState").classList.toggle("hidden", !show);
+    }
+
+    function vmShowCard(show) {
+      document.getElementById("announcementCard").classList.toggle("hidden", !show);
+    }
+
+    function vmSetText(id, value, fallback = "") {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || fallback;
+    }
+
+    function vmRenderAnnouncement(data) {
+      vmHideError();
+      vmShowEmpty(false);
+      vmShowCard(true);
+
+      const title =
+        data.notification_title ||
+        data.title ||
+        "School Announcement";
+
+      const body =
+        data.body ||
+        data.notification_body ||
+        data.message ||
+        "";
+
+      const author =
+        data.created_by_admin_name ||
+        data.author ||
+        "School Admin";
+
+      const createdAt =
+        data.created_at ||
+        data.published_at ||
+        data.time ||
+        "";
+
+      const audience =
+        data.audience_text ||
+        data.audience ||
+        data.school_name ||
+        "All Students";
+
+      vmSetText("announcementBadge", "School Update");
+      vmSetText("announcementTitle", title);
+      vmSetText("announcementAuthor", author);
+      vmSetText("announcementDate", `Posted on ${vmFormatDateTime(createdAt)}`);
+      vmSetText("announcementAudience", audience);
+      vmSetText("announcementBy", author);
+      vmSetText("announcementTimeFooter", vmFormatDateTime(createdAt));
+
+      document.getElementById("announcementBody").innerHTML = vmBodyToHtml(body);
+
+      const imageWrap = document.getElementById("imageWrap");
+      const imageEl = document.getElementById("announcementImage");
+      const imageUrl = data.image_url || data.image || "";
+
+      if (imageUrl) {
+        imageEl.src = imageUrl;
+        imageEl.alt = title;
+        imageWrap.classList.remove("hidden");
+      } else {
+        imageEl.removeAttribute("src");
+        imageWrap.classList.add("hidden");
+      }
+
+      const linkCard = document.getElementById("linkCard");
+      const viewLinkBtn = document.getElementById("viewLinkBtn");
+      const linkUrl = data.link_url || data.link || "";
+      const linkLabel = data.link_label || "Open attached link";
+
+      if (linkUrl) {
+        vmSetText("linkTitle", linkLabel);
+        vmSetText("linkSub", "Visit attached resource");
+        linkCard.classList.remove("hidden");
+        viewLinkBtn.onclick = () => {
+          window.open(linkUrl, "_blank", "noopener");
+        };
+      } else {
+        linkCard.classList.add("hidden");
+        viewLinkBtn.onclick = null;
+      }
+
+      const fileCard = document.getElementById("fileCard");
+      const downloadBtn = document.getElementById("downloadFileBtn");
+      const fileUrl = data.file_url || data.file || "";
+      const fileName = data.file_name || data.attachment_name || "Attached file";
+
+      if (fileUrl) {
+        vmSetText("fileTitle", fileName);
+        vmSetText("fileSub", "Download attached file");
+        fileCard.classList.remove("hidden");
+        downloadBtn.onclick = () => {
+          window.open(fileUrl, "_blank", "noopener");
+        };
+      } else {
+        fileCard.classList.add("hidden");
+        downloadBtn.onclick = null;
+      }
+    }
+
+    function vmReadStoredAnnouncement() {
+      try {
+        const raw = localStorage.getItem(VIEW_MESSAGE_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : null;
+      } catch (e) {
+        console.error("Could not read stored announcement:", e);
+        return null;
+      }
+    }
+
+    async function vmFetchAnnouncementFromBackend(announcementId) {
+      if (!announcementId || typeof supabase === "undefined") return null;
+
+      try {
+        const { data, error } = await supabase
+          .from("school_announcements")
+          .select(`
+            id,
+            school_name,
+            title,
+            body,
+            notification_title,
+            notification_body,
+            link_url,
+            link_label,
+            image_url,
+            file_url,
+            created_by_admin_name,
+            created_at,
+            published_at,
+            audience_mode,
+            programme_targets,
+            status
+          `)
+          .eq("id", announcementId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("view_message backend load error:", error);
+          return null;
+        }
+
+        return data || null;
+      } catch (e) {
+        console.error("vmFetchAnnouncementFromBackend error:", e);
+        return null;
+      }
+    }
+
+    async function vmInitPage() {
+      vmShowLoading(true);
+      vmHideError();
+      vmShowEmpty(false);
+      vmShowCard(false);
+
+      const announcementId = vmGetQueryParam("announcement_id");
+      let announcement = vmReadStoredAnnouncement();
+
+      if (!announcement || (announcementId && announcement.id !== announcementId)) {
+        announcement = await vmFetchAnnouncementFromBackend(announcementId);
+      }
+
+      vmShowLoading(false);
+
+      if (!announcement) {
+        vmShowEmpty(true);
+        return;
+      }
+
+      vmRenderAnnouncement(announcement);
+    }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "main.html";
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", vmInitPage);
+  </script>
+</body>
+</html>
