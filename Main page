@@ -1514,1309 +1514,1184 @@
   <script src="./push.js"></script>
 
   <script>
-    const NEARBY_RADIUS_METERS = 400;
-    const SCAN_LAMBDA_URL =
-      "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
-    const SCAN_MAX_PER_MONTH = 20;
+  const NEARBY_RADIUS_METERS = 400;
+  const SCAN_LAMBDA_URL =
+    "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
+  const SCAN_MAX_PER_MONTH = 20;
 
-    const UPDATE_RULE_LOCAL_KEY = "colspot_update_rule";
+  const UPDATE_RULE_LOCAL_KEY = "colspot_update_rule";
 
-    // 🔥 NEW: main warmup config
-    const MAIN_WARMUP_TTL_MS = 10 * 60 * 1000; // 10 minutes
-    const MAIN_WARMUP_KEY = "colspot_main_warmup_last_at";
+  const MAIN_WARMUP_TTL_MS = 10 * 60 * 1000;
+  const MAIN_WARMUP_KEY = "colspot_main_warmup_last_at";
 
-    let currentUser = null;
-    let locationAskedOnce = false;
-    let locationEnabled = true;
+  let currentUser = null;
+  let locationAskedOnce = false;
+  let locationEnabled = true;
 
-    const LOCAL_USER_KEY = "colspot_local_user";
-    const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-    let offlineRetryTimer = null;
+  const LOCAL_USER_KEY = "colspot_local_user";
+  const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  let offlineRetryTimer = null;
 
-    let currentScanQuota = null;
-    let currentScanUserId = null;
+  let currentScanQuota = null;
+  let currentScanUserId = null;
+  let currentUpdateRule = null;
 
-    let currentUpdateRule = null;
-
-    // 🔥 NEW: shared device id helper (same pattern as auth/attendance)
-    function getOrCreateDeviceId() {
-      try {
-        let id = localStorage.getItem("colspot_device_id");
-        if (!id) {
-          if (window.crypto && window.crypto.randomUUID) {
-            id = window.crypto.randomUUID();
-          } else {
-            id =
-              "dev-" +
-              Math.random().toString(36).slice(2) +
-              "-" +
-              Date.now().toString(36);
-          }
-          localStorage.setItem("colspot_device_id", id);
-        }
-        return id;
-      } catch (e) {
-        console.warn("[main warmup] cannot read/write device id:", e);
-        return null;
-      }
-    }
-
-    // 🔥 NEW: check if we already did main warmup recently
-    function isMainWarmupFresh() {
-      try {
-        const raw = localStorage.getItem(MAIN_WARMUP_KEY);
-        if (!raw) return false;
-        const t = new Date(raw).getTime();
-        if (Number.isNaN(t)) return false;
-        const age = Date.now() - t;
-        return age < MAIN_WARMUP_TTL_MS;
-      } catch {
-        return false;
-      }
-    }
-
-    // 🔥 NEW: mark last warmup time
-    function markMainWarmup() {
-      try {
-        localStorage.setItem(
-          MAIN_WARMUP_KEY,
-          new Date().toISOString()
-        );
-      } catch (e) {
-        console.warn("[main warmup] failed to mark timestamp:", e);
-      }
-    }
-
-    // 🔥 NEW: multi-read location helper for main page
-    async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
-      if (!("geolocation" in navigator)) {
-        console.warn("[main warmup] geolocation not supported");
-        return null;
-      }
-
-      let best = null;
-
-      for (let i = 0; i < maxReads; i++) {
-        const pos = await new Promise((resolve) => {
-          navigator.geolocation.getCurrentPosition(
-            (p) => resolve(p),
-            (err) => {
-              console.warn("[main warmup] location error:", err);
-              resolve(null); // don’t reject, just skip this attempt
-            },
-            {
-              enableHighAccuracy: true,
-              maximumAge: 0,
-              timeout: 8000
-            }
-          );
-        });
-
-        if (!pos || !pos.coords) continue;
-
-        const acc =
-          typeof pos.coords.accuracy === "number"
-            ? pos.coords.accuracy
-            : null;
-
-        if (acc == null) continue;
-
-        const snap = {
-          pos,
-          accuracyMeters: acc
-        };
-
-        if (!best || acc < best.accuracyMeters) {
-          best = snap;
-        }
-
-        // Good enough, stop early
-        if (acc <= targetAccuracy) break;
-
-        // Small pause between reads
-        await new Promise((r) => setTimeout(r, 800));
-      }
-
-      return best;
-    }
-
-    // 🔥 NEW: main warmup → attendance_warmup_main
-    async function runMainWarmupOnce() {
-      try {
-        if (typeof supabase === "undefined") {
-          console.warn("[main warmup] supabase not ready");
-          return;
-        }
-
-        // don't spam: only once every 10 minutes
-        if (isMainWarmupFresh()) {
-          return;
-        }
-
-        if (isBrowserOffline()) {
-          console.warn("[main warmup] offline, skipping");
-          return;
-        }
-
-        const user = await ensureCurrentUser();
-        if (!user || !user.id) {
-          console.warn("[main warmup] no user, skipping");
-          return;
-        }
-
-        const deviceId = getOrCreateDeviceId();
-        if (!deviceId) {
-          console.warn("[main warmup] no device id, skipping");
-          return;
-        }
-
-        const warm = await getSmartLocationFromMain(10, 120);
-        if (!warm || !warm.pos || !warm.pos.coords) {
-          console.warn("[main warmup] no valid location");
-          return;
-        }
-
-        const { latitude, longitude } = warm.pos.coords;
-        const accuracyMeters = warm.accuracyMeters;
-
-        if (accuracyMeters == null) {
-          console.warn("[main warmup] missing accuracy");
-          return;
-        }
-
-        const { error } = await supabase
-          .from("attendance_warmup_main")
-          .insert({
-            lecturer_id: user.id,
-            device_id: deviceId,
-            lat: latitude,
-            lng: longitude,
-            accuracy_m: accuracyMeters
-          });
-
-        if (error) {
-          console.warn("[main warmup] insert error:", error);
-          return;
-        }
-
-        markMainWarmup();
-        console.log("[main warmup] saved", {
-          lat: latitude,
-          lng: longitude,
-          accuracy_m: accuracyMeters
-        });
-      } catch (e) {
-        console.warn("[main warmup] failed:", e);
-      }
-    }
-
-    function lockBottomNavToScreen() {
-      const nav = document.getElementById("bottomNav");
-      if (!nav) return;
-
-      if (window.visualViewport) {
-        const vv = window.visualViewport;
-
-        const update = () => {
-          const keyboardHeight = Math.max(
-            0,
-            window.innerHeight - vv.height - vv.offsetTop
-          );
-
-          if (keyboardHeight > 0) {
-            nav.style.transform = `translate(-50%, ${keyboardHeight}px)`;
-          } else {
-            nav.style.transform = "translateX(-50%)";
-          }
-        };
-
-        vv.addEventListener("resize", update);
-        vv.addEventListener("scroll", update);
-        window.addEventListener("resize", update);
-
-        update();
-      }
-    }
-
-    function tryInitPush() {
-      try {
-        if (typeof window.initColspotPush === "function") {
-          window.initColspotPush();
-        }
-      } catch (e) {
-        console.warn("[Push] init failed:", e);
-      }
-    }
-
-    function isBrowserOffline() {
-      try {
-        if (typeof navigator === "undefined" || navigator === null) return false;
-        return navigator.onLine === false;
-      } catch {
-        return false;
-      }
-    }
-
-  function scheduleOfflineRetry() {
-  if (offlineRetryTimer) return;
-  offlineRetryTimer = setInterval(() => {
-    loadMiniHistory();
-    loadLecturerClassSummary();
-    initScanQuotaUI();
-    loadAnnouncements();
-    applyUpdateRuleFromLocal();
-    loadHistoryUnreadBadge();
-  }, 5000);
-}
-
-    function stopOfflineRetry() {
-      if (!offlineRetryTimer) return;
-      clearInterval(offlineRetryTimer);
-      offlineRetryTimer = null;
-    }
-
-    // Hard reload on main.html when Android reports "online" again
-    window.addEventListener("online", () => {
-      try {
-        const href = window.location.href || "";
-        if (href.includes("main.html")) {
-          window.location.reload();
+  function getOrCreateDeviceId() {
+    try {
+      let id = localStorage.getItem("colspot_device_id");
+      if (!id) {
+        if (window.crypto && window.crypto.randomUUID) {
+          id = window.crypto.randomUUID();
         } else {
-          loadMiniHistory();
-          initNearbyAttendance();
-          loadAnnouncements();
-          applyUpdateRuleFromLocal();
+          id =
+            "dev-" +
+            Math.random().toString(36).slice(2) +
+            "-" +
+            Date.now().toString(36);
         }
-      } catch (e) {
-        console.warn("online handler failed, doing soft reload instead:", e);
-        loadMiniHistory();
-        initNearbyAttendance();
-        loadAnnouncements();
-        applyUpdateRuleFromLocal();
+        localStorage.setItem("colspot_device_id", id);
       }
-    });
+      return id;
+    } catch (e) {
+      console.warn("[main warmup] cannot read/write device id:", e);
+      return null;
+    }
+  }
 
-    function getCachedAuthFromLocalUser() {
-      try {
-        const raw = localStorage.getItem(LOCAL_USER_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.id) return null;
+  function isMainWarmupFresh() {
+    try {
+      const raw = localStorage.getItem(MAIN_WARMUP_KEY);
+      if (!raw) return false;
+      const t = new Date(raw).getTime();
+      if (Number.isNaN(t)) return false;
+      const age = Date.now() - t;
+      return age < MAIN_WARMUP_TTL_MS;
+    } catch {
+      return false;
+    }
+  }
 
-        if (parsed.last_seen) {
-          const t = new Date(parsed.last_seen).getTime();
-          if (!Number.isNaN(t)) {
-            const age = Date.now() - t;
-            if (age > LOCAL_USER_TTL_MS) {
-              localStorage.removeItem(LOCAL_USER_KEY);
-              return null;
-            }
+  function markMainWarmup() {
+    try {
+      localStorage.setItem(MAIN_WARMUP_KEY, new Date().toISOString());
+    } catch (e) {
+      console.warn("[main warmup] failed to mark timestamp:", e);
+    }
+  }
+
+  async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
+    if (!("geolocation" in navigator)) {
+      console.warn("[main warmup] geolocation not supported");
+      return null;
+    }
+
+    let best = null;
+
+    for (let i = 0; i < maxReads; i++) {
+      const pos = await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (p) => resolve(p),
+          (err) => {
+            console.warn("[main warmup] location error:", err);
+            resolve(null);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 8000
           }
-        }
-
-        return {
-          user_id: parsed.id,
-          email: parsed.email || "",
-          full_name: parsed.email || ""
-        };
-      } catch (e) {
-        console.error("Could not read local cached user:", e);
-        return null;
-      }
-    }
-
-    function saveLocalUserFromSupabaseUser(user) {
-      if (!user) return;
-      try {
-        localStorage.setItem(
-          LOCAL_USER_KEY,
-          JSON.stringify({
-            id: user.id,
-            email: user.email || "",
-            last_seen: new Date().toISOString()
-          })
         );
-      } catch (e) {
-        console.error("Could not save local user:", e);
-      }
-    }
-
-    function setGreetingFromProfile(fullNameRaw) {
-      const greetLine = document.getElementById("greetingLine");
-      const avatarInitial = document.getElementById("avatarInitial");
-
-      const fullName =
-        (fullNameRaw && fullNameRaw.toString().trim()) || "there";
-      const firstName = fullName.split(" ")[0] || "there";
-
-      if (greetLine) {
-        greetLine.textContent = `Hello, ${firstName}`;
-      }
-      if (avatarInitial) {
-        avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
-      }
-    }
-
-    function distanceInMeters(lat1, lng1, lat2, lng2) {
-      const R = 6371000;
-      const toRad = (deg) => (deg * Math.PI) / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLng = toRad(lng2 - lng1);
-
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) *
-          Math.cos(toRad(lat2)) *
-          Math.sin(dLng / 2) *
-          Math.sin(dLng / 2);
-
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    function updateLocationToggleUI() {
-      const toggle = document.getElementById("locationToggle");
-      const text = document.getElementById("locationToggleText");
-      if (!toggle || !text) return;
-
-      if (locationEnabled) {
-        toggle.classList.add("on");
-        text.textContent = "On";
-      } else {
-        toggle.classList.remove("on");
-        text.textContent = "Off";
-      }
-    }
-
-    function toggleLocation() {
-      locationEnabled = !locationEnabled;
-      localStorage.setItem(
-        "colspotLocationEnabled",
-        locationEnabled ? "true" : "false"
-      );
-      updateLocationToggleUI();
-
-      const statusEl = document.getElementById("nearbyStatus");
-      if (!locationEnabled && statusEl) {
-        statusEl.textContent =
-          "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
-      } else if (locationEnabled && statusEl) {
-        statusEl.textContent =
-          "Checking for active sessions near your location...";
-        initNearbyAttendance();
-      }
-    }
-
-    function askForLocationOnce() {
-      if (locationAskedOnce || !locationEnabled) return;
-      locationAskedOnce = true;
-
-      if (!("geolocation" in navigator)) {
-        console.warn("Geolocation not supported in this browser");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        () => {
-          console.log("Location permission granted on main page");
-        },
-        (err) => {
-          console.warn("Location permission denied or error:", err);
-        },
-        {
-          enableHighAccuracy: false,
-          maximumAge: 0,
-          timeout: 10000,
-        }
-      );
-    }
-
-    function showScreen(name) {
-      const ids = [
-        "home",
-        "attendance",
-        "nearby",
-        "history",
-        "reports",
-        "account",
-        "scan",
-        "ai"
-      ];
-      ids.forEach((id) => {
-        const el = document.getElementById("screen-" + id);
-        if (!el) return;
-        if (id === name) {
-          el.classList.add("active");
-        } else {
-          el.classList.remove("active");
-        }
       });
 
-      const navButtons = document.querySelectorAll(".nav-btn");
-      navButtons.forEach((btn) => btn.classList.remove("active"));
+      if (!pos || !pos.coords) continue;
 
-      // AI and Scan are part of Home nav
-      const navName = (name === "scan" || name === "ai") ? "home" : name;
-      const activeBtn = document.querySelector(
-        '.nav-btn[data-nav="' + navName + '"]'
-      );
-      if (activeBtn) {
-        activeBtn.classList.add("active");
+      const acc =
+        typeof pos.coords.accuracy === "number"
+          ? pos.coords.accuracy
+          : null;
+
+      if (acc == null) continue;
+
+      const snap = {
+        pos,
+        accuracyMeters: acc
+      };
+
+      if (!best || acc < best.accuracyMeters) {
+        best = snap;
       }
 
-      if (name === "scan") {
-        initScanQuotaUI();
-      }
+      if (acc <= targetAccuracy) break;
+
+      await new Promise((r) => setTimeout(r, 800));
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      await new Promise((r) => setTimeout(r, 50));
+    return best;
+  }
 
-      lockBottomNavToScreen();
-
-      // Local-first gate using guard_session if available
-      let localAuth = null;
-      try {
-        if (window.ColspotGuard && typeof ColspotGuard.guardPageAccess === "function") {
-          const localUser = ColspotGuard.guardPageAccess();
-          if (!localUser) {
-            // guardPageAccess already redirected to index if no user
-            return;
-          }
-          localAuth = {
-            user_id: localUser.id,
-            email: localUser.email || "",
-            full_name: localUser.email || ""
-          };
-        } else {
-          // Fallback: old local cache gate
-          localAuth = getCachedAuthFromLocalUser();
-          if (!localAuth) {
-            window.location.href = "index.html";
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("guardPageAccess failed on main:", e);
-        window.location.href = "index.html";
-        return;
-      }
-
-      // Use local cache for instant greeting
-      if (localAuth) {
-        const localName =
-          (localAuth.full_name && localAuth.full_name.trim()) ||
-          (localAuth.email && localAuth.email.trim()) ||
-          "";
-        if (localName) {
-          setGreetingFromProfile(localName);
-        }
-      }
-
-      // Restore location toggle state
-      const stored = localStorage.getItem("colspotLocationEnabled");
-      if (stored === "false") {
-        locationEnabled = false;
-      }
-      updateLocationToggleUI();
-
-      // Scan file input UI hookup
-      const fileInput = document.getElementById("scanFileInput");
-      const chosenText = document.getElementById("scanFileChosenText");
-      if (fileInput && chosenText) {
-        fileInput.addEventListener("change", () => {
-          if (fileInput.files && fileInput.files[0]) {
-            chosenText.textContent = "Selected: " + fileInput.files[0].name;
-          } else {
-            chosenText.textContent = "";
-          }
-        });
-      }
-
-      // Background Supabase session check (non-blocking)
-      if (window.ColspotGuard && typeof ColspotGuard.verifySupabaseSessionInBackground === "function") {
-        ColspotGuard.verifySupabaseSessionInBackground();
-      } else if (typeof supabase !== "undefined") {
-        // Minimal fallback: sync currentUser / profile, but DO NOT redirect
-        try {
-          const { data, error } = await supabase.auth.getUser();
-          if (!error && data && data.user) {
-            currentUser = data.user;
-            const profileName =
-              (currentUser.user_metadata &&
-                currentUser.user_metadata.full_name) ||
-              currentUser.email ||
-              currentUser.phone ||
-              "";
-            saveLocalUserFromSupabaseUser(currentUser);
-            if (profileName) {
-              setGreetingFromProfile(profileName);
-            }
-          }
-        } catch (e) {
-          console.error("Fallback getUser on main failed:", e);
-        }
-      }
-
-      // Normal initialisation (does not control navigation)
-      askForLocationOnce();
-      initNearbyAttendance();
-      loadMiniHistory();
-      initScanQuotaUI();
-      loadAnnouncements();
-      applyUpdateRuleFromLocal();
-      tryInitPush();
-
-      // 🔥 NEW: collect one best location for main warmup table
-      runMainWarmupOnce();
-    });
-
-    function goHome()        { showScreen('home'); }
-    function goToAttendance(){ showScreen('attendance'); }
-    function goToReports()   { showScreen('reports'); }
-    function goToNearby()    { showScreen('nearby'); }
-    function goToHistory()   { showScreen('history'); }
-    function goToAccount()   { showScreen('account'); }
-
-    async function ensureCurrentUser() {
-      if (currentUser) return currentUser;
-      if (typeof supabase === "undefined") return null;
-
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data || !data.user) {
-          scheduleOfflineRetry();
-          return null;
-        }
-        currentUser = data.user;
-        saveLocalUserFromSupabaseUser(currentUser);
-        return currentUser;
-      } catch (e) {
-        console.error("ensureCurrentUser failed:", e);
-        scheduleOfflineRetry();
-        return null;
-      }
-    }
-
-    async function loadMiniHistory() {
-      const listEl = document.getElementById("historyList");
-      if (!listEl) return;
-
-      listEl.innerHTML =
-        '<div class="history-empty">Loading your recent sessions...</div>';
-
+  async function runMainWarmupOnce() {
+    try {
       if (typeof supabase === "undefined") {
-        // UPDATED COPY: no "backend not connected"
-        listEl.innerHTML =
-          '<div class="history-empty">We’re having trouble talking to the server. Please check your internet connection or close and reopen Colspot.</div>';
+        console.warn("[main warmup] supabase not ready");
         return;
       }
 
-      const user = await ensureCurrentUser();
-      if (!user) {
-        if (isBrowserOffline()) {
-          listEl.innerHTML =
-            '<div class="history-empty">No internet connection. We’ll try again automatically…</div>';
-        } else {
-          listEl.innerHTML =
-            '<div class="history-empty">Trying to reconnect… we’ll update this automatically.</div>';
-        }
-        scheduleOfflineRetry();
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from("attendance_sessions")
-          .select("id, course_code, starts_at, created_at")
-          .eq("created_by", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-
-        const sessions = data || [];
-        if (!sessions.length) {
-          listEl.innerHTML =
-            '<div class="history-empty">No previous sessions yet. Create one to get started.</div>';
-          stopOfflineRetry();
-          return;
-        }
-
-        const s = sessions[0];
-        const baseDateStr = s.starts_at || s.created_at;
-        const d = baseDateStr ? new Date(baseDateStr) : null;
-        const timeStr = d
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "--:--";
-
-        const code = s.course_code || "Attendance session";
-
-        listEl.innerHTML = "";
-        const item = document.createElement("div");
-        item.className = "history-item";
-
-        const header = document.createElement("div");
-        header.className = "history-item-header";
-
-        const course = document.createElement("div");
-        course.className = "history-course";
-        course.textContent = code;
-
-        const time = document.createElement("div");
-        time.className = "history-time";
-        time.textContent = timeStr;
-
-        header.appendChild(course);
-        header.appendChild(time);
-
-        const meta = document.createElement("div");
-        meta.className = "history-meta";
-        meta.textContent = "Last session you created";
-
-        const track = document.createElement("div");
-        track.className = "history-progress-track";
-
-        const bar = document.createElement("div");
-        bar.className = "history-progress-bar";
-        track.appendChild(bar);
-
-        item.appendChild(header);
-        item.appendChild(meta);
-        item.appendChild(track);
-
-        listEl.appendChild(item);
-
-        // Success → stop background retry if it was running
-        stopOfflineRetry();
-      } catch (e) {
-        console.error(e);
-        listEl.innerHTML =
-          '<div class="history-empty">Could not load history yet. We’ll keep trying in the background.</div>';
-        scheduleOfflineRetry();
-      }
-    }
-
-    function initNearbyAttendance() {
-      const statusEl = document.getElementById("nearbyStatus");
-      if (!statusEl) return;
-
-      if (!locationEnabled) {
-        statusEl.textContent =
-          "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
+      if (isMainWarmupFresh()) {
         return;
       }
 
       if (isBrowserOffline()) {
-        statusEl.textContent =
-          "No internet connection. We’ll refresh nearby sessions when you’re back online.";
-        scheduleOfflineRetry();
-        return;
-      }
-
-      if (!("geolocation" in navigator)) {
-        showLastSessionFallback(statusEl);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-
-          if (typeof supabase === "undefined") {
-            // UPDATED COPY: no "backend not connected"
-            statusEl.textContent =
-              "Location is OK but we can’t reach Colspot servers right now. Please check your internet or close and reopen the app.";
-            return;
-          }
-
-          try {
-            const nowIso = new Date().toISOString();
-
-            const { data, error } = await supabase
-              .from("attendance_sessions")
-              .select(
-                "id, course_code, expires_at, latitude, longitude, created_at"
-              )
-              .gte("expires_at", nowIso);
-
-            if (error) throw error;
-
-            const sessions = (data || []).filter(
-              (s) =>
-                typeof s.latitude === "number" &&
-                typeof s.longitude === "number"
-            );
-
-            let nearby = sessions.filter((s) => {
-              const d = distanceInMeters(lat, lng, s.latitude, s.longitude);
-              return d <= NEARBY_RADIUS_METERS;
-            });
-
-            if (!nearby.length && sessions.length > 0) {
-              sessions.sort((a, b) => {
-                const da = distanceInMeters(lat, lng, a.latitude, a.longitude);
-                const db = distanceInMeters(lat, lng, b.latitude, b.longitude);
-                return da - db;
-              });
-              nearby = [sessions[0]];
-            }
-
-            if (!nearby.length) {
-              await showLastSessionFallback(statusEl);
-              return;
-            }
-
-            const s0 = nearby[0];
-            const end = s0.expires_at ? new Date(s0.expires_at) : null;
-            const timeStr = end
-              ? end.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "--:--";
-
-            const code = s0.course_code || "Attendance session";
-            statusEl.textContent = `Active near you: ${code} (until ${timeStr})`;
-
-            // Success → stop background retry
-            stopOfflineRetry();
-          } catch (e) {
-            console.error(e);
-            statusEl.textContent =
-              "Error loading nearby attendance. We’ll keep trying in the background. You can still create a session.";
-            scheduleOfflineRetry();
-          }
-        },
-        async () => {
-          await showLastSessionFallback(statusEl);
-        },
-        {
-          enableHighAccuracy: false,
-          maximumAge: 60000,
-          timeout: 10000,
-        }
-      );
-    }
-
-    async function showLastSessionFallback(statusEl) {
-      if (typeof supabase === "undefined") {
-        statusEl.textContent =
-          "We couldn’t reach the server yet. Please check your internet connection or try again in a moment.";
+        console.warn("[main warmup] offline, skipping");
         return;
       }
 
       const user = await ensureCurrentUser();
-      if (!user) {
-        if (isBrowserOffline()) {
-          statusEl.textContent =
-            "No internet connection. We’ll try again automatically…";
-        } else {
-          statusEl.textContent =
-            "Trying to reconnect… we’ll update this automatically.";
-        }
-        scheduleOfflineRetry();
+      if (!user || !user.id) {
+        console.warn("[main warmup] no user, skipping");
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from("attendance_sessions")
-          .select("course_code, starts_at, created_at, expires_at")
-          .eq("created_by", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-
-        const s = (data || [])[0];
-        if (!s) {
-          statusEl.textContent =
-            "No attendance sessions yet. Create one to get started.";
-          stopOfflineRetry();
-          return;
-        }
-
-        const baseDateStr = s.starts_at || s.expires_at || s.created_at;
-        const d = baseDateStr ? new Date(baseDateStr) : null;
-        const timeStr = d
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "--:--";
-
-        const code = s.course_code || "Attendance session";
-        statusEl.textContent = `Last session you created: ${code} (at ${timeStr})`;
-
-        // Success → stop retry
-        stopOfflineRetry();
-      } catch (e) {
-        console.error(e);
-        statusEl.textContent =
-          "We couldn't load your recent sessions yet. We’ll keep trying. You can still create a new one.";
-        scheduleOfflineRetry();
+      const deviceId = getOrCreateDeviceId();
+      if (!deviceId) {
+        console.warn("[main warmup] no device id, skipping");
+        return;
       }
+
+      const warm = await getSmartLocationFromMain(10, 120);
+      if (!warm || !warm.pos || !warm.pos.coords) {
+        console.warn("[main warmup] no valid location");
+        return;
+      }
+
+      const { latitude, longitude } = warm.pos.coords;
+      const accuracyMeters = warm.accuracyMeters;
+
+      if (accuracyMeters == null) {
+        console.warn("[main warmup] missing accuracy");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("attendance_warmup_main")
+        .insert({
+          lecturer_id: user.id,
+          device_id: deviceId,
+          lat: latitude,
+          lng: longitude,
+          accuracy_m: accuracyMeters
+        });
+
+      if (error) {
+        console.warn("[main warmup] insert error:", error);
+        return;
+      }
+
+      markMainWarmup();
+      console.log("[main warmup] saved", {
+        lat: latitude,
+        lng: longitude,
+        accuracy_m: accuracyMeters
+      });
+    } catch (e) {
+      console.warn("[main warmup] failed:", e);
+    }
+  }
+
+  function lockBottomNavToScreen() {
+    const nav = document.getElementById("bottomNav");
+    if (!nav) return;
+
+    if (window.visualViewport) {
+      const vv = window.visualViewport;
+
+      const update = () => {
+        const keyboardHeight = Math.max(
+          0,
+          window.innerHeight - vv.height - vv.offsetTop
+        );
+
+        if (keyboardHeight > 0) {
+          nav.style.transform = `translate(-50%, ${keyboardHeight}px)`;
+        } else {
+          nav.style.transform = "translateX(-50%)";
+        }
+      };
+
+      vv.addEventListener("resize", update);
+      vv.addEventListener("scroll", update);
+      window.addEventListener("resize", update);
+
+      update();
+    }
+  }
+
+  function tryInitPush() {
+    try {
+      if (typeof window.initColspotPush === "function") {
+        window.initColspotPush();
+      }
+    } catch (e) {
+      console.warn("[Push] init failed:", e);
+    }
+  }
+
+  function isBrowserOffline() {
+    try {
+      if (typeof navigator === "undefined" || navigator === null) return false;
+      return navigator.onLine === false;
+    } catch {
+      return false;
+    }
+  }
+
+  function updateHistoryNavBadge(totalUnread) {
+    const badge = document.getElementById("historyUnreadBadge");
+    if (!badge) return;
+
+    if (!totalUnread || totalUnread <= 0) {
+      badge.style.display = "none";
+      badge.textContent = "0";
+      return;
     }
 
-    async function loadAnnouncements() {
-      const section = document.getElementById("announcementSection");
-      const titleEl = document.getElementById("announcementTitle");
-      const msgEl = document.getElementById("announcementMessage");
-      if (!section || !titleEl || !msgEl) return;
+    badge.style.display = "inline-block";
+    badge.textContent = totalUnread > 99 ? "99+" : String(totalUnread);
+  }
 
-      if (typeof supabase === "undefined") {
+  async function loadHistoryUnreadBadge() {
+    try {
+      if (typeof supabase === "undefined") return;
+
+      const user = await ensureCurrentUser();
+      if (!user || !user.id) return;
+
+      let formsUnread = 0;
+      let announcementsUnread = 0;
+      let revisionsUnread = 0;
+
+      const { count: formCount, error: formError } = await supabase
+        .from("form_notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+
+      if (!formError) formsUnread = formCount || 0;
+
+      const { count: announcementCount, error: announcementError } = await supabase
+        .from("announcement_notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+
+      if (!announcementError) announcementsUnread = announcementCount || 0;
+
+      const { data: memberships, error: membershipError } = await supabase
+        .from("course_memberships")
+        .select("course_id")
+        .eq("user_id", user.id);
+
+      if (!membershipError) {
+        const classIds = (memberships || []).map((row) => row.course_id).filter(Boolean);
+
+        if (classIds.length) {
+          const { data: activities, error: activitiesError } = await supabase
+            .from("class_activities")
+            .select("id")
+            .in("class_id", classIds)
+            .eq("is_published", true)
+            .eq("status", "published");
+
+          if (!activitiesError) {
+            const activityIds = (activities || []).map((row) => row.id).filter(Boolean);
+
+            if (activityIds.length) {
+              const { data: attempts, error: attemptsError } = await supabase
+                .from("class_activity_attempts")
+                .select("activity_id")
+                .eq("user_id", user.id)
+                .in("activity_id", activityIds);
+
+              if (!attemptsError) {
+                const attemptedSet = new Set((attempts || []).map((row) => row.activity_id));
+                revisionsUnread = activityIds.filter((id) => !attemptedSet.has(id)).length;
+              }
+            }
+          }
+        }
+      }
+
+      const totalUnread = formsUnread + announcementsUnread + revisionsUnread;
+      updateHistoryNavBadge(totalUnread);
+    } catch (err) {
+      console.error("loadHistoryUnreadBadge failed:", err);
+    }
+  }
+
+  function scheduleOfflineRetry() {
+    if (offlineRetryTimer) return;
+    offlineRetryTimer = setInterval(() => {
+      loadMiniHistory();
+      initNearbyAttendance();
+      initScanQuotaUI();
+      loadAnnouncements();
+      applyUpdateRuleFromLocal();
+      loadHistoryUnreadBadge();
+    }, 5000);
+  }
+
+  function stopOfflineRetry() {
+    if (!offlineRetryTimer) return;
+    clearInterval(offlineRetryTimer);
+    offlineRetryTimer = null;
+  }
+
+  window.addEventListener("online", () => {
+    try {
+      const href = window.location.href || "";
+      if (href.includes("main.html")) {
+        window.location.reload();
+      } else {
+        loadMiniHistory();
+        initNearbyAttendance();
+        initScanQuotaUI();
+        loadAnnouncements();
+        applyUpdateRuleFromLocal();
+        loadHistoryUnreadBadge();
+      }
+    } catch (e) {
+      console.warn("online handler failed, doing soft reload instead:", e);
+      loadMiniHistory();
+      initNearbyAttendance();
+      initScanQuotaUI();
+      loadAnnouncements();
+      applyUpdateRuleFromLocal();
+      loadHistoryUnreadBadge();
+    }
+  });
+
+  function getCachedAuthFromLocalUser() {
+    try {
+      const raw = localStorage.getItem(LOCAL_USER_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.id) return null;
+
+      if (parsed.last_seen) {
+        const t = new Date(parsed.last_seen).getTime();
+        if (!Number.isNaN(t)) {
+          const age = Date.now() - t;
+          if (age > LOCAL_USER_TTL_MS) {
+            localStorage.removeItem(LOCAL_USER_KEY);
+            return null;
+          }
+        }
+      }
+
+      return {
+        user_id: parsed.id,
+        email: parsed.email || "",
+        full_name: parsed.email || ""
+      };
+    } catch (e) {
+      console.error("Could not read local cached user:", e);
+      return null;
+    }
+  }
+
+  function saveLocalUserFromSupabaseUser(user) {
+    if (!user) return;
+    try {
+      localStorage.setItem(
+        LOCAL_USER_KEY,
+        JSON.stringify({
+          id: user.id,
+          email: user.email || "",
+          last_seen: new Date().toISOString()
+        })
+      );
+    } catch (e) {
+      console.error("Could not save local user:", e);
+    }
+  }
+
+  function setGreetingFromProfile(fullNameRaw) {
+    const greetLine = document.getElementById("greetingLine");
+    const avatarInitial = document.getElementById("avatarInitial");
+
+    const fullName =
+      (fullNameRaw && fullNameRaw.toString().trim()) || "there";
+    const firstName = fullName.split(" ")[0] || "there";
+
+    if (greetLine) {
+      greetLine.textContent = `Hello, ${firstName}`;
+    }
+    if (avatarInitial) {
+      avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
+    }
+  }
+
+  function distanceInMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function updateLocationToggleUI() {
+    const toggle = document.getElementById("locationToggle");
+    const text = document.getElementById("locationToggleText");
+    if (!toggle || !text) return;
+
+    if (locationEnabled) {
+      toggle.classList.add("on");
+      text.textContent = "On";
+    } else {
+      toggle.classList.remove("on");
+      text.textContent = "Off";
+    }
+  }
+
+  function toggleLocation() {
+    locationEnabled = !locationEnabled;
+    localStorage.setItem(
+      "colspotLocationEnabled",
+      locationEnabled ? "true" : "false"
+    );
+    updateLocationToggleUI();
+
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!locationEnabled && statusEl) {
+      statusEl.textContent =
+        "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
+    } else if (locationEnabled && statusEl) {
+      statusEl.textContent =
+        "Checking for active sessions near your location...";
+      initNearbyAttendance();
+    }
+  }
+
+  function askForLocationOnce() {
+    if (locationAskedOnce || !locationEnabled) return;
+    locationAskedOnce = true;
+
+    if (!("geolocation" in navigator)) {
+      console.warn("Geolocation not supported in this browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        console.log("Location permission granted on main page");
+      },
+      (err) => {
+        console.warn("Location permission denied or error:", err);
+      },
+      {
+        enableHighAccuracy: false,
+        maximumAge: 0,
+        timeout: 10000,
+      }
+    );
+  }
+
+  function showScreen(name) {
+    const ids = [
+      "home",
+      "attendance",
+      "nearby",
+      "history",
+      "reports",
+      "account",
+      "scan",
+      "ai"
+    ];
+    ids.forEach((id) => {
+      const el = document.getElementById("screen-" + id);
+      if (!el) return;
+      if (id === name) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach((btn) => btn.classList.remove("active"));
+
+    const navName = (name === "scan" || name === "ai") ? "home" : name;
+    const activeBtn = document.querySelector(
+      '.nav-btn[data-nav="' + navName + '"]'
+    );
+    if (activeBtn) {
+      activeBtn.classList.add("active");
+    }
+
+    if (name === "scan") {
+      initScanQuotaUI();
+    }
+  }
+
+  async function ensureCurrentUser() {
+    if (currentUser) return currentUser;
+    if (typeof supabase === "undefined") return null;
+
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        scheduleOfflineRetry();
+        return null;
+      }
+      currentUser = data.user;
+      saveLocalUserFromSupabaseUser(currentUser);
+      return currentUser;
+    } catch (e) {
+      console.error("ensureCurrentUser failed:", e);
+      scheduleOfflineRetry();
+      return null;
+    }
+  }
+
+  async function loadMiniHistory() {
+    const listEl = document.getElementById("historyList");
+    if (!listEl) return;
+
+    listEl.innerHTML =
+      '<div class="history-empty">Loading your recent sessions...</div>';
+
+    if (typeof supabase === "undefined") {
+      listEl.innerHTML =
+        '<div class="history-empty">We’re having trouble talking to the server. Please check your internet connection or close and reopen Colspot.</div>';
+      return;
+    }
+
+    const user = await ensureCurrentUser();
+    if (!user) {
+      if (isBrowserOffline()) {
+        listEl.innerHTML =
+          '<div class="history-empty">No internet connection. We’ll try again automatically…</div>';
+      } else {
+        listEl.innerHTML =
+          '<div class="history-empty">Trying to reconnect… we’ll update this automatically.</div>';
+      }
+      scheduleOfflineRetry();
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("attendance_sessions")
+        .select("id, course_code, starts_at, created_at")
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const sessions = data || [];
+      if (!sessions.length) {
+        listEl.innerHTML =
+          '<div class="history-empty">No previous sessions yet. Create one to get started.</div>';
+        stopOfflineRetry();
+        return;
+      }
+
+      const s = sessions[0];
+      const baseDateStr = s.starts_at || s.created_at;
+      const d = baseDateStr ? new Date(baseDateStr) : null;
+      const timeStr = d
+        ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "--:--";
+
+      const code = s.course_code || "Attendance session";
+
+      listEl.innerHTML = "";
+      const item = document.createElement("div");
+      item.className = "history-item";
+
+      const header = document.createElement("div");
+      header.className = "history-item-header";
+
+      const course = document.createElement("div");
+      course.className = "history-course";
+      course.textContent = code;
+
+      const time = document.createElement("div");
+      time.className = "history-time";
+      time.textContent = timeStr;
+
+      header.appendChild(course);
+      header.appendChild(time);
+
+      const meta = document.createElement("div");
+      meta.className = "history-meta";
+      meta.textContent = "Last session you created";
+
+      const track = document.createElement("div");
+      track.className = "history-progress-track";
+
+      const bar = document.createElement("div");
+      bar.className = "history-progress-bar";
+      track.appendChild(bar);
+
+      item.appendChild(header);
+      item.appendChild(meta);
+      item.appendChild(track);
+
+      listEl.appendChild(item);
+
+      stopOfflineRetry();
+    } catch (e) {
+      console.error(e);
+      listEl.innerHTML =
+        '<div class="history-empty">Could not load history yet. We’ll keep trying in the background.</div>';
+      scheduleOfflineRetry();
+    }
+  }
+
+  function getCurrentMonthKey() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+
+  async function loadScanQuota() {
+    if (typeof supabase === "undefined") return null;
+    const user = await ensureCurrentUser();
+    if (!user) return null;
+
+    currentScanUserId = user.id;
+    const monthKey = getCurrentMonthKey();
+
+    try {
+      const { data, error } = await supabase
+        .from("scan_sheets")
+        .select("id", { count: "exact", head: false })
+        .eq("user_id", user.id)
+        .eq("month_key", monthKey);
+
+      if (error) throw error;
+
+      const used = Array.isArray(data) ? data.length : 0;
+      currentScanQuota = {
+        used,
+        remaining: Math.max(0, SCAN_MAX_PER_MONTH - used),
+        monthKey
+      };
+      return currentScanQuota;
+    } catch (e) {
+      console.error("loadScanQuota failed:", e);
+      return null;
+    }
+  }
+
+  function renderScanQuotaUI() {
+    const quotaEls = document.querySelectorAll("[data-scan-quota]");
+    if (!quotaEls.length) return;
+
+    quotaEls.forEach((el) => {
+      if (!currentScanQuota) {
+        el.textContent = "Could not load monthly quota.";
+        el.classList.remove("scan-quota-low", "scan-quota-zero");
+        return;
+      }
+
+      el.textContent = `Monthly scans used: ${currentScanQuota.used}/${SCAN_MAX_PER_MONTH} • Remaining: ${currentScanQuota.remaining}`;
+
+      el.classList.remove("scan-quota-low", "scan-quota-zero");
+
+      if (currentScanQuota.remaining === 0) {
+        el.classList.add("scan-quota-zero");
+      } else if (currentScanQuota.remaining <= 3) {
+        el.classList.add("scan-quota-low");
+      }
+    });
+  }
+
+  async function initScanQuotaUI() {
+    await loadScanQuota();
+    renderScanQuotaUI();
+  }
+
+  async function submitScanSheet() {
+    const fileInput = document.getElementById("scanFileInput");
+    const statusEl = document.getElementById("scanStatus");
+    const btn = document.getElementById("scanSubmitBtn");
+    const titleInput = document.getElementById("scanTitle");
+    const outputTypeEl = document.querySelector('input[name="scanOutputType"]:checked');
+
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+      if (statusEl) {
+        statusEl.textContent = "Please choose a file first.";
+        statusEl.className = "scan-status error";
+      }
+      return;
+    }
+
+    if (!currentScanQuota) {
+      await initScanQuotaUI();
+    }
+
+    if (currentScanQuota && currentScanQuota.remaining <= 0) {
+      if (statusEl) {
+        statusEl.textContent = "You have reached your monthly scan limit.";
+        statusEl.className = "scan-status error";
+      }
+      return;
+    }
+
+    const user = await ensureCurrentUser();
+    if (!user) {
+      if (statusEl) {
+        statusEl.textContent = "Please sign in again.";
+        statusEl.className = "scan-status error";
+      }
+      return;
+    }
+
+    try {
+      if (btn) btn.disabled = true;
+      if (statusEl) {
+        statusEl.textContent = "Uploading and processing your scan...";
+        statusEl.className = "scan-status";
+      }
+
+      const file = fileInput.files[0];
+      const outputType = outputTypeEl ? outputTypeEl.value : "excel";
+      const title = (titleInput?.value || "").trim() || file.name || "Scan";
+
+      const buffer = await file.arrayBuffer();
+      const base64 = arrayBufferToBase64(buffer);
+
+      const response = await fetch(SCAN_LAMBDA_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          title,
+          output_type: outputType,
+          filename: file.name,
+          mime_type: file.type || "application/octet-stream",
+          file_base64: base64
+        })
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error((result && result.error) || "Scan failed.");
+      }
+
+      try {
+        if (typeof supabase !== "undefined") {
+          await supabase.from("scan_sheets").insert({
+            user_id: user.id,
+            title,
+            month_key: getCurrentMonthKey(),
+            output_type: outputType,
+            source_name: file.name
+          });
+        }
+      } catch (logErr) {
+        console.warn("scan_sheets insert failed:", logErr);
+      }
+
+      await initScanQuotaUI();
+
+      if (statusEl) {
+        statusEl.textContent = result?.message || "Scan completed successfully.";
+        statusEl.className = "scan-status ok";
+      }
+
+      if (result?.download_url) {
+        window.open(result.download_url, "_blank");
+      }
+    } catch (e) {
+      console.error("submitScanSheet failed:", e);
+      if (statusEl) {
+        statusEl.textContent = e.message || "Could not process scan.";
+        statusEl.className = "scan-status error";
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function arrayBufferToBase64(buffer) {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      const sub = bytes.subarray(i, i + chunk);
+      binary += String.fromCharCode.apply(null, sub);
+    }
+    return btoa(binary);
+  }
+
+  async function loadAnnouncements() {
+    const section = document.getElementById("announcementSection");
+    const titleEl = document.getElementById("announcementTitle");
+    const msgEl = document.getElementById("announcementMessage");
+    if (!section || !titleEl || !msgEl) return;
+
+    if (typeof supabase === "undefined") {
+      section.style.display = "none";
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("app_announcements")
+        .select("id,title,message,show_until,is_active,created_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      const ann = data && data[0];
+
+      if (!ann) {
         section.style.display = "none";
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from("app_announcements")
-          .select("id,title,message,show_until,is_active,created_at")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-        const ann = data && data[0];
-
-        if (!ann) {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        if (ann.show_until && new Date(ann.show_until) < new Date()) {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        const dismissKey = "colspot_announcement_dismissed_" + ann.id;
-        if (localStorage.getItem(dismissKey) === "1") {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        section.dataset.announcementId = ann.id;
-        titleEl.textContent = ann.title || "Update";
-        msgEl.textContent = ann.message || "";
-        section.style.display = "block";
-
-        // Success → stop retry
-        stopOfflineRetry();
-      } catch (e) {
-        console.error("loadAnnouncements failed:", e);
-        scheduleOfflineRetry();
-      }
-    }
-
-    function dismissAnnouncement() {
-      const section = document.getElementById("announcementSection");
-      if (!section) return;
-      const id = section.dataset.announcementId;
-      if (id) {
-        try {
-          localStorage.setItem(
-            "colspot_announcement_dismissed_" + id,
-            "1"
-          );
-        } catch (e) {
-          console.warn("Failed to persist announcement dismiss:", e);
-        }
-      }
+      titleEl.textContent = ann.title || "Update";
+      msgEl.textContent = ann.message || "";
+      section.style.display = "block";
+    } catch (e) {
+      console.warn("loadAnnouncements failed:", e);
       section.style.display = "none";
     }
+  }
 
-    function applyUpdateRuleFromLocal() {
-      let raw;
-      try {
-        raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
-      } catch {
-        raw = null;
-      }
-      if (!raw) {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
+  function dismissAnnouncement() {
+    const section = document.getElementById("announcementSection");
+    if (section) section.style.display = "none";
+  }
 
-      let rule;
-      try {
-        rule = JSON.parse(raw);
-      } catch {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
+  function applyUpdateRuleFromLocal() {
+    const softSection = document.getElementById("updateSoftSection");
+    const softTitle = document.getElementById("updateSoftTitle");
+    const softMessage = document.getElementById("updateSoftMessage");
+    const hardOverlay = document.getElementById("updateHardOverlay");
+    const hardTitle = document.getElementById("updateHardTitle");
+    const hardMessage = document.getElementById("updateHardMessage");
 
-      if (!rule || !rule.mode || rule.mode === "none") {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
-
-      const now = new Date();
-      if (rule.deadline && new Date(rule.deadline) < now && rule.mode === "soft") {
-        rule.mode = "hard";
-      }
-
-      currentUpdateRule = rule;
-
-      if (rule.mode === "soft") {
-        showSoftUpdateBanner(rule);
-        hideHardUpdateOverlay();
-      } else if (rule.mode === "hard") {
-        hideSoftUpdateBanner();
-        showHardUpdateOverlay(rule);
-      } else {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-      }
+    try {
+      const raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
+      currentUpdateRule = raw ? JSON.parse(raw) : null;
+    } catch {
+      currentUpdateRule = null;
     }
 
-    function showSoftUpdateBanner(rule) {
-      const sec = document.getElementById("updateSoftSection");
-      const titleEl = document.getElementById("updateSoftTitle");
-      const msgEl = document.getElementById("updateSoftMessage");
-      if (!sec || !titleEl || !msgEl) return;
-
-      titleEl.textContent = rule.message_title || "New version available";
-      msgEl.textContent =
-        rule.message_body ||
-        "A newer version of Colspot is available. Please update when you can.";
-      sec.style.display = "block";
+    if (!currentUpdateRule) {
+      if (softSection) softSection.style.display = "none";
+      if (hardOverlay) hardOverlay.style.display = "none";
+      return;
     }
 
-    function hideSoftUpdateBanner() {
-      const sec = document.getElementById("updateSoftSection");
-      if (sec) sec.style.display = "none";
+    const type = String(currentUpdateRule.type || "").toLowerCase();
+    const title = currentUpdateRule.title || "New version available";
+    const message = currentUpdateRule.message || "Please update Colspot.";
+
+    if (type === "hard") {
+      if (softSection) softSection.style.display = "none";
+      if (hardTitle) hardTitle.textContent = title;
+      if (hardMessage) hardMessage.textContent = message;
+      if (hardOverlay) hardOverlay.style.display = "flex";
+      return;
     }
 
-    function showHardUpdateOverlay(rule) {
-      const overlay = document.getElementById("updateHardOverlay");
-      const titleEl = document.getElementById("updateHardTitle");
-      const msgEl = document.getElementById("updateHardMessage");
-      if (!overlay || !titleEl || !msgEl) return;
+    if (softTitle) softTitle.textContent = title;
+    if (softMessage) softMessage.textContent = message;
+    if (softSection) softSection.style.display = "block";
+    if (hardOverlay) hardOverlay.style.display = "none";
+  }
 
-      titleEl.textContent = rule.message_title || "Update required";
-      msgEl.textContent =
-        rule.message_body ||
-        "A newer version of Colspot is required to continue. Please update to keep using the app.";
-      overlay.style.display = "flex";
+  function openUpdateUrlFromRule() {
+    if (!currentUpdateRule || !currentUpdateRule.url) return;
+    window.open(currentUpdateRule.url, "_blank");
+  }
+
+  function initNearbyAttendance() {
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!statusEl) return;
+
+    if (!locationEnabled) {
+      statusEl.textContent =
+        "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
+      return;
     }
 
-    function hideHardUpdateOverlay() {
-      const overlay = document.getElementById("updateHardOverlay");
-      if (overlay) overlay.style.display = "none";
+    if (isBrowserOffline()) {
+      statusEl.textContent =
+        "No internet connection. We’ll refresh nearby sessions when you’re back online.";
+      scheduleOfflineRetry();
+      return;
     }
 
-    function openUpdateUrlFromRule() {
-      if (!currentUpdateRule || !currentUpdateRule.update_url) return;
-      try {
-        window.location.href = currentUpdateRule.update_url;
-      } catch {
-        window.open(currentUpdateRule.update_url, "_blank");
-      }
+    if (!("geolocation" in navigator)) {
+      showLastSessionFallback(statusEl);
+      return;
     }
 
-    function getCurrentMonthKey() {
-      const d = new Date();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      return `${d.getFullYear()}-${m}`;
-    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
 
-    function loadUserScanQuota(userId) {
-      const key = `colspot_scan_quota_${userId}`;
-      const monthKey = getCurrentMonthKey();
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (
-            parsed &&
-            parsed.month === monthKey &&
-            typeof parsed.used === "number"
-          ) {
-            return { month: monthKey, used: parsed.used };
-          }
+        if (typeof supabase === "undefined") {
+          statusEl.textContent =
+            "Location is OK but we can’t reach Colspot servers right now. Please check your internet or close and reopen the app.";
+          return;
         }
-      } catch (e) {
-        console.warn("Could not read scan quota:", e);
-      }
-      const initial = { month: monthKey, used: 0 };
-      saveUserScanQuota(userId, initial);
-      return initial;
-    }
 
-    function saveUserScanQuota(userId, quota) {
-      const key = `colspot_scan_quota_${userId}`;
-      try {
-        localStorage.setItem(key, JSON.stringify(quota));
-      } catch (e) {
-        console.warn("Could not save scan quota:", e);
-      }
-    }
-
-    function updateScanQuotaText() {
-      const el = document.getElementById("scanQuotaText");
-      if (!el || !currentScanQuota) return;
-
-      const used = currentScanQuota.used || 0;
-      let remaining = SCAN_MAX_PER_MONTH - used;
-      if (remaining < 0) remaining = 0;
-
-      el.classList.remove("scan-quota-low", "scan-quota-zero");
-
-      if (remaining > 0) {
-        el.textContent = `You have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
-        if (remaining <= 5) {
-          el.classList.add("scan-quota-low");
-        }
-      } else {
-        el.textContent = `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Scanning will be available again next month.`;
-        el.classList.add("scan-quota-zero");
-      }
-    }
-
-    async function initScanQuotaUI() {
-      const quotaEl = document.getElementById("scanQuotaText");
-      if (!quotaEl) return;
-
-      const userCtx = await getUserContextForScan();
-      if (!userCtx || !userCtx.id) {
-        quotaEl.textContent = `You have ${SCAN_MAX_PER_MONTH} scans per month.`;
-        quotaEl.classList.remove("scan-quota-low", "scan-quota-zero");
-        currentScanQuota = null;
-        currentScanUserId = null;
-        return;
-      }
-
-      currentScanUserId = userCtx.id;
-      currentScanQuota = loadUserScanQuota(userCtx.id);
-      updateScanQuotaText();
-    }
-
-    function openScanFilePicker() {
-      const input = document.getElementById("scanFileInput");
-      if (input) input.click();
-    }
-
-    async function getUserContextForScan() {
-      const user = await ensureCurrentUser();
-      if (user) {
-        return { id: user.id, email: user.email || "" };
-      }
-      const cached = getCachedAuthFromLocalUser();
-      if (cached) {
-        return { id: cached.user_id || cached.id, email: cached.email || "" };
-      }
-      return null;
-    }
-
-    async function submitScanForm(event) {
-      event.preventDefault();
-
-      const statusEl = document.getElementById("scanStatusText");
-      const btn = document.getElementById("scanSubmitBtn");
-      const nameInput = document.getElementById("scanFileName");
-      const fileInput = document.getElementById("scanFileInput");
-      const formatRadio = document.querySelector(
-        'input[name="scanFormat"]:checked'
-      );
-
-      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent = "Please choose a photo or PDF to scan.";
-        return;
-      }
-
-      const userCtx = await getUserContextForScan();
-      if (!userCtx) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent =
-          "We could not find your account. Please sign in again.";
-        return;
-      }
-
-      currentScanUserId = userCtx.id;
-      currentScanQuota = loadUserScanQuota(userCtx.id);
-      const used = currentScanQuota.used || 0;
-      if (used >= SCAN_MAX_PER_MONTH) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent =
-          `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Try again next month.`;
-        updateScanQuotaText();
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const fileNameRaw = nameInput.value.trim();
-      const fileName = fileNameRaw || file.name || "Untitled scan";
-      const outputFormat = formatRadio ? formatRadio.value : "excel";
-
-      statusEl.className = "scan-status";
-      statusEl.textContent = "Uploading and scanning… please wait.";
-      btn.disabled = true;
-
-      try {
-        const base64Data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result || "";
-            const parts = String(result).split(",");
-            resolve(parts.length > 1 ? parts[1] : parts[0]);
-          };
-          reader.onerror = () =>
-            reject(new Error("Could not read file on device."));
-          reader.readAsDataURL(file);
-        });
-
-        const payload = {
-          user_id: userCtx.id,
-          file_name: fileName,
-          output_format: outputFormat,
-          file_data: base64Data,
-          mime_type: file.type || "application/octet-stream",
-        };
-
-        const resp = await fetch(SCAN_LAMBDA_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        let data = null;
         try {
-          data = await resp.json();
-        } catch {
-          data = null;
-        }
+          const nowIso = new Date().toISOString();
 
-        if (!resp.ok) {
-          const msg =
-            (data && (data.message || data.error)) ||
-            "Scan failed on server.";
-          throw new Error(msg);
-        }
+          const { data, error } = await supabase
+            .from("attendance_sessions")
+            .select(
+              "id, course_code, expires_at, latitude, longitude, created_at"
+            )
+            .gte("expires_at", nowIso);
 
-        if (typeof supabase !== "undefined" && userCtx && userCtx.id) {
-          try {
-            const record = {
-              user_id: userCtx.id,
-              title: fileName,
-              page_count: data?.page_count ?? null,
-              total_rows: data?.total_rows ?? null,
-              s3_object_key: data?.s3_object_key ?? null,
-              status: data?.status ?? "completed",
-              result_json: data?.result_json ?? null,
-              error_message: data?.error_message ?? null,
-            };
+          if (error) throw error;
 
-            if (data && data.scan_sheet_id) {
-              record.id = data.scan_sheet_id;
-            }
+          const sessions = (data || []).filter(
+            (s) =>
+              typeof s.latitude === "number" &&
+              typeof s.longitude === "number"
+          );
 
-            await supabase.from("scan_sheets").insert(record);
-          } catch (e) {
-            console.warn("Supabase scan_sheets insert failed (non-fatal):", e);
+          let nearby = sessions.filter((s) => {
+            const d = distanceInMeters(lat, lng, s.latitude, s.longitude);
+            return d <= NEARBY_RADIUS_METERS;
+          });
+
+          if (!nearby.length && sessions.length > 0) {
+            sessions.sort((a, b) => {
+              const da = distanceInMeters(lat, lng, a.latitude, a.longitude);
+              const db = distanceInMeters(lat, lng, b.latitude, b.longitude);
+              return da - db;
+            });
+            nearby = [sessions[0]];
           }
-        }
 
-        if (currentScanUserId) {
-          currentScanQuota = loadUserScanQuota(currentScanUserId);
-          currentScanQuota.used = (currentScanQuota.used || 0) + 1;
-          if (currentScanQuota.used < 0) currentScanQuota.used = 0;
-          saveUserScanQuota(currentScanUserId, currentScanQuota);
-        }
-        updateScanQuotaText();
+          if (!nearby.length) {
+            await showLastSessionFallback(statusEl);
+            return;
+          }
 
-        const remaining =
-          currentScanQuota
-            ? Math.max(
-                0,
-                SCAN_MAX_PER_MONTH - (currentScanQuota.used || 0)
-              )
-            : null;
+          const s0 = nearby[0];
+          const end = s0.expires_at ? new Date(s0.expires_at) : null;
+          const timeStr = end
+            ? end.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "--:--";
 
-        statusEl.className = "scan-status ok";
+          const code = s0.course_code || "Attendance session";
+          statusEl.textContent = `Active near you: ${code} (until ${timeStr})`;
 
-        const remainingText =
-          remaining === null
-            ? ""
-            : ` You now have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
-
-        if (data && data.result_json && data.result_json.download_url) {
-          statusEl.innerHTML =
-            "Scan completed." +
-            remainingText +
-            "<br>It may take a few seconds to appear in <b>History</b>." +
-            '<br>Go to the <b>History</b> tab to view and download it, or ' +
-            '<a href="' +
-            data.result_json.download_url +
-            '" target="_blank" rel="noopener">open it now</a>.';
-        } else {
+          stopOfflineRetry();
+        } catch (e) {
+          console.error(e);
           statusEl.textContent =
-            "Scan completed." +
-            remainingText +
-            " Go to the History tab to view and download it.";
+            "Error loading nearby attendance. We’ll keep trying in the background. You can still create a session.";
+          scheduleOfflineRetry();
         }
+      },
+      async () => {
+        await showLastSessionFallback(statusEl);
+      },
+      {
+        enableHighAccuracy: false,
+        maximumAge: 60000,
+        timeout: 10000,
+      }
+    );
+  }
 
-        fileInput.value = "";
-        const chosenText2 = document.getElementById("scanFileChosenText");
-        if (chosenText2) chosenText2.textContent = "";
-      } catch (err) {
-        console.error("Scan error:", err);
+  async function showLastSessionFallback(statusEl) {
+    if (typeof supabase === "undefined") {
+      statusEl.textContent =
+        "We couldn’t reach the server yet. Please check your internet connection or try again in a moment.";
+      return;
+    }
 
-        // UPDATED: nicer message when network is off / "Failed to fetch"
-        const rawMsg = (err && err.message) ? String(err.message).toLowerCase() : "";
-        const looksLikeNetwork =
-          rawMsg.includes("failed to fetch") ||
-          rawMsg.includes("network") ||
-          rawMsg.includes("timeout") ||
-          rawMsg.includes("timed out") ||
-          rawMsg.includes("err_name_not_resolved");
+    const user = await ensureCurrentUser();
+    if (!user) {
+      if (isBrowserOffline()) {
+        statusEl.textContent =
+          "No internet connection. We’ll try again automatically…";
+      } else {
+        statusEl.textContent =
+          "Trying to reconnect… we’ll update this automatically.";
+      }
+      scheduleOfflineRetry();
+      return;
+    }
 
-        statusEl.className = "scan-status error";
-        if (looksLikeNetwork) {
-          statusEl.textContent =
-            "We couldn’t reach Colspot servers. Please check your internet connection and try again.";
-        } else {
-          statusEl.textContent =
-            err && err.message
-              ? err.message
-              : "Scan failed. Please try again.";
+    try {
+      const { data, error } = await supabase
+        .from("attendance_sessions")
+        .select("course_code, starts_at, created_at, expires_at")
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const s = (data || [])[0];
+      if (!s) {
+        statusEl.textContent =
+          "No attendance sessions yet. Create one to get started.";
+        stopOfflineRetry();
+        return;
+      }
+
+      const baseDateStr = s.starts_at || s.expires_at || s.created_at;
+      const d = baseDateStr ? new Date(baseDateStr) : null;
+      const timeStr = d
+        ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "--:--";
+
+      const code = s.course_code || "Attendance session";
+      statusEl.textContent = `Last session you created: ${code} (at ${timeStr})`;
+
+      stopOfflineRetry();
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent =
+        "We couldn't load your recent sessions yet. We’ll keep trying. You can still create a new one.";
+      scheduleOfflineRetry();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await new Promise((r) => setTimeout(r, 50));
+
+    lockBottomNavToScreen();
+
+    let localAuth = null;
+    try {
+      if (window.ColspotGuard && typeof ColspotGuard.guardPageAccess === "function") {
+        const localUser = ColspotGuard.guardPageAccess();
+        if (!localUser) {
+          return;
         }
-      } finally {
-        btn.disabled = false;
+        localAuth = {
+          user_id: localUser.id,
+          email: localUser.email || "",
+          full_name: localUser.email || ""
+        };
+      } else {
+        localAuth = getCachedAuthFromLocalUser();
+        if (!localAuth) {
+          window.location.href = "index.html";
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("guardPageAccess failed on main:", e);
+      window.location.href = "index.html";
+      return;
+    }
+
+    if (localAuth) {
+      const localName =
+        (localAuth.full_name && localAuth.full_name.trim()) ||
+        (localAuth.email && localAuth.email.trim()) ||
+        "";
+      if (localName) {
+        setGreetingFromProfile(localName);
       }
     }
 
-    function setupKeyboardNavHide() {
-      const focusSelector =
-        "input, textarea, select, [contenteditable='true']";
+    const stored = localStorage.getItem("colspotLocationEnabled");
+    if (stored === "false") {
+      locationEnabled = false;
+    }
+    updateLocationToggleUI();
 
-      document.addEventListener("focusin", (event) => {
-        if (event.target.matches(focusSelector)) {
-          document.body.classList.add("keyboard-open");
-        }
-      });
-
-      document.addEventListener("focusout", (event) => {
-        if (event.target.matches(focusSelector)) {
-          setTimeout(() => {
-            const active = document.activeElement;
-            if (!active || !active.matches(focusSelector)) {
-              document.body.classList.remove("keyboard-open");
-            }
-          }, 50);
+    const fileInput = document.getElementById("scanFileInput");
+    const chosenText = document.getElementById("scanFileChosenText");
+    if (fileInput && chosenText) {
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files && fileInput.files[0]) {
+          chosenText.textContent = "Selected: " + fileInput.files[0].name;
+        } else {
+          chosenText.textContent = "";
         }
       });
     }
 
-    setupKeyboardNavHide();
-  </script>
+    if (window.ColspotGuard && typeof ColspotGuard.verifySupabaseSessionInBackground === "function") {
+      ColspotGuard.verifySupabaseSessionInBackground();
+    } else if (typeof supabase !== "undefined") {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data && data.user) {
+          currentUser = data.user;
+          const profileName =
+            (currentUser.user_metadata &&
+              currentUser.user_metadata.full_name) ||
+            currentUser.email ||
+            currentUser.phone ||
+            "";
+          saveLocalUserFromSupabaseUser(currentUser);
+          if (profileName) {
+            setGreetingFromProfile(profileName);
+          }
+        }
+      } catch (e) {
+        console.error("Fallback getUser on main failed:", e);
+      }
+    }
+
+    askForLocationOnce();
+    initNearbyAttendance();
+    loadMiniHistory();
+    initScanQuotaUI();
+    loadAnnouncements();
+    applyUpdateRuleFromLocal();
+    loadHistoryUnreadBadge();
+    tryInitPush();
+    runMainWarmupOnce();
+  });
+
+  function goHome()        { showScreen('home'); }
+  function goToAttendance(){ showScreen('attendance'); }
+  function goToReports()   { showScreen('reports'); }
+  function goToNearby()    { showScreen('nearby'); }
+  function goToHistory()   { showScreen('history'); }
+  function goToAccount()   { showScreen('account'); }
+
+  window.showScreen = showScreen;
+  window.goHome = goHome;
+  window.goToAttendance = goToAttendance;
+  window.goToReports = goToReports;
+  window.goToNearby = goToNearby;
+  window.goToHistory = goToHistory;
+  window.goToAccount = goToAccount;
+  window.toggleLocation = toggleLocation;
+  window.dismissAnnouncement = dismissAnnouncement;
+  window.openUpdateUrlFromRule = openUpdateUrlFromRule;
+  window.submitScanSheet = submitScanSheet;
+</script>
 </body>
 </html>
