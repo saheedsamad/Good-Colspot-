@@ -1513,7 +1513,7 @@
   <!-- Push notifications helper (unchanged) -->
   <script src="./push.js"></script>
 
-  <script>
+<script>
   const NEARBY_RADIUS_METERS = 400;
   const SCAN_LAMBDA_URL =
     "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
@@ -1534,6 +1534,7 @@
 
   let currentScanQuota = null;
   let currentScanUserId = null;
+
   let currentUpdateRule = null;
 
   function getOrCreateDeviceId() {
@@ -1573,7 +1574,10 @@
 
   function markMainWarmup() {
     try {
-      localStorage.setItem(MAIN_WARMUP_KEY, new Date().toISOString());
+      localStorage.setItem(
+        MAIN_WARMUP_KEY,
+        new Date().toISOString()
+      );
     } catch (e) {
       console.warn("[main warmup] failed to mark timestamp:", e);
     }
@@ -2364,21 +2368,43 @@
 
       if (!ann) {
         section.style.display = "none";
+        stopOfflineRetry();
         return;
       }
 
+      if (ann.show_until && new Date(ann.show_until) < new Date()) {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      const dismissKey = "colspot_announcement_dismissed_" + ann.id;
+      if (localStorage.getItem(dismissKey) === "1") {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      section.dataset.announcementId = ann.id;
       titleEl.textContent = ann.title || "Update";
       msgEl.textContent = ann.message || "";
       section.style.display = "block";
+
+      stopOfflineRetry();
     } catch (e) {
-      console.warn("loadAnnouncements failed:", e);
-      section.style.display = "none";
+      console.error("loadAnnouncements failed:", e);
+      scheduleOfflineRetry();
     }
   }
 
   function dismissAnnouncement() {
     const section = document.getElementById("announcementSection");
-    if (section) section.style.display = "none";
+    if (!section) return;
+    const annId = section.dataset.announcementId;
+    if (annId) {
+      localStorage.setItem("colspot_announcement_dismissed_" + annId, "1");
+    }
+    section.style.display = "none";
   }
 
   function applyUpdateRuleFromLocal() {
