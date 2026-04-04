@@ -2195,13 +2195,26 @@
       uploadedUrls.push(publicUrlData?.publicUrl || "");
     }
 
-    setCurrentFormValue(maxFiles > 1 ? uploadedUrls : uploadedUrls[0]);
+    setCurrentFormValue(maxFiles > 1 ? uploadedUrls : uploadedUrls[0] || "");
     setFieldNote(`${uploadedUrls.length} file(s) uploaded successfully.`);
+    qs("studentFormFileInput").value = "";
   }
+
+  function studentGoPrevFormQuestion() {
+    const state = window.studentClassActivityState;
+    if (state.currentFormIndex <= 0) {
+      showView("studentFormDetailsView");
+      return;
+    }
+    state.currentFormIndex -= 1;
+    renderFormQuestion();
+  }
+
+  window.studentGoPrevFormQuestion = studentGoPrevFormQuestion;
 
   function studentGoNextFormQuestion() {
     if (!validateCurrentFormQuestion()) {
-      alert("Please answer this required question before continuing.");
+      alert("Please answer this question before continuing.");
       return;
     }
 
@@ -2218,51 +2231,34 @@
     renderFormQuestion();
   }
 
-  function studentGoPrevFormQuestion() {
-    const state = window.studentClassActivityState;
-    if (state.currentFormIndex > 0) {
-      state.currentFormIndex -= 1;
-      renderFormQuestion();
-    } else {
-      showView("studentFormDetailsView");
+  function renderAnswerPreview(answer) {
+    if (Array.isArray(answer)) {
+      if (!answer.length) return "No answer";
+      return answer.join(", ");
     }
-  }
-
-  window.studentGoPrevFormQuestion = studentGoPrevFormQuestion;
-
-  function formatFormAnswerPreview(q, answer) {
-    const type = String(q.question_type || "short_answer").toLowerCase();
-
-    if (type === "checkboxes") {
-      return Array.isArray(answer) && answer.length ? answer.join(", ") : "No answer";
+    if (answer && typeof answer === "object") {
+      try { return JSON.stringify(answer); } catch { return "Answer saved"; }
     }
-
-    if (type === "file_upload") {
-      if (Array.isArray(answer) && answer.length) return `${answer.length} file(s) uploaded`;
-      if (typeof answer === "string" && answer) return "1 file uploaded";
-      return "No file uploaded";
-    }
-
-    return normalizeText(answer) || "No answer";
+    if (answer == null || answer === "") return "No answer";
+    return String(answer);
   }
 
   function renderFormReview() {
     const state = window.studentClassActivityState;
     const wrap = qs("studentFormReviewList");
-
     wrap.innerHTML = (state.formQuestions || []).map((q, index) => {
       const answer = state.formAnswers[q.id];
       return `
         <div class="review-item" data-review-form-index="${index}">
           <div class="review-q">${escapeHtml(q.question_text || "Question")}</div>
-          <div class="review-a"><strong>Your answer:</strong> ${escapeHtml(formatFormAnswerPreview(q, answer))}</div>
+          <div class="review-a"><strong>Your answer:</strong> ${escapeHtml(renderAnswerPreview(answer))}</div>
         </div>
       `;
     }).join("");
 
-    wrap.querySelectorAll("[data-review-form-index]").forEach((el) => {
+    document.querySelectorAll("[data-review-form-index]").forEach((el) => {
       el.addEventListener("click", () => {
-        window.studentClassActivityState.currentFormIndex = Number(el.getAttribute("data-review-form-index"));
+        state.currentFormIndex = Number(el.getAttribute("data-review-form-index"));
         renderFormQuestion();
         showView("studentFormQuestionView");
       });
@@ -2276,73 +2272,53 @@
 
   window.studentBackToFormQuestions = studentBackToFormQuestions;
 
-  async function ensureFormResponse() {
-    const state = window.studentClassActivityState;
-    const form = state.currentForm;
-    const user = await ensureUser();
-
-    if (state.currentFormResponseId) return state.currentFormResponseId;
-
-    const { data: existing, error: existingError } = await supabase
-      .from("form_responses")
-      .select("id")
-      .eq("form_id", form.id)
-      .eq("submitted_by", user.id)
-      .maybeSingle();
-
-    if (existingError) throw existingError;
-
-    if (existing) {
-      state.currentFormResponseId = existing.id;
-      return existing.id;
-    }
-
-    return null;
-  }
-
   function buildStudentFormAnswersPayload(responseId) {
     const state = window.studentClassActivityState;
+    const questions = state.formQuestions || [];
+    const answers = state.formAnswers || {};
+
     const rows = [];
 
-    for (const q of state.formQuestions || []) {
-      const rawAnswer = state.formAnswers[q.id];
-      const type = String(q.question_type || "short_answer").toLowerCase();
-
-      let answer_text = null;
-      let answer_json = null;
-      let answer_date = null;
-      let answer_file_url = null;
-
-      if (type === "date") {
-        answer_date = rawAnswer || null;
-        answer_text = rawAnswer || null;
-      } else if (type === "file_upload") {
-        if (Array.isArray(rawAnswer)) {
-          answer_json = rawAnswer;
-          answer_text = rawAnswer.join(", ");
-          answer_file_url = rawAnswer[0] || null;
-        } else if (rawAnswer && typeof rawAnswer === "string") {
-          answer_text = rawAnswer;
-          answer_file_url = rawAnswer;
-        }
-      } else if (Array.isArray(rawAnswer)) {
-        answer_json = rawAnswer;
-        answer_text = rawAnswer.join(", ");
-      } else if (rawAnswer && typeof rawAnswer === "object") {
-        answer_json = rawAnswer;
-        answer_text = JSON.stringify(rawAnswer);
-      } else {
-        answer_text = rawAnswer == null ? "" : String(rawAnswer);
+    for (const q of questions) {
+      const raw = answers[q.id];
+      if (
+        raw == null ||
+        raw === "" ||
+        (Array.isArray(raw) && raw.length === 0)
+      ) {
+        continue;
       }
 
-      rows.push({
+      const row = {
         response_id: responseId,
         question_id: q.id,
-        answer_text,
-        answer_json,
-        answer_date,
-        answer_file_url
-      });
+        created_at: new Date().toISOString()
+      };
+
+      const type = String(q.question_type || "short_answer").toLowerCase();
+
+      if (type === "file_upload") {
+        if (Array.isArray(raw)) {
+          row.answer_json = raw;
+          row.answer_file_url = raw[0] || null;
+        } else {
+          row.answer_file_url = raw;
+          row.answer_text = raw;
+        }
+      } else if (type === "date") {
+        row.answer_date = raw;
+        row.answer_text = raw;
+      } else if (Array.isArray(raw)) {
+        row.answer_json = raw;
+        row.answer_text = raw.join(", ");
+      } else if (typeof raw === "object") {
+        row.answer_json = raw;
+        row.answer_text = JSON.stringify(raw);
+      } else {
+        row.answer_text = String(raw);
+      }
+
+      rows.push(row);
     }
 
     return rows;
@@ -2353,14 +2329,18 @@
     const form = state.currentForm;
     if (!form) return;
 
-    if (form.status === "submitted" && form.response_rule !== "many") {
-      alert("You have already submitted this form.");
-      return;
-    }
-
-    if (form.status === "closed") {
-      alert("This form is closed.");
-      return;
+    for (const q of state.formQuestions || []) {
+      if (isRequiredQuestion(q)) {
+        const answer = state.formAnswers[q.id];
+        if (
+          answer == null ||
+          answer === "" ||
+          (Array.isArray(answer) && answer.length === 0)
+        ) {
+          alert("Please answer all required questions before submitting.");
+          return;
+        }
+      }
     }
 
     const btn = qs("studentSubmitFormBtn");
@@ -2369,26 +2349,17 @@
     btn.textContent = "Submitting...";
 
     try {
-      for (let i = 0; i < (state.formQuestions || []).length; i++) {
-        state.currentFormIndex = i;
-        if (!validateCurrentFormQuestion()) {
-          alert("Please answer all required questions before submitting.");
-          btn.disabled = false;
-          btn.textContent = oldText;
-          return;
-        }
-      }
-
       const user = await ensureUser();
-      const existingResponseId = await ensureFormResponse();
+
+      let existingResponseId = state.currentFormResponseId || null;
 
       if (existingResponseId) {
-        const { error: deleteError } = await supabase
+        const { error: deleteOldAnswersError } = await supabase
           .from("form_answers")
           .delete()
           .eq("response_id", existingResponseId);
 
-        if (deleteError) throw deleteError;
+        if (deleteOldAnswersError) throw deleteOldAnswersError;
 
         const rows = buildStudentFormAnswersPayload(existingResponseId);
         if (rows.length) {
