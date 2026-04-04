@@ -1,1128 +1,928 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-  />
-  <title>Colspot • Report to School Authority</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<!-- 🔹 REPORT SCREEN START -->
+<div id="screen-report" class="screen">
   <style>
-    :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --blue-soft:#dbeafe;
-      --blue-soft-2:#eff6ff;
-      --purple:#5b5ce6;
-      --purple-soft:#f2f1ff;
-      --green:#16a34a;
-      --green-soft:#ecfdf5;
-      --orange:#ea580c;
-      --orange-soft:#fff7ed;
-      --red:#dc2626;
-      --red-soft:#fef2f2;
-      --text:#0f172a;
-      --muted:#667085;
-      --line:#e5e7eb;
-      --card:#ffffff;
-      --shadow:0 18px 44px rgba(15,23,42,.08);
-      --shadow-soft:0 10px 28px rgba(37,99,235,.10);
-      --radius:28px;
-      --radius-md:22px;
-      --radius-sm:18px;
+    #screen-report {
+      padding: 8px 6px 90px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      margin:0;
-      min-height:100%;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      color:var(--text);
+    #screen-report .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: 18px 14px 16px;
+      margin-bottom: 12px;
       background:
-        radial-gradient(900px 500px at 50% -8%, rgba(59,130,246,.26) 0%, rgba(59,130,246,0) 64%),
-        radial-gradient(720px 460px at -4% 34%, rgba(191,219,254,.50) 0%, rgba(191,219,254,0) 70%),
-        radial-gradient(720px 460px at 104% 34%, rgba(191,219,254,.42) 0%, rgba(191,219,254,0) 70%),
-        linear-gradient(180deg,#f4f8ff 0%, #eef5ff 38%, #f9fbff 100%);
-      overscroll-behavior-x: none;
+        linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.80) 100%);
+      border: 1px solid rgba(255,255,255,.74);
+      box-shadow: 0 20px 48px rgba(37, 99, 235, 0.10);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
-    body{
-      display:flex;
-      justify-content:center;
+    #screen-report .hero::before {
+      content: "";
+      position: absolute;
+      right: -34px;
+      top: -30px;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,.16) 0%, rgba(37,99,235,0) 72%);
+      pointer-events: none;
     }
 
-    body::-webkit-scrollbar{
-      width:0;
-      height:0;
-      display:none;
-    }
-
-    .shell{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      padding:
-        calc(env(safe-area-inset-top) + 18px)
-        16px
-        calc(env(safe-area-inset-bottom) + 30px);
-      position:relative;
-    }
-
-    .bg-orb{
-      position:fixed;
-      inset:auto -18% -10% -18%;
-      height:38vh;
-      background:
-        radial-gradient(60% 100% at 50% 100%, rgba(255,255,255,.84) 0%, rgba(255,255,255,.36) 44%, rgba(255,255,255,0) 78%);
-      pointer-events:none;
-      filter:blur(8px);
-      z-index:0;
-    }
-
-    .content{
-      position:relative;
-      z-index:1;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .back-btn{
-      width:46px;
-      height:46px;
-      border:none;
-      border-radius:16px;
-      background:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.72);
-      box-shadow:var(--shadow-soft);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      color:#1f2937;
-      flex-shrink:0;
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
-    }
-
-    .back-btn svg{
-      width:22px;
-      height:22px;
-    }
-
-    .head{
-      min-width:0;
-      padding-top:2px;
-    }
-
-    .eyebrow{
-      display:block;
-      font-size:13px;
-      font-weight:800;
-      color:#5f6b85;
-      margin-bottom:6px;
-      letter-spacing:-.01em;
-    }
-
-    .page-title{
-      font-size:16px;
-      font-weight:950;
-      line-height:1.2;
-      letter-spacing:-.03em;
-      margin-bottom:4px;
-      color:#0f172a;
-    }
-
-    .page-sub{
-      font-size:13px;
-      line-height:1.5;
-      color:#6b7280;
-    }
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      border-radius:32px;
-      padding:24px 18px 18px;
-      margin-bottom:14px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.90) 0%, rgba(255,255,255,.76) 100%);
-      border:1px solid rgba(255,255,255,.72);
-      box-shadow:0 24px 55px rgba(37,99,235,.12);
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
-    }
-
-    .hero::before{
-      content:"";
-      position:absolute;
-      right:-36px;
-      top:-34px;
-      width:150px;
-      height:150px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(37,99,235,.18) 0%, rgba(37,99,235,0) 72%);
-      pointer-events:none;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      inset:auto -16% -24% -16%;
-      height:42%;
+    #screen-report .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -14% -22% -14%;
+      height: 42%;
       background:
         radial-gradient(80% 100% at 50% 100%, rgba(219,234,254,.95) 0%, rgba(219,234,254,.22) 48%, rgba(219,234,254,0) 78%);
-      pointer-events:none;
+      pointer-events: none;
     }
 
-    .hero-top{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      position:relative;
-      z-index:1;
+    #screen-report .hero-top {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      position: relative;
+      z-index: 1;
     }
 
-    .hero-icon{
-      width:52px;
-      height:52px;
-      border-radius:18px;
-      background:linear-gradient(180deg, #eef2ff 0%, #f5f3ff 100%);
-      color:var(--purple);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+    #screen-report .hero-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #eef2ff 0%, #f5f3ff 100%);
+      color: #5b5ce6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
     }
 
-    .hero-icon svg{
-      width:26px;
-      height:26px;
+    #screen-report .hero-icon svg {
+      width: 24px;
+      height: 24px;
     }
 
-    .hero-title{
-      font-size:18px;
-      font-weight:950;
-      line-height:1.18;
-      letter-spacing:-.03em;
-      margin:0 0 6px;
-      color:#0f172a;
+    #screen-report .hero-line-1 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
     }
 
-    .hero-text{
-      margin:0;
-      font-size:13px;
-      line-height:1.6;
-      color:#667085;
-      max-width:290px;
+    #screen-report .hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text-main);
+      margin: 0 0 6px;
     }
 
-    .badge-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-      position:relative;
-      z-index:1;
+    #screen-report .hero-title span {
+      color: var(--blue);
+      font-weight: 700;
     }
 
-    .badge{
-      font-size:11px;
-      font-weight:800;
-      color:#5b5ce6;
-      background:rgba(91,92,230,.08);
-      border:1px solid rgba(91,92,230,.10);
-      border-radius:999px;
-      padding:8px 12px;
+    #screen-report .hero-text {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      max-width: 290px;
     }
 
-    .message{
-      display:none;
-      margin-bottom:14px;
-      border-radius:18px;
-      padding:14px 14px;
-      font-size:13px;
-      line-height:1.5;
-      font-weight:800;
-      box-shadow:var(--shadow);
+    #screen-report .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      position: relative;
+      z-index: 1;
     }
 
-    .message.show{
-      display:block;
+    #screen-report .badge {
+      font-size: 10px;
+      font-weight: 800;
+      color: #5b5ce6;
+      background: rgba(91,92,230,.08);
+      border: 1px solid rgba(91,92,230,.10);
+      border-radius: 999px;
+      padding: 7px 10px;
     }
 
-    .message.error{
-      background:var(--red-soft);
-      border:1px solid #fecaca;
-      color:#991b1b;
+    #screen-report .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 8px 2px 4px;
     }
 
-    .message.success{
-      background:var(--green-soft);
-      border:1px solid #bbf7d0;
-      color:#166534;
+    #screen-report .section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 2px 8px;
+      line-height: 1.45;
     }
 
-    .card{
-      border-radius:28px;
-      padding:16px;
-      margin-bottom:14px;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(226,232,240,.85);
-      box-shadow:var(--shadow);
+    #screen-report .card {
+      background: rgba(255,255,255,.92);
+      border-radius: 22px;
+      padding: 12px 12px;
+      border: 1px solid rgba(226,232,240,.85);
+      margin-bottom: 14px;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
     }
 
-    .section-head{
-      margin-bottom:12px;
+    #screen-report .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .section-title{
-      font-size:17px;
-      font-weight:950;
-      letter-spacing:-.02em;
-      margin-bottom:5px;
-      color:#111827;
+    #screen-report .chip {
+      border: 1px solid rgba(226,232,240,.92);
+      border-radius: 16px;
+      min-height: 56px;
+      padding: 12px 12px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 800;
+      color: #334155;
+      transition: .18s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
     }
 
-    .section-note{
-      font-size:13px;
-      line-height:1.5;
-      color:#6b7280;
+    #screen-report .chip.active {
+      background: linear-gradient(180deg, #eff6ff 0%, #eef2ff 100%);
+      border-color: #bfdbfe;
+      color: var(--blue);
+      box-shadow: 0 14px 28px rgba(37,99,235,.10);
     }
 
-    .chip-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
+    #screen-report .privacy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
-    .chip{
-      border:1px solid rgba(226,232,240,.92);
-      border-radius:18px;
-      min-height:58px;
-      padding:13px 14px;
-      background:#fff;
-      cursor:pointer;
-      text-align:left;
-      font-size:14px;
-      font-weight:900;
-      color:#334155;
-      transition:.18s ease;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.82);
+    #screen-report .choice-btn {
+      width: 100%;
+      border: 1px solid rgba(226,232,240,.92);
+      border-radius: 18px;
+      padding: 13px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: .18s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
     }
 
-    .chip:hover{
-      transform:translateY(-1px);
+    #screen-report .choice-btn.active {
+      border-color: #bfdbfe;
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+      box-shadow: 0 14px 28px rgba(37,99,235,.10);
     }
 
-    .chip.active{
-      background:linear-gradient(180deg, #eff6ff 0%, #eef2ff 100%);
-      border-color:#bfdbfe;
-      color:var(--blue);
-      box-shadow:0 14px 28px rgba(37,99,235,.10);
+    #screen-report .choice-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
     }
 
-    .privacy-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    #screen-report .choice-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #eff6ff;
+      color: var(--blue);
     }
 
-    .choice-btn{
-      width:100%;
-      border:1px solid rgba(226,232,240,.92);
-      border-radius:20px;
-      padding:14px;
-      background:#fff;
-      cursor:pointer;
-      text-align:left;
-      transition:.18s ease;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.82);
+    #screen-report .choice-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #111827;
+      letter-spacing: -0.01em;
     }
 
-    .choice-btn.active{
-      border-color:#bfdbfe;
-      background:linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-      box-shadow:0 14px 28px rgba(37,99,235,.10);
+    #screen-report .choice-sub {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #667085;
     }
 
-    .choice-top{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-bottom:8px;
+    #screen-report .inline-note {
+      margin-top: 12px;
+      border-radius: 16px;
+      padding: 12px 13px;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 800;
+      border: 1px solid transparent;
     }
 
-    .choice-icon{
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-      background:#eff6ff;
-      color:var(--blue);
+    #screen-report .inline-note.safe {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+      color: #5b21b6;
     }
 
-    .choice-btn.active .choice-icon{
-      background:linear-gradient(180deg, #dbeafe 0%, #eef2ff 100%);
+    #screen-report .inline-note.urgent {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #ea580c;
     }
 
-    .choice-icon svg{
-      width:18px;
-      height:18px;
+    #screen-report .field {
+      margin-bottom: 14px;
     }
 
-    .choice-title{
-      font-size:13px;
-      font-weight:950;
-      color:#111827;
-      letter-spacing:-.01em;
+    #screen-report .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      color: #374151;
+      margin-bottom: 7px;
+      letter-spacing: -0.01em;
     }
 
-    .choice-sub{
-      font-size:12px;
-      line-height:1.45;
-      color:#667085;
+    #screen-report .input,
+    #screen-report .textarea,
+    #screen-report .select {
+      width: 100%;
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: 18px;
+      background: #fff;
+      padding: 15px 15px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+      transition: .18s ease;
+      box-shadow: inset 0 1px 2px rgba(15,23,42,.03);
     }
 
-    .inline-note{
-      margin-top:12px;
-      border-radius:16px;
-      padding:12px 13px;
-      font-size:12px;
-      line-height:1.5;
-      font-weight:800;
-      border:1px solid transparent;
+    #screen-report .input::placeholder,
+    #screen-report .textarea::placeholder {
+      color: #98a2b3;
     }
 
-    .inline-note.safe{
-      background:#f5f3ff;
-      border-color:#ddd6fe;
-      color:#5b21b6;
-    }
-
-    .inline-note.urgent{
-      background:var(--orange-soft);
-      border-color:#fed7aa;
-      color:var(--orange);
-    }
-
-    .field{
-      margin-bottom:14px;
-    }
-
-    .field label{
-      display:block;
-      font-size:12px;
-      font-weight:900;
-      color:#374151;
-      margin-bottom:7px;
-      letter-spacing:-.01em;
-    }
-
-    .input,
-    .textarea,
-    .select{
-      width:100%;
-      border:1px solid rgba(226,232,240,.95);
-      border-radius:18px;
-      background:#fff;
-      padding:15px 15px;
-      font-size:14px;
-      color:#111827;
-      outline:none;
-      transition:.18s ease;
-      box-shadow:inset 0 1px 2px rgba(15,23,42,.03);
-    }
-
-    .input::placeholder,
-    .textarea::placeholder{
-      color:#98a2b3;
-    }
-
-    .input:focus,
-    .textarea:focus,
-    .select:focus{
-      border-color:#93c5fd;
+    #screen-report .input:focus,
+    #screen-report .textarea:focus,
+    #screen-report .select:focus {
+      border-color: #93c5fd;
       box-shadow:
         0 0 0 4px rgba(37,99,235,.10),
         inset 0 1px 2px rgba(15,23,42,.03);
     }
 
-    .textarea{
-      min-height:170px;
-      resize:vertical;
-      line-height:1.55;
+    #screen-report .textarea {
+      min-height: 170px;
+      resize: vertical;
+      line-height: 1.55;
     }
 
-    .helper-note{
-      margin-top:7px;
-      font-size:12px;
-      line-height:1.45;
-      color:#667085;
+    #screen-report .helper-note {
+      margin-top: 7px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #667085;
     }
 
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    #screen-report .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
-    .submit-section{
-      margin-top:4px;
+    #screen-report .primary-btn {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 999px;
+      border: none;
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      color: #ffffff;
+      background: linear-gradient(90deg, var(--blue) 0%, #3b82f6 100%);
+      box-shadow: 0 18px 32px rgba(37,99,235,.24);
+      transition: .18s ease;
     }
 
-    .submit-panel{
-      padding:16px;
-      border-radius:28px;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(226,232,240,.85);
-      box-shadow:var(--shadow);
+    #screen-report .primary-btn:active {
+      transform: scale(0.98);
     }
 
-    .submit-btn{
-      width:100%;
-      border:none;
-      border-radius:999px;
-      min-height:58px;
-      padding:15px 18px;
-      background:linear-gradient(90deg,var(--blue) 0%, #3b82f6 100%);
-      color:#fff;
-      font-size:16px;
-      font-weight:950;
-      letter-spacing:-.02em;
-      cursor:pointer;
-      box-shadow:0 18px 32px rgba(37,99,235,.24);
-      transition:.18s ease;
+    #screen-report .primary-btn:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
-    .submit-btn:hover{
-      transform:translateY(-1px);
+    #screen-report .message {
+      display: none;
+      margin-top: 10px;
+      border-radius: 16px;
+      padding: 12px 13px;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 800;
+      text-align: center;
     }
 
-    .submit-btn:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-      transform:none;
+    #screen-report .message.show {
+      display: block;
     }
 
-    .submit-note{
-      font-size:12px;
-      line-height:1.45;
-      color:#667085;
-      text-align:center;
-      margin-top:10px;
+    #screen-report .message.error {
+      background: var(--red-soft);
+      border: 1px solid #fecaca;
+      color: #991b1b;
     }
 
-    .result-card{
-      display:none;
-      margin-top:14px;
-      border-radius:28px;
-      padding:18px;
-      background:linear-gradient(180deg, #ffffff 0%, #f7fffb 100%);
-      border:1px solid #bbf7d0;
-      box-shadow:var(--shadow);
+    #screen-report .message.success {
+      background: var(--green-soft);
+      border: 1px solid #bbf7d0;
+      color: #166534;
     }
 
-    .result-card.show{
-      display:block;
+    #screen-report .result-card {
+      display: none;
+      margin-top: 14px;
+      border-radius: 24px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fffb 100%);
+      border: 1px solid #bbf7d0;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
     }
 
-    .result-top{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:14px;
+    #screen-report .result-card.show {
+      display: block;
     }
 
-    .result-icon{
-      width:48px;
-      height:48px;
-      border-radius:16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#dcfce7;
-      color:#16a34a;
-      flex-shrink:0;
+    #screen-report .result-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
     }
 
-    .result-icon svg{
-      width:24px;
-      height:24px;
+    #screen-report .result-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #dcfce7;
+      color: #16a34a;
+      flex-shrink: 0;
     }
 
-    .result-title{
-      font-size:17px;
-      font-weight:950;
-      color:#166534;
-      margin-bottom:4px;
-      letter-spacing:-.02em;
+    #screen-report .result-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #166534;
+      margin-bottom: 4px;
     }
 
-    .result-sub{
-      font-size:13px;
-      line-height:1.5;
-      color:#166534;
+    #screen-report .result-sub {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #166534;
     }
 
-    .result-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:10px;
+    #screen-report .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
     }
 
-    .result-box{
-      border-radius:18px;
-      padding:12px 13px;
-      background:#fff;
-      border:1px solid #d1fae5;
+    #screen-report .result-box {
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #d1fae5;
     }
 
-    .result-label{
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:.02em;
-      text-transform:uppercase;
-      color:#059669;
-      margin-bottom:6px;
+    #screen-report .result-label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: #059669;
+      margin-bottom: 6px;
     }
 
-    .result-value{
-      font-size:15px;
-      font-weight:950;
-      color:#14532d;
-      word-break:break-word;
+    #screen-report .result-value {
+      font-size: 14px;
+      font-weight: 900;
+      color: #14532d;
+      word-break: break-word;
     }
 
-    .result-list{
-      margin-top:10px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid #d1fae5;
-      overflow:hidden;
+    #screen-report .result-list {
+      margin-top: 10px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #d1fae5;
+      overflow: hidden;
     }
 
-    .result-row{
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      padding:12px 14px;
-      font-size:13px;
-      line-height:1.45;
-      border-bottom:1px solid #ecfdf5;
+    #screen-report .result-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.45;
+      border-bottom: 1px solid #ecfdf5;
     }
 
-    .result-row:last-child{
-      border-bottom:none;
+    #screen-report .result-row:last-child {
+      border-bottom: none;
     }
 
-    .result-row span{
-      color:#047857;
-      font-weight:700;
+    #screen-report .result-row span {
+      color: #047857;
+      font-weight: 700;
     }
 
-    .result-row strong{
-      color:#14532d;
-      text-align:right;
-      max-width:58%;
+    #screen-report .result-row strong {
+      color: #14532d;
+      text-align: right;
+      max-width: 58%;
     }
 
-    .copy-btn{
-      width:100%;
-      margin-top:12px;
-      border:none;
-      border-radius:999px;
-      padding:13px 14px;
-      font-size:13px;
-      font-weight:900;
-      background:#ecfdf5;
-      color:#166534;
-      cursor:pointer;
+    #screen-report .secondary-btn {
+      width: 100%;
+      margin-top: 12px;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      background: #ecfdf5;
+      color: #166534;
+      cursor: pointer;
     }
 
-    @media (max-width:380px){
-      .chip-grid,
-      .privacy-grid,
-      .row,
-      .result-grid{
-        grid-template-columns:1fr;
+    @media (max-width: 380px) {
+      #screen-report .chip-grid,
+      #screen-report .privacy-grid,
+      #screen-report .row,
+      #screen-report .result-grid {
+        grid-template-columns: 1fr;
       }
 
-      .hero{
-        padding:22px 16px 16px;
+      #screen-report .hero {
+        padding: 20px 14px 14px;
       }
     }
   </style>
-</head>
-<body>
-  <div class="bg-orb"></div>
 
-  <div class="shell">
-    <div class="content">
-      <div class="topbar">
-        <button class="back-btn" type="button" onclick="goBack()">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+  <section class="hero">
+    <div class="hero-top">
+      <div class="hero-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M9.5 12.3l1.7 1.7 3.6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div>
+        <div class="hero-line-1">Report</div>
+        <h1 class="hero-title">
+          Report to school<br />
+          <span>Private & protected</span>
+        </h1>
+        <p class="hero-text">
+          Share bullying, harassment, safety, welfare, or academic concerns privately.
+        </p>
+      </div>
+    </div>
+
+    <div class="badge-row">
+      <div class="badge">Private</div>
+      <div class="badge">Anonymous option</div>
+      <div class="badge">Tracking code</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">1. Issue type</div>
+    <div class="section-sub">Choose the category that best matches your concern.</div>
+
+    <div class="card">
+      <div class="chip-grid" id="reportCategoryChips">
+        <button class="chip active" type="button" data-category="bullying">Bullying</button>
+        <button class="chip" type="button" data-category="harassment">Harassment</button>
+        <button class="chip" type="button" data-category="safety">Safety concern</button>
+        <button class="chip" type="button" data-category="welfare">Welfare issue</button>
+        <button class="chip" type="button" data-category="academic_pressure">Academic pressure</button>
+        <button class="chip" type="button" data-category="other">Other</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">2. Privacy choice</div>
+    <div class="section-sub">Choose how you want to submit this report.</div>
+
+    <div class="card">
+      <div class="privacy-grid">
+        <button class="choice-btn active" type="button" id="reportAnonymousBtn">
+          <div class="choice-top">
+            <div class="choice-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M4 20c1.7-3 4.5-4.5 8-4.5s6.3 1.5 8 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="choice-title">Submit anonymously</div>
+          </div>
+          <div class="choice-sub">Your identity will not be shown to school authority.</div>
         </button>
 
-        <div class="head">
-          <span class="eyebrow">Private report</span>
-          <div class="page-title">Report an issue to school authority</div>
-          <div class="page-sub">
-            Share bullying, harassment, safety, welfare, or academic concerns privately.
+        <button class="choice-btn" type="button" id="reportNamedBtn">
+          <div class="choice-top">
+            <div class="choice-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M4 20c1.7-3 4.5-4.5 8-4.5s6.3 1.5 8 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M18.5 7.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="choice-title">Submit with my name</div>
           </div>
+          <div class="choice-sub">Your report will still be handled privately.</div>
+        </button>
+      </div>
+
+      <div class="inline-note safe" id="reportPrivacyNote">
+        You are currently reporting anonymously.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">3. Report details</div>
+    <div class="section-sub">Give only the details you are comfortable sharing.</div>
+
+    <div class="card">
+      <div class="field">
+        <label for="reportTitleInput">Short title (optional)</label>
+        <input id="reportTitleInput" class="input" type="text" placeholder="Short summary of the issue">
+      </div>
+
+      <div class="field">
+        <label for="reportMessageInputMain">Report details</label>
+        <textarea
+          id="reportMessageInputMain"
+          class="textarea"
+          placeholder="Write as much as you want. Explain what happened, where it happened, and anything else the school authority should know."
+        ></textarea>
+        <div class="helper-note">
+          Share only what helps explain the issue clearly.
         </div>
       </div>
 
-      <section class="hero">
-        <div class="hero-top">
-          <div class="hero-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M9.5 12.3l1.7 1.7 3.6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
-          <div>
-            <div class="hero-title">Your report will be handled privately</div>
-            <p class="hero-text">
-              You can submit anonymously or with your name. If you report anonymously,
-              school authority can still reply through your tracking code and PIN.
-            </p>
-          </div>
-        </div>
-
-        <div class="badge-row">
-          <div class="badge">Private</div>
-          <div class="badge">Anonymous option</div>
-          <div class="badge">Tracking code reply</div>
-        </div>
-      </section>
-
-      <div class="message" id="reportMessage"></div>
-
-      <section class="card">
-        <div class="section-head">
-          <div class="section-title">Issue type</div>
-          <div class="section-note">Choose the category that best matches your concern.</div>
-        </div>
-
-        <div class="chip-grid" id="categoryChips">
-          <button class="chip active" type="button" data-category="bullying">Bullying</button>
-          <button class="chip" type="button" data-category="harassment">Harassment</button>
-          <button class="chip" type="button" data-category="safety">Safety concern</button>
-          <button class="chip" type="button" data-category="welfare">Welfare issue</button>
-          <button class="chip" type="button" data-category="academic_pressure">Academic pressure</button>
-          <button class="chip" type="button" data-category="other">Other</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <div class="section-title">Privacy choice</div>
-          <div class="section-note">Choose how you want to submit this report.</div>
-        </div>
-
-        <div class="privacy-grid">
-          <button class="choice-btn active" type="button" id="anonymousBtn">
-            <div class="choice-top">
-              <div class="choice-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M4 20c1.7-3 4.5-4.5 8-4.5s6.3 1.5 8 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="choice-title">Submit anonymously</div>
-            </div>
-            <div class="choice-sub">Your identity will not be shown to school authority.</div>
-          </button>
-
-          <button class="choice-btn" type="button" id="namedBtn">
-            <div class="choice-top">
-              <div class="choice-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M4 20c1.7-3 4.5-4.5 8-4.5s6.3 1.5 8 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M18.5 7.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="choice-title">Submit with my name</div>
-            </div>
-            <div class="choice-sub">Your report will still be handled privately.</div>
-          </button>
-        </div>
-
-        <div class="inline-note safe" id="privacyNote">
-          You are currently reporting anonymously.
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <div class="section-title">Tell us what happened</div>
-          <div class="section-note">Give only the details you are comfortable sharing.</div>
+      <div class="row">
+        <div class="field">
+          <label for="reportLocationInput">Location (optional)</label>
+          <input id="reportLocationInput" class="input" type="text" placeholder="Where did it happen?">
         </div>
 
         <div class="field">
-          <label for="reportTitle">Short title (optional)</label>
-          <input id="reportTitle" class="input" type="text" placeholder="Short summary of the issue">
+          <label for="reportPersonInput">Person involved (optional)</label>
+          <input id="reportPersonInput" class="input" type="text" placeholder="Name or description">
         </div>
+      </div>
 
-        <div class="field">
-          <label for="reportMessageInput">Report details</label>
-          <textarea
-            id="reportMessageInput"
-            class="textarea"
-            placeholder="Write as much as you want. Explain what happened, where it happened, and anything else the school authority should know."
-          ></textarea>
-          <div class="helper-note">
-            Share only what helps explain the issue clearly.
-          </div>
-        </div>
+      <div class="field">
+        <label for="reportUrgencySelect">Urgency</label>
+        <select id="reportUrgencySelect" class="select">
+          <option value="normal">Normal</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="reportLocation">Location (optional)</label>
-            <input id="reportLocation" class="input" type="text" placeholder="Where did it happen?">
-          </div>
-
-          <div class="field">
-            <label for="reportPerson">Person involved (optional)</label>
-            <input id="reportPerson" class="input" type="text" placeholder="Name or description">
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="reportUrgency">Urgency</label>
-          <select id="reportUrgency" class="select">
-            <option value="normal">Normal</option>
-            <option value="urgent">Urgent</option>
-          </select>
-        </div>
-
-        <div class="inline-note urgent" id="urgencyNote" style="display:none;">
-          This report will be marked as urgent.
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <div class="section-title">Contact section</div>
-          <div class="section-note">Add your phone number or email if you want school authority to reach you faster.</div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="contactPhone">Phone number (optional)</label>
-            <input id="contactPhone" class="input" type="tel" placeholder="Enter phone number">
-          </div>
-
-          <div class="field">
-            <label for="contactEmail">Email address (optional)</label>
-            <input id="contactEmail" class="input" type="email" placeholder="Enter email address">
-          </div>
-        </div>
-
-        <div class="helper-note">
-          This is optional. If you leave it empty, your tracking code and PIN will still work.
-        </div>
-      </section>
-
-      <section class="submit-section">
-        <div class="submit-panel">
-          <button class="submit-btn" id="submitReportBtn" type="button">
-            Send report to school authority
-          </button>
-          <div class="submit-note">
-            Your report is handled privately and a tracking code will be generated after submission.
-          </div>
-        </div>
-      </section>
-
-      <section class="result-card" id="resultCard">
-        <div class="result-top">
-          <div class="result-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M20 7 10.8 16.2 6 11.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
-          <div>
-            <div class="result-title">Report submitted successfully</div>
-            <div class="result-sub">
-              Save your tracking code and reply PIN. You may need them later.
-            </div>
-          </div>
-        </div>
-
-        <div class="result-grid">
-          <div class="result-box">
-            <div class="result-label">Tracking code</div>
-            <div class="result-value" id="resultTrackingCode">-</div>
-          </div>
-
-          <div class="result-box">
-            <div class="result-label">Reply PIN</div>
-            <div class="result-value" id="resultReplyPin">-</div>
-          </div>
-        </div>
-
-        <div class="result-list">
-          <div class="result-row">
-            <span>Status</span>
-            <strong id="resultStatus">-</strong>
-          </div>
-          <div class="result-row">
-            <span>Privacy</span>
-            <strong id="resultPrivacy">-</strong>
-          </div>
-          <div class="result-row">
-            <span>School</span>
-            <strong id="resultSchool">-</strong>
-          </div>
-        </div>
-
-        <button class="copy-btn" type="button" id="copyReportDetailsBtn">
-          Copy tracking code and PIN
-        </button>
-      </section>
+      <div class="inline-note urgent" id="reportUrgencyNote" style="display:none;">
+        This report will be marked as urgent.
+      </div>
     </div>
-  </div>
+  </section>
 
-  <script>
-    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+  <section>
+    <div class="section-title">4. Contact section</div>
+    <div class="section-sub">Add your phone number or email if you want school authority to reach you faster.</div>
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label for="reportContactPhone">Phone number (optional)</label>
+          <input id="reportContactPhone" class="input" type="tel" placeholder="Enter phone number">
+        </div>
 
-    let selectedCategory = "bullying";
-    let isAnonymous = true;
-    let lastTrackingCode = "";
-    let lastReplyPin = "";
+        <div class="field">
+          <label for="reportContactEmail">Email address (optional)</label>
+          <input id="reportContactEmail" class="input" type="email" placeholder="Enter email address">
+        </div>
+      </div>
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
+      <div class="helper-note">
+        This is optional. If you leave it empty, your tracking code and PIN will still work.
+      </div>
 
-    function $(id) {
-      return document.getElementById(id);
+      <button class="primary-btn" id="reportSubmitBtn" type="button">Send report to school authority</button>
+
+      <div id="reportErrorBox" class="message error"></div>
+      <div id="reportSuccessBox" class="message success"></div>
+    </div>
+  </section>
+
+  <section class="result-card" id="reportResultCard">
+    <div class="result-top">
+      <div class="result-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M20 7 10.8 16.2 6 11.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div>
+        <div class="result-title">Report submitted successfully</div>
+        <div class="result-sub">
+          Save your tracking code and reply PIN. You may need them later.
+        </div>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-box">
+        <div class="result-label">Tracking code</div>
+        <div class="result-value" id="reportResultTrackingCode">-</div>
+      </div>
+
+      <div class="result-box">
+        <div class="result-label">Reply PIN</div>
+        <div class="result-value" id="reportResultReplyPin">-</div>
+      </div>
+    </div>
+
+    <div class="result-list">
+      <div class="result-row">
+        <span>Status</span>
+        <strong id="reportResultStatus">-</strong>
+      </div>
+      <div class="result-row">
+        <span>Privacy</span>
+        <strong id="reportResultPrivacy">-</strong>
+      </div>
+      <div class="result-row">
+        <span>School</span>
+        <strong id="reportResultSchool">-</strong>
+      </div>
+    </div>
+
+    <button class="secondary-btn" type="button" id="reportCopyBtn">
+      Copy tracking code and PIN
+    </button>
+  </section>
+</div>
+
+<script>
+  window.reportScreenState = {
+    selectedCategory: "bullying",
+    isAnonymous: true,
+    lastTrackingCode: "",
+    lastReplyPin: ""
+  };
+
+  function showReportError(msg) {
+    const e = document.getElementById("reportErrorBox");
+    const s = document.getElementById("reportSuccessBox");
+    if (s) {
+      s.textContent = "";
+      s.classList.remove("show");
     }
-
-    function goBack() {
-      window.history.back();
+    if (e) {
+      e.textContent = msg || "";
+      e.classList.toggle("show", !!msg);
     }
+  }
 
-    function goMainBySwipe() {
-      window.location.href = "main.html";
+  function showReportSuccess(msg) {
+    const e = document.getElementById("reportErrorBox");
+    const s = document.getElementById("reportSuccessBox");
+    if (e) {
+      e.textContent = "";
+      e.classList.remove("show");
     }
+    if (s) {
+      s.textContent = msg || "";
+      s.classList.toggle("show", !!msg);
+    }
+  }
 
-    function handleSwipeGesture() {
-      const diffX = touchEndX - touchStartX;
-      const diffY = Math.abs(touchEndY - touchStartY);
+  function clearReportMessages() {
+    showReportError("");
+    showReportSuccess("");
+  }
 
-      if (diffX > 90 && diffY < 70) {
-        goMainBySwipe();
+  function getCurrentReportUserId() {
+    try {
+      if (typeof supabase !== "undefined" && supabase.auth && supabase.auth.getUser) {
+        return supabase.auth.getUser().then(({ data }) => data?.user?.id || "");
       }
+    } catch {}
+
+    try {
+      const raw = localStorage.getItem("colspot_last_user");
+      if (!raw) return Promise.resolve("");
+      const parsed = JSON.parse(raw);
+      return Promise.resolve(parsed?.id || "");
+    } catch {
+      return Promise.resolve("");
     }
+  }
 
-    function showMessage(text, type = "error") {
-      const box = $("reportMessage");
-      if (!text) {
-        box.className = "message";
-        box.textContent = "";
-        box.style.display = "none";
-        return;
-      }
-      box.className = `message show ${type}`;
-      box.textContent = text;
-      box.style.display = "block";
-    }
+  function setReportCategory(category) {
+    const state = window.reportScreenState;
+    state.selectedCategory = category;
 
-    function setCategory(category) {
-      selectedCategory = category;
-      document.querySelectorAll("#categoryChips .chip").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.category === category);
-      });
-    }
+    document.querySelectorAll("#reportCategoryChips .chip").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.category === category);
+    });
+  }
 
-    function setPrivacyMode(anonymousMode) {
-      isAnonymous = anonymousMode;
+  function setReportPrivacyMode(anonymousMode) {
+    const state = window.reportScreenState;
+    state.isAnonymous = anonymousMode;
 
-      $("anonymousBtn").classList.toggle("active", anonymousMode);
-      $("namedBtn").classList.toggle("active", !anonymousMode);
+    document.getElementById("reportAnonymousBtn")?.classList.toggle("active", anonymousMode);
+    document.getElementById("reportNamedBtn")?.classList.toggle("active", !anonymousMode);
 
-      $("privacyNote").textContent = anonymousMode
+    const note = document.getElementById("reportPrivacyNote");
+    if (note) {
+      note.textContent = anonymousMode
         ? "You are currently reporting anonymously."
         : "You are currently reporting with your name.";
     }
+  }
 
-    function updateUrgencyNote() {
-      const urgent = $("reportUrgency").value === "urgent";
-      $("urgencyNote").style.display = urgent ? "block" : "none";
+  function updateReportUrgencyNote() {
+    const urgent = document.getElementById("reportUrgencySelect")?.value === "urgent";
+    const note = document.getElementById("reportUrgencyNote");
+    if (note) {
+      note.style.display = urgent ? "block" : "none";
+    }
+  }
+
+  async function copyReportScreenDetails() {
+    const state = window.reportScreenState;
+    if (!state.lastTrackingCode || !state.lastReplyPin) return;
+
+    const text = `Tracking Code: ${state.lastTrackingCode}\nReply PIN: ${state.lastReplyPin}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      showReportSuccess("Tracking code and PIN copied.");
+    } catch {
+      showReportError("Could not copy automatically. Please save the code and PIN.");
+    }
+  }
+
+  async function submitReportScreen() {
+    clearReportMessages();
+
+    const userId = await getCurrentReportUserId();
+    const title = (document.getElementById("reportTitleInput")?.value || "").trim();
+    const message = (document.getElementById("reportMessageInputMain")?.value || "").trim();
+    const locationText = (document.getElementById("reportLocationInput")?.value || "").trim();
+    const personInvolved = (document.getElementById("reportPersonInput")?.value || "").trim();
+    const urgency = document.getElementById("reportUrgencySelect")?.value || "normal";
+    const contactPhone = (document.getElementById("reportContactPhone")?.value || "").trim();
+    const contactEmail = (document.getElementById("reportContactEmail")?.value || "").trim();
+
+    if (!userId) {
+      showReportError("We could not find your user session. Please sign in again.");
+      return;
     }
 
-    function getCurrentUserId() {
-      try {
-        const raw = localStorage.getItem("colspot_last_user");
-        if (!raw) return "";
-        const parsed = JSON.parse(raw);
-        return parsed?.id || "";
-      } catch {
-        return "";
-      }
+    if (!message) {
+      showReportError("Please tell us what happened before submitting.");
+      return;
     }
 
-    async function copyReportDetails() {
-      if (!lastTrackingCode || !lastReplyPin) return;
-
-      const text = `Tracking Code: ${lastTrackingCode}\nReply PIN: ${lastReplyPin}`;
-
-      try {
-        await navigator.clipboard.writeText(text);
-        showMessage("Tracking code and PIN copied.", "success");
-      } catch {
-        showMessage("Could not copy automatically. Please save the code and PIN.", "error");
-      }
+    const btn = document.getElementById("reportSubmitBtn");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Sending...";
     }
 
-    async function submitReport() {
-      showMessage("");
-
-      const userId = getCurrentUserId();
-      const title = $("reportTitle").value.trim();
-      const message = $("reportMessageInput").value.trim();
-      const locationText = $("reportLocation").value.trim();
-      const personInvolved = $("reportPerson").value.trim();
-      const urgency = $("reportUrgency").value;
-      const contactPhone = $("contactPhone").value.trim();
-      const contactEmail = $("contactEmail").value.trim();
-
-      if (!userId) {
-        showMessage("We could not find your user session. Please sign in again.");
-        return;
+    try {
+      if (typeof supabase === "undefined" || !supabase.functions?.invoke) {
+        throw new Error("Could not connect to backend.");
       }
 
-      if (!message) {
-        showMessage("Please tell us what happened before submitting.");
-        return;
+      const state = window.reportScreenState;
+
+      const { data, error } = await supabase.functions.invoke("submit-school-report", {
+        body: {
+          submitted_by_user_id: userId,
+          is_anonymous: state.isAnonymous,
+          category: state.selectedCategory,
+          title,
+          message,
+          location_text: locationText,
+          person_involved: personInvolved,
+          urgency,
+          allow_anonymous_reply: true,
+          contact_phone: contactPhone,
+          contact_email: contactEmail
+        }
+      });
+
+      if (error) {
+        throw new Error((data && data.error) || error.message || "Could not submit report.");
       }
 
-      const submitBtn = $("submitReportBtn");
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Sending...";
+      if (!data?.ok) {
+        if (data?.code === "COURSE_FORM_NOT_VERIFIED" || data?.code === "PROFILE_NOT_VERIFIED") {
+          throw new Error("Please go to your profile and complete your course form first before submitting a report.");
+        }
+        throw new Error(data?.error || "Could not submit report.");
+      }
 
-      try {
-        const { data, error } = await sb.functions.invoke("submit-school-report", {
-          body: {
-            submitted_by_user_id: userId,
-            is_anonymous: isAnonymous,
-            category: selectedCategory,
-            title,
-            message,
-            location_text: locationText,
-            person_involved: personInvolved,
-            urgency,
-            allow_anonymous_reply: true,
-            contact_phone: contactPhone,
-            contact_email: contactEmail
-          }
+      const report = data.report || {};
+
+      state.lastTrackingCode = report.tracking_code || "";
+      state.lastReplyPin = report.reply_pin || "";
+
+      document.getElementById("reportResultTrackingCode").textContent = report.tracking_code || "-";
+      document.getElementById("reportResultReplyPin").textContent = report.reply_pin || "-";
+      document.getElementById("reportResultStatus").textContent = report.status || "-";
+      document.getElementById("reportResultPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
+      document.getElementById("reportResultSchool").textContent = report.school_name || "-";
+      document.getElementById("reportResultCard").classList.add("show");
+
+      document.getElementById("reportTitleInput").value = "";
+      document.getElementById("reportMessageInputMain").value = "";
+      document.getElementById("reportLocationInput").value = "";
+      document.getElementById("reportPersonInput").value = "";
+      document.getElementById("reportUrgencySelect").value = "normal";
+      document.getElementById("reportContactPhone").value = "";
+      document.getElementById("reportContactEmail").value = "";
+
+      setReportCategory("bullying");
+      setReportPrivacyMode(true);
+      updateReportUrgencyNote();
+
+      showReportSuccess(data.message || "Report submitted successfully.");
+
+      setTimeout(() => {
+        document.getElementById("reportResultCard")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
         });
-
-        if (error) {
-          throw new Error((data && data.error) || error.message || "Could not submit report.");
-        }
-
-        if (!data?.ok) {
-          if (data?.code === "COURSE_FORM_NOT_VERIFIED" || data?.code === "PROFILE_NOT_VERIFIED") {
-            throw new Error("Please go to your profile and complete your course form first before submitting a report.");
-          }
-          throw new Error(data?.error || "Could not submit report.");
-        }
-
-        const report = data.report || {};
-
-        lastTrackingCode = report.tracking_code || "";
-        lastReplyPin = report.reply_pin || "";
-
-        $("resultTrackingCode").textContent = report.tracking_code || "-";
-        $("resultReplyPin").textContent = report.reply_pin || "-";
-        $("resultStatus").textContent = report.status || "-";
-        $("resultPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
-        $("resultSchool").textContent = report.school_name || "-";
-
-        $("resultCard").classList.add("show");
-
-        $("reportTitle").value = "";
-        $("reportMessageInput").value = "";
-        $("reportLocation").value = "";
-        $("reportPerson").value = "";
-        $("reportUrgency").value = "normal";
-        $("contactPhone").value = "";
-        $("contactEmail").value = "";
-
-        setCategory("bullying");
-        setPrivacyMode(true);
-        updateUrgencyNote();
-
-        showMessage(data.message || "Report submitted successfully.", "success");
-
-        setTimeout(() => {
-          $("resultCard")?.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        }, 150);
-      } catch (err) {
-        console.error(err);
-        showMessage(err.message || "Could not submit report.");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Send report to school authority";
+      }, 150);
+    } catch (err) {
+      console.error(err);
+      showReportError(err?.message || "Could not submit report.");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Send report to school authority";
       }
     }
+  }
 
-    document.querySelectorAll("#categoryChips .chip").forEach((btn) => {
-      btn.addEventListener("click", () => setCategory(btn.dataset.category));
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("#reportCategoryChips .chip").forEach((btn) => {
+      btn.addEventListener("click", () => setReportCategory(btn.dataset.category));
     });
 
-    $("anonymousBtn").addEventListener("click", () => setPrivacyMode(true));
-    $("namedBtn").addEventListener("click", () => setPrivacyMode(false));
-    $("reportUrgency").addEventListener("change", updateUrgencyNote);
-    $("submitReportBtn").addEventListener("click", submitReport);
-    $("copyReportDetailsBtn").addEventListener("click", copyReportDetails);
+    document.getElementById("reportAnonymousBtn")?.addEventListener("click", () => setReportPrivacyMode(true));
+    document.getElementById("reportNamedBtn")?.addEventListener("click", () => setReportPrivacyMode(false));
+    document.getElementById("reportUrgencySelect")?.addEventListener("change", updateReportUrgencyNote);
+    document.getElementById("reportSubmitBtn")?.addEventListener("click", submitReportScreen);
+    document.getElementById("reportCopyBtn")?.addEventListener("click", copyReportScreenDetails);
 
-    document.addEventListener("touchstart", (e) => {
-      if (!e.changedTouches || !e.changedTouches.length) return;
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    document.addEventListener("touchend", (e) => {
-      if (!e.changedTouches || !e.changedTouches.length) return;
-      touchEndX = e.changedTouches[0].screenX;
-      touchEndY = e.changedTouches[0].screenY;
-      handleSwipeGesture();
-    }, { passive: true });
-
-    updateUrgencyNote();
-  </script>
-</body>
-</html>
+    updateReportUrgencyNote();
+  });
+</script>
+<!-- 🔹 REPORT SCREEN END -->
