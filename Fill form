@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <title>Fill Form</title>
+  <script type="module" src="./client_supabase.js"></script>
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eff6ff;
+      --purple:#7c3aed;
+      --purple-soft:#f5f3ff;
+      --green:#16a34a;
+      --green-soft:#ecfdf5;
+      --amber:#d97706;
+      --amber-soft:#fffbeb;
+      --red:#dc2626;
+      --red-soft:#fef2f2;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --line-2:#dbeafe;
+      --card:#ffffff;
+      --bg:#f8fbff;
+      --shadow:0 10px 30px rgba(15,23,42,.06);
+      --shadow-strong:0 18px 44px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, Arial, sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 28%),
+        linear-gradient(180deg,#f8fbff 0%, #f6f9ff 38%, #f8fbff 100%);
+    }
+
+    .page{
+      max-width:430px;
+      margin:0 auto;
+      min-height:100vh;
+      padding:calc(var(--safe-top) + 10px) 8px calc(24px + var(--safe-bottom));
+    }
+
+    .hidden{ display:none !important; }
+
+    .hero{
+      padding:6px 4px 8px;
+      margin-bottom:4px;
+    }
+
+    .hero-line-1{
+      font-size:12px;
+      font-weight:600;
+      color:var(--muted);
+      margin-bottom:4px;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+
+    .hero-title{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-0.04em;
+      line-height:1.15;
+      color:var(--text);
+      margin:0;
+    }
+
+    .hero-title span{
+      color:var(--blue);
+      font-weight:800;
+    }
+
+    .hero-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin:7px 0 0;
+      line-height:1.5;
+    }
+
+    .panel-topbar{
+      padding:0 2px 10px;
+    }
+
+    .panel-wrap{
+      padding:0 2px 14px;
+    }
+
+    .panel-back-btn{
+      width:100%;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:11px 12px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
+    }
+
+    .panel-card{
+      border-radius:22px;
+      background:#fff;
+      border:1px solid var(--line);
+      padding:14px;
+      box-shadow:var(--shadow);
+      margin:0 0 14px;
+    }
+
+    .panel-title{
+      font-size:19px;
+      font-weight:900;
+      color:var(--text);
+      letter-spacing:-.03em;
+      margin-bottom:8px;
+      line-height:1.25;
+    }
+
+    .panel-course{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      margin-bottom:10px;
+      line-height:1.45;
+    }
+
+    .panel-meta{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .panel-meta-item{
+      font-size:13px;
+      color:var(--text);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:8px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .panel-meta-item strong{
+      text-align:right;
+    }
+
+    .info-box{
+      border-radius:16px;
+      padding:12px;
+      font-size:12px;
+      line-height:1.55;
+      margin-bottom:12px;
+      border:1px solid;
+    }
+
+    .info-box.blue{
+      background:var(--blue-soft);
+      border-color:#dbeafe;
+      color:#1e3a8a;
+    }
+
+    .info-box.green{
+      background:var(--green-soft);
+      border-color:#bbf7d0;
+      color:#166534;
+    }
+
+    .info-box.amber{
+      background:var(--amber-soft);
+      border-color:#fde68a;
+      color:#92400e;
+    }
+
+    .info-box.red{
+      background:var(--red-soft);
+      border-color:#fecaca;
+      color:#991b1b;
+    }
+
+    .timer-box{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-radius:16px;
+      background:var(--blue-soft);
+      border:1px solid #dbeafe;
+      color:#1e3a8a;
+      padding:10px 12px;
+      margin-bottom:12px;
+    }
+
+    .timer-label{
+      font-size:12px;
+      font-weight:800;
+      color:#1e3a8a;
+    }
+
+    .timer-value{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.02em;
+      color:var(--blue-dark);
+      font-variant-numeric:tabular-nums;
+    }
+
+    .timer-value.warning{
+      color:var(--red);
+    }
+
+    .progress-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+      font-size:12px;
+      color:var(--text);
+      font-weight:700;
+    }
+
+    .progress-track{
+      width:100%;
+      height:6px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .progress-bar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+    }
+
+    .question-title{
+      font-size:17px;
+      font-weight:800;
+      line-height:1.45;
+      color:var(--text);
+      margin-bottom:14px;
+    }
+
+    .question-help{
+      margin:-6px 0 14px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .question-block{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .choice-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .choice-option{
+      border-radius:16px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      cursor:pointer;
+      transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+
+    .choice-option.active{
+      border-color:var(--blue);
+      background:var(--blue-soft);
+      box-shadow:0 0 0 1px rgba(37,99,235,.18);
+    }
+
+    .choice-mark{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      background:#f3f4f6;
+      color:var(--text);
+      font-size:13px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      border:1px solid #e5e7eb;
+    }
+
+    .choice-option.active .choice-mark{
+      background:#dbeafe;
+      color:var(--blue-dark);
+      border-color:#bfdbfe;
+    }
+
+    .choice-text{
+      font-size:14px;
+      line-height:1.5;
+      color:var(--text);
+      flex:1;
+      word-break:break-word;
+    }
+
+    .input-shell,
+    .textarea-shell,
+    .select-shell,
+    .date-shell,
+    .file-shell{
+      border-radius:18px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      box-shadow:0 8px 20px rgba(15,23,42,.03);
+    }
+
+    .text-input,
+    .text-area,
+    .select-input,
+    .date-input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:14px;
+      padding:0;
+      resize:none;
+    }
+
+    .text-area{
+      min-height:140px;
+      line-height:1.55;
+    }
+
+    .file-shell{
+      border-style:dashed;
+      border-color:#bfdbfe;
+      background:linear-gradient(180deg,#f8fbff 0%, #ffffff 100%);
+    }
+
+    .file-drop{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:8px;
+      min-height:150px;
+    }
+
+    .file-drop-icon{
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      background:#dbeafe;
+      color:var(--blue-dark);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .file-drop-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .file-drop-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+      max-width:260px;
+    }
+
+    .file-drop-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:10px 16px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 12px 28px rgba(37,99,235,.18);
+    }
+
+    .field-note{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.45;
+      margin-top:2px;
+    }
+
+    .nav-row{
+      display:flex;
+      gap:10px;
+    }
+
+    .nav-row button{
+      flex:1;
+    }
+
+    .ghost-btn{
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      padding:11px 14px;
+      font-size:14px;
+      font-weight:700;
+      background:#fff;
+      color:var(--text);
+      cursor:pointer;
+    }
+
+    .primary-btn{
+      border:none;
+      border-radius:999px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:800;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      cursor:pointer;
+      box-shadow:0 16px 36px rgba(37,99,235,.22);
+    }
+
+    .primary-btn[disabled],
+    .ghost-btn[disabled]{
+      opacity:.65;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    .review-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .review-item{
+      border-radius:16px;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      cursor:pointer;
+    }
+
+    .review-q{
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
+      margin-bottom:8px;
+      line-height:1.45;
+    }
+
+    .review-a{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .review-a strong{
+      color:var(--text);
+    }
+
+    .submit-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.55;
+      margin-bottom:12px;
+    }
+
+    .success-wrap{
+      text-align:center;
+    }
+
+    .success-icon{
+      width:80px;
+      height:80px;
+      border-radius:999px;
+      background:var(--green);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:6px auto 14px;
+      box-shadow:0 12px 30px rgba(34,197,94,.25);
+    }
+
+    .success-icon svg{
+      width:38px;
+      height:38px;
+    }
+
+    .success-text{
+      font-size:14px;
+      color:var(--text);
+      text-align:center;
+      line-height:1.55;
+      margin-bottom:14px;
+    }
+
+    .success-note{
+      border-radius:16px;
+      background:var(--blue-soft);
+      border:1px solid #dbeafe;
+      color:#1e3a8a;
+      padding:12px;
+      font-size:12px;
+      line-height:1.5;
+      margin-bottom:14px;
+      text-align:center;
+    }
+
+    .loading-box{
+      border-radius:22px;
+      background:#fff;
+      border:1px solid var(--line);
+      padding:18px 16px;
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      box-shadow:var(--shadow);
+      margin:0 2px;
+    }
+
+    @media (max-width:380px){
+      .nav-row{ flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-line-1">School work</div>
+      <h1 class="hero-title">
+        Fill your <span>form</span> or <span>revision</span>
+      </h1>
+      <p class="hero-sub">
+        This page handles both school forms and class revisions from your history.
+      </p>
+    </section>
+
+    <div id="loadingView" class="loading-box">Loading item...</div>
+    <div id="errorView" class="loading-box hidden"></div>
+
+    <!-- ACTIVITY INTRO -->
+    <section id="studentActivityIntroView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="goBackToHistory()">← Back to history</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="panel-title" id="studentActivityIntroTitle">Activity</div>
+          <div class="panel-course" id="studentActivityIntroCourse">Class</div>
+
+          <div class="panel-meta">
+            <div class="panel-meta-item">
+              <span>Questions</span>
+              <strong id="studentActivityIntroQuestions">0 Questions</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Time limit</span>
+              <strong id="studentActivityIntroTime">No limit</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Due</span>
+              <strong id="studentActivityIntroDue">No due date</strong>
+            </div>
+          </div>
+
+          <div class="info-box blue" id="studentActivityStartWarning">
+            You can only submit once.
+          </div>
+
+          <button id="studentStartActivityBtn" class="primary-btn" type="button">Start activity</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ACTIVITY QUESTION -->
+    <section id="studentActivityQuestionView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="studentBackFromActivityQuestion()">← Back</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="timer-box">
+            <div class="timer-label">Time remaining</div>
+            <div id="studentActivityTimerValue" class="timer-value">--:--</div>
+          </div>
+
+          <div class="progress-top">
+            <span id="studentActivityProgressText">Question 1 of 1</span>
+            <span id="studentActivityProgressPercent">100%</span>
+          </div>
+
+          <div class="progress-track">
+            <div id="studentActivityProgressBar" class="progress-bar"></div>
+          </div>
+
+          <div id="studentActivityQuestionTitle" class="question-title">Question</div>
+          <div id="studentActivityOptionList" class="choice-list"></div>
+
+          <div class="nav-row">
+            <button id="studentActivityPrevBtn" class="ghost-btn" type="button">Back</button>
+            <button id="studentActivityNextBtn" class="primary-btn" type="button">Next</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ACTIVITY REVIEW -->
+    <section id="studentActivityReviewView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="studentBackToActivityQuestions()">← Back to questions</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="timer-box">
+            <div class="timer-label">Time remaining</div>
+            <div id="studentActivityReviewTimerValue" class="timer-value">--:--</div>
+          </div>
+
+          <div class="panel-title">Review your answers</div>
+          <div class="submit-note">
+            Check all your selected answers below before submitting.
+          </div>
+
+          <div id="studentActivityReviewList" class="review-list"></div>
+          <button id="studentSubmitActivityBtn" class="primary-btn" type="button">Submit activity</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ACTIVITY SUBMITTED -->
+    <section id="studentActivitySubmittedView" class="hidden">
+      <div class="panel-wrap">
+        <article class="panel-card success-wrap">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="panel-title" style="text-align:center;">Activity submitted</div>
+          <div class="success-text">Your answers have been submitted successfully.</div>
+          <div class="success-note">
+            You cannot retry this activity again. Your result will only show after the lecturer releases it.
+          </div>
+
+          <button class="primary-btn" type="button" onclick="goBackToHistory()">Back to history</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- FORM DETAILS -->
+    <section id="studentFormDetailsView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="goBackToHistory()">← Back to history</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="panel-title" id="studentFormDetailsTitle">School Form</div>
+          <div class="panel-course" id="studentFormDetailsSchool">School</div>
+
+          <div class="panel-meta">
+            <div class="panel-meta-item">
+              <span>Description</span>
+              <strong id="studentFormDetailsDescription">No description</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Questions</span>
+              <strong id="studentFormDetailsQuestions">0 Questions</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Response rule</span>
+              <strong id="studentFormDetailsRule">One response only</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Identity mode</span>
+              <strong id="studentFormDetailsIdentity">Logged in identity</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Open date</span>
+              <strong id="studentFormDetailsOpenAt">Now</strong>
+            </div>
+            <div class="panel-meta-item">
+              <span>Close date</span>
+              <strong id="studentFormDetailsCloseAt">No close date</strong>
+            </div>
+          </div>
+
+          <div class="info-box blue" id="studentFormDetailsMessage">
+            Read the form carefully before starting.
+          </div>
+
+          <button id="studentStartFormBtn" class="primary-btn" type="button">Start form</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- FORM QUESTION -->
+    <section id="studentFormQuestionView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="studentGoPrevFormQuestion()">← Back</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="progress-top">
+            <span id="studentFormProgressText">Question 1 of 1</span>
+            <span id="studentFormProgressPercent">100%</span>
+          </div>
+
+          <div class="progress-track">
+            <div id="studentFormProgressBar" class="progress-bar"></div>
+          </div>
+
+          <div id="studentFormQuestionTitle" class="question-title">Question title</div>
+          <div id="studentFormQuestionHelp" class="question-help hidden">Question help</div>
+
+          <div id="studentFormQuestionHost" class="question-block">
+            <div id="studentFormShortAnswerBlock" class="input-shell hidden">
+              <input id="studentFormShortAnswerInput" class="text-input" type="text" placeholder="Type your answer" />
+            </div>
+
+            <div id="studentFormParagraphBlock" class="textarea-shell hidden">
+              <textarea id="studentFormParagraphInput" class="text-area" placeholder="Type your answer here"></textarea>
+            </div>
+
+            <div id="studentFormMultipleChoiceBlock" class="choice-list hidden"></div>
+            <div id="studentFormCheckboxBlock" class="choice-list hidden"></div>
+
+            <div id="studentFormDropdownBlock" class="select-shell hidden">
+              <select id="studentFormDropdownInput" class="select-input">
+                <option value="">Select an option</option>
+              </select>
+            </div>
+
+            <div id="studentFormYesNoBlock" class="choice-list hidden"></div>
+
+            <div id="studentFormDateBlock" class="date-shell hidden">
+              <input id="studentFormDateInput" class="date-input" type="date" />
+            </div>
+
+            <div id="studentFormFileBlock" class="file-shell hidden">
+              <div class="file-drop">
+                <div class="file-drop-icon">
+                  <svg viewBox="0 0 24 24" fill="none" width="26" height="26">
+                    <path d="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="file-drop-title">Upload file</div>
+                <div class="file-drop-sub" id="studentFormFileRules">Allowed file rules will show here.</div>
+                <button id="studentFormChooseFileBtn" class="file-drop-btn" type="button">Choose file</button>
+                <input id="studentFormFileInput" type="file" class="hidden" />
+              </div>
+            </div>
+
+            <div id="studentFormFieldNote" class="field-note"></div>
+          </div>
+
+          <div class="nav-row">
+            <button id="studentFormPrevBtn" class="ghost-btn" type="button">Back</button>
+            <button id="studentFormNextBtn" class="primary-btn" type="button">Next</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FORM REVIEW -->
+    <section id="studentFormReviewView" class="hidden">
+      <div class="panel-topbar">
+        <button class="panel-back-btn" type="button" onclick="studentBackToFormQuestions()">← Back to questions</button>
+      </div>
+
+      <div class="panel-wrap">
+        <article class="panel-card">
+          <div class="panel-title">Review your form</div>
+          <div class="submit-note">
+            Check your answers below before submitting the form.
+          </div>
+
+          <div id="studentFormReviewList" class="review-list"></div>
+          <button id="studentSubmitFormBtn" class="primary-btn" type="button">Submit form</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- FORM SUBMITTED -->
+    <section id="studentFormSubmittedView" class="hidden">
+      <div class="panel-wrap">
+        <article class="panel-card success-wrap">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="panel-title" style="text-align:center;">Form submitted</div>
+          <div class="success-text">Your response has been submitted successfully.</div>
+          <div class="success-note">
+            If the form only allows one response, you will not be able to submit it again.
+          </div>
+
+          <button class="primary-btn" type="button" onclick="goBackToHistory()">Back to history</button>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { supabase } from "./client_supabase.js";
+
+    window.supabase = supabase;
+
+    window.studentClassActivityState = {
+      mode: "",
+      itemId: "",
+      currentActivity: null,
+      currentForm: null,
+      activityQuestions: [],
+      formQuestions: [],
+      activityAnswers: {},
+      formAnswers: {},
+      currentActivityIndex: 0,
+      currentFormIndex: 0,
+      currentAttemptId: null,
+      currentAttemptExpiresAt: null,
+      currentFormResponseId: null,
+      timerInterval: null
+    };
+
+    function qs(id) { return document.getElementById(id); }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizeText(value) {
+      return String(value ?? "").trim().replace(/\s+/g, " ");
+    }
+
+    function fmtDateTime(value, fallback = "No date") {
+      if (!value) return fallback;
+      try {
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return fallback;
+        return d.toLocaleString([], {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      } catch {
+        return fallback;
+      }
+    }
+
+    function formatDuration(minutes) {
+      const n = Number(minutes || 0);
+      if (!n || n <= 0) return "No limit";
+      if (n === 1) return "1 minute";
+      return `${n} minutes`;
+    }
+
+    function formatCountdown(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function isExpiredByDate(value) {
+      if (!value) return false;
+      const t = new Date(value).getTime();
+      if (Number.isNaN(t)) return false;
+      return Date.now() > t;
+    }
+
+    function ensureArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function getParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        type: p.get("type") || "",
+        id: p.get("id") || ""
+      };
+    }
+
+    async function ensureUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) throw new Error("Please sign in again.");
+      return data.user;
+    }
+
+    function hideAllViews() {
+      [
+        "loadingView",
+        "errorView",
+        "studentActivityIntroView",
+        "studentActivityQuestionView",
+        "studentActivityReviewView",
+        "studentActivitySubmittedView",
+        "studentFormDetailsView",
+        "studentFormQuestionView",
+        "studentFormReviewView",
+        "studentFormSubmittedView"
+      ].forEach((id) => {
+        const el = qs(id);
+        if (el) el.classList.add("hidden");
+      });
+    }
+
+    function showView(id) {
+      hideAllViews();
+      const el = qs(id);
+      if (el) el.classList.remove("hidden");
+      if (
+        id === "studentActivityIntroView" ||
+        id === "studentActivitySubmittedView" ||
+        id === "studentFormDetailsView" ||
+        id === "studentFormSubmittedView"
+      ) {
+        if (id !== "studentActivitySubmittedView") stopTimer();
+      }
+    }
+
+    function showError(message) {
+      hideAllViews();
+      const box = qs("errorView");
+      box.classList.remove("hidden");
+      box.textContent = message || "Something went wrong.";
+    }
+
+    function goBackToHistory() {
+      window.location.href = "main.html";
+    }
+
+    window.goBackToHistory = goBackToHistory;
+
+    function stopTimer() {
+      const state = window.studentClassActivityState;
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function setTimerText(text, warning = false) {
+      ["studentActivityTimerValue", "studentActivityReviewTimerValue"].forEach((id) => {
+        const el = qs(id);
+        if (!el) return;
+        el.textContent = text;
+        el.classList.toggle("warning", !!warning);
+      });
+    }
+
+    async function autoSubmitFromTimer() {
+      stopTimer();
+      alert("Time is up. Your activity will be submitted now.");
+      await studentSubmitActivity(true);
+    }
+
+    function startTimer(expiresAt) {
+      stopTimer();
+
+      if (!expiresAt) {
+        setTimerText("--:--", false);
+        return;
+      }
+
+      window.studentClassActivityState.currentAttemptExpiresAt = expiresAt;
+
+      const tick = () => {
+        const endMs = new Date(expiresAt).getTime();
+        const diff = endMs - Date.now();
+
+        if (Number.isNaN(endMs)) {
+          setTimerText("--:--", false);
+          stopTimer();
+          return;
+        }
+
+        if (diff <= 0) {
+          setTimerText("00:00", true);
+          autoSubmitFromTimer();
+          return;
+        }
+
+        const warning = diff <= 5 * 60 * 1000;
+        setTimerText(formatCountdown(diff), warning);
+      };
+
+      tick();
+      window.studentClassActivityState.timerInterval = setInterval(tick, 1000);
+    }
+
+    async function loadActivityDetails(activityId) {
+      const user = await ensureUser();
+
+      const { data: activity, error } = await supabase
+        .from("class_activities")
+        .select("id, class_id, activity_type, title, due_at, time_limit_minutes, attempts_allowed, is_published, status, created_at")
+        .eq("id", activityId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!activity) throw new Error("Activity not found.");
+      if (!activity.is_published || activity.status !== "published") {
+        throw new Error("This revision is not available.");
+      }
+
+      const { data: membership, error: membershipError } = await supabase
+        .from("course_memberships")
+        .select("course_id")
+        .eq("course_id", activity.class_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (membershipError) throw membershipError;
+      if (!membership) throw new Error("You are not allowed to view this revision.");
+
+      const { data: course, error: courseError } = await supabase
+        .from("courses")
+        .select("id, course_code, course_title")
+        .eq("id", activity.class_id)
+        .maybeSingle();
+
+      if (courseError) throw courseError;
+
+      const { data: questions, error: questionError } = await supabase
+        .from("class_activity_questions")
+        .select("id, activity_id, question_text, option_a, option_b, option_c, option_d, position")
+        .eq("activity_id", activityId)
+        .order("position", { ascending: true });
+
+      if (questionError) throw questionError;
+
+      const { data: attempt, error: attemptError } = await supabase
+        .from("class_activity_attempts")
+        .select("id, activity_id, user_id, started_at, submitted_at, status, expires_at")
+        .eq("activity_id", activityId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (attemptError) throw attemptError;
+
+      let answers = [];
+      if (attempt?.id) {
+        const { data: answerRows, error: answerError } = await supabase
+          .from("class_activity_answers")
+          .select("id, attempt_id, question_id, selected_option")
+          .eq("attempt_id", attempt.id);
+
+        if (answerError) throw answerError;
+        answers = answerRows || [];
+      }
+
+      const expiredByDueDate = isExpiredByDate(activity.due_at);
+      const expiredByTimer = !!(
+        attempt?.expires_at &&
+        new Date(attempt.expires_at).getTime() < Date.now()
+      );
+
+      let computedStatus = "not-started";
+      if (attempt?.status === "submitted" || attempt?.submitted_at) {
+        computedStatus = "submitted";
+      } else if (attempt) {
+        computedStatus = "in-progress";
+      }
+
+      if ((expiredByDueDate || expiredByTimer) && computedStatus !== "submitted") {
+        computedStatus = "expired";
+      }
+
+      return {
+        id: activity.id,
+        class_id: activity.class_id,
+        class_code: course?.course_code || "Class",
+        class_title: course?.course_title || "",
+        title: activity.title || "Revision",
+        type: activity.activity_type || "revision",
+        questions_count: (questions || []).length,
+        time_limit: activity.time_limit_minutes || null,
+        due_at: activity.due_at || null,
+        due_text: fmtDateTime(activity.due_at, "No due date"),
+        status: computedStatus,
+        attempt_id: attempt?.id || null,
+        expires_at: attempt?.expires_at || null,
+        questions: (questions || []).map((q) => ({
+          id: q.id,
+          question: q.question_text,
+          options: {
+            A: q.option_a,
+            B: q.option_b,
+            C: q.option_c,
+            D: q.option_d
+          },
+          position: q.position
+        })),
+        answers: answers || []
+      };
+    }
+
+    async function ensureAttempt() {
+      const state = window.studentClassActivityState;
+      const activity = state.currentActivity;
+      if (!activity) return null;
+
+      const user = await ensureUser();
+
+      if (state.currentAttemptId) return state.currentAttemptId;
+
+      const { data: existing, error: existingError } = await supabase
+        .from("class_activity_attempts")
+        .select("id, status, submitted_at, expires_at")
+        .eq("activity_id", activity.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingError) throw existingError;
+
+      if (existing) {
+        state.currentAttemptId = existing.id;
+        state.currentAttemptExpiresAt = existing.expires_at || null;
+        return existing.id;
+      }
+
+      const insertPayload = {
+        activity_id: activity.id,
+        user_id: user.id,
+        status: "in_progress",
+        started_at: new Date().toISOString(),
+        expires_at: activity.time_limit
+          ? new Date(Date.now() + Number(activity.time_limit) * 60 * 1000).toISOString()
+          : null
+      };
+
+      const { data: created, error: createError } = await supabase
+        .from("class_activity_attempts")
+        .insert([insertPayload])
+        .select("id, expires_at")
+        .single();
+
+      if (createError) throw createError;
+
+      state.currentAttemptId = created.id;
+      state.currentAttemptExpiresAt = created.expires_at || null;
+      return created.id;
+    }
+
+    async function loadAnswersForAttempt(attemptId) {
+      if (!attemptId) return {};
+      const { data, error } = await supabase
+        .from("class_activity_answers")
+        .select("question_id, selected_option")
+        .eq("attempt_id", attemptId);
+
+      if (error) throw error;
+
+      const answers = {};
+      (data || []).forEach((row) => {
+        answers[row.question_id] = row.selected_option;
+      });
+      return answers;
+    }
+
+    async function openActivityIntro(activityId) {
+      const found = await loadActivityDetails(activityId);
+
+      qs("studentActivityIntroTitle").textContent = found.title;
+      qs("studentActivityIntroCourse").textContent = `${found.class_code} - ${found.class_title}`.trim();
+      qs("studentActivityIntroQuestions").textContent = `${found.questions_count} Questions`;
+      qs("studentActivityIntroTime").textContent = found.time_limit ? formatDuration(found.time_limit) : "No limit";
+      qs("studentActivityIntroDue").textContent = found.due_text || "No due date";
+
+      const warningEl = qs("studentActivityStartWarning");
+      const startBtn = qs("studentStartActivityBtn");
+
+      if (found.status === "submitted") {
+        warningEl.textContent = "You have already submitted this revision.";
+        warningEl.className = "info-box green";
+        startBtn.textContent = "Already submitted";
+        startBtn.disabled = true;
+      } else if (found.status === "expired") {
+        warningEl.textContent = "This revision has expired and can no longer be answered.";
+        warningEl.className = "info-box amber";
+        startBtn.textContent = "Revision expired";
+        startBtn.disabled = true;
+      } else {
+        warningEl.textContent = found.time_limit
+          ? `Once you start, this revision will expire after ${formatDuration(found.time_limit)}.`
+          : `You can only submit once.`;
+        warningEl.className = "info-box blue";
+        startBtn.textContent = found.status === "in-progress" ? "Continue revision" : "Start revision";
+        startBtn.disabled = false;
+      }
+
+      const state = window.studentClassActivityState;
+      state.currentActivity = found;
+      state.activityQuestions = found.questions || [];
+      state.currentActivityIndex = 0;
+      state.currentAttemptId = found.attempt_id || null;
+      state.currentAttemptExpiresAt = found.expires_at || null;
+
+      const answerMap = {};
+      (found.answers || []).forEach((a) => {
+        answerMap[a.question_id] = a.selected_option;
+      });
+      state.activityAnswers = answerMap;
+
+      showView("studentActivityIntroView");
+    }
+
+    async function studentStartActivity() {
+      const state = window.studentClassActivityState;
+      const activity = state.currentActivity;
+      if (!activity) return;
+
+      if (activity.status === "submitted") {
+        alert("You have already submitted this revision.");
+        return;
+      }
+
+      if (activity.status === "expired" || isExpiredByDate(activity.due_at)) {
+        alert("This revision has expired.");
+        return;
+      }
+
+      const btn = qs("studentStartActivityBtn");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Opening...";
+
+      try {
+        const attemptId = await ensureAttempt();
+        const savedAnswers = await loadAnswersForAttempt(attemptId);
+
+        state.activityAnswers = savedAnswers || {};
+        state.currentActivityIndex = 0;
+
+        if (state.currentAttemptExpiresAt) {
+          const endMs = new Date(state.currentAttemptExpiresAt).getTime();
+          if (!Number.isNaN(endMs) && Date.now() >= endMs) {
+            alert("This revision time has already expired.");
+            goBackToHistory();
+            return;
+          }
+        }
+
+        startTimer(state.currentAttemptExpiresAt);
+        renderActivityQuestion();
+        showView("studentActivityQuestionView");
+      } catch (err) {
+        console.error("studentStartActivity failed:", err);
+        alert(err?.message || "Could not open this revision.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    function renderActivityQuestion() {
+      const state = window.studentClassActivityState;
+      const questions = state.activityQuestions || [];
+      const index = Number(state.currentActivityIndex || 0);
+      const q = questions[index];
+      if (!q) return;
+
+      qs("studentActivityQuestionTitle").textContent = q.question || "Question";
+
+      const total = questions.length || 1;
+      const percent = Math.round(((index + 1) / total) * 100);
+
+      qs("studentActivityProgressText").textContent = `Question ${index + 1} of ${total}`;
+      qs("studentActivityProgressPercent").textContent = `${percent}%`;
+      qs("studentActivityProgressBar").style.width = `${percent}%`;
+
+      const selected = state.activityAnswers[q.id] || "";
+      const keys = ["A", "B", "C", "D"].filter((key) => normalizeText(q.options[key]));
+
+      qs("studentActivityOptionList").innerHTML = keys.map((key) => {
+        const active = selected === key;
+        return `
+          <div class="choice-option ${active ? "active" : ""}" data-activity-option="${escapeHtml(key)}">
+            <div class="choice-mark">${escapeHtml(key)}</div>
+            <div class="choice-text">${escapeHtml(q.options[key])}</div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll("[data-activity-option]").forEach((el) => {
+        el.addEventListener("click", () => {
+          state.activityAnswers[q.id] = el.getAttribute("data-activity-option");
+          renderActivityQuestion();
+        });
+      });
+
+      qs("studentActivityPrevBtn").onclick = studentGoPrevQuestion;
+      qs("studentActivityNextBtn").onclick = studentGoNextQuestion;
+      qs("studentActivityNextBtn").textContent = index === total - 1 ? "Review" : "Next";
+    }
+
+    async function saveCurrentActivityAnswer() {
+      const state = window.studentClassActivityState;
+      const q = (state.activityQuestions || [])[state.currentActivityIndex];
+      if (!q) return;
+
+      const selected = state.activityAnswers[q.id];
+      if (!selected) throw new Error("Please select one option before continuing.");
+
+      const attemptId = await ensureAttempt();
+      if (!attemptId) throw new Error("Missing activity attempt.");
+
+      const { error } = await supabase
+        .from("class_activity_answers")
+        .upsert([{
+          attempt_id: attemptId,
+          question_id: q.id,
+          selected_option: selected
+        }], { onConflict: "attempt_id,question_id" });
+
+      if (error) throw error;
+    }
+
+    function studentGoPrevQuestion() {
+      const state = window.studentClassActivityState;
+      if (state.currentActivityIndex <= 0) {
+        showView("studentActivityIntroView");
+        return;
+      }
+      state.currentActivityIndex -= 1;
+      renderActivityQuestion();
+    }
+
+    window.studentBackFromActivityQuestion = studentGoPrevQuestion;
+
+    async function studentGoNextQuestion() {
+      try {
+        await saveCurrentActivityAnswer();
+
+        const state = window.studentClassActivityState;
+        const total = (state.activityQuestions || []).length;
+
+        if (state.currentActivityIndex >= total - 1) {
+          renderActivityReview();
+          showView("studentActivityReviewView");
+          startTimer(state.currentAttemptExpiresAt);
+          return;
+        }
+
+        state.currentActivityIndex += 1;
+        renderActivityQuestion();
+      } catch (err) {
+        alert(err?.message || "Could not save answer.");
+      }
+    }
+
+    function renderActivityReview() {
+      const state = window.studentClassActivityState;
+      const wrap = qs("studentActivityReviewList");
+      wrap.innerHTML = (state.activityQuestions || []).map((q, index) => {
+        const answer = state.activityAnswers[q.id];
+        const answerText = answer ? `${answer}: ${q.options[answer] || ""}` : "No answer";
+        return `
+          <div class="review-item" data-review-activity-index="${index}">
+            <div class="review-q">${escapeHtml(q.question || "Question")}</div>
+            <div class="review-a"><strong>Your answer:</strong> ${escapeHtml(answerText)}</div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll("[data-review-activity-index]").forEach((el) => {
+        el.addEventListener("click", () => {
+          state.currentActivityIndex = Number(el.getAttribute("data-review-activity-index"));
+          renderActivityQuestion();
+          showView("studentActivityQuestionView");
+          startTimer(state.currentAttemptExpiresAt);
+        });
+      });
+    }
+
+    function studentBackToActivityQuestions() {
+      showView("studentActivityQuestionView");
+      startTimer(window.studentClassActivityState.currentAttemptExpiresAt);
+      renderActivityQuestion();
+    }
+
+    window.studentBackToActivityQuestions = studentBackToActivityQuestions;
+
+    async function studentSubmitActivity(fromTimer = false) {
+      const state = window.studentClassActivityState;
+      const activity = state.currentActivity;
+      if (!activity) return;
+
+      try {
+        for (let i = 0; i < (state.activityQuestions || []).length; i++) {
+          state.currentActivityIndex = i;
+          await saveCurrentActivityAnswer();
+        }
+
+        const attemptId = await ensureAttempt();
+        const { error: submitError } = await supabase
+          .from("class_activity_attempts")
+          .update({
+            status: "submitted",
+            submitted_at: new Date().toISOString()
+          })
+          .eq("id", attemptId);
+
+        if (submitError) throw submitError;
+
+        stopTimer();
+        showView("studentActivitySubmittedView");
+      } catch (err) {
+        console.error("studentSubmitActivity failed:", err);
+        if (!fromTimer) {
+          alert(err?.message || "Could not submit activity.");
+        }
+      }
+    }
+
+    async function loadFormDetails(formId) {
+      const user = await ensureUser();
+
+      const { data: notif, error: notifError } = await supabase
+        .from("form_notifications")
+        .select("id, form_id, user_id, title, message, school_name, programme, level, is_read, read_at, created_at")
+        .eq("form_id", formId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (notifError) throw notifError;
+      if (!notif) throw new Error("Form notification not found for this student.");
+
+      const { data: form, error } = await supabase
+        .from("forms")
+        .select("id, title, description, school_name, status, response_rule, identity_mode, open_at, close_at, published_at, created_at, audience_mode, programme_targets, is_active")
+        .eq("id", formId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!form) throw new Error("Form not found.");
+
+      const { data: questions, error: questionError } = await supabase
+        .from("form_questions")
+        .select("*")
+        .eq("form_id", formId)
+        .order("sort_order", { ascending: true });
+
+      if (questionError) throw questionError;
+
+      const { data: response, error: responseError } = await supabase
+        .from("form_responses")
+        .select("*")
+        .eq("form_id", formId)
+        .eq("submitted_by", user.id)
+        .maybeSingle();
+
+      if (responseError) throw responseError;
+
+      let answers = [];
+      if (response?.id) {
+        const { data: answerRows, error: answerError } = await supabase
+          .from("form_answers")
+          .select("*")
+          .eq("response_id", response.id);
+
+        if (answerError) throw answerError;
+        answers = answerRows || [];
+      }
+
+      const closePassed = !!(form.close_at && isExpiredByDate(form.close_at));
+      const isClosed =
+        form.status === "closed" ||
+        form.status === "archived" ||
+        closePassed ||
+        form.is_active === false;
+
+      let computedStatus = "not-started";
+      if (response?.submitted_at) computedStatus = "submitted";
+      else if (isClosed) computedStatus = "closed";
+
+      return {
+        id: form.id,
+        notification_id: notif.id,
+        title: form.title || notif.title || "School Form",
+        description: form.description || "",
+        school_name: form.school_name || notif.school_name || "",
+        questions_count: (questions || []).length,
+        response_rule: form.response_rule || "one",
+        identity_mode: form.identity_mode || "auto",
+        open_at: form.open_at || null,
+        close_at: form.close_at || null,
+        status: computedStatus,
+        response_id: response?.id || null,
+        submitted_at: response?.submitted_at || null,
+        questions: questions || [],
+        answers: answers || []
+      };
+    }
+
+    async function openFormDetails(formId) {
+      const found = await loadFormDetails(formId);
+
+      window.studentClassActivityState.currentForm = found;
+      window.studentClassActivityState.formQuestions = [];
+      window.studentClassActivityState.formAnswers = {};
+      window.studentClassActivityState.currentFormIndex = 0;
+      window.studentClassActivityState.currentFormResponseId = found.response_id || null;
+
+      qs("studentFormDetailsTitle").textContent = found.title || "School Form";
+      qs("studentFormDetailsSchool").textContent = found.school_name || "School";
+      qs("studentFormDetailsDescription").textContent = found.description || "No description";
+      qs("studentFormDetailsQuestions").textContent = `${found.questions_count || 0} Questions`;
+      qs("studentFormDetailsRule").textContent =
+        found.response_rule === "many" ? "Multiple responses allowed" : "One response only";
+      qs("studentFormDetailsIdentity").textContent =
+        found.identity_mode === "anonymous" ? "Anonymous" :
+        found.identity_mode === "manual" ? "Manual identity" :
+        "Logged in identity";
+      qs("studentFormDetailsOpenAt").textContent = fmtDateTime(found.open_at, "Now");
+      qs("studentFormDetailsCloseAt").textContent = fmtDateTime(found.close_at, "No close date");
+
+      const msgEl = qs("studentFormDetailsMessage");
+      const startBtn = qs("studentStartFormBtn");
+
+      if (found.status === "submitted" && found.response_rule !== "many") {
+        msgEl.textContent = "You have already submitted this form.";
+        msgEl.className = "info-box green";
+        startBtn.textContent = "Already submitted";
+        startBtn.disabled = true;
+      } else if (found.status === "closed") {
+        msgEl.textContent = "This form is closed and no longer accepting responses.";
+        msgEl.className = "info-box amber";
+        startBtn.textContent = "Form closed";
+        startBtn.disabled = true;
+      } else {
+        msgEl.textContent = "Read the form carefully before starting. Some forms may include file upload, date, written answers, or multiple response formats.";
+        msgEl.className = "info-box blue";
+        startBtn.textContent = "Start form";
+        startBtn.disabled = false;
+      }
+
+      await markFormNotificationRead(found.notification_id);
+      showView("studentFormDetailsView");
+    }
+
+    async function markFormNotificationRead(notificationId) {
+      if (!notificationId) return;
+      try {
+        await supabase
+          .from("form_notifications")
+          .update({
+            is_read: true,
+            read_at: new Date().toISOString()
+          })
+          .eq("id", notificationId);
+      } catch (err) {
+        console.error("markFormNotificationRead failed:", err);
+      }
+    }
+
+    async function studentStartForm() {
+      const form = window.studentClassActivityState.currentForm;
+      if (!form) return;
+
+      if (form.status === "closed") {
+        alert("This form is closed.");
+        return;
+      }
+
+      if (form.status === "submitted" && form.response_rule !== "many") {
+        alert("You have already submitted this form.");
+        return;
+      }
+
+      const btn = qs("studentStartFormBtn");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Opening...";
+
+      try {
+        const formData = await loadFormDetails(form.id);
+        const state = window.studentClassActivityState;
+        state.currentForm = formData;
+        state.formQuestions = formData.questions || [];
+        state.currentFormIndex = 0;
+        state.currentFormResponseId = formData.response_id || null;
+
+        const answersMap = {};
+        (formData.answers || []).forEach((a) => {
+          let value = a.answer_value;
+          try {
+            if (typeof value === "string" && (value.startsWith("[") || value.startsWith("{"))) {
+              value = JSON.parse(value);
+            }
+          } catch {}
+          answersMap[a.question_id] = value;
+        });
+
+        state.formAnswers = answersMap;
+        renderFormQuestion();
+        showView("studentFormQuestionView");
+      } catch (err) {
+        console.error("studentStartForm failed:", err);
+        alert(err?.message || "Could not open form.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    function getCurrentFormQuestion() {
+      const state = window.studentClassActivityState;
+      return (state.formQuestions || [])[state.currentFormIndex] || null;
+    }
+
+    function hideAllFormBlocks() {
+      [
+        "studentFormShortAnswerBlock",
+        "studentFormParagraphBlock",
+        "studentFormMultipleChoiceBlock",
+        "studentFormCheckboxBlock",
+        "studentFormDropdownBlock",
+        "studentFormYesNoBlock",
+        "studentFormDateBlock",
+        "studentFormFileBlock"
+      ].forEach((id) => qs(id).classList.add("hidden"));
+    }
+
+    function setFieldNote(text = "") {
+      qs("studentFormFieldNote").textContent = text || "";
+    }
+
+    function setCurrentFormValue(value) {
+      const state = window.studentClassActivityState;
+      const q = getCurrentFormQuestion();
+      if (!q) return;
+      state.formAnswers[q.id] = value;
+    }
+
+    function getCurrentFormValue() {
+      const state = window.studentClassActivityState;
+      const q = getCurrentFormQuestion();
+      if (!q) return "";
+      return state.formAnswers[q.id];
+    }
+
+    function renderChoiceList(containerId, values, multiple = false) {
+      const q = getCurrentFormQuestion();
+      const current = getCurrentFormValue();
+      const wrap = qs(containerId);
+      wrap.classList.remove("hidden");
+
+      wrap.innerHTML = values.map((value, index) => {
+        const active = multiple
+          ? Array.isArray(current) && current.includes(value)
+          : current === value;
+
+        return `
+          <div class="choice-option ${active ? "active" : ""}" data-form-choice="${escapeHtml(value)}">
+            <div class="choice-mark">${multiple ? "✓" : String.fromCharCode(65 + index)}</div>
+            <div class="choice-text">${escapeHtml(value)}</div>
+          </div>
+        `;
+      }).join("");
+
+      wrap.querySelectorAll("[data-form-choice]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const value = el.getAttribute("data-form-choice");
+          if (multiple) {
+            const now = Array.isArray(getCurrentFormValue()) ? [...getCurrentFormValue()] : [];
+            const idx = now.indexOf(value);
+            if (idx >= 0) now.splice(idx, 1);
+            else now.push(value);
+            setCurrentFormValue(now);
+          } else {
+            setCurrentFormValue(value);
+          }
+          renderFormQuestion();
+        });
+      });
+    }
+
+    function renderFormQuestion() {
+      const state = window.studentClassActivityState;
+      const questions = state.formQuestions || [];
+      const index = Number(state.currentFormIndex || 0);
+      const q = questions[index];
+      if (!q) return;
+
+      const total = questions.length || 1;
+      const percent = Math.round(((index + 1) / total) * 100);
+
+      qs("studentFormProgressText").textContent = `Question ${index + 1} of ${total}`;
+      qs("studentFormProgressPercent").textContent = `${percent}%`;
+      qs("studentFormProgressBar").style.width = `${percent}%`;
+
+      qs("studentFormQuestionTitle").textContent = q.question_text || "Question";
+      const helpEl = qs("studentFormQuestionHelp");
+      if (normalizeText(q.help_text || q.description)) {
+        helpEl.textContent = q.help_text || q.description || "";
+        helpEl.classList.remove("hidden");
+      } else {
+        helpEl.classList.add("hidden");
+      }
+
+      hideAllFormBlocks();
+      setFieldNote("");
+
+      const type = String(q.question_type || "short_answer").toLowerCase();
+      let options = ensureArray(q.options);
+      if (!options.length && q.option_json) {
+        try { options = ensureArray(JSON.parse(q.option_json)); } catch {}
+      }
+
+      if (type === "short_answer" || type === "text") {
+        qs("studentFormShortAnswerBlock").classList.remove("hidden");
+        qs("studentFormShortAnswerInput").value = getCurrentFormValue() || "";
+      } else if (type === "paragraph" || type === "long_text") {
+        qs("studentFormParagraphBlock").classList.remove("hidden");
+        qs("studentFormParagraphInput").value = getCurrentFormValue() || "";
+      } else if (type === "multiple_choice") {
+        renderChoiceList("studentFormMultipleChoiceBlock", options, false);
+      } else if (type === "checkboxes") {
+        renderChoiceList("studentFormCheckboxBlock", options, true);
+      } else if (type === "dropdown") {
+        const select = qs("studentFormDropdownInput");
+        qs("studentFormDropdownBlock").classList.remove("hidden");
+        select.innerHTML = `<option value="">Select an option</option>` + options.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+        select.value = getCurrentFormValue() || "";
+      } else if (type === "yes_no") {
+        renderChoiceList("studentFormYesNoBlock", ["Yes", "No"], false);
+      } else if (type === "date") {
+        qs("studentFormDateBlock").classList.remove("hidden");
+        qs("studentFormDateInput").value = getCurrentFormValue() || "";
+      } else if (type === "file_upload") {
+        qs("studentFormFileBlock").classList.remove("hidden");
+        const maxFiles = Number(q.max_files || 1);
+        const allowed = ensureArray(q.allowed_file_types || q.file_types || []);
+        const fileInput = qs("studentFormFileInput");
+        fileInput.multiple = maxFiles > 1;
+        if (allowed.length) {
+          fileInput.setAttribute("accept", allowed.join(","));
+        } else {
+          fileInput.removeAttribute("accept");
+        }
+        qs("studentFormFileRules").textContent =
+          `${allowed.length ? "Allowed: " + allowed.join(", ") + ". " : ""}${maxFiles > 1 ? `You can upload up to ${maxFiles} files.` : "Upload one file."}`;
+
+        const current = getCurrentFormValue();
+        if (Array.isArray(current) && current.length) {
+          setFieldNote(`${current.length} file(s) already selected/uploaded.`);
+        } else if (typeof current === "string" && current) {
+          setFieldNote("1 file already uploaded.");
+        }
+      } else {
+        qs("studentFormParagraphBlock").classList.remove("hidden");
+        qs("studentFormParagraphInput").value = getCurrentFormValue() || "";
+      }
+
+      qs("studentFormPrevBtn").onclick = studentGoPrevFormQuestion;
+      qs("studentFormNextBtn").onclick = studentGoNextFormQuestion;
+      qs("studentFormNextBtn").textContent = index === total - 1 ? "Review" : "Next";
+    }
+
+    function collectCurrentFormInputValue() {
+      const q = getCurrentFormQuestion();
+      if (!q) return;
+
+      const type = String(q.question_type || "short_answer").toLowerCase();
+
+      if (type === "short_answer" || type === "text") {
+        setCurrentFormValue(qs("studentFormShortAnswerInput").value.trim());
+      } else if (type === "paragraph" || type === "long_text") {
+        setCurrentFormValue(qs("studentFormParagraphInput").value.trim());
+      } else if (type === "dropdown") {
+        setCurrentFormValue(qs("studentFormDropdownInput").value || "");
+      } else if (type === "date") {
+        setCurrentFormValue(qs("studentFormDateInput").value || "");
+      }
+    }
+
+    function isRequiredQuestion(q) {
+      return q?.is_required === true || q?.required === true;
+    }
+
+    function validateCurrentFormQuestion() {
+      collectCurrentFormInputValue();
+
+      const q = getCurrentFormQuestion();
+      if (!q) return true;
+      if (!isRequiredQuestion(q)) return true;
+
+      const answer = getCurrentFormValue();
+      const type = String(q.question_type || "short_answer").toLowerCase();
+
+      if (type === "checkboxes") {
+        return Array.isArray(answer) && answer.length > 0;
+      }
+
+      if (type === "file_upload") {
+        return (
+          (Array.isArray(answer) && answer.length > 0) ||
+          (typeof answer === "string" && !!answer)
+        );
+      }
+
+      return !!normalizeText(answer);
+    }
+
+    async function uploadFormFiles(files, q) {
+      if (!files?.length) return;
+
+      const maxFiles = Number(q.max_files || 1);
+      const allowed = ensureArray(q.allowed_file_types || q.file_types || []);
+
+      if (files.length > maxFiles) {
+        alert(`You can only upload up to ${maxFiles} file(s).`);
+        return;
+      }
+
+      for (const file of files) {
+        if (allowed.length) {
+          const extension = "." + file.name.split(".").pop().toLowerCase();
+          const mime = file.type || "";
+          const matches = allowed.some((type) => {
+            const t = String(type || "").toLowerCase();
+            return t === mime.toLowerCase() || t === extension || t === file.name.toLowerCase();
+          });
+
+          if (!matches) {
+            alert(`${file.name} is not an allowed file type.`);
+            qs("studentFormFileInput").value = "";
+            return;
+          }
+        }
+      }
+
+      const uploadedUrls = [];
+
+      for (const file of files) {
+        const fileExt = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+        const path = `student-form-uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("form-uploads")
+          .upload(path, file, { upsert: false });
+
+        if (uploadError) {
+          console.error("Form file upload failed:", uploadError);
+          alert(uploadError.message || "Could not upload file.");
+          return;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("form-uploads")
+          .getPublicUrl(path);
+
+        uploadedUrls.push(publicUrlData?.publicUrl || "");
+      }
+
+      setCurrentFormValue(maxFiles > 1 ? uploadedUrls : uploadedUrls[0]);
+      setFieldNote(`${uploadedUrls.length} file(s) uploaded successfully.`);
+    }
+
+    function studentGoNextFormQuestion() {
+      if (!validateCurrentFormQuestion()) {
+        alert("Please answer this required question before continuing.");
+        return;
+      }
+
+      const state = window.studentClassActivityState;
+      const total = (state.formQuestions || []).length;
+
+      if (state.currentFormIndex >= total - 1) {
+        renderFormReview();
+        showView("studentFormReviewView");
+        return;
+      }
+
+      state.currentFormIndex += 1;
+      renderFormQuestion();
+    }
+
+    function studentGoPrevFormQuestion() {
+      const state = window.studentClassActivityState;
+      if (state.currentFormIndex > 0) {
+        state.currentFormIndex -= 1;
+        renderFormQuestion();
+      } else {
+        showView("studentFormDetailsView");
+      }
+    }
+
+    window.studentGoPrevFormQuestion = studentGoPrevFormQuestion;
+
+    function formatFormAnswerPreview(q, answer) {
+      const type = String(q.question_type || "short_answer").toLowerCase();
+
+      if (type === "checkboxes") {
+        return Array.isArray(answer) && answer.length ? answer.join(", ") : "No answer";
+      }
+
+      if (type === "file_upload") {
+        if (Array.isArray(answer) && answer.length) return `${answer.length} file(s) uploaded`;
+        if (typeof answer === "string" && answer) return "1 file uploaded";
+        return "No file uploaded";
+      }
+
+      return normalizeText(answer) || "No answer";
+    }
+
+    function renderFormReview() {
+      const state = window.studentClassActivityState;
+      const wrap = qs("studentFormReviewList");
+
+      wrap.innerHTML = (state.formQuestions || []).map((q, index) => {
+        const answer = state.formAnswers[q.id];
+        return `
+          <div class="review-item" data-review-form-index="${index}">
+            <div class="review-q">${escapeHtml(q.question_text || "Question")}</div>
+            <div class="review-a"><strong>Your answer:</strong> ${escapeHtml(formatFormAnswerPreview(q, answer))}</div>
+          </div>
+        `;
+      }).join("");
+
+      wrap.querySelectorAll("[data-review-form-index]").forEach((el) => {
+        el.addEventListener("click", () => {
+          window.studentClassActivityState.currentFormIndex = Number(el.getAttribute("data-review-form-index"));
+          renderFormQuestion();
+          showView("studentFormQuestionView");
+        });
+      });
+    }
+
+    function studentBackToFormQuestions() {
+      showView("studentFormQuestionView");
+      renderFormQuestion();
+    }
+
+    window.studentBackToFormQuestions = studentBackToFormQuestions;
+
+    async function ensureFormResponse() {
+      const state = window.studentClassActivityState;
+      const form = state.currentForm;
+      const user = await ensureUser();
+
+      if (state.currentFormResponseId) return state.currentFormResponseId;
+
+      const { data: existing, error: existingError } = await supabase
+        .from("form_responses")
+        .select("id")
+        .eq("form_id", form.id)
+        .eq("submitted_by", user.id)
+        .maybeSingle();
+
+      if (existingError) throw existingError;
+
+      if (existing) {
+        state.currentFormResponseId = existing.id;
+        return existing.id;
+      }
+
+      const { data: created, error: createError } = await supabase
+        .from("form_responses")
+        .insert([{
+          form_id: form.id,
+          submitted_by: user.id,
+          status: "draft"
+        }])
+        .select("id")
+        .single();
+
+      if (createError) throw createError;
+
+      state.currentFormResponseId = created.id;
+      return created.id;
+    }
+
+    async function submitForm() {
+      const state = window.studentClassActivityState;
+      const form = state.currentForm;
+      if (!form) return;
+
+      if (form.status === "submitted" && form.response_rule !== "many") {
+        alert("You have already submitted this form.");
+        return;
+      }
+
+      if (form.status === "closed") {
+        alert("This form is closed.");
+        return;
+      }
+
+      try {
+        for (let i = 0; i < (state.formQuestions || []).length; i++) {
+          state.currentFormIndex = i;
+          if (!validateCurrentFormQuestion()) {
+            alert("Please answer all required questions before submitting.");
+            return;
+          }
+        }
+
+        const responseId = await ensureFormResponse();
+
+        const payload = [];
+
+        for (const q of state.formQuestions || []) {
+          let answer = state.formAnswers[q.id];
+
+          if (Array.isArray(answer) || (typeof answer === "object" && answer !== null)) {
+            answer = JSON.stringify(answer);
+          }
+
+          payload.push({
+            response_id: responseId,
+            question_id: q.id,
+            answer_value: answer == null ? "" : String(answer)
+          });
+        }
+
+        const { error: deleteError } = await supabase
+          .from("form_answers")
+          .delete()
+          .eq("response_id", responseId);
+
+        if (deleteError) throw deleteError;
+
+        if (payload.length) {
+          const { error: insertError } = await supabase
+            .from("form_answers")
+            .insert(payload);
+
+          if (insertError) throw insertError;
+        }
+
+        const { error: submitError } = await supabase
+          .from("form_responses")
+          .update({
+            status: "submitted",
+            submitted_at: new Date().toISOString()
+          })
+          .eq("id", responseId);
+
+        if (submitError) throw submitError;
+
+        showView("studentFormSubmittedView");
+      } catch (err) {
+        console.error("submitForm failed:", err);
+        alert(err?.message || "Could not submit form.");
+      }
+    }
+
+    function bindStaticEvents() {
+      qs("studentStartActivityBtn").addEventListener("click", studentStartActivity);
+      qs("studentSubmitActivityBtn").addEventListener("click", () => studentSubmitActivity(false));
+      qs("studentStartFormBtn").addEventListener("click", studentStartForm);
+      qs("studentSubmitFormBtn").addEventListener("click", submitForm);
+
+      qs("studentFormShortAnswerInput").addEventListener("input", () => {
+        setCurrentFormValue(qs("studentFormShortAnswerInput").value);
+      });
+
+      qs("studentFormParagraphInput").addEventListener("input", () => {
+        setCurrentFormValue(qs("studentFormParagraphInput").value);
+      });
+
+      qs("studentFormDropdownInput").addEventListener("change", () => {
+        setCurrentFormValue(qs("studentFormDropdownInput").value);
+      });
+
+      qs("studentFormDateInput").addEventListener("change", () => {
+        setCurrentFormValue(qs("studentFormDateInput").value);
+      });
+
+      qs("studentFormChooseFileBtn").addEventListener("click", () => {
+        qs("studentFormFileInput").click();
+      });
+
+      qs("studentFormFileInput").addEventListener("change", async (e) => {
+        const q = getCurrentFormQuestion();
+        if (!q) return;
+        await uploadFormFiles(Array.from(e.target.files || []), q);
+      });
+    }
+
+    async function initPage() {
+      bindStaticEvents();
+
+      try {
+        const { type, id } = getParams();
+        if (!type || !id) throw new Error("Missing type or id in page link.");
+
+        window.studentClassActivityState.mode = type;
+        window.studentClassActivityState.itemId = id;
+
+        if (type === "form") {
+          await openFormDetails(id);
+        } else if (type === "revision") {
+          await openActivityIntro(id);
+        } else {
+          throw new Error("Unsupported page type.");
+        }
+      } catch (err) {
+        console.error("fill_form init failed:", err);
+        showError(err?.message || "Could not load this page.");
+      }
+    }
+
+    initPage();
+  </script>
+</body>
+</html>
