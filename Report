@@ -50,6 +50,7 @@
         radial-gradient(720px 460px at -4% 34%, rgba(191,219,254,.50) 0%, rgba(191,219,254,0) 70%),
         radial-gradient(720px 460px at 104% 34%, rgba(191,219,254,.42) 0%, rgba(191,219,254,0) 70%),
         linear-gradient(180deg,#f4f8ff 0%, #eef5ff 38%, #f9fbff 100%);
+      overscroll-behavior-x: none;
     }
 
     body{
@@ -808,26 +809,39 @@
           </div>
         </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="reportUrgency">Urgency</label>
-            <select id="reportUrgency" class="select">
-              <option value="normal">Normal</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="allowReplySelect">School authority reply</label>
-            <select id="allowReplySelect" class="select">
-              <option value="true">Allow private replies</option>
-              <option value="false">Do not allow replies</option>
-            </select>
-          </div>
+        <div class="field">
+          <label for="reportUrgency">Urgency</label>
+          <select id="reportUrgency" class="select">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+          </select>
         </div>
 
         <div class="inline-note urgent" id="urgencyNote" style="display:none;">
           This report will be marked as urgent.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div class="section-title">Contact section</div>
+          <div class="section-note">Add your phone number or email if you want school authority to reach you faster.</div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="contactPhone">Phone number (optional)</label>
+            <input id="contactPhone" class="input" type="tel" placeholder="Enter phone number">
+          </div>
+
+          <div class="field">
+            <label for="contactEmail">Email address (optional)</label>
+            <input id="contactEmail" class="input" type="email" placeholder="Enter email address">
+          </div>
+        </div>
+
+        <div class="helper-note">
+          This is optional. If you leave it empty, your tracking code and PIN will still work.
         </div>
       </section>
 
@@ -903,12 +917,30 @@
     let lastTrackingCode = "";
     let lastReplyPin = "";
 
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
     function $(id) {
       return document.getElementById(id);
     }
 
     function goBack() {
       window.history.back();
+    }
+
+    function goMainBySwipe() {
+      window.location.href = "main.html";
+    }
+
+    function handleSwipeGesture() {
+      const diffX = touchEndX - touchStartX;
+      const diffY = Math.abs(touchEndY - touchStartY);
+
+      if (diffX > 90 && diffY < 70) {
+        goMainBySwipe();
+      }
     }
 
     function showMessage(text, type = "error") {
@@ -980,7 +1012,8 @@
       const locationText = $("reportLocation").value.trim();
       const personInvolved = $("reportPerson").value.trim();
       const urgency = $("reportUrgency").value;
-      const allowAnonymousReply = $("allowReplySelect").value === "true";
+      const contactPhone = $("contactPhone").value.trim();
+      const contactEmail = $("contactEmail").value.trim();
 
       if (!userId) {
         showMessage("We could not find your user session. Please sign in again.");
@@ -1007,7 +1040,9 @@
             location_text: locationText,
             person_involved: personInvolved,
             urgency,
-            allow_anonymous_reply: allowAnonymousReply
+            allow_anonymous_reply: true,
+            contact_phone: contactPhone,
+            contact_email: contactEmail
           }
         });
 
@@ -1033,27 +1068,28 @@
         $("resultPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
         $("resultSchool").textContent = report.school_name || "-";
 
-      $("resultCard").classList.add("show");
+        $("resultCard").classList.add("show");
 
-$("reportTitle").value = "";
-$("reportMessageInput").value = "";
-$("reportLocation").value = "";
-$("reportPerson").value = "";
-$("reportUrgency").value = "normal";
-$("allowReplySelect").value = "true";
+        $("reportTitle").value = "";
+        $("reportMessageInput").value = "";
+        $("reportLocation").value = "";
+        $("reportPerson").value = "";
+        $("reportUrgency").value = "normal";
+        $("contactPhone").value = "";
+        $("contactEmail").value = "";
 
-setCategory("bullying");
-setPrivacyMode(true);
-updateUrgencyNote();
+        setCategory("bullying");
+        setPrivacyMode(true);
+        updateUrgencyNote();
 
-showMessage(data.message || "Report submitted successfully.", "success");
+        showMessage(data.message || "Report submitted successfully.", "success");
 
-setTimeout(() => {
-  $("resultCard")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-}, 150);
+        setTimeout(() => {
+          $("resultCard")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }, 150);
       } catch (err) {
         console.error(err);
         showMessage(err.message || "Could not submit report.");
@@ -1072,6 +1108,19 @@ setTimeout(() => {
     $("reportUrgency").addEventListener("change", updateUrgencyNote);
     $("submitReportBtn").addEventListener("click", submitReport);
     $("copyReportDetailsBtn").addEventListener("click", copyReportDetails);
+
+    document.addEventListener("touchstart", (e) => {
+      if (!e.changedTouches || !e.changedTouches.length) return;
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener("touchend", (e) => {
+      if (!e.changedTouches || !e.changedTouches.length) return;
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipeGesture();
+    }, { passive: true });
 
     updateUrgencyNote();
   </script>
