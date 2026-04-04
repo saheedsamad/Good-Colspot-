@@ -449,14 +449,8 @@
     </div>
   </div>
 
-  <script>
-    function getSupabaseClient() {
-      try {
-        if (window.sb && typeof window.sb.from === "function") return window.sb;
-        if (window.supabase && typeof window.supabase.from === "function") return window.supabase;
-      } catch (e) {}
-      return null;
-    }
+  <script type="module">
+    import { supabase } from "./client_supabase.js";
 
     function getQueryParam(name) {
       const params = new URLSearchParams(window.location.search);
@@ -541,12 +535,7 @@
     }
 
     async function fetchAnnouncementById(announcementId) {
-      const sb = getSupabaseClient();
-      if (!sb) {
-        throw new Error("Supabase client not found on this page.");
-      }
-
-      const { data, error } = await sb
+      const { data, error } = await supabase
         .from("school_announcements")
         .select("id, school_name, title, body, notification_title, notification_body, link_label, link_url, image_url, file_url, created_by_admin_name, audience_mode, created_at, published_at, status")
         .eq("id", announcementId)
@@ -595,12 +584,14 @@
       const imageEl = document.getElementById("announcementImage");
 
       if (imageUrl) {
-        imageEl.src = imageUrl;
-        imageEl.alt = title;
-        imageWrap.classList.remove("hidden");
+        imageEl.onload = () => {
+          imageWrap.classList.remove("hidden");
+        };
         imageEl.onerror = () => {
           imageWrap.classList.add("hidden");
         };
+        imageEl.src = imageUrl;
+        imageEl.alt = title;
       } else {
         imageEl.removeAttribute("src");
         imageWrap.classList.add("hidden");
@@ -640,6 +631,7 @@
 
       try {
         const announcementId = getQueryParam("announcement_id");
+
         if (!announcementId) {
           showLoading(false);
           showEmpty(true);
@@ -647,6 +639,7 @@
         }
 
         const data = await fetchAnnouncementById(announcementId);
+
         showLoading(false);
 
         if (!data) {
