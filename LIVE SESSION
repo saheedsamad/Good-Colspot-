@@ -712,13 +712,15 @@
 </div>
 
 <script>
-  let supabaseReady = false;
-  let currentUser = null;
-  let currentSessionId = null;
-  let currentSession = null;
-  let countdownInterval = null;
-  let attendeesInterval = null;
-  let currentAttendees = [];
+  window.liveSessionScreenState = window.liveSessionScreenState || {
+    supabaseReady: false,
+    currentUser: null,
+    currentSessionId: null,
+    currentSession: null,
+    countdownInterval: null,
+    attendeesInterval: null,
+    currentAttendees: []
+  };
 
   function showError(msg) {
     const box = document.getElementById("errorBox");
@@ -753,6 +755,7 @@
     const classSubEl = document.getElementById("sessionClassSub");
     const pinEl = document.getElementById("pinValue");
     const statusPill = document.getElementById("statusPill");
+    const state = window.liveSessionScreenState;
 
     const title = session.course_code || "Attendance session";
     if (classEl) classEl.textContent = title;
@@ -799,11 +802,12 @@
   function startOrUpdateTimer(session) {
     const timerEl = document.getElementById("timerValue");
     const statusPill = document.getElementById("statusPill");
+    const state = window.liveSessionScreenState;
     if (!timerEl) return;
 
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
+    if (state.countdownInterval) {
+      clearInterval(state.countdownInterval);
+      state.countdownInterval = null;
     }
 
     const endTime = session.expires_at ? new Date(session.expires_at) : null;
@@ -823,8 +827,8 @@
           statusPill.querySelector("span:last-child").textContent = "Ended";
         }
         updateEndButtonState(true);
-        clearInterval(countdownInterval);
-        countdownInterval = null;
+        clearInterval(state.countdownInterval);
+        state.countdownInterval = null;
         return;
       }
 
@@ -841,7 +845,7 @@
     }
 
     update();
-    countdownInterval = setInterval(update, 1000);
+    state.countdownInterval = setInterval(update, 1000);
   }
 
   function setJoinedCount(count) {
@@ -851,7 +855,8 @@
   }
 
   async function loadSessionAndAttendees() {
-    if (!supabaseReady || !currentSessionId) return;
+    const state = window.liveSessionScreenState;
+    if (!state.supabaseReady || !state.currentSessionId) return;
 
     showError("");
 
@@ -865,7 +870,7 @@
       .select(
         "id, course_code, pin_code, starts_at, expires_at, created_at, is_active"
       )
-      .eq("id", currentSessionId)
+      .eq("id", state.currentSessionId)
       .single();
 
     if (sessionError || !session) {
@@ -874,15 +879,15 @@
       return;
     }
 
-    currentSession = session;
+    state.currentSession = session;
     setSessionHeader(session);
 
     const now = new Date();
     const end = session.expires_at ? new Date(session.expires_at) : null;
     const isEnded = !session.is_active || (end && now > end);
-    if (isEnded && attendeesInterval) {
-      clearInterval(attendeesInterval);
-      attendeesInterval = null;
+    if (isEnded && state.attendeesInterval) {
+      clearInterval(state.attendeesInterval);
+      state.attendeesInterval = null;
     }
 
     const { data: records, error: recError } = await supabase
@@ -890,7 +895,7 @@
       .select(
         "id, student_name, student_matric, student_department, checked_in_at"
       )
-      .eq("session_id", currentSessionId)
+      .eq("session_id", state.currentSessionId)
       .order("checked_in_at", { ascending: true });
 
     if (recError) {
@@ -899,8 +904,8 @@
       return;
     }
 
-    currentAttendees = records || [];
-    setJoinedCount(currentAttendees.length);
+    state.currentAttendees = records || [];
+    setJoinedCount(state.currentAttendees.length);
 
     const filterEl = document.getElementById("attendeeFilter");
     const hasFilter =
@@ -909,7 +914,7 @@
     if (hasFilter) {
       applyAttendeeFilter();
     } else {
-      renderAttendees(currentAttendees);
+      renderAttendees(state.currentAttendees);
     }
   }
 
@@ -971,15 +976,16 @@
 
   function applyAttendeeFilter() {
     const filterEl = document.getElementById("attendeeFilter");
+    const state = window.liveSessionScreenState;
     if (!filterEl) return;
 
     const q = filterEl.value.toLowerCase().trim();
     if (!q) {
-      renderAttendees(currentAttendees);
+      renderAttendees(state.currentAttendees);
       return;
     }
 
-    const filtered = currentAttendees.filter((rec) => {
+    const filtered = state.currentAttendees.filter((rec) => {
       const name = (rec.student_name || "").toLowerCase();
       const matric = (rec.student_matric || "").toLowerCase();
       const dept = (rec.student_department || "").toLowerCase();
@@ -1018,7 +1024,8 @@
   }
 
   function openAddStudentModal() {
-    if (!supabaseReady || !currentSessionId) {
+    const state = window.liveSessionScreenState;
+    if (!state.supabaseReady || !state.currentSessionId) {
       showError("Session not ready. Try reloading.");
       return;
     }
@@ -1049,6 +1056,7 @@
   }
 
   async function submitAddStudentModal() {
+    const state = window.liveSessionScreenState;
     const nameInput = document.getElementById("modalStudentName");
     const matricInput = document.getElementById("modalStudentMatric");
     const deptInput = document.getElementById("modalStudentDept");
@@ -1070,7 +1078,7 @@
       return;
     }
 
-    if (!supabaseReady || !currentSessionId) {
+    if (!state.supabaseReady || !state.currentSessionId) {
       if (err) {
         err.textContent = "Session not ready. Try reloading.";
         err.style.display = "block";
@@ -1088,7 +1096,7 @@
     try {
       const { error } = await supabase.from("attendance_records").insert([
         {
-          session_id: currentSessionId,
+          session_id: state.currentSessionId,
           user_id: null,
           student_name: name,
           student_matric: matric || null,
@@ -1123,7 +1131,8 @@
   }
 
   function downloadAttendeesCsv() {
-    if (!currentAttendees.length) {
+    const state = window.liveSessionScreenState;
+    if (!state.currentAttendees.length) {
       alert("No attendees to download yet.");
       return;
     }
@@ -1131,7 +1140,7 @@
     const header = ["Name", "Matric number", "Department", "Joined at"];
     const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
 
-    const rows = currentAttendees.map((rec) => {
+    const rows = state.currentAttendees.map((rec) => {
       const name =
         (rec.student_name && rec.student_name.trim()) ||
         (rec.student_matric && rec.student_matric.trim()) ||
@@ -1146,8 +1155,8 @@
 
     const csv = [header.join(","), ...rows].join("\n");
 
-    const sessionTitle = currentSession
-      ? currentSession.course_code || "attendance_session"
+    const sessionTitle = state.currentSession
+      ? state.currentSession.course_code || "attendance_session"
       : "attendance_session";
     const filename = `${sessionTitle}_attendees.csv`;
 
@@ -1195,7 +1204,8 @@
   }
 
   async function endSession() {
-    if (!supabaseReady || !currentSessionId || !currentUser) return;
+    const state = window.liveSessionScreenState;
+    if (!state.supabaseReady || !state.currentSessionId || !state.currentUser) return;
 
     const confirmed = window.confirm(
       "End this attendance session now? Students will no longer be able to join."
@@ -1211,8 +1221,8 @@
           is_active: false,
           expires_at: nowIso,
         })
-        .eq("id", currentSessionId)
-        .eq("created_by", currentUser.id);
+        .eq("id", state.currentSessionId)
+        .eq("created_by", state.currentUser.id);
 
       if (error) {
         console.error(error);
@@ -1220,15 +1230,15 @@
         return;
       }
 
-      if (attendeesInterval) {
-        clearInterval(attendeesInterval);
-        attendeesInterval = null;
+      if (state.attendeesInterval) {
+        clearInterval(state.attendeesInterval);
+        state.attendeesInterval = null;
       }
 
-      if (currentSession) {
-        currentSession.is_active = false;
-        currentSession.expires_at = nowIso;
-        setSessionHeader(currentSession);
+      if (state.currentSession) {
+        state.currentSession.is_active = false;
+        state.currentSession.expires_at = nowIso;
+        setSessionHeader(state.currentSession);
       } else {
         updateEndButtonState(true);
       }
@@ -1247,6 +1257,7 @@
   }
 
   async function openLiveSessionScreen() {
+    const state = window.liveSessionScreenState;
     await new Promise((r) => setTimeout(r, 50));
 
     if (typeof supabase === "undefined") {
@@ -1254,7 +1265,7 @@
       return;
     }
 
-    supabaseReady = true;
+    state.supabaseReady = true;
 
     const { data, error } = await supabase.auth.getUser();
     if (error || !data || !data.user) {
@@ -1262,19 +1273,19 @@
       return;
     }
 
-    currentUser = data.user;
-    currentSessionId = getSessionIdFromState();
+    state.currentUser = data.user;
+    state.currentSessionId = getSessionIdFromState();
 
-    if (!currentSessionId) {
+    if (!state.currentSessionId) {
       showError("No active session found. Start an attendance session first.");
       return;
     }
 
-    if (countdownInterval) clearInterval(countdownInterval);
-    if (attendeesInterval) clearInterval(attendeesInterval);
+    if (state.countdownInterval) clearInterval(state.countdownInterval);
+    if (state.attendeesInterval) clearInterval(state.attendeesInterval);
 
     await loadSessionAndAttendees();
-    attendeesInterval = setInterval(loadSessionAndAttendees, 3000);
+    state.attendeesInterval = setInterval(loadSessionAndAttendees, 3000);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
