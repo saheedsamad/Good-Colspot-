@@ -95,17 +95,10 @@
       border-radius: 28px;
       box-shadow: 0 14px 35px rgba(15,23,42,.08);
       overflow: hidden;
+      padding: 18px;
     }
 
-    #screen-view-message .announcement-top {
-      padding: 18px 18px 14px;
-      background:
-        radial-gradient(circle at top right, rgba(47,108,246,.11), transparent 32%),
-        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-      border-bottom: 1px solid #e6ecf5;
-    }
-
-    #screen-view-message .badge {
+    #screen-view-message .vm-school-name {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -116,11 +109,11 @@
       color: #2f6cf6;
       font-size: 12px;
       font-weight: 800;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       max-width: 100%;
     }
 
-    #screen-view-message .badge-dot {
+    #screen-view-message .vm-school-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -138,51 +131,13 @@
       word-break: break-word;
     }
 
-    #screen-view-message .meta {
-      display: grid;
-      gap: 4px;
-    }
-
-    #screen-view-message .meta-author {
-      font-size: 16px;
-      font-weight: 800;
-      color: #1b2940;
-      word-break: break-word;
-    }
-
-    #screen-view-message .meta-time {
-      font-size: 13px;
-      color: #73819a;
-      word-break: break-word;
-    }
-
-    #screen-view-message .announcement-content {
-      padding: 16px 18px 18px;
-    }
-
-    #screen-view-message .hero-wrap {
-      width: 100%;
-      border-radius: 22px;
-      overflow: hidden;
-      border: 1px solid #e6ecf5;
-      background: #eef3fb;
-      margin-bottom: 16px;
-    }
-
-    #screen-view-message .hero-wrap img {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      background: #eef3fb;
-    }
-
     #screen-view-message .announcement-body {
       font-size: 18px;
       line-height: 1.75;
       color: #1f2b3d;
       white-space: pre-wrap;
       word-break: break-word;
+      margin-bottom: 18px;
     }
 
     #screen-view-message .announcement-body p {
@@ -193,13 +148,24 @@
       margin-bottom: 0;
     }
 
-    #screen-view-message .resource-stack {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
+    #screen-view-message .hero-wrap {
+      width: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid #e6ecf5;
+      background: #eef3fb;
+      margin-bottom: 18px;
     }
 
-    #screen-view-message .resource-card {
+    #screen-view-message .hero-wrap img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #eef3fb;
+    }
+
+    #screen-view-message .link-card {
       border: 1px solid #e6ecf5;
       border-radius: 20px;
       background: #fff;
@@ -209,9 +175,10 @@
       justify-content: space-between;
       gap: 12px;
       box-shadow: 0 8px 24px rgba(15,23,42,.04);
+      margin-bottom: 18px;
     }
 
-    #screen-view-message .resource-left {
+    #screen-view-message .link-left {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -219,7 +186,7 @@
       min-width: 0;
     }
 
-    #screen-view-message .resource-icon {
+    #screen-view-message .link-icon {
       width: 46px;
       height: 46px;
       border-radius: 15px;
@@ -231,7 +198,7 @@
       flex-shrink: 0;
     }
 
-    #screen-view-message .resource-icon svg {
+    #screen-view-message .link-icon svg {
       width: 24px;
       height: 24px;
       stroke: currentColor;
@@ -241,29 +208,26 @@
       stroke-linejoin: round;
     }
 
-    #screen-view-message .resource-copy {
+    #screen-view-message .link-copy {
       min-width: 0;
     }
 
-    #screen-view-message .resource-title {
+    #screen-view-message .link-title {
       font-size: 16px;
       font-weight: 800;
       color: #16233d;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      word-break: break-word;
       margin-bottom: 4px;
     }
 
-    #screen-view-message .resource-sub {
+    #screen-view-message .link-sub {
       font-size: 13px;
       color: #73819a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      word-break: break-word;
+      line-height: 1.5;
     }
 
-    #screen-view-message .resource-btn {
+    #screen-view-message .link-btn {
       border: none;
       border-radius: 14px;
       background: linear-gradient(135deg, #2f6cf6, #5b8cff);
@@ -277,7 +241,7 @@
     }
 
     #screen-view-message .footer-box {
-      margin-top: 18px;
+      margin-top: 2px;
       padding-top: 16px;
       border-top: 1px solid #e6ecf5;
       display: grid;
@@ -318,6 +282,15 @@
       #screen-view-message .announcement-body {
         font-size: 16px;
       }
+
+      #screen-view-message .link-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #screen-view-message .link-btn {
+        width: 100%;
+      }
     }
   </style>
 
@@ -340,76 +313,46 @@
     <div id="viewMessageEmptyState" class="state-box hidden">Announcement not found.</div>
 
     <section id="viewMessageCard" class="announcement-card hidden">
-      <div class="announcement-top">
-        <div class="badge">
-          <span class="badge-dot"></span>
-          <span id="viewMessageBadge">School Update</span>
-        </div>
-
-        <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
-
-        <div class="meta">
-          <div id="viewMessageAuthor" class="meta-author">School Admin</div>
-          <div id="viewMessageDate" class="meta-time">Posted recently</div>
-        </div>
+      <div id="viewMessageSchoolName" class="vm-school-name">
+        <span class="vm-school-dot"></span>
+        <span id="viewMessageSchoolText">School Name</span>
       </div>
 
-      <div class="announcement-content">
-        <div id="viewMessageImageWrap" class="hero-wrap hidden">
-          <img id="viewMessageImage" alt="Announcement image" />
-        </div>
+      <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
 
-        <div id="viewMessageBody" class="announcement-body"></div>
+      <div id="viewMessageBody" class="announcement-body"></div>
 
-        <div class="resource-stack">
-          <div id="viewMessageLinkCard" class="resource-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
-                  <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
-                </svg>
-              </div>
-              <div class="resource-copy">
-                <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
-                <div class="resource-sub">Visit attached resource</div>
-              </div>
-            </div>
-            <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
+      <div id="viewMessageImageWrap" class="hero-wrap hidden">
+        <img id="viewMessageImage" alt="Announcement image" />
+      </div>
+
+      <div id="viewMessageLinkCard" class="link-card hidden">
+        <div class="link-left">
+          <div class="link-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
+              <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
+            </svg>
           </div>
 
-          <div id="viewMessageFileCard" class="resource-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
-                  <path d="M14 2v5h5"></path>
-                </svg>
-              </div>
-              <div class="resource-copy">
-                <div id="viewMessageFileTitle" class="resource-title">Attachment</div>
-                <div id="viewMessageFileSub" class="resource-sub">Download attached file</div>
-              </div>
-            </div>
-            <button id="viewMessageDownloadFileBtn" type="button" class="resource-btn">Download</button>
+          <div class="link-copy">
+            <div id="viewMessageLinkTitle" class="link-title">Open link</div>
+            <div id="viewMessageLinkSub" class="link-sub">Visit attached resource</div>
           </div>
         </div>
 
-        <div class="footer-box">
-          <div class="footer-row">
-            <div class="footer-label">Sent to</div>
-            <div id="viewMessageAudience" class="footer-value">All students</div>
-          </div>
+        <button id="viewMessageViewLinkBtn" type="button" class="link-btn">Open</button>
+      </div>
 
-          <div class="footer-row">
-            <div class="footer-label">By</div>
-            <div id="viewMessageBy" class="footer-value">School Admin</div>
-          </div>
+      <div class="footer-box">
+        <div class="footer-row">
+          <div class="footer-label">Posted by</div>
+          <div id="viewMessageBy" class="footer-value">School Admin</div>
+        </div>
 
-          <div class="footer-row">
-            <div class="footer-label">Time</div>
-            <div id="viewMessageTimeFooter" class="footer-value">—</div>
-          </div>
+        <div class="footer-row">
+          <div class="footer-label">Time</div>
+          <div id="viewMessageTimeFooter" class="footer-value">—</div>
         </div>
       </div>
     </section>
@@ -486,27 +429,10 @@
     vmEl("viewMessageCard").classList.toggle("hidden", !show);
   }
 
-  function vmGetAudienceText(data) {
-    const mode = String(data?.audience_mode || "").trim().toLowerCase();
-    if (mode === "programme_filter") return "Selected students";
-    return "All students";
-  }
-
-  function vmGuessFileName(url) {
-    try {
-      if (!url) return "Attached file";
-      const clean = url.split("?")[0];
-      const name = decodeURIComponent(clean.substring(clean.lastIndexOf("/") + 1));
-      return name || "Attached file";
-    } catch (e) {
-      return "Attached file";
-    }
-  }
-
   async function vmFetchAnnouncementById(announcementId) {
     const { data, error } = await supabase
       .from("school_announcements")
-      .select("id, school_name, title, body, notification_title, notification_body, link_label, link_url, image_url, file_url, created_by_admin_name, audience_mode, created_at, published_at, status")
+      .select("id, school_name, title, body, notification_title, notification_body, link_label, link_url, image_url, file_url, created_by_admin_name, created_at, published_at, status")
       .eq("id", announcementId)
       .maybeSingle();
 
@@ -515,6 +441,7 @@
   }
 
   function vmRenderAnnouncement(data) {
+    const schoolName = data.school_name || "School Update";
     const title =
       data.notification_title ||
       data.title ||
@@ -537,14 +464,10 @@
 
     const imageUrl = data.image_url || "";
     const linkUrl = data.link_url || "";
-    const fileUrl = data.file_url || "";
     const linkLabel = data.link_label || "Open attached link";
 
-    vmSetText("viewMessageBadge", data.school_name || "School Update");
+    vmSetText("viewMessageSchoolText", schoolName);
     vmSetText("viewMessageTitle", title);
-    vmSetText("viewMessageAuthor", author);
-    vmSetText("viewMessageDate", `Posted on ${vmFormatDateTime(createdAt)}`);
-    vmSetText("viewMessageAudience", vmGetAudienceText(data));
     vmSetText("viewMessageBy", author);
     vmSetText("viewMessageTimeFooter", vmFormatDateTime(createdAt));
 
@@ -572,24 +495,12 @@
 
     if (linkUrl) {
       vmSetText("viewMessageLinkTitle", linkLabel);
+      vmSetText("viewMessageLinkSub", linkUrl);
       linkCard.classList.remove("hidden");
       viewLinkBtn.onclick = () => window.open(linkUrl, "_blank", "noopener");
     } else {
       linkCard.classList.add("hidden");
       viewLinkBtn.onclick = null;
-    }
-
-    const fileCard = vmEl("viewMessageFileCard");
-    const downloadFileBtn = vmEl("viewMessageDownloadFileBtn");
-
-    if (fileUrl) {
-      vmSetText("viewMessageFileTitle", vmGuessFileName(fileUrl));
-      vmSetText("viewMessageFileSub", "Download attached file");
-      fileCard.classList.remove("hidden");
-      downloadFileBtn.onclick = () => window.open(fileUrl, "_blank", "noopener");
-    } else {
-      fileCard.classList.add("hidden");
-      downloadFileBtn.onclick = null;
     }
   }
 
