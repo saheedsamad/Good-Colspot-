@@ -97,14 +97,13 @@
       overflow: visible;
     }
 
-    #screen-view-message .announcement-top {
+    #screen-view-message .announcement-content {
       padding: 0;
-      background: transparent;
-      border-bottom: none;
-      margin-bottom: 14px;
+      display: grid;
+      gap: 18px;
     }
 
-    #screen-view-message .badge {
+    #screen-view-message .school-name {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -115,11 +114,11 @@
       color: #2f6cf6;
       font-size: 12px;
       font-weight: 800;
-      margin-bottom: 14px;
       max-width: 100%;
+      width: fit-content;
     }
 
-    #screen-view-message .badge-dot {
+    #screen-view-message .school-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -135,36 +134,7 @@
       margin: 0;
       color: #132034;
       word-break: break-word;
-    }
-
-    #screen-view-message .announcement-content {
-      padding: 0;
-    }
-
-    #screen-view-message .free-stack {
-      display: grid;
-      gap: 18px;
-    }
-
-    #screen-view-message .section-block {
-      display: grid;
-      gap: 8px;
-    }
-
-    #screen-view-message .section-label {
-      font-size: 13px;
-      font-weight: 800;
-      color: #73819a;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-
-    #screen-view-message .section-value-title {
-      font-size: 20px;
-      line-height: 1.35;
-      font-weight: 850;
-      color: #132034;
-      word-break: break-word;
+      text-align: left;
     }
 
     #screen-view-message .announcement-body {
@@ -173,6 +143,7 @@
       color: #1f2b3d;
       white-space: pre-wrap;
       word-break: break-word;
+      text-align: left;
     }
 
     #screen-view-message .announcement-body p {
@@ -347,78 +318,68 @@
     <div id="viewMessageEmptyState" class="state-box hidden">Announcement not found.</div>
 
     <section id="viewMessageCard" class="announcement-card hidden">
-      <div class="announcement-top">
-        <div class="badge">
-          <span class="badge-dot"></span>
+      <div class="announcement-content">
+        <div class="school-name">
+          <span class="school-dot"></span>
           <span id="viewMessageBadge">School Update</span>
         </div>
-      </div>
 
-      <div class="announcement-content">
-        <div class="free-stack">
-          <div class="section-block">
-            <div class="section-label">Title</div>
-            <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
-          </div>
+        <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
 
-          <div class="section-block">
-            <div class="section-label">Message</div>
-            <div id="viewMessageBody" class="announcement-body"></div>
-          </div>
+        <div id="viewMessageBody" class="announcement-body"></div>
 
-          <div id="viewMessageImageWrap" class="hero-wrap hidden">
-            <img id="viewMessageImage" alt="Announcement image" />
-          </div>
+        <div id="viewMessageImageWrap" class="hero-wrap hidden">
+          <img id="viewMessageImage" alt="Announcement image" />
+        </div>
 
-          <div class="resource-stack">
-            <div id="viewMessageLinkCard" class="resource-card hidden">
-              <div class="resource-left">
-                <div class="resource-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
-                    <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
-                  </svg>
-                </div>
-                <div class="resource-copy">
-                  <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
-                  <div id="viewMessageLinkSub" class="resource-sub">Visit attached resource</div>
-                </div>
+        <div class="resource-stack">
+          <div id="viewMessageLinkCard" class="resource-card hidden">
+            <div class="resource-left">
+              <div class="resource-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
+                  <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
+                </svg>
               </div>
-              <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
-            </div>
-
-            <div id="viewMessageFileCard" class="resource-card hidden">
-              <div class="resource-left">
-                <div class="resource-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
-                    <path d="M14 2v5h5"></path>
-                  </svg>
-                </div>
-                <div class="resource-copy">
-                  <div id="viewMessageFileTitle" class="resource-title">Attachment</div>
-                  <div id="viewMessageFileSub" class="resource-sub">Download attached file</div>
-                </div>
+              <div class="resource-copy">
+                <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
+                <div id="viewMessageLinkSub" class="resource-sub">Visit attached resource</div>
               </div>
-              <button id="viewMessageDownloadFileBtn" type="button" class="resource-btn">Download</button>
             </div>
+            <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
           </div>
 
-          <div class="footer-box">
-            <div class="footer-row">
-              <div class="footer-label">Sent to</div>
-              <div id="viewMessageAudience" class="footer-value">All students</div>
+          <div id="viewMessageFileCard" class="resource-card hidden">
+            <div class="resource-left">
+              <div class="resource-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
+                  <path d="M14 2v5h5"></path>
+                </svg>
+              </div>
+              <div class="resource-copy">
+                <div id="viewMessageFileTitle" class="resource-title">Attachment</div>
+                <div id="viewMessageFileSub" class="resource-sub">Download attached file</div>
+              </div>
             </div>
+            <button id="viewMessageDownloadFileBtn" type="button" class="resource-btn">Download</button>
+          </div>
+        </div>
 
-            <div class="footer-row">
-              <div class="footer-label">By</div>
-              <div id="viewMessageBy" class="footer-value">School Admin</div>
-            </div>
+        <div class="footer-box">
+          <div class="footer-row">
+            <div class="footer-label">Sent to</div>
+            <div id="viewMessageAudience" class="footer-value">All students</div>
+          </div>
 
-            <div class="footer-row">
-              <div class="footer-label">Time</div>
-              <div id="viewMessageTimeFooter" class="footer-value">—</div>
-            </div>
+          <div class="footer-row">
+            <div class="footer-label">By</div>
+            <div id="viewMessageBy" class="footer-value">School Admin</div>
+          </div>
+
+          <div class="footer-row">
+            <div class="footer-label">Time</div>
+            <div id="viewMessageTimeFooter" class="footer-value">—</div>
           </div>
         </div>
       </div>
