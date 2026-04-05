@@ -347,11 +347,6 @@
         </div>
 
         <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
-
-        <div class="meta">
-          <div id="viewMessageAuthor" class="meta-author">School Admin</div>
-          <div id="viewMessageDate" class="meta-time">Posted recently</div>
-        </div>
       </div>
 
       <div class="announcement-content">
@@ -510,8 +505,8 @@
       .eq("id", announcementId)
       .maybeSingle();
 
-    if (error) throw error;
-    return data || null;
+      if (error) throw error;
+      return data || null;
   }
 
   function vmRenderAnnouncement(data) {
@@ -542,8 +537,6 @@
 
     vmSetText("viewMessageBadge", data.school_name || "School Update");
     vmSetText("viewMessageTitle", title);
-    vmSetText("viewMessageAuthor", author);
-    vmSetText("viewMessageDate", `Posted on ${vmFormatDateTime(createdAt)}`);
     vmSetText("viewMessageAudience", vmGetAudienceText(data));
     vmSetText("viewMessageBy", author);
     vmSetText("viewMessageTimeFooter", vmFormatDateTime(createdAt));
@@ -569,16 +562,14 @@
 
     const linkCard = vmEl("viewMessageLinkCard");
     const viewLinkBtn = vmEl("viewMessageViewLinkBtn");
-    const linkSub = vmEl("viewMessageLinkSub");
 
     if (linkUrl) {
       vmSetText("viewMessageLinkTitle", linkLabel);
-      vmSetText("viewMessageLinkSub", linkUrl);
+      vmSetText("viewMessageLinkSub", "Visit attached resource");
       linkCard.classList.remove("hidden");
       viewLinkBtn.onclick = () => window.open(linkUrl, "_blank", "noopener");
     } else {
       linkCard.classList.add("hidden");
-      if (linkSub) linkSub.textContent = "Visit attached resource";
       viewLinkBtn.onclick = null;
     }
 
