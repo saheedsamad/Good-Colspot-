@@ -16,7 +16,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
       position: sticky;
       top: 0;
       z-index: 4;
@@ -90,19 +90,18 @@
     }
 
     #screen-view-message .announcement-card {
-      background: #ffffff;
-      border: 1px solid #e6ecf5;
-      border-radius: 28px;
-      box-shadow: 0 14px 35px rgba(15,23,42,.08);
-      overflow: hidden;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
     }
 
     #screen-view-message .announcement-top {
-      padding: 18px 18px 14px;
-      background:
-        radial-gradient(circle at top right, rgba(47,108,246,.11), transparent 32%),
-        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-      border-bottom: 1px solid #e6ecf5;
+      padding: 0;
+      background: transparent;
+      border-bottom: none;
+      margin-bottom: 14px;
     }
 
     #screen-view-message .badge {
@@ -133,48 +132,39 @@
       line-height: 1.14;
       font-weight: 900;
       letter-spacing: -.03em;
-      margin: 0 0 14px;
+      margin: 0;
       color: #132034;
       word-break: break-word;
     }
 
-    #screen-view-message .meta {
-      display: grid;
-      gap: 4px;
-    }
-
-    #screen-view-message .meta-author {
-      font-size: 16px;
-      font-weight: 800;
-      color: #1b2940;
-      word-break: break-word;
-    }
-
-    #screen-view-message .meta-time {
-      font-size: 13px;
-      color: #73819a;
-      word-break: break-word;
-    }
-
     #screen-view-message .announcement-content {
-      padding: 16px 18px 18px;
+      padding: 0;
     }
 
-    #screen-view-message .hero-wrap {
-      width: 100%;
-      border-radius: 22px;
-      overflow: hidden;
-      border: 1px solid #e6ecf5;
-      background: #eef3fb;
-      margin-bottom: 16px;
+    #screen-view-message .free-stack {
+      display: grid;
+      gap: 18px;
     }
 
-    #screen-view-message .hero-wrap img {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      background: #eef3fb;
+    #screen-view-message .section-block {
+      display: grid;
+      gap: 8px;
+    }
+
+    #screen-view-message .section-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #73819a;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    #screen-view-message .section-value-title {
+      font-size: 20px;
+      line-height: 1.35;
+      font-weight: 850;
+      color: #132034;
+      word-break: break-word;
     }
 
     #screen-view-message .announcement-body {
@@ -193,10 +183,25 @@
       margin-bottom: 0;
     }
 
+    #screen-view-message .hero-wrap {
+      width: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid #e6ecf5;
+      background: #eef3fb;
+    }
+
+    #screen-view-message .hero-wrap img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #eef3fb;
+    }
+
     #screen-view-message .resource-stack {
       display: grid;
       gap: 12px;
-      margin-top: 18px;
     }
 
     #screen-view-message .resource-card {
@@ -277,11 +282,9 @@
     }
 
     #screen-view-message .footer-box {
-      margin-top: 18px;
-      padding-top: 16px;
-      border-top: 1px solid #e6ecf5;
       display: grid;
       gap: 10px;
+      padding-top: 6px;
     }
 
     #screen-view-message .footer-row {
@@ -318,6 +321,10 @@
       #screen-view-message .announcement-body {
         font-size: 16px;
       }
+
+      #screen-view-message .resource-card {
+        align-items: flex-start;
+      }
     }
   </style>
 
@@ -345,65 +352,73 @@
           <span class="badge-dot"></span>
           <span id="viewMessageBadge">School Update</span>
         </div>
-
-        <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
       </div>
 
       <div class="announcement-content">
-        <div id="viewMessageBody" class="announcement-body"></div>
+        <div class="free-stack">
+          <div class="section-block">
+            <div class="section-label">Title</div>
+            <h1 id="viewMessageTitle" class="announcement-title">Announcement title</h1>
+          </div>
 
-        <div id="viewMessageImageWrap" class="hero-wrap hidden">
-          <img id="viewMessageImage" alt="Announcement image" />
-        </div>
+          <div class="section-block">
+            <div class="section-label">Message</div>
+            <div id="viewMessageBody" class="announcement-body"></div>
+          </div>
 
-        <div class="resource-stack">
-          <div id="viewMessageLinkCard" class="resource-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
-                  <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
-                </svg>
+          <div id="viewMessageImageWrap" class="hero-wrap hidden">
+            <img id="viewMessageImage" alt="Announcement image" />
+          </div>
+
+          <div class="resource-stack">
+            <div id="viewMessageLinkCard" class="resource-card hidden">
+              <div class="resource-left">
+                <div class="resource-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13"></path>
+                    <path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11"></path>
+                  </svg>
+                </div>
+                <div class="resource-copy">
+                  <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
+                  <div id="viewMessageLinkSub" class="resource-sub">Visit attached resource</div>
+                </div>
               </div>
-              <div class="resource-copy">
-                <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
-                <div id="viewMessageLinkSub" class="resource-sub">Visit attached resource</div>
-              </div>
+              <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
             </div>
-            <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
-          </div>
 
-          <div id="viewMessageFileCard" class="resource-card hidden">
-            <div class="resource-left">
-              <div class="resource-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
-                  <path d="M14 2v5h5"></path>
-                </svg>
+            <div id="viewMessageFileCard" class="resource-card hidden">
+              <div class="resource-left">
+                <div class="resource-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
+                    <path d="M14 2v5h5"></path>
+                  </svg>
+                </div>
+                <div class="resource-copy">
+                  <div id="viewMessageFileTitle" class="resource-title">Attachment</div>
+                  <div id="viewMessageFileSub" class="resource-sub">Download attached file</div>
+                </div>
               </div>
-              <div class="resource-copy">
-                <div id="viewMessageFileTitle" class="resource-title">Attachment</div>
-                <div id="viewMessageFileSub" class="resource-sub">Download attached file</div>
-              </div>
+              <button id="viewMessageDownloadFileBtn" type="button" class="resource-btn">Download</button>
             </div>
-            <button id="viewMessageDownloadFileBtn" type="button" class="resource-btn">Download</button>
-          </div>
-        </div>
-
-        <div class="footer-box">
-          <div class="footer-row">
-            <div class="footer-label">Sent to</div>
-            <div id="viewMessageAudience" class="footer-value">All students</div>
           </div>
 
-          <div class="footer-row">
-            <div class="footer-label">By</div>
-            <div id="viewMessageBy" class="footer-value">School Admin</div>
-          </div>
+          <div class="footer-box">
+            <div class="footer-row">
+              <div class="footer-label">Sent to</div>
+              <div id="viewMessageAudience" class="footer-value">All students</div>
+            </div>
 
-          <div class="footer-row">
-            <div class="footer-label">Time</div>
-            <div id="viewMessageTimeFooter" class="footer-value">—</div>
+            <div class="footer-row">
+              <div class="footer-label">By</div>
+              <div id="viewMessageBy" class="footer-value">School Admin</div>
+            </div>
+
+            <div class="footer-row">
+              <div class="footer-label">Time</div>
+              <div id="viewMessageTimeFooter" class="footer-value">—</div>
+            </div>
           </div>
         </div>
       </div>
@@ -505,8 +520,8 @@
       .eq("id", announcementId)
       .maybeSingle();
 
-      if (error) throw error;
-      return data || null;
+    if (error) throw error;
+    return data || null;
   }
 
   function vmRenderAnnouncement(data) {
