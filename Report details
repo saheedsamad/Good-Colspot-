@@ -1,312 +1,294 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-  />
-  <title>Colspot • Report Details</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<!-- 🔹 REPORT DETAILS SCREEN START -->
+<div id="screen-report-details" class="screen">
   <style>
-    :root{
-      --bg:#f4f7ff;
-      --card:#ffffff;
-      --line:#e6ebf5;
-      --text:#111827;
-      --muted:#6b7280;
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --purple:#7c3aed;
-      --purple-soft:#f5f3ff;
-      --orange:#ea580c;
-      --orange-soft:#fff7ed;
-      --green:#16a34a;
-      --green-soft:#ecfdf5;
-      --red:#dc2626;
-      --red-soft:#fef2f2;
-      --shadow:0 16px 35px rgba(15,23,42,.08);
-      --radius:22px;
+    #screen-report-details {
+      padding: calc(env(safe-area-inset-top) + 8px) 6px calc(env(safe-area-inset-bottom) + 90px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100%;
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
+    #screen-report-details .rd-shell {
+      width: 100%;
     }
 
-    html,body{
-      margin:0;
-      padding:0;
-      min-height:100%;
-      background:linear-gradient(180deg,#edf3ff 0%, #f8fbff 100%);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      color:var(--text);
+    #screen-report-details .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      padding-top: 2px;
+      background: linear-gradient(180deg, rgba(248,251,255,.96) 0%, rgba(248,251,255,.88) 72%, rgba(248,251,255,0) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    body{
-      display:flex;
-      justify-content:center;
+    #screen-report-details .top-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .shell{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      padding:
-        calc(env(safe-area-inset-top) + 14px)
-        16px
-        calc(env(safe-area-inset-bottom) + 28px);
+    #screen-report-details .back-btn {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid #e6ebf5;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #1f2937;
+      flex-shrink: 0;
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
+    #screen-report-details .back-btn svg {
+      width: 22px;
+      height: 22px;
     }
 
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
+    #screen-report-details .title-wrap {
+      min-width: 0;
     }
 
-    .back-btn{
-      width:42px;
-      height:42px;
-      border:none;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      color:#1f2937;
-      flex-shrink:0;
+    #screen-report-details .page-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      margin-bottom: 2px;
+      color: #111827;
     }
 
-    .back-btn svg{
-      width:22px;
-      height:22px;
+    #screen-report-details .page-sub {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 220px;
     }
 
-    .title-wrap{
-      min-width:0;
+    #screen-report-details .status-pill {
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
     }
 
-    .page-title{
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      margin-bottom:2px;
+    #screen-report-details .status-new {
+      background: #dbeafe;
+      color: #1d4ed8;
     }
 
-    .page-sub{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.4;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width:240px;
+    #screen-report-details .status-under_review {
+      background: #f5f3ff;
+      color: #7c3aed;
     }
 
-    .status-pill{
-      border-radius:999px;
-      padding:8px 11px;
-      font-size:10px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      white-space:nowrap;
+    #screen-report-details .status-waiting_reply {
+      background: #fff7ed;
+      color: #ea580c;
     }
 
-    .status-new{
-      background:#dbeafe;
-      color:#1d4ed8;
+    #screen-report-details .status-resolved {
+      background: #ecfdf5;
+      color: #16a34a;
     }
 
-    .status-under_review{
-      background:var(--purple-soft);
-      color:var(--purple);
+    #screen-report-details .status-escalated {
+      background: #fef2f2;
+      color: #dc2626;
     }
 
-    .status-waiting_reply{
-      background:var(--orange-soft);
-      color:var(--orange);
+    #screen-report-details .message {
+      display: none;
+      padding: 13px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 700;
+      margin-bottom: 14px;
     }
 
-    .status-resolved{
-      background:var(--green-soft);
-      color:var(--green);
+    #screen-report-details .message.show {
+      display: block;
     }
 
-    .status-escalated{
-      background:var(--red-soft);
-      color:var(--red);
+    #screen-report-details .message.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
     }
 
-    .message{
-      display:none;
-      padding:13px 14px;
-      border-radius:16px;
-      font-size:13px;
-      line-height:1.45;
-      font-weight:700;
-      margin-bottom:14px;
+    #screen-report-details .message.success {
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      color: #166534;
     }
 
-    .message.show{
-      display:block;
+    #screen-report-details .card {
+      background: #ffffff;
+      border: 1px solid #e6ebf5;
+      border-radius: 22px;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      padding: 16px;
+      margin-bottom: 14px;
     }
 
-    .message.error{
-      background:var(--red-soft);
-      border:1px solid #fecaca;
-      color:#991b1b;
+    #screen-report-details .hero-title {
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -.04em;
+      margin-bottom: 8px;
+      color: #111827;
+      word-break: break-word;
     }
 
-    .message.success{
-      background:var(--green-soft);
-      border:1px solid #bbf7d0;
-      color:#166534;
+    #screen-report-details .hero-sub {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6b7280;
+      word-break: break-word;
     }
 
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
-      margin-bottom:14px;
+    #screen-report-details .section-title {
+      font-size: 15px;
+      font-weight: 900;
+      margin: 0 0 12px;
+      letter-spacing: -.02em;
+      color: #111827;
     }
 
-    .hero-title{
-      font-size:22px;
-      line-height:1.15;
-      font-weight:900;
-      letter-spacing:-.04em;
-      margin-bottom:8px;
+    #screen-report-details .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
-    .hero-sub{
-      font-size:13px;
-      line-height:1.5;
-      color:var(--muted);
+    #screen-report-details .meta-box {
+      border: 1px solid #e6ebf5;
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      min-width: 0;
     }
 
-    .section-title{
-      font-size:15px;
-      font-weight:900;
-      margin:0 0 12px;
-      letter-spacing:-.02em;
+    #screen-report-details .meta-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 5px;
     }
 
-    .meta-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    #screen-report-details .meta-value {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+      word-break: break-word;
+      color: #111827;
     }
 
-    .meta-box{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      background:#fff;
+    #screen-report-details .complaint-box {
+      border: 1px solid #e6ebf5;
+      border-radius: 18px;
+      background: #f8fbff;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #1f2937;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .meta-label{
-      font-size:11px;
-      color:var(--muted);
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      margin-bottom:5px;
+    #screen-report-details .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
     }
 
-    .meta-value{
-      font-size:13px;
-      font-weight:800;
-      line-height:1.4;
-      word-break:break-word;
+    #screen-report-details .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 800;
     }
 
-    .complaint-box{
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:#f8fbff;
-      padding:14px;
-      font-size:14px;
-      line-height:1.6;
-      color:#1f2937;
-      white-space:pre-wrap;
+    #screen-report-details .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
-    .tag-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px;
+    #screen-report-details .contact-box {
+      border: 1px solid #e6ebf5;
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      min-width: 0;
     }
 
-    .tag{
-      padding:8px 12px;
-      border-radius:999px;
-      background:#eff6ff;
-      color:var(--blue);
-      font-size:11px;
-      font-weight:800;
+    #screen-report-details .contact-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 5px;
     }
 
-    .contact-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    #screen-report-details .contact-value {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.5;
+      word-break: break-word;
+      color: #111827;
     }
 
-    .contact-box{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      background:#fff;
+    #screen-report-details .loading-box {
+      padding: 18px 14px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid #e6ebf5;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
     }
 
-    .contact-label{
-      font-size:11px;
-      color:var(--muted);
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      margin-bottom:5px;
-    }
+    @media (max-width: 360px) {
+      #screen-report-details .meta-grid,
+      #screen-report-details .contact-grid {
+        grid-template-columns: 1fr;
+      }
 
-    .contact-value{
-      font-size:13px;
-      font-weight:800;
-      line-height:1.5;
-      word-break:break-word;
-      color:#111827;
-    }
-
-    @media (max-width:360px){
-      .meta-grid,
-      .contact-grid{
-        grid-template-columns:1fr;
+      #screen-report-details .page-sub {
+        max-width: 170px;
       }
     }
   </style>
-</head>
-<body>
-  <div class="shell">
+
+  <div class="rd-shell">
     <div class="topbar">
       <div class="top-left">
-        <button class="back-btn" type="button" id="backBtn">
+        <button class="back-btn" type="button" id="reportDetailsBackBtn">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -314,220 +296,266 @@
 
         <div class="title-wrap">
           <div class="page-title">Report Details</div>
-          <div class="page-sub" id="pageSub">Loading report...</div>
+          <div class="page-sub" id="reportDetailsPageSub">Loading report...</div>
         </div>
       </div>
 
-      <div class="status-pill status-new" id="statusPill">new</div>
+      <div class="status-pill status-new" id="reportDetailsStatusPill">new</div>
     </div>
 
-    <div class="message" id="pageMessage"></div>
+    <div class="message" id="reportDetailsMessage"></div>
 
-    <section class="card">
-      <div class="hero-title" id="reportTitle">Report</div>
-      <div class="hero-sub" id="reportSub">Tracking code</div>
+    <div id="reportDetailsLoading" class="loading-box">Loading report details...</div>
+
+    <section class="card" id="reportDetailsHeroCard" style="display:none;">
+      <div class="hero-title" id="reportDetailsTitle">Report</div>
+      <div class="hero-sub" id="reportDetailsSub">Tracking code</div>
 
       <div class="tag-row">
-        <div class="tag" id="tagPrivacy">Anonymous</div>
-        <div class="tag" id="tagCategory">Category</div>
-        <div class="tag" id="tagUrgency">Normal</div>
+        <div class="tag" id="reportDetailsTagPrivacy">Anonymous</div>
+        <div class="tag" id="reportDetailsTagCategory">Category</div>
+        <div class="tag" id="reportDetailsTagUrgency">Normal</div>
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="reportDetailsInfoCard" style="display:none;">
       <h2 class="section-title">Report information</h2>
 
       <div class="meta-grid">
         <div class="meta-box">
           <div class="meta-label">Tracking code</div>
-          <div class="meta-value" id="metaTrackingCode">-</div>
+          <div class="meta-value" id="reportDetailsTrackingCode">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Status</div>
-          <div class="meta-value" id="metaStatus">-</div>
+          <div class="meta-value" id="reportDetailsStatus">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">School</div>
-          <div class="meta-value" id="metaSchool">-</div>
+          <div class="meta-value" id="reportDetailsSchool">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Department</div>
-          <div class="meta-value" id="metaDepartment">-</div>
+          <div class="meta-value" id="reportDetailsDepartment">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Location</div>
-          <div class="meta-value" id="metaLocation">-</div>
+          <div class="meta-value" id="reportDetailsLocation">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Person involved</div>
-          <div class="meta-value" id="metaPerson">-</div>
+          <div class="meta-value" id="reportDetailsPerson">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Created at</div>
-          <div class="meta-value" id="metaCreatedAt">-</div>
+          <div class="meta-value" id="reportDetailsCreatedAt">-</div>
         </div>
 
         <div class="meta-box">
           <div class="meta-label">Replies allowed</div>
-          <div class="meta-value" id="metaReplyAllowed">-</div>
+          <div class="meta-value" id="reportDetailsReplyAllowed">-</div>
         </div>
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="reportDetailsBodyCard" style="display:none;">
       <h2 class="section-title">Your report</h2>
-      <div class="complaint-box" id="reportMessageText">-</div>
+      <div class="complaint-box" id="reportDetailsBody">-</div>
     </section>
 
-    <section class="card">
+    <section class="card" id="reportDetailsContactCard" style="display:none;">
       <h2 class="section-title">Contact section</h2>
 
       <div class="contact-grid">
         <div class="contact-box">
           <div class="contact-label">Phone number</div>
-          <div class="contact-value" id="metaContactPhone">-</div>
+          <div class="contact-value" id="reportDetailsContactPhone">-</div>
         </div>
 
         <div class="contact-box">
           <div class="contact-label">Email address</div>
-          <div class="contact-value" id="metaContactEmail">-</div>
+          <div class="contact-value" id="reportDetailsContactEmail">-</div>
         </div>
       </div>
     </section>
   </div>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+<script>
+  window.reportDetailsScreenState = window.reportDetailsScreenState || {
+    loadedReportId: "",
+    currentReport: null
+  };
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  function reportDetailsEl(id) {
+    return document.getElementById(id);
+  }
 
-    let currentUser = null;
-    let selectedReportId = "";
+  function reportDetailsShowMessage(text = "", type = "error") {
+    const box = reportDetailsEl("reportDetailsMessage");
+    if (!box) return;
 
-    function $(id) {
-      return document.getElementById(id);
+    if (!text) {
+      box.className = "message";
+      box.textContent = "";
+      return;
     }
 
-    function showMessage(text = "", type = "error") {
-      const box = $("pageMessage");
-      if (!text) {
-        box.className = "message";
-        box.textContent = "";
-        return;
+    box.className = `message show ${type}`;
+    box.textContent = text;
+  }
+
+  function reportDetailsFormatDateTime(value) {
+    if (!value) return "-";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleString();
+  }
+
+  function reportDetailsStatusClass(status) {
+    return `status-${String(status || "").toLowerCase()}`;
+  }
+
+  async function reportDetailsGetCurrentUserId() {
+    try {
+      if (typeof supabase !== "undefined" && supabase.auth?.getUser) {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user?.id) return data.user.id;
       }
-      box.className = `message show ${type}`;
-      box.textContent = text;
+    } catch {}
+
+    try {
+      const raw = localStorage.getItem("colspot_last_user");
+      if (!raw) return "";
+      const parsed = JSON.parse(raw);
+      return parsed?.id || "";
+    } catch {
+      return "";
+    }
+  }
+
+  async function reportDetailsInvokeEdge(name, body = {}) {
+    if (typeof supabase === "undefined" || !supabase.functions?.invoke) {
+      throw new Error("Could not connect to backend.");
     }
 
-    function getStoredUser() {
-      try {
-        const raw = localStorage.getItem("colspot_last_user");
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch {
-        return null;
+    const { data, error } = await supabase.functions.invoke(name, { body });
+
+    if (error) {
+      throw new Error((data && data.error) || error.message || "Request failed.");
+    }
+
+    if (!data?.ok) {
+      throw new Error(data?.error || "Request failed.");
+    }
+
+    return data;
+  }
+
+  function reportDetailsFill(report) {
+    reportDetailsEl("reportDetailsTitle").textContent = report.title || report.category || "Report";
+    reportDetailsEl("reportDetailsSub").textContent = report.tracking_code || "Tracking code";
+
+    reportDetailsEl("reportDetailsTagPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
+    reportDetailsEl("reportDetailsTagCategory").textContent = report.category || "Category";
+    reportDetailsEl("reportDetailsTagUrgency").textContent = report.urgency || "normal";
+
+    const pill = reportDetailsEl("reportDetailsStatusPill");
+    pill.textContent = report.status || "new";
+    pill.className = `status-pill ${reportDetailsStatusClass(report.status)}`;
+
+    reportDetailsEl("reportDetailsTrackingCode").textContent = report.tracking_code || "-";
+    reportDetailsEl("reportDetailsStatus").textContent = report.status || "-";
+    reportDetailsEl("reportDetailsSchool").textContent = report.school_name || "-";
+    reportDetailsEl("reportDetailsDepartment").textContent = report.department || "-";
+    reportDetailsEl("reportDetailsLocation").textContent = report.location_text || "-";
+    reportDetailsEl("reportDetailsPerson").textContent = report.person_involved || "-";
+    reportDetailsEl("reportDetailsCreatedAt").textContent = reportDetailsFormatDateTime(report.created_at);
+    reportDetailsEl("reportDetailsReplyAllowed").textContent = report.allow_anonymous_reply ? "Yes" : "No";
+    reportDetailsEl("reportDetailsBody").textContent = report.message || "-";
+    reportDetailsEl("reportDetailsPageSub").textContent = report.tracking_code || "Report";
+    reportDetailsEl("reportDetailsContactPhone").textContent = report.contact_phone || "-";
+    reportDetailsEl("reportDetailsContactEmail").textContent = report.contact_email || "-";
+
+    reportDetailsEl("reportDetailsLoading").style.display = "none";
+    reportDetailsEl("reportDetailsHeroCard").style.display = "";
+    reportDetailsEl("reportDetailsInfoCard").style.display = "";
+    reportDetailsEl("reportDetailsBodyCard").style.display = "";
+    reportDetailsEl("reportDetailsContactCard").style.display = "";
+  }
+
+  async function loadReportDetailsScreen(force = false) {
+    reportDetailsShowMessage("");
+
+    const selected = window.historyScreenState?.selectedReport || null;
+    if (!selected) {
+      reportDetailsEl("reportDetailsLoading").style.display = "none";
+      reportDetailsShowMessage("No report selected. Please return to History and choose a report.");
+      return;
+    }
+
+    const selectedId = selected.id || selected.report_id || "";
+    const state = window.reportDetailsScreenState || {};
+
+    if (!force && state.loadedReportId && selectedId && state.loadedReportId === selectedId && state.currentReport) {
+      reportDetailsFill(state.currentReport);
+      return;
+    }
+
+    reportDetailsEl("reportDetailsLoading").style.display = "";
+    reportDetailsEl("reportDetailsHeroCard").style.display = "none";
+    reportDetailsEl("reportDetailsInfoCard").style.display = "none";
+    reportDetailsEl("reportDetailsBodyCard").style.display = "none";
+    reportDetailsEl("reportDetailsContactCard").style.display = "none";
+
+    try {
+      const userId = await reportDetailsGetCurrentUserId();
+      if (!userId) {
+        throw new Error("We could not find your user session. Please sign in again.");
       }
-    }
 
-    function getSelectedReportId() {
-      return localStorage.getItem("colspot_selected_report_id") || "";
-    }
+      let report = selected;
 
-    function formatDateTime(value) {
-      if (!value) return "-";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "-";
-      return d.toLocaleString();
-    }
-
-    function statusClass(status) {
-      return `status-${String(status || "").toLowerCase()}`;
-    }
-
-    async function invokeEdge(name, body = {}) {
-      const { data, error } = await sb.functions.invoke(name, { body });
-
-      if (error) {
-        throw new Error((data && data.error) || error.message || "Request failed.");
-      }
-
-      if (!data?.ok) {
-        throw new Error(data?.error || "Request failed.");
-      }
-
-      return data;
-    }
-
-    function fillReport(report) {
-      $("reportTitle").textContent = report.title || report.category || "Report";
-      $("reportSub").textContent = report.tracking_code || "Tracking code";
-      $("tagPrivacy").textContent = report.is_anonymous ? "Anonymous" : "Named";
-      $("tagCategory").textContent = report.category || "Category";
-      $("tagUrgency").textContent = report.urgency || "normal";
-
-      $("statusPill").textContent = report.status || "new";
-      $("statusPill").className = `status-pill ${statusClass(report.status)}`;
-
-      $("metaTrackingCode").textContent = report.tracking_code || "-";
-      $("metaStatus").textContent = report.status || "-";
-      $("metaSchool").textContent = report.school_name || "-";
-      $("metaDepartment").textContent = report.department || "-";
-      $("metaLocation").textContent = report.location_text || "-";
-      $("metaPerson").textContent = report.person_involved || "-";
-      $("metaCreatedAt").textContent = formatDateTime(report.created_at);
-      $("metaReplyAllowed").textContent = report.allow_anonymous_reply ? "Yes" : "No";
-      $("reportMessageText").textContent = report.message || "-";
-      $("pageSub").textContent = report.tracking_code || "Report";
-
-      $("metaContactPhone").textContent = report.contact_phone || "-";
-      $("metaContactEmail").textContent = report.contact_email || "-";
-    }
-
-    async function loadReportDetails() {
-      showMessage("");
-
-      try {
-        const data = await invokeEdge("get-my-report-details", {
-          submitted_by_user_id: currentUser.id,
-          report_id: selectedReportId
+      if (selectedId) {
+        const data = await reportDetailsInvokeEdge("get-my-report-details", {
+          submitted_by_user_id: userId,
+          report_id: selectedId
         });
-
-        fillReport(data.report || {});
-      } catch (err) {
-        console.error(err);
-        showMessage(err.message || "Could not load report details.");
+        report = data.report || selected;
       }
+
+      window.reportDetailsScreenState.loadedReportId = selectedId || "";
+      window.reportDetailsScreenState.currentReport = report;
+
+      reportDetailsFill(report);
+    } catch (err) {
+      console.error(err);
+      reportDetailsEl("reportDetailsLoading").style.display = "none";
+      reportDetailsShowMessage(err.message || "Could not load report details.");
     }
+  }
 
-    function goBack() {
-      window.history.back();
+  function openReportDetailsScreen() {
+    loadReportDetailsScreen(true);
+  }
+
+  function closeReportDetailsScreenBack() {
+    if (typeof showScreen === "function") {
+      showScreen("history");
+      return;
     }
+  }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      currentUser = getStoredUser();
-      selectedReportId = getSelectedReportId();
+  document.addEventListener("DOMContentLoaded", () => {
+    reportDetailsEl("reportDetailsBackBtn")?.addEventListener("click", closeReportDetailsScreenBack);
+  });
 
-      if (!currentUser?.id) {
-        showMessage("We could not find your user session. Please sign in again.");
-        return;
-      }
-
-      if (!selectedReportId) {
-        showMessage("No report selected. Please return to History and choose a report.");
-        return;
-      }
-
-      $("backBtn").addEventListener("click", goBack);
-
-      await loadReportDetails();
-    });
-  </script>
-</body>
-</html>
+  window.openReportDetailsScreen = openReportDetailsScreen;
+</script>
+<!-- 🔹 REPORT DETAILS SCREEN END -->
