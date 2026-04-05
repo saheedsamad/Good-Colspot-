@@ -48,7 +48,7 @@
       height: 30px;
       border-radius: 999px;
       border: 1px solid #e5e7eb;
-      background: #f9fafb;
+      background by: #f9fafb;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -673,6 +673,766 @@
         </div>
       </section>
     </main>
+
+    <div id="liveSessionAddStudentModal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-grip"></div>
+        <div class="modal-title">Add student</div>
+        <div class="modal-sub">
+          Manually add a student who is in the class but cannot join from their device.
+        </div>
+
+        <div class="modal-field">
+          <div class="modal-label">
+            Full name <span style="color:var(--error);">*</span>
+          </div>
+          <input
+            id="liveSessionModalStudentName"
+            type="text"
+            class="modal-input"
+            placeholder="e.g. John Doe"
+          />
+        </div>
+
+        <div class="modal-field">
+          <div class="modal-label">Matric number (optional)</div>
+          <input
+            id="liveSessionModalStudentMatric"
+            type="text"
+            class="modal-input"
+            placeholder="e.g. CSC/22/001"
+          />
+        </div>
+
+        <div class="modal-field">
+          <div class="modal-label">Department (optional)</div>
+          <input
+            id="liveSessionModalStudentDept"
+            type="text"
+            class="modal-input"
+            placeholder="e.g. Computer Science"
+          />
+        </div>
+
+        <div id="liveSessionModalStudentError" class="error-text" style="display:none;"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="modal-btn" onclick="closeLiveSessionAddStudentModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="liveSessionModalAddBtn"
+            class="modal-btn modal-btn-primary"
+            onclick="submitLiveSessionAddStudentModal()"
+          >
+            Add student
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔹 LIVE SESSION SCREEN START -->
+<div id="screen-live-session" class="screen">
+  <style>
+    #screen-live-session {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --text-main: #0f172a;
+      --text-muted: #6b7280;
+      --border-soft: #e5e7eb;
+      --error: #dc2626;
+      --success: #16a34a;
+
+      padding: calc(env(safe-area-inset-top) + 8px) 6px calc(env(safe-area-inset-bottom) + 90px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100%;
+    }
+
+    #screen-live-session * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Inter, sans-serif;
+    }
+
+    #screen-live-session .ls-shell {
+      width: 100%;
+    }
+
+    #screen-live-session .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      padding-top: 2px;
+      background: linear-gradient(180deg, rgba(248,251,255,.96) 0%, rgba(248,251,255,.88) 72%, rgba(248,251,255,0) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    #screen-live-session .top-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    #screen-live-session .back-btn {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid #e6ebf5;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #1f2937;
+      flex-shrink: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #screen-live-session .back-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #screen-live-session .title-wrap {
+      min-width: 0;
+    }
+
+    #screen-live-session .page-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      margin-bottom: 2px;
+      color: #111827;
+    }
+
+    #screen-live-session .page-sub {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 220px;
+    }
+
+    #screen-live-session .status-pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      border: 1px solid #bbf7d0;
+      background: #ecfdf5;
+      color: #166534;
+      flex-shrink: 0;
+    }
+
+    #screen-live-session .status-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #16a34a;
+      flex-shrink: 0;
+    }
+
+    #screen-live-session .status-pill.expired {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    #screen-live-session .status-pill.expired .status-pill-dot {
+      background: #dc2626;
+    }
+
+    #screen-live-session .section-block {
+      margin-bottom: 14px;
+    }
+
+    #screen-live-session .section-title {
+      font-size: 15px;
+      font-weight: 900;
+      margin: 0 0 12px;
+      letter-spacing: -.02em;
+      color: #111827;
+    }
+
+    #screen-live-session .message-box {
+      padding: 18px 14px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid #e6ebf5;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+    }
+
+    #screen-live-session .error-text {
+      font-size: 12px;
+      color: var(--error);
+      margin: 6px 2px 0;
+      display: none;
+    }
+
+    #screen-live-session .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    #screen-live-session .meta-box {
+      border: 1px solid #e6ebf5;
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      min-width: 0;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+    }
+
+    #screen-live-session .meta-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 5px;
+    }
+
+    #screen-live-session .meta-value {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+      word-break: break-word;
+      color: #111827;
+    }
+
+    #screen-live-session .meta-value.pin {
+      font-size: 22px;
+      letter-spacing: .18em;
+      line-height: 1.2;
+    }
+
+    #screen-live-session .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    #screen-live-session .stats-box {
+      border: 1px solid #e6ebf5;
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+    }
+
+    #screen-live-session .stats-big {
+      font-size: 20px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    #screen-live-session .stats-small {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    #screen-live-session .pill-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #screen-live-session .pill-btn {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 8px 24px rgba(15,23,42,.04);
+    }
+
+    #screen-live-session .pill-btn.primary {
+      background: #eef2ff;
+      border-color: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    #screen-live-session .pill-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    #screen-live-session .pill-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    #screen-live-session .end-session-row {
+      margin-bottom: 14px;
+    }
+
+    #screen-live-session .end-session-btn {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #b91c1c;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 8px 18px rgba(220, 38, 38, 0.18);
+    }
+
+    #screen-live-session .end-session-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    #screen-live-session .end-session-btn.ended {
+      background: #f3f4f6;
+      border-color: #e5e7eb;
+      color: #9ca3af;
+      box-shadow: none;
+    }
+
+    #screen-live-session .end-session-btn:disabled {
+      opacity: 1;
+      cursor: default;
+    }
+
+    #screen-live-session .section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 2px 10px;
+      line-height: 1.5;
+    }
+
+    #screen-live-session .attendee-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    #screen-live-session .add-student-btn {
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #screen-live-session .add-student-btn:active {
+      transform: scale(0.97);
+    }
+
+    #screen-live-session .filter-wrapper {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    #screen-live-session .attendee-filter {
+      width: 100%;
+      padding: 10px 38px 10px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 16px;
+      background: #f9fafb;
+    }
+
+    #screen-live-session .attendee-filter:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+      background: #ffffff;
+    }
+
+    #screen-live-session .filter-wrapper svg {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      stroke: #9ca3af;
+      fill: none;
+    }
+
+    #screen-live-session .attendee-wrap {
+      border: 1px solid #e6ebf5;
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      overflow: hidden;
+    }
+
+    #screen-live-session .attendee-header-row {
+      display: grid;
+      grid-template-columns: 2fr 1.4fr 1.6fr 1fr;
+      gap: 8px;
+      padding: 12px 12px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      border-bottom: 1px solid #e5e7eb;
+      background: #fbfdff;
+    }
+
+    #screen-live-session .attendee-header-row div {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #screen-live-session .attendee-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    #screen-live-session .attendee-card {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 2fr 1.4fr 1.6fr 1fr;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border-bottom: 1px solid #eef2f7;
+      background: #fff;
+    }
+
+    #screen-live-session .attendee-card:last-child {
+      border-bottom: none;
+    }
+
+    #screen-live-session .attendee-cell {
+      font-size: 12px;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #screen-live-session .attendee-cell-small {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    #screen-live-session .empty-state {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 14px 12px;
+      display: none;
+    }
+
+    #screen-live-session .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    #screen-live-session .modal-sheet {
+      width: 100%;
+      max-width: 380px;
+      max-height: 60vh;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px 14px 14px;
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.35);
+      animation: fadeInUp 0.18s ease-out;
+      overflow-y: auto;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(10px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    #screen-live-session .modal-grip {
+      width: 34px;
+      height: 3px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin: 0 auto 8px;
+    }
+
+    #screen-live-session .modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      text-align: left;
+    }
+
+    #screen-live-session .modal-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    #screen-live-session .modal-field {
+      margin-bottom: 6px;
+    }
+
+    #screen-live-session .modal-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    #screen-live-session .modal-input {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 9px;
+      border: 1px solid #e5e7eb;
+      font-size: 16px;
+    }
+
+    #screen-live-session .modal-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+    }
+
+    #screen-live-session .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    #screen-live-session .modal-btn {
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 13px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      font-weight: 700;
+    }
+
+    #screen-live-session .modal-btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      border-color: #1d4ed8;
+      color: #ffffff;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+    }
+
+    #screen-live-session .modal-btn-primary:active,
+    #screen-live-session .modal-btn:active {
+      transform: scale(0.97);
+    }
+
+    @media (max-width: 360px) {
+      #screen-live-session .meta-grid,
+      #screen-live-session .stats-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <div class="ls-shell">
+    <div class="topbar">
+      <div class="top-left">
+        <button class="back-btn" onclick="liveSessionBack()">
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+
+        <div class="title-wrap">
+          <div class="page-title">Live Attendance</div>
+          <div class="page-sub">Monitor your ongoing attendance session.</div>
+        </div>
+      </div>
+
+      <div id="liveSessionStatusPill" class="status-pill">
+        <span class="status-pill-dot"></span>
+        <span>Active</span>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">Course</div>
+          <div id="liveSessionClass" class="meta-value">Loading...</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Started</div>
+          <div id="liveSessionClassSub" class="meta-value">Checking details for this session.</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Session PIN</div>
+          <div id="liveSessionPinValue" class="meta-value pin">••••••</div>
+        </div>
+
+        <div class="meta-box">
+          <div class="meta-label">Time left</div>
+          <div id="liveSessionTimerValue" class="meta-value">--:--</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stats-box">
+          <div id="liveSessionJoinedCount" class="stats-big"><strong>0</strong> joined</div>
+          <div class="stats-small">Students inside this session.</div>
+        </div>
+
+        <div class="stats-box">
+          <div class="stats-big">Live</div>
+          <div class="stats-small">Refresh or export attendance below.</div>
+        </div>
+      </div>
+
+      <div class="pill-row">
+        <button class="pill-btn primary" type="button" onclick="reloadLiveSessionAttendees()">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 4v6h6" />
+            <path d="M20 20v-6h-6" />
+            <path d="M5 19a9 9 0 0 0 14-3" />
+            <path d="M19 5a9 9 0 0 0-14 3" />
+          </svg>
+          <span>Refresh</span>
+        </button>
+
+        <button class="pill-btn" type="button" onclick="downloadLiveSessionAttendeesCsv()">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v9" />
+            <path d="M8.5 9.5L12 13l3.5-3.5" />
+            <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+          </svg>
+          <span>Download CSV</span>
+        </button>
+      </div>
+
+      <div class="end-session-row">
+        <button
+          id="liveSessionEndBtn"
+          class="end-session-btn"
+          type="button"
+          onclick="endLiveSessionScreen()"
+        >
+          <svg viewBox="0 0 24 24">
+            <rect x="5" y="5" width="14" height="14" rx="3" />
+            <path d="M9 9h6v6H9z" />
+          </svg>
+          <span class="end-session-label">End session</span>
+        </button>
+      </div>
+
+      <div id="liveSessionErrorBox" class="error-text"></div>
+    </div>
+
+    <section class="section-block">
+      <div class="attendee-header-bar">
+        <div class="section-title">Attendees</div>
+        <button class="add-student-btn" onclick="openLiveSessionAddStudentModal()">Add student</button>
+      </div>
+
+      <p class="section-sub">
+        Students who have successfully joined this session.
+      </p>
+
+      <div class="filter-wrapper">
+        <input
+          id="liveSessionAttendeeFilter"
+          class="attendee-filter"
+          type="text"
+          placeholder="Filter by name, matric or department"
+          oninput="applyLiveSessionAttendeeFilter()"
+        />
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="6" />
+          <path d="M16 16l4 4" />
+        </svg>
+      </div>
+
+      <div class="attendee-wrap">
+        <div class="attendee-header-row">
+          <div>Name</div>
+          <div>Matric no</div>
+          <div>Department</div>
+          <div>Joined at</div>
+        </div>
+
+        <div id="liveSessionAttendeeList" class="attendee-list"></div>
+        <div id="liveSessionEmptyState" class="empty-state">
+          No one has joined yet. Ask your class to enter the PIN in Colspot.
+        </div>
+      </div>
+    </section>
 
     <div id="liveSessionAddStudentModal" class="modal-backdrop" style="display:none;">
       <div class="modal-sheet">
