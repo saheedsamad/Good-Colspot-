@@ -355,11 +355,11 @@
       </div>
 
       <div class="announcement-content">
+        <div id="viewMessageBody" class="announcement-body"></div>
+
         <div id="viewMessageImageWrap" class="hero-wrap hidden">
           <img id="viewMessageImage" alt="Announcement image" />
         </div>
-
-        <div id="viewMessageBody" class="announcement-body"></div>
 
         <div class="resource-stack">
           <div id="viewMessageLinkCard" class="resource-card hidden">
@@ -372,7 +372,7 @@
               </div>
               <div class="resource-copy">
                 <div id="viewMessageLinkTitle" class="resource-title">Open link</div>
-                <div class="resource-sub">Visit attached resource</div>
+                <div id="viewMessageLinkSub" class="resource-sub">Visit attached resource</div>
               </div>
             </div>
             <button id="viewMessageViewLinkBtn" type="button" class="resource-btn">View Link</button>
@@ -569,13 +569,16 @@
 
     const linkCard = vmEl("viewMessageLinkCard");
     const viewLinkBtn = vmEl("viewMessageViewLinkBtn");
+    const linkSub = vmEl("viewMessageLinkSub");
 
     if (linkUrl) {
       vmSetText("viewMessageLinkTitle", linkLabel);
+      vmSetText("viewMessageLinkSub", linkUrl);
       linkCard.classList.remove("hidden");
       viewLinkBtn.onclick = () => window.open(linkUrl, "_blank", "noopener");
     } else {
       linkCard.classList.add("hidden");
+      if (linkSub) linkSub.textContent = "Visit attached resource";
       viewLinkBtn.onclick = null;
     }
 
