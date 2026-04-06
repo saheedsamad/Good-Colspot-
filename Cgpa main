@@ -130,7 +130,18 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+    }
+
+    #screen-reports .action-row-1 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #screen-reports .action-row-2 {
+      margin-bottom: 14px;
     }
 
     #screen-reports .primary-btn,
@@ -144,29 +155,13 @@
       cursor: pointer;
       transition: transform 0.05s, box-shadow 0.15s, background 0.15s;
       border: none;
+      width: 100%;
     }
 
     #screen-reports .primary-btn {
-      width: 100%;
       color: #ffffff;
       background: linear-gradient(135deg, var(--blue), var(--blue-dark));
       box-shadow: 0 14px 35px rgba(37, 99, 235, 0.45);
-    }
-
-    #screen-reports .primary-btn:active,
-    #screen-reports .secondary-btn:active,
-    #screen-reports .ghost-btn:active,
-    #screen-reports .danger-btn:active {
-      transform: scale(0.97);
-    }
-
-    #screen-reports .primary-btn:disabled,
-    #screen-reports .secondary-btn:disabled,
-    #screen-reports .ghost-btn:disabled,
-    #screen-reports .danger-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      box-shadow: none;
     }
 
     #screen-reports .secondary-btn {
@@ -187,13 +182,30 @@
       background: #fef2f2;
     }
 
+    #screen-reports .primary-btn:active,
+    #screen-reports .secondary-btn:active,
+    #screen-reports .ghost-btn:active,
+    #screen-reports .danger-btn:active {
+      transform: scale(0.97);
+    }
+
+    #screen-reports .primary-btn:disabled,
+    #screen-reports .secondary-btn:disabled,
+    #screen-reports .ghost-btn:disabled,
+    #screen-reports .danger-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
     #screen-reports .list {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    #screen-reports .semester-item {
+    #screen-reports .semester-item,
+    #screen-reports .plan-item {
       background: #ffffff;
       border: 1px solid #e5e7eb;
       border-radius: 14px;
@@ -204,12 +216,14 @@
       justify-content: space-between;
     }
 
-    #screen-reports .semester-item-left {
+    #screen-reports .semester-item-left,
+    #screen-reports .plan-item-left {
       flex: 1;
       min-width: 0;
     }
 
-    #screen-reports .semester-item-title {
+    #screen-reports .semester-item-title,
+    #screen-reports .plan-item-title {
       font-size: 15px;
       font-weight: 700;
       color: var(--text-main);
@@ -217,13 +231,15 @@
       margin-bottom: 3px;
     }
 
-    #screen-reports .semester-item-sub {
+    #screen-reports .semester-item-sub,
+    #screen-reports .plan-item-sub {
       font-size: 12px;
       color: var(--text-muted);
       line-height: 1.35;
     }
 
-    #screen-reports .semester-item-right {
+    #screen-reports .semester-item-right,
+    #screen-reports .plan-item-right {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -252,10 +268,10 @@
       background: #ffffff;
     }
 
-    #screen-reports .tiny-btn.remove {
-      background: #fef2f2;
-      color: #dc2626;
-      border-color: #fecaca;
+    #screen-reports .tiny-btn.open {
+      background: #eff6ff;
+      color: var(--blue);
+      border-color: #bfdbfe;
     }
 
     #screen-reports .inline-head {
@@ -330,6 +346,7 @@
       font-size: 16px;
       background: #fff;
       color: var(--text-main);
+      box-sizing: border-box;
     }
 
     #screen-reports .text-input:focus,
@@ -476,21 +493,10 @@
       justify-content: center;
     }
 
-    #screen-reports .stat-box.orange {
-      background: linear-gradient(135deg, #f97316, #f59e0b);
-    }
-
-    #screen-reports .stat-box.green {
-      background: linear-gradient(135deg, #10b981, #22c55e);
-    }
-
-    #screen-reports .stat-box.purple {
-      background: linear-gradient(135deg, #7c3aed, #6366f1);
-    }
-
-    #screen-reports .stat-box.blue {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    }
+    #screen-reports .stat-box.orange { background: linear-gradient(135deg, #f97316, #f59e0b); }
+    #screen-reports .stat-box.green { background: linear-gradient(135deg, #10b981, #22c55e); }
+    #screen-reports .stat-box.purple { background: linear-gradient(135deg, #7c3aed, #6366f1); }
+    #screen-reports .stat-box.blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
 
     #screen-reports .stat-label {
       font-size: 12px;
@@ -572,6 +578,76 @@
       line-height: 1.35;
     }
 
+    #screen-reports .target-summary-box {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    #screen-reports .target-summary-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    #screen-reports .target-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+    }
+
+    #screen-reports .target-badge.bad {
+      background: #fef2f2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    #screen-reports .target-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    #screen-reports .target-stat {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    #screen-reports .target-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    #screen-reports .target-stat-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-reports .muted-box {
+      background: #f9fafb;
+      border: 1px dashed #d1d5db;
+      border-radius: 14px;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     #screen-reports .empty-state {
       font-size: 12px;
       color: var(--text-muted);
@@ -587,22 +663,16 @@
       white-space: pre-line;
     }
 
-    #screen-reports .message.error {
-      color: var(--error);
-    }
-
-    #screen-reports .message.success {
-      color: var(--success);
-    }
-
-    #screen-reports .hidden {
-      display: none !important;
-    }
+    #screen-reports .message.error { color: var(--error); }
+    #screen-reports .message.success { color: var(--success); }
+    #screen-reports .hidden { display: none !important; }
 
     @media (max-width: 360px) {
       #screen-reports .action-row,
+      #screen-reports .action-row-1,
       #screen-reports .result-stat-grid,
-      #screen-reports .course-form-grid {
+      #screen-reports .course-form-grid,
+      #screen-reports .target-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -614,7 +684,7 @@
       <div class="hero-line-1">CGPA</div>
       <h1 class="hero-title">
         CGPA calculator<br />
-        <span>Add semesters &amp; calculate result</span>
+        <span>Add semesters, calculate result & target plan</span>
       </h1>
     </section>
 
@@ -638,9 +708,13 @@
       </div>
     </div>
 
-    <div class="action-row">
+    <div class="action-row-1">
       <button id="btnOpenSemesterPicker" class="secondary-btn" type="button">+ Add New Semester</button>
       <button id="btnCalculateCgpa" class="primary-btn" type="button">Calculate CGPA</button>
+    </div>
+
+    <div class="action-row-2">
+      <button id="btnOpenTargetPlanner" class="ghost-btn" type="button">Target Class Plan</button>
     </div>
 
     <section>
@@ -674,6 +748,20 @@
       </div>
     </section>
 
+    <section>
+      <div class="section-title">Saved target plans</div>
+      <div class="section-sub">
+        Open your previous target class plans and view the saved advice again.
+      </div>
+
+      <div class="card">
+        <div id="cgpaTargetPlanList" class="list"></div>
+        <div id="cgpaTargetPlanEmpty" class="empty-state">
+          No target class plan saved yet.
+        </div>
+      </div>
+    </section>
+
     <div id="cgpaHubError" class="message error hidden"></div>
     <div id="cgpaHubSuccess" class="message success hidden"></div>
   </div>
@@ -691,12 +779,7 @@
     <div class="card">
       <div class="field-block">
         <label class="field-label" for="cgpaPickerSessionInput">Academic session</label>
-        <input
-          id="cgpaPickerSessionInput"
-          type="text"
-          class="text-input"
-          placeholder="e.g. 2024/2025"
-        />
+        <input id="cgpaPickerSessionInput" type="text" class="text-input" placeholder="e.g. 2024/2025" />
       </div>
 
       <div class="section-title" style="margin-top:0;">Semester options</div>
@@ -706,7 +789,7 @@
 
       <div id="cgpaPickerList" class="picker-grid"></div>
 
-      <button id="btnBackFromPicker" class="ghost-btn" type="button" style="width:100%; margin-top:10px;">Back</button>
+      <button id="btnBackFromPicker" class="ghost-btn" type="button" style="margin-top:10px;">Back</button>
     </div>
 
     <div id="cgpaPickerError" class="message error hidden"></div>
@@ -718,7 +801,7 @@
       <div class="hero-line-1">CGPA</div>
       <h1 class="hero-title">
         Semester editor<br />
-        <span>Add courses &amp; save result</span>
+        <span>Add courses & save result</span>
       </h1>
     </section>
 
@@ -756,16 +839,14 @@
         <input id="cgpaCourseTitleInput" type="text" class="text-input" placeholder="Use of English" />
       </div>
 
-      <div class="action-row" style="margin-bottom:8px;">
+      <div class="action-row">
         <button id="btnAddCourseToSemester" class="secondary-btn" type="button">+ Add Course</button>
         <button id="btnCancelCourseEdit" class="ghost-btn" type="button">Cancel Edit</button>
       </div>
 
       <div class="section-title">Courses in this semester</div>
       <div id="cgpaCourseList" class="course-list"></div>
-      <div id="cgpaCourseEmpty" class="empty-state">
-        No course added yet.
-      </div>
+      <div id="cgpaCourseEmpty" class="empty-state">No course added yet.</div>
 
       <div class="section-title">Preview</div>
       <div class="section-sub">This preview is calculated from the courses you have added in this semester.</div>
@@ -851,6 +932,182 @@
     <div id="cgpaResultError" class="message error hidden"></div>
   </div>
 
+  <!-- TARGET PLANNER PAGE -->
+  <div id="cgpaTargetPage" class="hidden">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        Target class plan<br />
+        <span>Plan one semester and get short advice</span>
+      </h1>
+    </section>
+
+    <div class="card">
+      <div class="field-block">
+        <label class="field-label" for="cgpaTargetLevelInput">Future level</label>
+        <select id="cgpaTargetLevelInput" class="select-input">
+          <option value="">Select level</option>
+          <option value="100">100 Level</option>
+          <option value="200">200 Level</option>
+          <option value="300">300 Level</option>
+          <option value="400">400 Level</option>
+          <option value="500">500 Level</option>
+          <option value="600">600 Level</option>
+          <option value="700">700 Level</option>
+        </select>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="cgpaTargetSemesterInput">Future semester</label>
+        <select id="cgpaTargetSemesterInput" class="select-input">
+          <option value="">Select semester</option>
+          <option value="1">1st Semester</option>
+          <option value="2">2nd Semester</option>
+        </select>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="cgpaTargetSessionInput">Academic session</label>
+        <input id="cgpaTargetSessionInput" type="text" class="text-input" placeholder="e.g. 2025/2026" />
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="cgpaTargetClassInput">Target class</label>
+        <select id="cgpaTargetClassInput" class="select-input">
+          <option value="">Select target class</option>
+          <option value="First Class">First Class</option>
+          <option value="Second Class Upper">Second Class Upper</option>
+          <option value="Second Class Lower">Second Class Lower</option>
+          <option value="Third Class">Third Class</option>
+          <option value="Pass">Pass</option>
+        </select>
+      </div>
+
+      <div class="section-title">Future semester courses</div>
+      <div class="section-sub">
+        Add only the course code, title and unit for the semester you want to plan.
+      </div>
+
+      <div class="course-form-grid">
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaTargetCourseCodeInput">Course code</label>
+          <input id="cgpaTargetCourseCodeInput" type="text" class="text-input" placeholder="CSC 201" />
+        </div>
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaTargetCourseUnitInput">Unit</label>
+          <input id="cgpaTargetCourseUnitInput" type="number" class="text-input" min="1" step="1" placeholder="3" />
+        </div>
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaTargetCourseTitleInput">Title</label>
+          <input id="cgpaTargetCourseTitleInput" type="text" class="text-input" placeholder="Data Structures" />
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="btnAddTargetCourse" class="secondary-btn" type="button">+ Add Course</button>
+        <button id="btnClearTargetCourseForm" class="ghost-btn" type="button">Clear</button>
+      </div>
+
+      <div id="cgpaTargetCourseList" class="course-list"></div>
+      <div id="cgpaTargetCourseEmpty" class="empty-state">
+        No future course added yet.
+      </div>
+
+      <div class="action-row" style="margin-top:10px;">
+        <button id="btnBackFromTarget" class="ghost-btn" type="button">Back</button>
+        <button id="btnGetTargetAdvice" class="primary-btn" type="button">Get Target Advice</button>
+      </div>
+    </div>
+
+    <div id="cgpaTargetResultBox" class="card hidden">
+      <div class="section-title" style="margin-top:0;">Target result</div>
+      <div class="target-summary-box">
+        <div class="target-summary-top">
+          <div>
+            <div class="breakdown-title" id="cgpaTargetResultTitle">Target plan</div>
+            <div class="breakdown-sub" id="cgpaTargetResultSub">Saved result will appear here.</div>
+          </div>
+          <div id="cgpaTargetPossibleBadge" class="target-badge">Possible</div>
+        </div>
+
+        <div class="target-grid">
+          <div class="target-stat">
+            <div class="target-stat-label">Current CGPA</div>
+            <div id="cgpaTargetCurrentCgpa" class="target-stat-value">0.00</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Required GPA</div>
+            <div id="cgpaTargetRequiredGpa" class="target-stat-value">0.00</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Future units</div>
+            <div id="cgpaTargetFutureUnits" class="target-stat-value">0</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Target class</div>
+            <div id="cgpaTargetClassValue" class="target-stat-value">—</div>
+          </div>
+        </div>
+
+        <div class="muted-box" id="cgpaTargetAiSummary">Advice will appear here.</div>
+      </div>
+    </div>
+
+    <div id="cgpaTargetError" class="message error hidden"></div>
+    <div id="cgpaTargetSuccess" class="message success hidden"></div>
+  </div>
+
+  <!-- TARGET DETAILS PAGE -->
+  <div id="cgpaTargetDetailPage" class="hidden">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        Saved target plan<br />
+        <span>Open previous target advice</span>
+      </h1>
+    </section>
+
+    <div class="card">
+      <div class="target-summary-box">
+        <div class="target-summary-top">
+          <div>
+            <div class="breakdown-title" id="cgpaDetailTitle">Target plan</div>
+            <div class="breakdown-sub" id="cgpaDetailSub">Saved plan details.</div>
+          </div>
+          <div id="cgpaDetailPossibleBadge" class="target-badge">Possible</div>
+        </div>
+
+        <div class="target-grid">
+          <div class="target-stat">
+            <div class="target-stat-label">Current CGPA</div>
+            <div id="cgpaDetailCurrentCgpa" class="target-stat-value">0.00</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Required GPA</div>
+            <div id="cgpaDetailRequiredGpa" class="target-stat-value">0.00</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Future units</div>
+            <div id="cgpaDetailFutureUnits" class="target-stat-value">0</div>
+          </div>
+          <div class="target-stat">
+            <div class="target-stat-label">Target class</div>
+            <div id="cgpaDetailTargetClass" class="target-stat-value">—</div>
+          </div>
+        </div>
+
+        <div class="muted-box" id="cgpaDetailAiSummary">Saved summary.</div>
+      </div>
+
+      <div class="section-title">Future courses</div>
+      <div id="cgpaDetailCourseList" class="course-list"></div>
+
+      <button id="btnBackFromTargetDetail" class="ghost-btn" type="button" style="margin-top:10px;">Back</button>
+    </div>
+
+    <div id="cgpaTargetDetailError" class="message error hidden"></div>
+  </div>
+
   <script>
     (function () {
       if (window.__cgpaReportsScreenInit) return;
@@ -863,12 +1120,23 @@
       let cgpaEditingCourseId = null;
       let cgpaLatestSummary = null;
 
+      let cgpaTargetPlansCache = [];
+      let cgpaTargetCourses = [];
+      let cgpaCurrentTargetPlanId = null;
+
       function cgpaQ(id) {
         return document.getElementById(id);
       }
 
       function cgpaShowPage(pageId) {
-        ["cgpaHubPage", "cgpaPickerPage", "cgpaEditorPage", "cgpaResultPage"].forEach((id) => {
+        [
+          "cgpaHubPage",
+          "cgpaPickerPage",
+          "cgpaEditorPage",
+          "cgpaResultPage",
+          "cgpaTargetPage",
+          "cgpaTargetDetailPage"
+        ].forEach((id) => {
           const el = cgpaQ(id);
           if (el) el.classList.toggle("hidden", id !== pageId);
         });
@@ -887,7 +1155,9 @@
           "cgpaHubError", "cgpaHubSuccess",
           "cgpaPickerError",
           "cgpaEditorError", "cgpaEditorSuccess",
-          "cgpaResultError"
+          "cgpaResultError",
+          "cgpaTargetError", "cgpaTargetSuccess",
+          "cgpaTargetDetailError"
         ].forEach((id) => cgpaShowMessage(id, ""));
       }
 
@@ -967,6 +1237,60 @@
         cgpaShowMessage("cgpaHubSuccess", "Selected semesters cleared.", "success");
       }
 
+      function cgpaResetTargetForm() {
+        cgpaCurrentTargetPlanId = null;
+        cgpaTargetCourses = [];
+        if (cgpaQ("cgpaTargetLevelInput")) cgpaQ("cgpaTargetLevelInput").value = "";
+        if (cgpaQ("cgpaTargetSemesterInput")) cgpaQ("cgpaTargetSemesterInput").value = "";
+        if (cgpaQ("cgpaTargetSessionInput")) cgpaQ("cgpaTargetSessionInput").value = "";
+        if (cgpaQ("cgpaTargetClassInput")) cgpaQ("cgpaTargetClassInput").value = "";
+        if (cgpaQ("cgpaTargetCourseCodeInput")) cgpaQ("cgpaTargetCourseCodeInput").value = "";
+        if (cgpaQ("cgpaTargetCourseUnitInput")) cgpaQ("cgpaTargetCourseUnitInput").value = "";
+        if (cgpaQ("cgpaTargetCourseTitleInput")) cgpaQ("cgpaTargetCourseTitleInput").value = "";
+        cgpaQ("cgpaTargetResultBox")?.classList.add("hidden");
+        cgpaRenderTargetCourseList();
+      }
+
+      function cgpaRenderTargetCourseList() {
+        const list = cgpaQ("cgpaTargetCourseList");
+        const empty = cgpaQ("cgpaTargetCourseEmpty");
+        if (!list) return;
+        list.innerHTML = "";
+
+        if (!cgpaTargetCourses.length) {
+          empty?.classList.remove("hidden");
+          return;
+        }
+
+        empty?.classList.add("hidden");
+
+        cgpaTargetCourses.forEach((course, idx) => {
+          const row = document.createElement("div");
+          row.className = "course-item";
+          row.innerHTML = `
+            <div class="course-item-top">
+              <div>
+                <div class="course-code">${cgpaSafeText(course.course_code)}</div>
+                <div class="course-title">${cgpaSafeText(course.course_title) || "No title added"}</div>
+              </div>
+              <div class="course-meta">${Number(course.unit || 0)} unit(s)</div>
+            </div>
+            <div class="course-actions">
+              <button class="tiny-btn remove" type="button" data-target-course-remove="${idx}">Remove</button>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+
+        list.querySelectorAll("[data-target-course-remove]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const idx = Number(btn.getAttribute("data-target-course-remove"));
+            cgpaTargetCourses.splice(idx, 1);
+            cgpaRenderTargetCourseList();
+          });
+        });
+      }
+
       async function cgpaEnsureUser() {
         try {
           if (typeof ensureCurrentUser === "function") {
@@ -986,6 +1310,10 @@
         } catch (e) {
           return null;
         }
+      }
+
+      async function cgpaInvokeCalculator(body) {
+        return await supabase.functions.invoke("cgpa-calculate", { body });
       }
 
       async function cgpaLoadSemesters() {
@@ -1020,13 +1348,8 @@
         cgpaSetSelectedSemesterIds(cgpaSelectedSemesterIds);
 
         await cgpaLoadHubSummary();
+        await cgpaLoadTargetPlans();
         cgpaRenderHub();
-      }
-
-      async function cgpaInvokeCalculator(semesterIds) {
-        return await supabase.functions.invoke("cgpa-calculate", {
-          body: { semester_ids: semesterIds }
-        });
       }
 
       async function cgpaLoadHubSummary() {
@@ -1039,17 +1362,72 @@
         const allIds = cgpaSemestersCache.map((s) => s.id);
 
         try {
-          const { data, error } = await cgpaInvokeCalculator(allIds);
+          const { data, error } = await cgpaInvokeCalculator({
+            mode: "calculate",
+            semester_ids: allIds
+          });
+
           if (error || !data?.success) {
             cgpaLatestSummary = null;
             cgpaRenderSummaryCard();
             return;
           }
+
           cgpaLatestSummary = data;
           cgpaRenderSummaryCard();
         } catch (e) {
           cgpaLatestSummary = null;
           cgpaRenderSummaryCard();
+        }
+      }
+
+      async function cgpaLoadTargetPlans() {
+        const list = cgpaQ("cgpaTargetPlanList");
+        const empty = cgpaQ("cgpaTargetPlanEmpty");
+        if (list) list.innerHTML = "";
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator({ mode: "list_target_plans" });
+
+          if (error || !data?.success) {
+            cgpaTargetPlansCache = [];
+            empty?.classList.remove("hidden");
+            return;
+          }
+
+          cgpaTargetPlansCache = Array.isArray(data.plans) ? data.plans : [];
+
+          if (!cgpaTargetPlansCache.length) {
+            empty?.classList.remove("hidden");
+            return;
+          }
+
+          empty?.classList.add("hidden");
+
+          cgpaTargetPlansCache.forEach((plan) => {
+            const item = document.createElement("div");
+            item.className = "plan-item";
+            item.innerHTML = `
+              <div class="plan-item-left">
+                <div class="plan-item-title">${cgpaFormatSemester(plan.future_level, plan.future_semester, plan.future_academic_session || "")}</div>
+                <div class="plan-item-sub">${cgpaSafeText(plan.target_class)} • Required GPA ${Number(plan.required_future_gpa || 0).toFixed(2)}</div>
+              </div>
+              <div class="plan-item-right">
+                <button class="tiny-btn open" type="button" data-plan-open="${plan.id}">Open</button>
+              </div>
+            `;
+            list?.appendChild(item);
+          });
+
+          list?.querySelectorAll("[data-plan-open]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const planId = btn.getAttribute("data-plan-open");
+              if (planId) cgpaOpenTargetPlanDetail(planId);
+            });
+          });
+        } catch (e) {
+          cgpaTargetPlansCache = [];
+          empty?.classList.remove("hidden");
         }
       }
 
@@ -1086,9 +1464,9 @@
         if (chips) chips.innerHTML = "";
 
         if (!cgpaSemestersCache.length) {
-          if (empty) empty.classList.remove("hidden");
+          empty?.classList.remove("hidden");
         } else {
-          if (empty) empty.classList.add("hidden");
+          empty?.classList.add("hidden");
 
           cgpaSemestersCache.forEach((sem) => {
             const selected = cgpaSelectedSemesterIds.includes(String(sem.id));
@@ -1106,7 +1484,7 @@
                 <button class="tiny-btn edit" data-semester-edit="${sem.id}" type="button">Edit</button>
               </div>
             `;
-            list.appendChild(item);
+            list?.appendChild(item);
             cgpaFillSemesterCardSub(sem.id);
           });
         }
@@ -1116,9 +1494,9 @@
           .filter(Boolean);
 
         if (!selectedItems.length) {
-          if (chipsEmpty) chipsEmpty.classList.remove("hidden");
+          chipsEmpty?.classList.remove("hidden");
         } else {
-          if (chipsEmpty) chipsEmpty.classList.add("hidden");
+          chipsEmpty?.classList.add("hidden");
           selectedItems.forEach((sem) => {
             const chip = document.createElement("div");
             chip.className = "chip";
@@ -1126,7 +1504,7 @@
               <span>${cgpaFormatSemester(sem.level, sem.semester, "").replace(" · ", " · ")}</span>
               <button type="button" data-chip-remove="${sem.id}">×</button>
             `;
-            chips.appendChild(chip);
+            chips?.appendChild(chip);
           });
         }
 
@@ -1148,7 +1526,11 @@
         if (!sub) return;
 
         try {
-          const { data, error } = await cgpaInvokeCalculator([semesterId]);
+          const { data, error } = await cgpaInvokeCalculator({
+            mode: "calculate",
+            semester_ids: [semesterId]
+          });
+
           if (error || !data?.success || !data?.semester_breakdown?.length) {
             sub.textContent = "Could not load GPA.";
             return;
@@ -1277,10 +1659,10 @@
       }
 
       function cgpaEditorResetForm() {
-        if (cgpaQ("cgpaCourseCodeInput")) cgpaQ("cgpaCourseCodeInput").value = "";
-        if (cgpaQ("cgpaCourseTitleInput")) cgpaQ("cgpaCourseTitleInput").value = "";
-        if (cgpaQ("cgpaCourseUnitInput")) cgpaQ("cgpaCourseUnitInput").value = "";
-        if (cgpaQ("cgpaCourseGradeInput")) cgpaQ("cgpaCourseGradeInput").value = "";
+        cgpaQ("cgpaCourseCodeInput").value = "";
+        cgpaQ("cgpaCourseTitleInput").value = "";
+        cgpaQ("cgpaCourseUnitInput").value = "";
+        cgpaQ("cgpaCourseGradeInput").value = "";
         cgpaEditingCourseId = null;
       }
 
@@ -1291,9 +1673,9 @@
         if (list) list.innerHTML = "";
 
         if (!cgpaCurrentEditorCourses.length) {
-          if (empty) empty.classList.remove("hidden");
+          empty?.classList.remove("hidden");
         } else {
-          if (empty) empty.classList.add("hidden");
+          empty?.classList.add("hidden");
 
           cgpaCurrentEditorCourses.forEach((course) => {
             const gp = cgpaGradePoint(course.grade_letter);
@@ -1313,7 +1695,7 @@
                 <button class="tiny-btn remove" data-course-delete="${course.id}" type="button">Delete</button>
               </div>
             `;
-            list.appendChild(div);
+            list?.appendChild(div);
           });
         }
 
@@ -1342,10 +1724,10 @@
 
         const gpa = totalUnits > 0 ? qualityPoints / totalUnits : 0;
 
-        if (cgpaQ("cgpaEditorPreviewCourses")) cgpaQ("cgpaEditorPreviewCourses").textContent = String(totalCourses);
-        if (cgpaQ("cgpaEditorPreviewUnits")) cgpaQ("cgpaEditorPreviewUnits").textContent = String(cgpaRound2(totalUnits));
-        if (cgpaQ("cgpaEditorPreviewGpa")) cgpaQ("cgpaEditorPreviewGpa").textContent = Number(gpa).toFixed(2);
-        if (cgpaQ("cgpaEditorPreviewStanding")) cgpaQ("cgpaEditorPreviewStanding").textContent = cgpaStandingFromCgpa(gpa);
+        cgpaQ("cgpaEditorPreviewCourses").textContent = String(totalCourses);
+        cgpaQ("cgpaEditorPreviewUnits").textContent = String(cgpaRound2(totalUnits));
+        cgpaQ("cgpaEditorPreviewGpa").textContent = Number(gpa).toFixed(2);
+        cgpaQ("cgpaEditorPreviewStanding").textContent = cgpaStandingFromCgpa(gpa);
       }
 
       function cgpaLoadCourseIntoForm(courseId) {
@@ -1379,17 +1761,14 @@
           cgpaShowMessage("cgpaEditorError", "Your session has expired. Please sign in again.");
           return;
         }
-
         if (!course_code) {
           cgpaShowMessage("cgpaEditorError", "Enter course code.");
           return;
         }
-
         if (!(unit > 0)) {
           cgpaShowMessage("cgpaEditorError", "Enter a valid course unit.");
           return;
         }
-
         if (!["A", "B", "C", "D", "E", "F"].includes(grade_letter)) {
           cgpaShowMessage("cgpaEditorError", "Choose a valid grade.");
           return;
@@ -1466,7 +1845,6 @@
           cgpaShowMessage("cgpaEditorError", "No semester is open.");
           return;
         }
-
         if (!cgpaCurrentEditorCourses.length) {
           cgpaShowMessage("cgpaEditorError", "Add at least one course before saving.");
           return;
@@ -1491,7 +1869,10 @@
         }
 
         try {
-          const { data, error } = await cgpaInvokeCalculator(cgpaSelectedSemesterIds);
+          const { data, error } = await cgpaInvokeCalculator({
+            mode: "calculate",
+            semester_ids: cgpaSelectedSemesterIds
+          });
 
           if (error || !data?.success) {
             cgpaShowMessage("cgpaHubError", data?.error || error?.message || "Could not calculate CGPA.");
@@ -1509,23 +1890,21 @@
         const summary = data?.summary || {};
         const breakdown = Array.isArray(data?.semester_breakdown) ? data.semester_breakdown : [];
 
-        if (cgpaQ("cgpaResultCgpa")) cgpaQ("cgpaResultCgpa").textContent = Number(summary.cgpa || 0).toFixed(2);
-        if (cgpaQ("cgpaResultUnits")) cgpaQ("cgpaResultUnits").textContent = String(summary.total_units || 0);
-        if (cgpaQ("cgpaResultQualityPoints")) cgpaQ("cgpaResultQualityPoints").textContent = String(summary.total_quality_points || 0);
-        if (cgpaQ("cgpaResultSemestersUsed")) cgpaQ("cgpaResultSemestersUsed").textContent = String(summary.total_semesters || breakdown.length || 0);
+        cgpaQ("cgpaResultCgpa").textContent = Number(summary.cgpa || 0).toFixed(2);
+        cgpaQ("cgpaResultUnits").textContent = String(summary.total_units || 0);
+        cgpaQ("cgpaResultQualityPoints").textContent = String(summary.total_quality_points || 0);
+        cgpaQ("cgpaResultSemestersUsed").textContent = String(summary.total_semesters || breakdown.length || 0);
 
-        if (cgpaQ("cgpaResultStanding")) cgpaQ("cgpaResultStanding").textContent = summary.class_standing || "—";
-        if (cgpaQ("cgpaResultStandingSub")) {
-          cgpaQ("cgpaResultStandingSub").textContent =
-            summary.class_standing
-              ? `This result was calculated from ${summary.total_semesters || breakdown.length} selected semester(s).`
-              : "Your current class standing will appear here.";
-        }
+        cgpaQ("cgpaResultStanding").textContent = summary.class_standing || "—";
+        cgpaQ("cgpaResultStandingSub").textContent =
+          summary.class_standing
+            ? `This result was calculated from ${summary.total_semesters || breakdown.length} selected semester(s).`
+            : "Your current class standing will appear here.";
 
         const selectedList = cgpaQ("cgpaResultSelectedList");
         const breakdownList = cgpaQ("cgpaResultBreakdown");
-        if (selectedList) selectedList.innerHTML = "";
-        if (breakdownList) breakdownList.innerHTML = "";
+        selectedList.innerHTML = "";
+        breakdownList.innerHTML = "";
 
         breakdown.forEach((item) => {
           const selected = document.createElement("div");
@@ -1537,7 +1916,7 @@
             </div>
             <div class="breakdown-sub">${item.total_units || 0} unit(s) • ${Array.isArray(item.courses) ? item.courses.length : 0} course(s)</div>
           `;
-          selectedList?.appendChild(selected);
+          selectedList.appendChild(selected);
         });
 
         breakdown.forEach((item) => {
@@ -1552,8 +1931,173 @@
               ${item.total_units || 0} unit(s) • ${item.total_quality_points || 0} quality point(s)
             </div>
           `;
-          breakdownList?.appendChild(row);
+          breakdownList.appendChild(row);
         });
+      }
+
+      async function cgpaAddTargetCourse() {
+        cgpaShowMessage("cgpaTargetError", "");
+        const course_code = cgpaSafeText(cgpaQ("cgpaTargetCourseCodeInput").value);
+        const course_title = cgpaSafeText(cgpaQ("cgpaTargetCourseTitleInput").value);
+        const unit = Number(cgpaQ("cgpaTargetCourseUnitInput").value || 0);
+
+        if (!course_code) {
+          cgpaShowMessage("cgpaTargetError", "Enter future course code.");
+          return;
+        }
+        if (!(unit > 0)) {
+          cgpaShowMessage("cgpaTargetError", "Enter a valid future course unit.");
+          return;
+        }
+
+        cgpaTargetCourses.push({
+          course_code,
+          course_title,
+          unit
+        });
+
+        cgpaQ("cgpaTargetCourseCodeInput").value = "";
+        cgpaQ("cgpaTargetCourseTitleInput").value = "";
+        cgpaQ("cgpaTargetCourseUnitInput").value = "";
+        cgpaRenderTargetCourseList();
+      }
+
+      function cgpaRenderTargetResult(targetPlan, currentSummary) {
+        cgpaQ("cgpaTargetResultBox").classList.remove("hidden");
+        cgpaQ("cgpaTargetResultTitle").textContent =
+          `${cgpaFormatSemester(targetPlan.future_level, targetPlan.future_semester, targetPlan.future_academic_session || "")}`;
+        cgpaQ("cgpaTargetResultSub").textContent =
+          `Target: ${targetPlan.target_class}`;
+
+        cgpaQ("cgpaTargetCurrentCgpa").textContent = Number(currentSummary.cgpa || 0).toFixed(2);
+        cgpaQ("cgpaTargetRequiredGpa").textContent = Number(targetPlan.required_future_gpa || 0).toFixed(2);
+        cgpaQ("cgpaTargetFutureUnits").textContent = String(targetPlan.future_total_units || 0);
+        cgpaQ("cgpaTargetClassValue").textContent = cgpaSafeText(targetPlan.target_class) || "—";
+
+        const badge = cgpaQ("cgpaTargetPossibleBadge");
+        badge.textContent = targetPlan.possible === false ? "Hard / Not Possible" : "Possible";
+        badge.className = "target-badge" + (targetPlan.possible === false ? " bad" : "");
+
+        cgpaQ("cgpaTargetAiSummary").textContent =
+          `${cgpaSafeText(targetPlan.ai_summary)}${targetPlan.score_hint ? " " + cgpaSafeText(targetPlan.score_hint) : ""}`;
+      }
+
+      async function cgpaGetTargetAdvice() {
+        cgpaShowMessage("cgpaTargetError", "");
+        cgpaShowMessage("cgpaTargetSuccess", "");
+
+        if (!cgpaSelectedSemesterIds.length) {
+          cgpaShowMessage("cgpaTargetError", "Select at least one real semester first on the main page.");
+          return;
+        }
+
+        const future_level = Number(cgpaQ("cgpaTargetLevelInput").value || 0);
+        const future_semester = Number(cgpaQ("cgpaTargetSemesterInput").value || 0);
+        const future_academic_session = cgpaSafeText(cgpaQ("cgpaTargetSessionInput").value);
+        const target_class = cgpaSafeText(cgpaQ("cgpaTargetClassInput").value);
+
+        if (![100, 200, 300, 400, 500, 600, 700].includes(future_level)) {
+          cgpaShowMessage("cgpaTargetError", "Choose a valid future level.");
+          return;
+        }
+        if (![1, 2].includes(future_semester)) {
+          cgpaShowMessage("cgpaTargetError", "Choose a valid future semester.");
+          return;
+        }
+        if (!target_class) {
+          cgpaShowMessage("cgpaTargetError", "Choose a target class.");
+          return;
+        }
+        if (!cgpaTargetCourses.length) {
+          cgpaShowMessage("cgpaTargetError", "Add at least one future course.");
+          return;
+        }
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator({
+            mode: "target_plan",
+            semester_ids: cgpaSelectedSemesterIds,
+            target_class,
+            future_level,
+            future_semester,
+            future_academic_session,
+            future_courses: cgpaTargetCourses,
+            save_plan: true
+          });
+
+          if (error || !data?.success) {
+            cgpaShowMessage("cgpaTargetError", data?.error || error?.message || "Could not generate target advice.");
+            return;
+          }
+
+          cgpaCurrentTargetPlanId = data?.target_plan?.id || null;
+          cgpaRenderTargetResult(data.target_plan, data.current_summary || {});
+          await cgpaLoadTargetPlans();
+          cgpaShowMessage("cgpaTargetSuccess", "Target class plan saved successfully.", "success");
+        } catch (e) {
+          cgpaShowMessage("cgpaTargetError", "Could not generate target advice.");
+        }
+      }
+
+      async function cgpaOpenTargetPlanDetail(planId) {
+        cgpaShowMessage("cgpaTargetDetailError", "");
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator({
+            mode: "get_target_plan",
+            target_plan_id: planId
+          });
+
+          if (error || !data?.success || !data?.target_plan) {
+            cgpaShowMessage("cgpaTargetDetailError", data?.error || error?.message || "Could not open target plan.");
+            return;
+          }
+
+          const plan = data.target_plan;
+          cgpaQ("cgpaDetailTitle").textContent =
+            `${cgpaFormatSemester(plan.future_level, plan.future_semester, plan.future_academic_session || "")}`;
+          cgpaQ("cgpaDetailSub").textContent = `Target: ${cgpaSafeText(plan.target_class)}`;
+
+          cgpaQ("cgpaDetailCurrentCgpa").textContent = Number(plan.current_cgpa || 0).toFixed(2);
+          cgpaQ("cgpaDetailRequiredGpa").textContent = Number(plan.required_future_gpa || 0).toFixed(2);
+          cgpaQ("cgpaDetailFutureUnits").textContent = String(plan.future_total_units || 0);
+          cgpaQ("cgpaDetailTargetClass").textContent = cgpaSafeText(plan.target_class) || "—";
+          cgpaQ("cgpaDetailAiSummary").textContent = cgpaSafeText(plan.ai_summary) || "No summary saved.";
+
+          const badge = cgpaQ("cgpaDetailPossibleBadge");
+          badge.textContent = plan.possible === false ? "Hard / Not Possible" : "Possible";
+          badge.className = "target-badge" + (plan.possible === false ? " bad" : "");
+
+          const courseList = cgpaQ("cgpaDetailCourseList");
+          courseList.innerHTML = "";
+
+          const futureCourses = Array.isArray(plan.future_courses) ? plan.future_courses : [];
+          if (!futureCourses.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent = "No future courses saved.";
+            courseList.appendChild(empty);
+          } else {
+            futureCourses.forEach((course) => {
+              const row = document.createElement("div");
+              row.className = "course-item";
+              row.innerHTML = `
+                <div class="course-item-top">
+                  <div>
+                    <div class="course-code">${cgpaSafeText(course.course_code)}</div>
+                    <div class="course-title">${cgpaSafeText(course.course_title) || "No title added"}</div>
+                  </div>
+                  <div class="course-meta">${Number(course.unit || 0)} unit(s)</div>
+                </div>
+              `;
+              courseList.appendChild(row);
+            });
+          }
+
+          cgpaShowPage("cgpaTargetDetailPage");
+        } catch (e) {
+          cgpaShowMessage("cgpaTargetDetailError", "Could not open target plan.");
+        }
       }
 
       function cgpaGoHub() {
@@ -1563,8 +2107,6 @@
       function cgpaBindEvents() {
         cgpaQ("btnOpenSemesterPicker")?.addEventListener("click", () => {
           cgpaShowMessage("cgpaPickerError", "");
-          const input = cgpaQ("cgpaPickerSessionInput");
-          if (input && !input.value.trim()) input.value = "";
           cgpaRenderPicker();
           cgpaShowPage("cgpaPickerPage");
         });
@@ -1572,10 +2114,13 @@
         cgpaQ("btnCalculateCgpa")?.addEventListener("click", cgpaCalculateSelected);
         cgpaQ("btnClearSelectedSemesters")?.addEventListener("click", cgpaClearAllSelectedSemesters);
 
-        cgpaQ("btnBackFromPicker")?.addEventListener("click", () => {
-          cgpaGoHub();
+        cgpaQ("btnOpenTargetPlanner")?.addEventListener("click", () => {
+          cgpaClearMessages();
+          cgpaResetTargetForm();
+          cgpaShowPage("cgpaTargetPage");
         });
 
+        cgpaQ("btnBackFromPicker")?.addEventListener("click", cgpaGoHub);
         cgpaQ("cgpaPickerSessionInput")?.addEventListener("input", cgpaRenderPicker);
 
         cgpaQ("btnAddCourseToSemester")?.addEventListener("click", cgpaAddOrUpdateCourse);
@@ -1584,19 +2129,22 @@
           cgpaShowMessage("cgpaEditorSuccess", "Course edit cancelled.", "success");
         });
 
-        cgpaQ("btnBackFromEditor")?.addEventListener("click", () => {
-          cgpaGoHub();
-        });
-
+        cgpaQ("btnBackFromEditor")?.addEventListener("click", cgpaGoHub);
         cgpaQ("btnSaveSemesterCourses")?.addEventListener("click", cgpaSaveSemesterAndBack);
 
-        cgpaQ("btnBackFromResult")?.addEventListener("click", () => {
-          cgpaGoHub();
-        });
+        cgpaQ("btnBackFromResult")?.addEventListener("click", cgpaGoHub);
+        cgpaQ("btnCalculateAgain")?.addEventListener("click", cgpaGoHub);
 
-        cgpaQ("btnCalculateAgain")?.addEventListener("click", () => {
-          cgpaGoHub();
+        cgpaQ("btnBackFromTarget")?.addEventListener("click", cgpaGoHub);
+        cgpaQ("btnAddTargetCourse")?.addEventListener("click", cgpaAddTargetCourse);
+        cgpaQ("btnClearTargetCourseForm")?.addEventListener("click", () => {
+          cgpaQ("cgpaTargetCourseCodeInput").value = "";
+          cgpaQ("cgpaTargetCourseUnitInput").value = "";
+          cgpaQ("cgpaTargetCourseTitleInput").value = "";
         });
+        cgpaQ("btnGetTargetAdvice")?.addEventListener("click", cgpaGetTargetAdvice);
+
+        cgpaQ("btnBackFromTargetDetail")?.addEventListener("click", cgpaGoHub);
       }
 
       async function cgpaInit() {
