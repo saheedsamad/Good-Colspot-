@@ -991,7 +991,86 @@
   let currentScanQuota = null;
   let currentScanUserId = null;
   let currentUpdateRule = null;
+  let mainDebugLines = [];
 
+  function appendMainDebug(message, data) {
+    try {
+      const time = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      let line = `[${time}] ${message}`;
+
+      if (typeof data !== "undefined") {
+        try {
+          if (typeof data === "string") {
+            line += " | " + data;
+          } else {
+            line += " | " + JSON.stringify(data);
+          }
+        } catch {
+          line += " | [unserializable data]";
+        }
+      }
+
+      mainDebugLines.push(line);
+      if (mainDebugLines.length > 40) {
+        mainDebugLines = mainDebugLines.slice(-40);
+      }
+
+      let box = document.getElementById("mainDebugBox");
+      if (!box) {
+        box = document.createElement("div");
+        box.id = "mainDebugBox";
+        box.style.position = "fixed";
+        box.style.left = "10px";
+        box.style.right = "10px";
+        box.style.bottom = "calc(env(safe-area-inset-bottom) + 78px)";
+        box.style.zIndex = "999999";
+        box.style.background = "rgba(15,23,42,0.92)";
+        box.style.color = "#fff";
+        box.style.borderRadius = "14px";
+        box.style.padding = "10px 12px";
+        box.style.fontSize = "11px";
+        box.style.lineHeight = "1.4";
+        box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.25)";
+        box.style.maxHeight = "180px";
+        box.style.overflowY = "auto";
+        box.style.whiteSpace = "pre-wrap";
+        box.style.wordBreak = "break-word";
+        document.body.appendChild(box);
+      }
+
+      box.textContent = mainDebugLines.join("\n");
+      console.log("[MAIN DEBUG]", message, data || "");
+    } catch (e) {
+      console.warn("appendMainDebug failed:", e);
+    }
+  }
+
+  window.addEventListener("error", (event) => {
+    appendMainDebug("window.error", {
+      message: event.message,
+      source: event.filename,
+      line: event.lineno,
+      column: event.colno
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    let reasonText = "";
+    try {
+      reasonText =
+        event.reason?.message ||
+        (typeof event.reason === "string" ? event.reason : JSON.stringify(event.reason));
+    } catch {
+      reasonText = "Unknown promise rejection";
+    }
+
+    appendMainDebug("unhandledrejection", reasonText);
+  });
   function norm(value) {
     return String(value || "").trim();
   }
@@ -1256,12 +1335,18 @@
     }
   }
 
-  function tryInitPush() {
+    function tryInitPush() {
     try {
+      appendMainDebug("tryInitPush called");
+
       if (typeof window.initColspotPush === "function") {
+        appendMainDebug("window.initColspotPush found, calling it");
         window.initColspotPush();
+      } else {
+        appendMainDebug("window.initColspotPush is missing");
       }
     } catch (e) {
+      appendMainDebug("tryInitPush failed", e?.message || String(e));
       console.warn("[Push] init failed:", e);
     }
   }
@@ -1902,6 +1987,7 @@ function showScreen(name) {
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
+    appendMainDebug("DOMContentLoaded fired");
     await new Promise((r) => setTimeout(r, 50));
 
     lockBottomNavToScreen();
@@ -1997,6 +2083,8 @@ function showScreen(name) {
     loadAnnouncements();
     applyUpdateRuleFromLocal();
     tryInitPush();
+    appendMainDebug("tryInitPush finished");
+    appendMainDebug("tryInitPush finished");
     runMainWarmupOnce();
   });
 
