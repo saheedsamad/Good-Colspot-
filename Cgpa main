@@ -1,0 +1,1616 @@
+<div id="screen-reports" class="screen">
+  <style>
+    #screen-reports {
+      padding: 8px 6px 90px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #screen-reports .hero {
+      padding: 4px 4px 6px;
+      margin-bottom: 6px;
+    }
+
+    #screen-reports .hero-line-1 {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    #screen-reports .hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    #screen-reports .hero-title span {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    #screen-reports .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 8px 2px 4px;
+    }
+
+    #screen-reports .section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 2px 8px;
+      line-height: 1.45;
+    }
+
+    #screen-reports .card {
+      background: #f9fafb;
+      border-radius: 18px;
+      padding: 10px 10px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    #screen-reports .summary-card {
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      margin-bottom: 12px;
+      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+    }
+
+    #screen-reports .summary-top {
+      background: linear-gradient(135deg, #f59e0b, #fde68a);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    #screen-reports .summary-top-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    #screen-reports .summary-top-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    #screen-reports .summary-standing {
+      font-size: 13px;
+      font-weight: 700;
+      color: #065f46;
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      padding: 8px 12px;
+      align-self: center;
+      white-space: nowrap;
+    }
+
+    #screen-reports .summary-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid #e5e7eb;
+      background: #fff;
+    }
+
+    #screen-reports .summary-bottom-item {
+      padding: 12px;
+      text-align: center;
+    }
+
+    #screen-reports .summary-bottom-item + .summary-bottom-item {
+      border-left: 1px solid #e5e7eb;
+    }
+
+    #screen-reports .summary-bottom-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    #screen-reports .summary-bottom-value {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-reports .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    #screen-reports .primary-btn,
+    #screen-reports .secondary-btn,
+    #screen-reports .ghost-btn,
+    #screen-reports .danger-btn {
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.05s, box-shadow 0.15s, background 0.15s;
+      border: none;
+    }
+
+    #screen-reports .primary-btn {
+      width: 100%;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      box-shadow: 0 14px 35px rgba(37, 99, 235, 0.45);
+    }
+
+    #screen-reports .primary-btn:active,
+    #screen-reports .secondary-btn:active,
+    #screen-reports .ghost-btn:active,
+    #screen-reports .danger-btn:active {
+      transform: scale(0.97);
+    }
+
+    #screen-reports .primary-btn:disabled,
+    #screen-reports .secondary-btn:disabled,
+    #screen-reports .ghost-btn:disabled,
+    #screen-reports .danger-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #screen-reports .secondary-btn {
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+    }
+
+    #screen-reports .ghost-btn {
+      color: var(--text-main);
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+    }
+
+    #screen-reports .danger-btn {
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+    }
+
+    #screen-reports .list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #screen-reports .semester-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #screen-reports .semester-item-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #screen-reports .semester-item-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+
+    #screen-reports .semester-item-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    #screen-reports .semester-item-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    #screen-reports .tiny-btn {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: var(--text-main);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    #screen-reports .tiny-btn.select.active {
+      background: #eff6ff;
+      color: var(--blue);
+      border-color: #bfdbfe;
+    }
+
+    #screen-reports .tiny-btn.edit {
+      background: #ffffff;
+    }
+
+    #screen-reports .tiny-btn.remove {
+      background: #fef2f2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    #screen-reports .inline-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #screen-reports .inline-head .section-title {
+      margin: 0;
+    }
+
+    #screen-reports .inline-action {
+      font-size: 12px;
+      font-weight: 700;
+      color: #dc2626;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    #screen-reports .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    #screen-reports .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #eff6ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    #screen-reports .chip button {
+      border: none;
+      background: none;
+      color: var(--blue);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    #screen-reports .field-block {
+      margin-bottom: 10px;
+    }
+
+    #screen-reports .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 0 0 5px;
+    }
+
+    #screen-reports .text-input,
+    #screen-reports .select-input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      font-size: 16px;
+      background: #fff;
+      color: var(--text-main);
+    }
+
+    #screen-reports .text-input:focus,
+    #screen-reports .select-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+    }
+
+    #screen-reports .picker-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    #screen-reports .picker-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    #screen-reports .picker-item-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    #screen-reports .picker-item-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+
+    #screen-reports .picker-badge {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--blue);
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+    }
+
+    #screen-reports .picker-badge.done {
+      color: #065f46;
+      background: #ecfdf5;
+      border-color: #bbf7d0;
+    }
+
+    #screen-reports .editor-header {
+      margin-bottom: 10px;
+    }
+
+    #screen-reports .editor-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+
+    #screen-reports .editor-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    #screen-reports .course-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    #screen-reports .course-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    #screen-reports .course-item-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    #screen-reports .course-code {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-reports .course-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    #screen-reports .course-meta {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    #screen-reports .course-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    #screen-reports .course-form-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 0.9fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #screen-reports .result-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    #screen-reports .stat-box {
+      border-radius: 16px;
+      padding: 12px;
+      color: #ffffff;
+      min-height: 78px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    #screen-reports .stat-box.orange {
+      background: linear-gradient(135deg, #f97316, #f59e0b);
+    }
+
+    #screen-reports .stat-box.green {
+      background: linear-gradient(135deg, #10b981, #22c55e);
+    }
+
+    #screen-reports .stat-box.purple {
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+    }
+
+    #screen-reports .stat-box.blue {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    #screen-reports .stat-label {
+      font-size: 12px;
+      opacity: 0.95;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    #screen-reports .stat-value {
+      font-size: 27px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    #screen-reports .standing-box {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px 12px;
+      margin-bottom: 10px;
+    }
+
+    #screen-reports .standing-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    #screen-reports .standing-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #065f46;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    #screen-reports .standing-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    #screen-reports .breakdown-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    #screen-reports .breakdown-item + .breakdown-item {
+      margin-top: 8px;
+    }
+
+    #screen-reports .breakdown-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    #screen-reports .breakdown-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    #screen-reports .breakdown-gpa {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    #screen-reports .breakdown-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    #screen-reports .empty-state {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 10px 6px;
+      line-height: 1.5;
+    }
+
+    #screen-reports .message {
+      margin-top: 8px;
+      font-size: 12px;
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    #screen-reports .message.error {
+      color: var(--error);
+    }
+
+    #screen-reports .message.success {
+      color: var(--success);
+    }
+
+    #screen-reports .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 360px) {
+      #screen-reports .action-row,
+      #screen-reports .result-stat-grid,
+      #screen-reports .course-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <!-- HUB PAGE -->
+  <div id="cgpaHubPage">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        CGPA calculator<br />
+        <span>Add semesters &amp; calculate result</span>
+      </h1>
+    </section>
+
+    <div class="summary-card">
+      <div class="summary-top">
+        <div>
+          <div class="summary-top-label">Current CGPA</div>
+          <div id="cgpaCurrentValue" class="summary-top-value">—</div>
+        </div>
+        <div id="cgpaCurrentStanding" class="summary-standing">No result yet</div>
+      </div>
+      <div class="summary-bottom">
+        <div class="summary-bottom-item">
+          <div class="summary-bottom-label">Semesters Saved</div>
+          <div id="cgpaSavedCount" class="summary-bottom-value">0</div>
+        </div>
+        <div class="summary-bottom-item">
+          <div class="summary-bottom-label">Total Units</div>
+          <div id="cgpaTotalUnits" class="summary-bottom-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button id="btnOpenSemesterPicker" class="secondary-btn" type="button">+ Add New Semester</button>
+      <button id="btnCalculateCgpa" class="primary-btn" type="button">Calculate CGPA</button>
+    </div>
+
+    <section>
+      <div class="section-title">Saved semesters</div>
+      <div class="section-sub">
+        Add new semesters, edit old ones, or select any saved semester for calculation.
+      </div>
+
+      <div class="card">
+        <div id="cgpaSemesterList" class="list"></div>
+        <div id="cgpaSemesterEmpty" class="empty-state hidden">
+          No semester added yet. Tap <strong>Add New Semester</strong> to start.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="inline-head">
+        <div class="section-title">Selected semesters</div>
+        <button id="btnClearSelectedSemesters" class="inline-action" type="button">Clear All</button>
+      </div>
+      <div class="section-sub">
+        These are only the semesters selected for the current calculation. Clear All will not delete saved data.
+      </div>
+
+      <div class="card">
+        <div id="cgpaSelectedChips" class="chips"></div>
+        <div id="cgpaSelectedEmpty" class="empty-state">
+          No semester selected yet.
+        </div>
+      </div>
+    </section>
+
+    <div id="cgpaHubError" class="message error hidden"></div>
+    <div id="cgpaHubSuccess" class="message success hidden"></div>
+  </div>
+
+  <!-- PICKER PAGE -->
+  <div id="cgpaPickerPage" class="hidden">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        Choose semester<br />
+        <span>Select the semester to add or edit</span>
+      </h1>
+    </section>
+
+    <div class="card">
+      <div class="field-block">
+        <label class="field-label" for="cgpaPickerSessionInput">Academic session</label>
+        <input
+          id="cgpaPickerSessionInput"
+          type="text"
+          class="text-input"
+          placeholder="e.g. 2024/2025"
+        />
+      </div>
+
+      <div class="section-title" style="margin-top:0;">Semester options</div>
+      <div class="section-sub">
+        Tap any semester from 100 level to 700 level. If it already exists, it will open for editing.
+      </div>
+
+      <div id="cgpaPickerList" class="picker-grid"></div>
+
+      <button id="btnBackFromPicker" class="ghost-btn" type="button" style="width:100%; margin-top:10px;">Back</button>
+    </div>
+
+    <div id="cgpaPickerError" class="message error hidden"></div>
+  </div>
+
+  <!-- EDITOR PAGE -->
+  <div id="cgpaEditorPage" class="hidden">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        Semester editor<br />
+        <span>Add courses &amp; save result</span>
+      </h1>
+    </section>
+
+    <div class="card">
+      <div class="editor-header">
+        <div id="cgpaEditorSemesterTitle" class="editor-title">Semester</div>
+        <div id="cgpaEditorSemesterSub" class="editor-sub">Add all your courses, units and grades here.</div>
+      </div>
+
+      <div class="course-form-grid">
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaCourseCodeInput">Course code</label>
+          <input id="cgpaCourseCodeInput" type="text" class="text-input" placeholder="GST 101" />
+        </div>
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaCourseUnitInput">Unit</label>
+          <input id="cgpaCourseUnitInput" type="number" class="text-input" min="1" step="1" placeholder="2" />
+        </div>
+        <div class="field-block" style="margin-bottom:0;">
+          <label class="field-label" for="cgpaCourseGradeInput">Grade</label>
+          <select id="cgpaCourseGradeInput" class="select-input">
+            <option value="">Grade</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="cgpaCourseTitleInput">Course title (optional)</label>
+        <input id="cgpaCourseTitleInput" type="text" class="text-input" placeholder="Use of English" />
+      </div>
+
+      <div class="action-row" style="margin-bottom:8px;">
+        <button id="btnAddCourseToSemester" class="secondary-btn" type="button">+ Add Course</button>
+        <button id="btnCancelCourseEdit" class="ghost-btn" type="button">Cancel Edit</button>
+      </div>
+
+      <div class="section-title">Courses in this semester</div>
+      <div id="cgpaCourseList" class="course-list"></div>
+      <div id="cgpaCourseEmpty" class="empty-state">
+        No course added yet.
+      </div>
+
+      <div class="section-title">Preview</div>
+      <div class="section-sub">This preview is calculated from the courses you have added in this semester.</div>
+
+      <div class="summary-card" style="margin-bottom:10px;">
+        <div class="summary-top" style="background: linear-gradient(135deg, #2563eb, #60a5fa);">
+          <div>
+            <div class="summary-top-label">Semester GPA</div>
+            <div id="cgpaEditorPreviewGpa" class="summary-top-value">0.00</div>
+          </div>
+          <div id="cgpaEditorPreviewStanding" class="summary-standing" style="color:#1d4ed8;">Preview</div>
+        </div>
+        <div class="summary-bottom">
+          <div class="summary-bottom-item">
+            <div class="summary-bottom-label">Courses</div>
+            <div id="cgpaEditorPreviewCourses" class="summary-bottom-value">0</div>
+          </div>
+          <div class="summary-bottom-item">
+            <div class="summary-bottom-label">Units</div>
+            <div id="cgpaEditorPreviewUnits" class="summary-bottom-value">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="btnBackFromEditor" class="ghost-btn" type="button">Back</button>
+        <button id="btnSaveSemesterCourses" class="primary-btn" type="button">Save Semester</button>
+      </div>
+    </div>
+
+    <div id="cgpaEditorError" class="message error hidden"></div>
+    <div id="cgpaEditorSuccess" class="message success hidden"></div>
+  </div>
+
+  <!-- RESULT PAGE -->
+  <div id="cgpaResultPage" class="hidden">
+    <section class="hero">
+      <div class="hero-line-1">CGPA</div>
+      <h1 class="hero-title">
+        Result summary<br />
+        <span>Calculated from selected semesters</span>
+      </h1>
+    </section>
+
+    <div class="card">
+      <div class="result-stat-grid">
+        <div class="stat-box orange">
+          <div class="stat-label">Current CGPA</div>
+          <div id="cgpaResultCgpa" class="stat-value">0.00</div>
+        </div>
+        <div class="stat-box green">
+          <div class="stat-label">Total Units</div>
+          <div id="cgpaResultUnits" class="stat-value">0</div>
+        </div>
+        <div class="stat-box purple">
+          <div class="stat-label">Quality Points</div>
+          <div id="cgpaResultQualityPoints" class="stat-value">0</div>
+        </div>
+        <div class="stat-box blue">
+          <div class="stat-label">Semesters Used</div>
+          <div id="cgpaResultSemestersUsed" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <div class="standing-box">
+        <div class="standing-title">Class Standing</div>
+        <div id="cgpaResultStanding" class="standing-value">—</div>
+        <div id="cgpaResultStandingSub" class="standing-sub">Your current class standing will appear here.</div>
+      </div>
+
+      <div class="section-title">Selected semesters</div>
+      <div id="cgpaResultSelectedList"></div>
+
+      <div class="section-title">Semester breakdown</div>
+      <div id="cgpaResultBreakdown"></div>
+
+      <div class="action-row" style="margin-top:12px;">
+        <button id="btnBackFromResult" class="ghost-btn" type="button">Back</button>
+        <button id="btnCalculateAgain" class="primary-btn" type="button">Calculate Again</button>
+      </div>
+    </div>
+
+    <div id="cgpaResultError" class="message error hidden"></div>
+  </div>
+
+  <script>
+    (function () {
+      if (window.__cgpaReportsScreenInit) return;
+      window.__cgpaReportsScreenInit = true;
+
+      let cgpaSemestersCache = [];
+      let cgpaSelectedSemesterIds = [];
+      let cgpaCurrentEditorSemester = null;
+      let cgpaCurrentEditorCourses = [];
+      let cgpaEditingCourseId = null;
+      let cgpaLatestSummary = null;
+
+      function cgpaQ(id) {
+        return document.getElementById(id);
+      }
+
+      function cgpaShowPage(pageId) {
+        ["cgpaHubPage", "cgpaPickerPage", "cgpaEditorPage", "cgpaResultPage"].forEach((id) => {
+          const el = cgpaQ(id);
+          if (el) el.classList.toggle("hidden", id !== pageId);
+        });
+      }
+
+      function cgpaShowMessage(targetId, msg, type) {
+        const el = cgpaQ(targetId);
+        if (!el) return;
+        el.textContent = msg || "";
+        el.className = "message " + (type || "error") + (msg ? "" : " hidden");
+        if (!msg) el.classList.add("hidden");
+      }
+
+      function cgpaClearMessages() {
+        [
+          "cgpaHubError", "cgpaHubSuccess",
+          "cgpaPickerError",
+          "cgpaEditorError", "cgpaEditorSuccess",
+          "cgpaResultError"
+        ].forEach((id) => cgpaShowMessage(id, ""));
+      }
+
+      function cgpaSafeText(v) {
+        return String(v || "").trim();
+      }
+
+      function cgpaRound2(n) {
+        return Math.round((Number(n || 0) + Number.EPSILON) * 100) / 100;
+      }
+
+      function cgpaGradePoint(letter) {
+        const g = cgpaSafeText(letter).toUpperCase();
+        if (g === "A") return 5;
+        if (g === "B") return 4;
+        if (g === "C") return 3;
+        if (g === "D") return 2;
+        if (g === "E") return 1;
+        return 0;
+      }
+
+      function cgpaStandingFromCgpa(cgpa) {
+        const c = Number(cgpa || 0);
+        if (c >= 4.5) return "First Class";
+        if (c >= 3.5) return "Second Class Upper";
+        if (c >= 2.4) return "Second Class Lower";
+        if (c >= 1.5) return "Third Class";
+        if (c >= 1.0) return "Pass";
+        return "Fail";
+      }
+
+      function cgpaFormatSemester(level, semester, academicSession) {
+        const semText = Number(semester) === 2 ? "2nd Semester" : "1st Semester";
+        return `${level} Level · ${semText}${academicSession ? ` · ${academicSession}` : ""}`;
+      }
+
+      function cgpaFindSemesterById(id) {
+        return cgpaSemestersCache.find((s) => String(s.id) === String(id)) || null;
+      }
+
+      function cgpaSetSelectedSemesterIds(ids) {
+        cgpaSelectedSemesterIds = Array.from(new Set((ids || []).map(String)));
+        try {
+          localStorage.setItem("colspot_cgpa_selected_semester_ids", JSON.stringify(cgpaSelectedSemesterIds));
+        } catch (e) {}
+      }
+
+      function cgpaLoadSelectedSemesterIds() {
+        try {
+          const raw = localStorage.getItem("colspot_cgpa_selected_semester_ids");
+          const parsed = raw ? JSON.parse(raw) : [];
+          cgpaSelectedSemesterIds = Array.isArray(parsed) ? parsed.map(String) : [];
+        } catch (e) {
+          cgpaSelectedSemesterIds = [];
+        }
+      }
+
+      function cgpaToggleSelectedSemester(id) {
+        const sid = String(id);
+        if (cgpaSelectedSemesterIds.includes(sid)) {
+          cgpaSetSelectedSemesterIds(cgpaSelectedSemesterIds.filter((x) => x !== sid));
+        } else {
+          cgpaSetSelectedSemesterIds([...cgpaSelectedSemesterIds, sid]);
+        }
+        cgpaRenderHub();
+      }
+
+      function cgpaRemoveSelectedSemester(id) {
+        const sid = String(id);
+        cgpaSetSelectedSemesterIds(cgpaSelectedSemesterIds.filter((x) => x !== sid));
+        cgpaRenderHub();
+      }
+
+      function cgpaClearAllSelectedSemesters() {
+        cgpaSetSelectedSemesterIds([]);
+        cgpaRenderHub();
+        cgpaShowMessage("cgpaHubSuccess", "Selected semesters cleared.", "success");
+      }
+
+      async function cgpaEnsureUser() {
+        try {
+          if (typeof ensureCurrentUser === "function") {
+            const user = await ensureCurrentUser();
+            if (user && typeof currentUser !== "undefined") currentUser = user;
+            return user;
+          }
+        } catch (e) {}
+
+        if (typeof supabase === "undefined") return null;
+
+        try {
+          const { data, error } = await supabase.auth.getUser();
+          if (error || !data?.user) return null;
+          if (typeof currentUser !== "undefined") currentUser = data.user;
+          return data.user;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      async function cgpaLoadSemesters() {
+        cgpaClearMessages();
+
+        if (typeof supabase === "undefined") {
+          cgpaShowMessage("cgpaHubError", "Backend not available. Please reload and try again.");
+          return;
+        }
+
+        const user = await cgpaEnsureUser();
+        if (!user) {
+          cgpaShowMessage("cgpaHubError", "Your session has expired. Please sign in again.");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("cgpa_semesters")
+          .select("id, user_id, level, semester, academic_session, is_selected, created_at, updated_at")
+          .eq("user_id", user.id)
+          .order("level", { ascending: true })
+          .order("semester", { ascending: true })
+          .order("academic_session", { ascending: true });
+
+        if (error) {
+          cgpaShowMessage("cgpaHubError", error.message || "Could not load semesters. Please try again.");
+          return;
+        }
+
+        cgpaSemestersCache = Array.isArray(data) ? data : [];
+        cgpaSelectedSemesterIds = cgpaSelectedSemesterIds.filter((id) => cgpaFindSemesterById(id));
+        cgpaSetSelectedSemesterIds(cgpaSelectedSemesterIds);
+
+        await cgpaLoadHubSummary();
+        cgpaRenderHub();
+      }
+
+      async function cgpaInvokeCalculator(semesterIds) {
+        return await supabase.functions.invoke("cgpa-calculate", {
+          body: { semester_ids: semesterIds }
+        });
+      }
+
+      async function cgpaLoadHubSummary() {
+        if (!cgpaSemestersCache.length) {
+          cgpaLatestSummary = null;
+          cgpaRenderSummaryCard();
+          return;
+        }
+
+        const allIds = cgpaSemestersCache.map((s) => s.id);
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator(allIds);
+          if (error || !data?.success) {
+            cgpaLatestSummary = null;
+            cgpaRenderSummaryCard();
+            return;
+          }
+          cgpaLatestSummary = data;
+          cgpaRenderSummaryCard();
+        } catch (e) {
+          cgpaLatestSummary = null;
+          cgpaRenderSummaryCard();
+        }
+      }
+
+      function cgpaRenderSummaryCard() {
+        const currentVal = cgpaQ("cgpaCurrentValue");
+        const standingVal = cgpaQ("cgpaCurrentStanding");
+        const savedCount = cgpaQ("cgpaSavedCount");
+        const totalUnits = cgpaQ("cgpaTotalUnits");
+
+        if (savedCount) savedCount.textContent = String(cgpaSemestersCache.length);
+
+        if (!cgpaLatestSummary?.summary) {
+          if (currentVal) currentVal.textContent = "—";
+          if (standingVal) standingVal.textContent = cgpaSemestersCache.length ? "Tap Calculate CGPA" : "No result yet";
+          if (totalUnits) totalUnits.textContent = "0";
+          return;
+        }
+
+        const summary = cgpaLatestSummary.summary;
+        if (currentVal) currentVal.textContent = Number(summary.cgpa || 0).toFixed(2);
+        if (standingVal) standingVal.textContent = summary.class_standing || "—";
+        if (totalUnits) totalUnits.textContent = String(summary.total_units || 0);
+      }
+
+      function cgpaRenderHub() {
+        cgpaRenderSummaryCard();
+
+        const list = cgpaQ("cgpaSemesterList");
+        const empty = cgpaQ("cgpaSemesterEmpty");
+        const chips = cgpaQ("cgpaSelectedChips");
+        const chipsEmpty = cgpaQ("cgpaSelectedEmpty");
+
+        if (list) list.innerHTML = "";
+        if (chips) chips.innerHTML = "";
+
+        if (!cgpaSemestersCache.length) {
+          if (empty) empty.classList.remove("hidden");
+        } else {
+          if (empty) empty.classList.add("hidden");
+
+          cgpaSemestersCache.forEach((sem) => {
+            const selected = cgpaSelectedSemesterIds.includes(String(sem.id));
+            const item = document.createElement("div");
+            item.className = "semester-item";
+            item.innerHTML = `
+              <div class="semester-item-left">
+                <div class="semester-item-title">${cgpaFormatSemester(sem.level, sem.semester, sem.academic_session)}</div>
+                <div class="semester-item-sub" id="semesterSub_${sem.id}">Loading details...</div>
+              </div>
+              <div class="semester-item-right">
+                <button class="tiny-btn select ${selected ? "active" : ""}" data-semester-select="${sem.id}" type="button">
+                  ${selected ? "Selected" : "Select"}
+                </button>
+                <button class="tiny-btn edit" data-semester-edit="${sem.id}" type="button">Edit</button>
+              </div>
+            `;
+            list.appendChild(item);
+            cgpaFillSemesterCardSub(sem.id);
+          });
+        }
+
+        const selectedItems = cgpaSelectedSemesterIds
+          .map((id) => cgpaFindSemesterById(id))
+          .filter(Boolean);
+
+        if (!selectedItems.length) {
+          if (chipsEmpty) chipsEmpty.classList.remove("hidden");
+        } else {
+          if (chipsEmpty) chipsEmpty.classList.add("hidden");
+          selectedItems.forEach((sem) => {
+            const chip = document.createElement("div");
+            chip.className = "chip";
+            chip.innerHTML = `
+              <span>${cgpaFormatSemester(sem.level, sem.semester, "").replace(" · ", " · ")}</span>
+              <button type="button" data-chip-remove="${sem.id}">×</button>
+            `;
+            chips.appendChild(chip);
+          });
+        }
+
+        list?.querySelectorAll("[data-semester-select]").forEach((btn) => {
+          btn.addEventListener("click", () => cgpaToggleSelectedSemester(btn.getAttribute("data-semester-select")));
+        });
+
+        list?.querySelectorAll("[data-semester-edit]").forEach((btn) => {
+          btn.addEventListener("click", () => cgpaOpenEditor(btn.getAttribute("data-semester-edit")));
+        });
+
+        chips?.querySelectorAll("[data-chip-remove]").forEach((btn) => {
+          btn.addEventListener("click", () => cgpaRemoveSelectedSemester(btn.getAttribute("data-chip-remove")));
+        });
+      }
+
+      async function cgpaFillSemesterCardSub(semesterId) {
+        const sub = cgpaQ("semesterSub_" + semesterId);
+        if (!sub) return;
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator([semesterId]);
+          if (error || !data?.success || !data?.semester_breakdown?.length) {
+            sub.textContent = "Could not load GPA.";
+            return;
+          }
+
+          const item = data.semester_breakdown[0];
+          const count = Array.isArray(item.courses) ? item.courses.length : 0;
+          sub.textContent = `${count} course${count === 1 ? "" : "s"} • GPA ${Number(item.gpa || 0).toFixed(2)}`;
+        } catch (e) {
+          sub.textContent = "Could not load GPA.";
+        }
+      }
+
+      function cgpaRenderPicker() {
+        const list = cgpaQ("cgpaPickerList");
+        if (!list) return;
+        list.innerHTML = "";
+
+        const sessionVal = cgpaSafeText(cgpaQ("cgpaPickerSessionInput")?.value);
+
+        [100, 200, 300, 400, 500, 600, 700].forEach((level) => {
+          [1, 2].forEach((semester) => {
+            const existing = cgpaSemestersCache.find(
+              (s) =>
+                Number(s.level) === level &&
+                Number(s.semester) === semester &&
+                cgpaSafeText(s.academic_session) === sessionVal
+            );
+
+            const row = document.createElement("div");
+            row.className = "picker-item";
+            row.innerHTML = `
+              <div>
+                <div class="picker-item-title">${cgpaFormatSemester(level, semester, sessionVal)}</div>
+                <div class="picker-item-sub">${existing ? "Already saved for this session. Tap to open and edit." : "Tap to create and add courses."}</div>
+              </div>
+              <div class="picker-badge ${existing ? "done" : ""}">${existing ? "Open" : "Add"}</div>
+            `;
+            row.addEventListener("click", () => cgpaCreateOrOpenSemester(level, semester, sessionVal));
+            list.appendChild(row);
+          });
+        });
+      }
+
+      async function cgpaCreateOrOpenSemester(level, semester, academicSession) {
+        cgpaShowMessage("cgpaPickerError", "");
+
+        if (!academicSession) {
+          cgpaShowMessage("cgpaPickerError", "Please enter academic session first.");
+          return;
+        }
+
+        let existing = cgpaSemestersCache.find(
+          (s) =>
+            Number(s.level) === Number(level) &&
+            Number(s.semester) === Number(semester) &&
+            cgpaSafeText(s.academic_session) === cgpaSafeText(academicSession)
+        );
+
+        if (existing) {
+          cgpaOpenEditor(existing.id);
+          return;
+        }
+
+        const user = await cgpaEnsureUser();
+        if (!user) {
+          cgpaShowMessage("cgpaPickerError", "Your session has expired. Please sign in again.");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("cgpa_semesters")
+          .insert([{
+            user_id: user.id,
+            level: Number(level),
+            semester: Number(semester),
+            academic_session: academicSession,
+            is_selected: true
+          }])
+          .select()
+          .single();
+
+        if (error) {
+          cgpaShowMessage("cgpaPickerError", error.message || "Could not create semester.");
+          return;
+        }
+
+        cgpaSemestersCache.push(data);
+        cgpaSetSelectedSemesterIds([...cgpaSelectedSemesterIds, data.id]);
+        await cgpaLoadHubSummary();
+        cgpaOpenEditor(data.id);
+      }
+
+      async function cgpaOpenEditor(semesterId) {
+        cgpaClearMessages();
+
+        const semester = cgpaFindSemesterById(semesterId);
+        if (!semester) {
+          cgpaShowMessage("cgpaHubError", "Semester not found.");
+          return;
+        }
+
+        cgpaCurrentEditorSemester = semester;
+        cgpaEditingCourseId = null;
+        cgpaEditorResetForm();
+
+        const title = cgpaQ("cgpaEditorSemesterTitle");
+        const sub = cgpaQ("cgpaEditorSemesterSub");
+        if (title) title.textContent = cgpaFormatSemester(semester.level, semester.semester, semester.academic_session);
+        if (sub) sub.textContent = "Add all your courses, units and grades for this semester, then save.";
+
+        const { data, error } = await supabase
+          .from("cgpa_courses")
+          .select("id, semester_id, user_id, course_code, course_title, unit, grade_letter, created_at, updated_at")
+          .eq("semester_id", semester.id)
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          cgpaShowMessage("cgpaEditorError", error.message || "Could not load courses for this semester.");
+          return;
+        }
+
+        cgpaCurrentEditorCourses = Array.isArray(data) ? data : [];
+        cgpaRenderEditorCourses();
+        cgpaShowPage("cgpaEditorPage");
+      }
+
+      function cgpaEditorResetForm() {
+        if (cgpaQ("cgpaCourseCodeInput")) cgpaQ("cgpaCourseCodeInput").value = "";
+        if (cgpaQ("cgpaCourseTitleInput")) cgpaQ("cgpaCourseTitleInput").value = "";
+        if (cgpaQ("cgpaCourseUnitInput")) cgpaQ("cgpaCourseUnitInput").value = "";
+        if (cgpaQ("cgpaCourseGradeInput")) cgpaQ("cgpaCourseGradeInput").value = "";
+        cgpaEditingCourseId = null;
+      }
+
+      function cgpaRenderEditorCourses() {
+        const list = cgpaQ("cgpaCourseList");
+        const empty = cgpaQ("cgpaCourseEmpty");
+
+        if (list) list.innerHTML = "";
+
+        if (!cgpaCurrentEditorCourses.length) {
+          if (empty) empty.classList.remove("hidden");
+        } else {
+          if (empty) empty.classList.add("hidden");
+
+          cgpaCurrentEditorCourses.forEach((course) => {
+            const gp = cgpaGradePoint(course.grade_letter);
+            const qp = Number(course.unit || 0) * gp;
+            const div = document.createElement("div");
+            div.className = "course-item";
+            div.innerHTML = `
+              <div class="course-item-top">
+                <div>
+                  <div class="course-code">${cgpaSafeText(course.course_code) || "Course"}</div>
+                  <div class="course-title">${cgpaSafeText(course.course_title) || "No title added"}</div>
+                </div>
+                <div class="course-meta">${Number(course.unit || 0)} unit(s) · ${cgpaSafeText(course.grade_letter)} · ${cgpaRound2(qp)} pts</div>
+              </div>
+              <div class="course-actions">
+                <button class="tiny-btn edit" data-course-edit="${course.id}" type="button">Edit</button>
+                <button class="tiny-btn remove" data-course-delete="${course.id}" type="button">Delete</button>
+              </div>
+            `;
+            list.appendChild(div);
+          });
+        }
+
+        list?.querySelectorAll("[data-course-edit]").forEach((btn) => {
+          btn.addEventListener("click", () => cgpaLoadCourseIntoForm(btn.getAttribute("data-course-edit")));
+        });
+
+        list?.querySelectorAll("[data-course-delete]").forEach((btn) => {
+          btn.addEventListener("click", () => cgpaDeleteCourse(btn.getAttribute("data-course-delete")));
+        });
+
+        cgpaRenderEditorPreview();
+      }
+
+      function cgpaRenderEditorPreview() {
+        const totalCourses = cgpaCurrentEditorCourses.length;
+        let totalUnits = 0;
+        let qualityPoints = 0;
+
+        cgpaCurrentEditorCourses.forEach((course) => {
+          const unit = Number(course.unit || 0);
+          const gp = cgpaGradePoint(course.grade_letter);
+          totalUnits += unit;
+          qualityPoints += unit * gp;
+        });
+
+        const gpa = totalUnits > 0 ? qualityPoints / totalUnits : 0;
+
+        if (cgpaQ("cgpaEditorPreviewCourses")) cgpaQ("cgpaEditorPreviewCourses").textContent = String(totalCourses);
+        if (cgpaQ("cgpaEditorPreviewUnits")) cgpaQ("cgpaEditorPreviewUnits").textContent = String(cgpaRound2(totalUnits));
+        if (cgpaQ("cgpaEditorPreviewGpa")) cgpaQ("cgpaEditorPreviewGpa").textContent = Number(gpa).toFixed(2);
+        if (cgpaQ("cgpaEditorPreviewStanding")) cgpaQ("cgpaEditorPreviewStanding").textContent = cgpaStandingFromCgpa(gpa);
+      }
+
+      function cgpaLoadCourseIntoForm(courseId) {
+        const course = cgpaCurrentEditorCourses.find((c) => String(c.id) === String(courseId));
+        if (!course) return;
+
+        cgpaEditingCourseId = course.id;
+        cgpaQ("cgpaCourseCodeInput").value = cgpaSafeText(course.course_code);
+        cgpaQ("cgpaCourseTitleInput").value = cgpaSafeText(course.course_title);
+        cgpaQ("cgpaCourseUnitInput").value = String(course.unit || "");
+        cgpaQ("cgpaCourseGradeInput").value = cgpaSafeText(course.grade_letter).toUpperCase();
+        cgpaShowMessage("cgpaEditorSuccess", "Course loaded for editing.", "success");
+      }
+
+      async function cgpaAddOrUpdateCourse() {
+        cgpaShowMessage("cgpaEditorError", "");
+        cgpaShowMessage("cgpaEditorSuccess", "");
+
+        if (!cgpaCurrentEditorSemester?.id) {
+          cgpaShowMessage("cgpaEditorError", "No semester is open.");
+          return;
+        }
+
+        const course_code = cgpaSafeText(cgpaQ("cgpaCourseCodeInput")?.value);
+        const course_title = cgpaSafeText(cgpaQ("cgpaCourseTitleInput")?.value);
+        const unit = Number(cgpaQ("cgpaCourseUnitInput")?.value || 0);
+        const grade_letter = cgpaSafeText(cgpaQ("cgpaCourseGradeInput")?.value).toUpperCase();
+        const user = await cgpaEnsureUser();
+
+        if (!user) {
+          cgpaShowMessage("cgpaEditorError", "Your session has expired. Please sign in again.");
+          return;
+        }
+
+        if (!course_code) {
+          cgpaShowMessage("cgpaEditorError", "Enter course code.");
+          return;
+        }
+
+        if (!(unit > 0)) {
+          cgpaShowMessage("cgpaEditorError", "Enter a valid course unit.");
+          return;
+        }
+
+        if (!["A", "B", "C", "D", "E", "F"].includes(grade_letter)) {
+          cgpaShowMessage("cgpaEditorError", "Choose a valid grade.");
+          return;
+        }
+
+        const payload = {
+          semester_id: cgpaCurrentEditorSemester.id,
+          user_id: user.id,
+          course_code,
+          course_title: course_title || null,
+          unit,
+          grade_letter
+        };
+
+        if (cgpaEditingCourseId) {
+          const { data, error } = await supabase
+            .from("cgpa_courses")
+            .update(payload)
+            .eq("id", cgpaEditingCourseId)
+            .select()
+            .single();
+
+          if (error) {
+            cgpaShowMessage("cgpaEditorError", error.message || "Could not update course.");
+            return;
+          }
+
+          cgpaCurrentEditorCourses = cgpaCurrentEditorCourses.map((c) =>
+            String(c.id) === String(cgpaEditingCourseId) ? data : c
+          );
+          cgpaEditorResetForm();
+          cgpaRenderEditorCourses();
+          cgpaShowMessage("cgpaEditorSuccess", "Course updated.", "success");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("cgpa_courses")
+          .insert([payload])
+          .select()
+          .single();
+
+        if (error) {
+          cgpaShowMessage("cgpaEditorError", error.message || "Could not add course.");
+          return;
+        }
+
+        cgpaCurrentEditorCourses.push(data);
+        cgpaEditorResetForm();
+        cgpaRenderEditorCourses();
+        cgpaShowMessage("cgpaEditorSuccess", "Course added.", "success");
+      }
+
+      async function cgpaDeleteCourse(courseId) {
+        if (!confirm("Delete this course from the semester?")) return;
+
+        const { error } = await supabase
+          .from("cgpa_courses")
+          .delete()
+          .eq("id", courseId);
+
+        if (error) {
+          cgpaShowMessage("cgpaEditorError", error.message || "Could not delete course.");
+          return;
+        }
+
+        cgpaCurrentEditorCourses = cgpaCurrentEditorCourses.filter((c) => String(c.id) !== String(courseId));
+        cgpaRenderEditorCourses();
+        cgpaShowMessage("cgpaEditorSuccess", "Course deleted.", "success");
+      }
+
+      async function cgpaSaveSemesterAndBack() {
+        if (!cgpaCurrentEditorSemester?.id) {
+          cgpaShowMessage("cgpaEditorError", "No semester is open.");
+          return;
+        }
+
+        if (!cgpaCurrentEditorCourses.length) {
+          cgpaShowMessage("cgpaEditorError", "Add at least one course before saving.");
+          return;
+        }
+
+        if (!cgpaSelectedSemesterIds.includes(String(cgpaCurrentEditorSemester.id))) {
+          cgpaSetSelectedSemesterIds([...cgpaSelectedSemesterIds, String(cgpaCurrentEditorSemester.id)]);
+        }
+
+        await cgpaLoadSemesters();
+        cgpaShowPage("cgpaHubPage");
+        cgpaShowMessage("cgpaHubSuccess", "Semester saved successfully.", "success");
+      }
+
+      async function cgpaCalculateSelected() {
+        cgpaShowMessage("cgpaHubError", "");
+        cgpaShowMessage("cgpaResultError", "");
+
+        if (!cgpaSelectedSemesterIds.length) {
+          cgpaShowMessage("cgpaHubError", "Select at least one semester.");
+          return;
+        }
+
+        try {
+          const { data, error } = await cgpaInvokeCalculator(cgpaSelectedSemesterIds);
+
+          if (error || !data?.success) {
+            cgpaShowMessage("cgpaHubError", data?.error || error?.message || "Could not calculate CGPA.");
+            return;
+          }
+
+          cgpaRenderResult(data);
+          cgpaShowPage("cgpaResultPage");
+        } catch (e) {
+          cgpaShowMessage("cgpaHubError", "Could not calculate CGPA.");
+        }
+      }
+
+      function cgpaRenderResult(data) {
+        const summary = data?.summary || {};
+        const breakdown = Array.isArray(data?.semester_breakdown) ? data.semester_breakdown : [];
+
+        if (cgpaQ("cgpaResultCgpa")) cgpaQ("cgpaResultCgpa").textContent = Number(summary.cgpa || 0).toFixed(2);
+        if (cgpaQ("cgpaResultUnits")) cgpaQ("cgpaResultUnits").textContent = String(summary.total_units || 0);
+        if (cgpaQ("cgpaResultQualityPoints")) cgpaQ("cgpaResultQualityPoints").textContent = String(summary.total_quality_points || 0);
+        if (cgpaQ("cgpaResultSemestersUsed")) cgpaQ("cgpaResultSemestersUsed").textContent = String(summary.total_semesters || breakdown.length || 0);
+
+        if (cgpaQ("cgpaResultStanding")) cgpaQ("cgpaResultStanding").textContent = summary.class_standing || "—";
+        if (cgpaQ("cgpaResultStandingSub")) {
+          cgpaQ("cgpaResultStandingSub").textContent =
+            summary.class_standing
+              ? `This result was calculated from ${summary.total_semesters || breakdown.length} selected semester(s).`
+              : "Your current class standing will appear here.";
+        }
+
+        const selectedList = cgpaQ("cgpaResultSelectedList");
+        const breakdownList = cgpaQ("cgpaResultBreakdown");
+        if (selectedList) selectedList.innerHTML = "";
+        if (breakdownList) breakdownList.innerHTML = "";
+
+        breakdown.forEach((item) => {
+          const selected = document.createElement("div");
+          selected.className = "breakdown-item";
+          selected.innerHTML = `
+            <div class="breakdown-head">
+              <div class="breakdown-title">${cgpaFormatSemester(item.level, item.semester, item.academic_session)}</div>
+              <div class="breakdown-gpa">GPA ${Number(item.gpa || 0).toFixed(2)}</div>
+            </div>
+            <div class="breakdown-sub">${item.total_units || 0} unit(s) • ${Array.isArray(item.courses) ? item.courses.length : 0} course(s)</div>
+          `;
+          selectedList?.appendChild(selected);
+        });
+
+        breakdown.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "breakdown-item";
+          row.innerHTML = `
+            <div class="breakdown-head">
+              <div class="breakdown-title">${cgpaFormatSemester(item.level, item.semester, item.academic_session)}</div>
+              <div class="breakdown-gpa">GPA ${Number(item.gpa || 0).toFixed(2)}</div>
+            </div>
+            <div class="breakdown-sub">
+              ${item.total_units || 0} unit(s) • ${item.total_quality_points || 0} quality point(s)
+            </div>
+          `;
+          breakdownList?.appendChild(row);
+        });
+      }
+
+      function cgpaGoHub() {
+        cgpaShowPage("cgpaHubPage");
+      }
+
+      function cgpaBindEvents() {
+        cgpaQ("btnOpenSemesterPicker")?.addEventListener("click", () => {
+          cgpaShowMessage("cgpaPickerError", "");
+          const input = cgpaQ("cgpaPickerSessionInput");
+          if (input && !input.value.trim()) input.value = "";
+          cgpaRenderPicker();
+          cgpaShowPage("cgpaPickerPage");
+        });
+
+        cgpaQ("btnCalculateCgpa")?.addEventListener("click", cgpaCalculateSelected);
+        cgpaQ("btnClearSelectedSemesters")?.addEventListener("click", cgpaClearAllSelectedSemesters);
+
+        cgpaQ("btnBackFromPicker")?.addEventListener("click", () => {
+          cgpaGoHub();
+        });
+
+        cgpaQ("cgpaPickerSessionInput")?.addEventListener("input", cgpaRenderPicker);
+
+        cgpaQ("btnAddCourseToSemester")?.addEventListener("click", cgpaAddOrUpdateCourse);
+        cgpaQ("btnCancelCourseEdit")?.addEventListener("click", () => {
+          cgpaEditorResetForm();
+          cgpaShowMessage("cgpaEditorSuccess", "Course edit cancelled.", "success");
+        });
+
+        cgpaQ("btnBackFromEditor")?.addEventListener("click", () => {
+          cgpaGoHub();
+        });
+
+        cgpaQ("btnSaveSemesterCourses")?.addEventListener("click", cgpaSaveSemesterAndBack);
+
+        cgpaQ("btnBackFromResult")?.addEventListener("click", () => {
+          cgpaGoHub();
+        });
+
+        cgpaQ("btnCalculateAgain")?.addEventListener("click", () => {
+          cgpaGoHub();
+        });
+      }
+
+      async function cgpaInit() {
+        cgpaLoadSelectedSemesterIds();
+        cgpaBindEvents();
+        cgpaShowPage("cgpaHubPage");
+        await cgpaLoadSemesters();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", cgpaInit);
+      } else {
+        cgpaInit();
+      }
+    })();
+  </script>
+</div>
