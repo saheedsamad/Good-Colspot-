@@ -1959,5 +1959,1097 @@
       </div>
     </div>
   </nav>
+<script>
+  const SCAN_LAMBDA_URL =
+    "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
+  const SCAN_MAX_PER_MONTH = 20;
+  const UPDATE_RULE_LOCAL_KEY = "colspot_update_rule";
+
+  const MAIN_WARMUP_TTL_MS = 10 * 60 * 1000;
+  const MAIN_WARMUP_KEY = "colspot_main_warmup_last_at";
+
+  let currentUser = null;
+  const LOCAL_USER_KEY = "colspot_local_user";
+  const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  let offlineRetryTimer = null;
+
+  let currentScanQuota = null;
+  let currentScanUserId = null;
+  let currentUpdateRule = null;
+
+  function getOrCreateDeviceId() {
+    try {
+      let id = localStorage.getItem("colspot_device_id");
+      if (!id) {
+        if (window.crypto && window.crypto.randomUUID) {
+          id = window.crypto.randomUUID();
+        } else {
+          id =
+            "dev-" +
+            Math.random().toString(36).slice(2) +
+            "-" +
+            Date.now().toString(36);
+        }
+        localStorage.setItem("colspot_device_id", id);
+      }
+      return id;
+    } catch (e) {
+      console.warn("[main warmup] cannot read/write device id:", e);
+      return null;
+    }
+  }
+
+  function isMainWarmupFresh() {
+    try {
+      const raw = localStorage.getItem(MAIN_WARMUP_KEY);
+      if (!raw) return false;
+      const t = new Date(raw).getTime();
+      if (Number.isNaN(t)) return false;
+      return Date.now() - t < MAIN_WARMUP_TTL_MS;
+    } catch {
+      return false;
+    }
+  }
+
+  function markMainWarmup() {
+    try {
+      localStorage.setItem(MAIN_WARMUP_KEY, new Date().toISOString());
+    } catch (e) {
+      console.warn("[main warmup] failed to mark timestamp:", e);
+    }
+  }
+
+  async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
+    if (!("geolocation" in navigator)) return null;
+
+    let best = null;
+
+    for (let i = 0; i < maxReads; i++) {
+      const pos = await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (p) => resolve(p),
+          () => resolve(null),
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 8000
+          }
+        );
+      });
+
+      if (!pos || !pos.coords) continue;
+
+      const acc =
+        typeof pos.coords.accuracy === "number" ? pos.coords.accuracy : null;
+      if (acc == null) continue;
+
+      const snap = { pos, accuracyMeters: acc };
+
+      if (!best || acc < best.accuracyMeters) {
+        best = snap;
+      }
+
+      if (acc <= targetAccuracy) break;
+      await new Promise((r) => setTimeout(r, 800));
+    }
+
+    return best;
+  }
+
+  async function runMainWarmupOnce() {
+    try {
+      if (typeof supabase === "undefined") return;
+      if (isMainWarmupFresh()) return;
+      if (isBrowserOffline()) return;
+
+      const user = await ensureCurrentUser();
+      if (!user || !user.id) return;
+
+      const deviceId = getOrCreateDeviceId();
+      if (!deviceId) return;
+
+      const warm = await getSmartLocationFromMain(10, 120);
+      if (!warm || !warm.pos || !warm.pos.coords) return;
+
+      const { latitude, longitude } = warm.pos.coords;
+      const accuracyMeters = warm.accuracyMeters;
+      if (accuracyMeters == null) return;
+
+      const { error } = await supabase.from("attendance_warmup_main").insert({
+        lecturer_id: user.id,
+        device_id: deviceId,
+        lat: latitude,
+        lng: longitude,
+        accuracy_m: accuracyMeters
+      });
+
+      if (error) {
+        console.warn("[main warmup] insert error:", error);
+        return;
+      }
+
+      markMainWarmup();
+    } catch (e) {
+      console.warn("[main warmup] failed:", e);
+    }
+  }
+
+  function lockBottomNavToScreen() {
+    const nav = document.getElementById("bottomNav");
+    if (!nav || !window.visualViewport) return;
+
+    const vv = window.visualViewport;
+
+    const update = () => {
+      const keyboardHeight = Math.max(
+        0,
+        window.innerHeight - vv.height - vv.offsetTop
+      );
+
+      if (keyboardHeight > 0) {
+        nav.style.transform = `translate(-50%, ${keyboardHeight}px)`;
+      } else {
+        nav.style.transform = "translateX(-50%)";
+      }
+    };
+
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    update();
+  }
+
+  function tryInitPush() {
+    try {
+      if (typeof window.initColspotPush === "function") {
+        window.initColspotPush();
+      }
+    } catch (e) {
+      console.warn("[Push] init failed:", e);
+    }
+  }
+
+  function isBrowserOffline() {
+    try {
+      if (typeof navigator === "undefined" || navigator === null) return false;
+      return navigator.onLine === false;
+    } catch {
+      return false;
+    }
+  }
+
+  function scheduleOfflineRetry() {
+    if (offlineRetryTimer) return;
+    offlineRetryTimer = setInterval(() => {
+      loadMiniHistory();
+      loadHomeDashboard();
+      loadAnnouncements();
+      applyUpdateRuleFromLocal();
+    }, 5000);
+  }
+
+  function stopOfflineRetry() {
+    if (!offlineRetryTimer) return;
+    clearInterval(offlineRetryTimer);
+    offlineRetryTimer = null;
+  }
+
+  window.addEventListener("online", () => {
+    try {
+      const href = window.location.href || "";
+      if (href.includes("main.html")) {
+        window.location.reload();
+      } else {
+        loadMiniHistory();
+        loadHomeDashboard();
+        loadAnnouncements();
+        applyUpdateRuleFromLocal();
+      }
+    } catch (e) {
+      console.warn("online handler failed:", e);
+      loadMiniHistory();
+      loadHomeDashboard();
+      loadAnnouncements();
+      applyUpdateRuleFromLocal();
+    }
+  });
+
+  function getCachedAuthFromLocalUser() {
+    try {
+      const raw = localStorage.getItem(LOCAL_USER_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.id) return null;
+
+      if (parsed.last_seen) {
+        const t = new Date(parsed.last_seen).getTime();
+        if (!Number.isNaN(t) && Date.now() - t > LOCAL_USER_TTL_MS) {
+          localStorage.removeItem(LOCAL_USER_KEY);
+          return null;
+        }
+      }
+
+      return {
+        user_id: parsed.id,
+        email: parsed.email || "",
+        full_name: parsed.full_name || parsed.email || ""
+      };
+    } catch (e) {
+      console.error("Could not read local cached user:", e);
+      return null;
+    }
+  }
+
+  function saveLocalUserFromSupabaseUser(user) {
+    if (!user) return;
+    try {
+      localStorage.setItem(
+        LOCAL_USER_KEY,
+        JSON.stringify({
+          id: user.id,
+          email: user.email || "",
+          full_name:
+            (user.user_metadata && user.user_metadata.full_name) ||
+            user.email ||
+            "",
+          avatar_url:
+            (user.user_metadata && user.user_metadata.avatar_url) || "",
+          last_seen: new Date().toISOString()
+        })
+      );
+    } catch (e) {
+      console.error("Could not save local user:", e);
+    }
+  }
+
+  function setGreetingFromProfile(fullNameRaw) {
+    const greetLine = document.getElementById("greetingLine");
+    const safeName = (fullNameRaw && String(fullNameRaw).trim()) || "there";
+    const firstName = safeName.split(" ")[0] || "there";
+
+    if (greetLine) {
+      greetLine.textContent = `Hello, ${firstName}`;
+    }
+
+    syncTopRightAvatar("", (firstName[0] || "C").toUpperCase());
+  }
+
+  function syncTopRightAvatar(avatarUrl, initial) {
+    const avatarChip = document.getElementById("avatarChip");
+    const avatarChipImg = document.getElementById("avatarChipImg");
+    const avatarChipText = document.getElementById("avatarChipText");
+    const oldAvatarInitial = document.getElementById("avatarInitial");
+
+    const safeInitial = (initial || "C").toUpperCase();
+
+    if (avatarChip && avatarChipImg && avatarChipText) {
+      if (avatarUrl) {
+        avatarChipImg.src = avatarUrl;
+        avatarChipImg.style.display = "block";
+        avatarChipText.textContent = safeInitial;
+        avatarChipText.style.opacity = "0";
+      } else {
+        avatarChipImg.removeAttribute("src");
+        avatarChipImg.style.display = "none";
+        avatarChipText.textContent = safeInitial;
+        avatarChipText.style.opacity = "1";
+      }
+    }
+
+    if (oldAvatarInitial) {
+      oldAvatarInitial.textContent = safeInitial;
+    }
+  }
+
+  function getScreenIds() {
+    return [
+      "home",
+      "attendance",
+      "live-session",
+      "history",
+      "reports",
+      "account",
+      "scan",
+      "ai",
+      "classes",
+      "class-members",
+      "member-history",
+      "class-reports",
+      "cgpa",
+      "profile",
+      "settings"
+    ];
+  }
+
+  function showScreen(name) {
+    const ids = getScreenIds();
+
+    ids.forEach((id) => {
+      const el = document.getElementById("screen-" + id);
+      if (!el) return;
+      if (id === name) el.classList.add("active");
+      else el.classList.remove("active");
+    });
+
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach((btn) => btn.classList.remove("active"));
+
+    let navName = name;
+    if (name === "ai" || name === "classes" || name === "live-session") {
+      navName = "home";
+    }
+
+    const activeBtn = document.querySelector(`.nav-btn[data-nav="${navName}"]`);
+    if (activeBtn) activeBtn.classList.add("active");
+
+    if (name === "scan") {
+      initScanQuotaUI();
+    }
+
+    if (name === "home") {
+      loadHomeDashboard();
+      loadMiniHistory();
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await new Promise((r) => setTimeout(r, 50));
+
+    lockBottomNavToScreen();
+
+    let localAuth = null;
+    try {
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.guardPageAccess === "function"
+      ) {
+        const localUser = ColspotGuard.guardPageAccess();
+        if (!localUser) return;
+
+        localAuth = {
+          user_id: localUser.id,
+          email: localUser.email || "",
+          full_name: localUser.full_name || localUser.email || ""
+        };
+      } else {
+        localAuth = getCachedAuthFromLocalUser();
+        if (!localAuth) {
+          window.location.href = "index.html";
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("guardPageAccess failed on main:", e);
+      window.location.href = "index.html";
+      return;
+    }
+
+    if (localAuth) {
+      const localName =
+        (localAuth.full_name && localAuth.full_name.trim()) ||
+        (localAuth.email && localAuth.email.trim()) ||
+        "";
+      if (localName) {
+        setGreetingFromProfile(localName);
+      }
+    }
+
+    const fileInput = document.getElementById("scanFileInput");
+    const chosenText = document.getElementById("scanFileChosenText");
+    if (fileInput && chosenText) {
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files && fileInput.files[0]) {
+          chosenText.textContent = "Selected: " + fileInput.files[0].name;
+        } else {
+          chosenText.textContent = "";
+        }
+      });
+    }
+
+    const createClassBtn = document.getElementById("createClassBtn");
+    if (createClassBtn) {
+      createClassBtn.addEventListener("click", () => showScreen("attendance"));
+    }
+
+    if (
+      window.ColspotGuard &&
+      typeof ColspotGuard.verifySupabaseSessionInBackground === "function"
+    ) {
+      ColspotGuard.verifySupabaseSessionInBackground();
+    } else if (typeof supabase !== "undefined") {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data && data.user) {
+          currentUser = data.user;
+          saveLocalUserFromSupabaseUser(currentUser);
+
+          const profileName =
+            (currentUser.user_metadata &&
+              currentUser.user_metadata.full_name) ||
+            currentUser.email ||
+            currentUser.phone ||
+            "";
+
+          if (profileName) {
+            setGreetingFromProfile(profileName);
+          }
+
+          syncTopRightAvatar(
+            (currentUser.user_metadata &&
+              currentUser.user_metadata.avatar_url) ||
+              "",
+            profileName ? profileName.trim().charAt(0).toUpperCase() : "C"
+          );
+        }
+      } catch (e) {
+        console.error("Fallback getUser on main failed:", e);
+      }
+    }
+
+    loadHomeDashboard();
+    loadMiniHistory();
+    initScanQuotaUI();
+    loadAnnouncements();
+    applyUpdateRuleFromLocal();
+    tryInitPush();
+    runMainWarmupOnce();
+  });
+
+  function goHome() { showScreen("home"); }
+  function goToAttendance() { showScreen("attendance"); }
+  function goToHistory() { showScreen("history"); }
+  function goToReports() { showScreen("reports"); }
+  function goToAccount() { showScreen("account"); }
+
+  async function ensureCurrentUser() {
+    if (currentUser) return currentUser;
+    if (typeof supabase === "undefined") return null;
+
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        scheduleOfflineRetry();
+        return null;
+      }
+      currentUser = data.user;
+      saveLocalUserFromSupabaseUser(currentUser);
+      return currentUser;
+    } catch (e) {
+      console.error("ensureCurrentUser failed:", e);
+      scheduleOfflineRetry();
+      return null;
+    }
+  }
+
+  async function loadHomeDashboard() {
+    const classesEl = document.getElementById("totalClassesValue");
+    const studentsEl = document.getElementById("totalStudentsValue");
+
+    if (classesEl) classesEl.textContent = "0";
+    if (studentsEl) studentsEl.textContent = "0";
+
+    if (typeof supabase === "undefined") return;
+
+    const user = await ensureCurrentUser();
+    if (!user) return;
+
+    try {
+      const { data: sessions, error: sessionsError } = await supabase
+        .from("attendance_sessions")
+        .select("id")
+        .eq("created_by", user.id);
+
+      if (sessionsError) throw sessionsError;
+
+      const sessionRows = sessions || [];
+      if (classesEl) classesEl.textContent = String(sessionRows.length);
+
+      if (!sessionRows.length) {
+        if (studentsEl) studentsEl.textContent = "0";
+        stopOfflineRetry();
+        return;
+      }
+
+      const sessionIds = sessionRows.map((s) => s.id).filter(Boolean);
+
+      const { data: records, error: recordsError } = await supabase
+        .from("attendance_records")
+        .select("student_id, session_id")
+        .in("session_id", sessionIds);
+
+      if (recordsError) throw recordsError;
+
+      const uniqueStudents = new Set(
+        (records || []).map((r) => r.student_id).filter(Boolean)
+      );
+
+      if (studentsEl) studentsEl.textContent = String(uniqueStudents.size);
+      stopOfflineRetry();
+    } catch (e) {
+      console.error("loadHomeDashboard failed:", e);
+      scheduleOfflineRetry();
+    }
+  }
+
+  async function loadMiniHistory() {
+    const listEl = document.getElementById("historyList");
+    if (!listEl) return;
+
+    listEl.innerHTML =
+      '<div class="history-empty">Loading your recent sessions...</div>';
+
+    if (typeof supabase === "undefined") {
+      listEl.innerHTML =
+        '<div class="history-empty">We’re having trouble talking to the server. Please check your internet connection or close and reopen Colspot.</div>';
+      return;
+    }
+
+    const user = await ensureCurrentUser();
+    if (!user) {
+      if (isBrowserOffline()) {
+        listEl.innerHTML =
+          '<div class="history-empty">No internet connection. We’ll try again automatically…</div>';
+      } else {
+        listEl.innerHTML =
+          '<div class="history-empty">Trying to reconnect… we’ll update this automatically.</div>';
+      }
+      scheduleOfflineRetry();
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("attendance_sessions")
+        .select("id, course_code, starts_at, created_at")
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const sessions = data || [];
+      if (!sessions.length) {
+        listEl.innerHTML =
+          '<div class="history-empty">No previous sessions yet. Create one to get started.</div>';
+        stopOfflineRetry();
+        return;
+      }
+
+      const s = sessions[0];
+      const baseDateStr = s.starts_at || s.created_at;
+      const d = baseDateStr ? new Date(baseDateStr) : null;
+      const timeStr = d
+        ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "--:--";
+
+      const code = s.course_code || "Attendance session";
+
+      listEl.innerHTML = "";
+
+      const item = document.createElement("div");
+      item.className = "history-item";
+
+      const header = document.createElement("div");
+      header.className = "history-item-header";
+
+      const course = document.createElement("div");
+      course.className = "history-course";
+      course.textContent = code;
+
+      const time = document.createElement("div");
+      time.className = "history-time";
+      time.textContent = timeStr;
+
+      header.appendChild(course);
+      header.appendChild(time);
+
+      const meta = document.createElement("div");
+      meta.className = "history-meta";
+      meta.textContent = "Last session you created";
+
+      const track = document.createElement("div");
+      track.className = "history-progress-track";
+
+      const bar = document.createElement("div");
+      bar.className = "history-progress-bar";
+      track.appendChild(bar);
+
+      item.appendChild(header);
+      item.appendChild(meta);
+      item.appendChild(track);
+
+      listEl.appendChild(item);
+      stopOfflineRetry();
+    } catch (e) {
+      console.error(e);
+      listEl.innerHTML =
+        '<div class="history-empty">Could not load history yet. We’ll keep trying in the background.</div>';
+      scheduleOfflineRetry();
+    }
+  }
+
+  async function loadAnnouncements() {
+    const section = document.getElementById("announcementSection");
+    const titleEl = document.getElementById("announcementTitle");
+    const msgEl = document.getElementById("announcementMessage");
+    if (!section || !titleEl || !msgEl) return;
+
+    if (typeof supabase === "undefined") {
+      section.style.display = "none";
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("app_announcements")
+        .select("id,title,message,show_until,is_active,created_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      const ann = data && data[0];
+
+      if (!ann) {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      if (ann.show_until && new Date(ann.show_until) < new Date()) {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      const dismissKey = "colspot_announcement_dismissed_" + ann.id;
+      if (localStorage.getItem(dismissKey) === "1") {
+        section.style.display = "none";
+        stopOfflineRetry();
+        return;
+      }
+
+      section.dataset.announcementId = ann.id;
+      titleEl.textContent = ann.title || "Update";
+      msgEl.textContent = ann.message || "";
+      section.style.display = "block";
+      stopOfflineRetry();
+    } catch (e) {
+      console.error("loadAnnouncements failed:", e);
+      scheduleOfflineRetry();
+    }
+  }
+
+  function dismissAnnouncement() {
+    const section = document.getElementById("announcementSection");
+    if (!section) return;
+    const id = section.dataset.announcementId;
+    if (id) {
+      try {
+        localStorage.setItem("colspot_announcement_dismissed_" + id, "1");
+      } catch (e) {
+        console.warn("Failed to persist announcement dismiss:", e);
+      }
+    }
+    section.style.display = "none";
+  }
+
+  function applyUpdateRuleFromLocal() {
+    let raw;
+    try {
+      raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
+    } catch {
+      raw = null;
+    }
+
+    if (!raw) {
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
+      return;
+    }
+
+    let rule;
+    try {
+      rule = JSON.parse(raw);
+    } catch {
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
+      return;
+    }
+
+    if (!rule || !rule.mode || rule.mode === "none") {
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
+      return;
+    }
+
+    const now = new Date();
+    if (rule.deadline && new Date(rule.deadline) < now && rule.mode === "soft") {
+      rule.mode = "hard";
+    }
+
+    currentUpdateRule = rule;
+
+    if (rule.mode === "soft") {
+      showSoftUpdateBanner(rule);
+      hideHardUpdateOverlay();
+    } else if (rule.mode === "hard") {
+      hideSoftUpdateBanner();
+      showHardUpdateOverlay(rule);
+    } else {
+      hideSoftUpdateBanner();
+      hideHardUpdateOverlay();
+    }
+  }
+
+  function showSoftUpdateBanner(rule) {
+    const sec = document.getElementById("updateSoftSection");
+    const titleEl = document.getElementById("updateSoftTitle");
+    const msgEl = document.getElementById("updateSoftMessage");
+    if (!sec || !titleEl || !msgEl) return;
+
+    titleEl.textContent = rule.message_title || "New version available";
+    msgEl.textContent =
+      rule.message_body ||
+      "A newer version of Colspot is available. Please update when you can.";
+    sec.style.display = "block";
+  }
+
+  function hideSoftUpdateBanner() {
+    const sec = document.getElementById("updateSoftSection");
+    if (sec) sec.style.display = "none";
+  }
+
+  function showHardUpdateOverlay(rule) {
+    const overlay = document.getElementById("updateHardOverlay");
+    const titleEl = document.getElementById("updateHardTitle");
+    const msgEl = document.getElementById("updateHardMessage");
+    if (!overlay || !titleEl || !msgEl) return;
+
+    titleEl.textContent = rule.message_title || "Update required";
+    msgEl.textContent =
+      rule.message_body ||
+      "A newer version of Colspot is required to continue. Please update to keep using the app.";
+    overlay.style.display = "flex";
+  }
+
+  function hideHardUpdateOverlay() {
+    const overlay = document.getElementById("updateHardOverlay");
+    if (overlay) overlay.style.display = "none";
+  }
+
+  function openUpdateUrlFromRule() {
+    if (!currentUpdateRule) return;
+    const url = currentUpdateRule.update_url || currentUpdateRule.url;
+    if (!url) return;
+
+    try {
+      window.location.href = url;
+    } catch {
+      window.open(url, "_blank");
+    }
+  }
+
+  function getCurrentMonthKey() {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    return `${d.getFullYear()}-${m}`;
+  }
+
+  function loadUserScanQuota(userId) {
+    const key = `colspot_scan_quota_${userId}`;
+    const monthKey = getCurrentMonthKey();
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.month === monthKey && typeof parsed.used === "number") {
+          return { month: monthKey, used: parsed.used };
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read scan quota:", e);
+    }
+
+    const initial = { month: monthKey, used: 0 };
+    saveUserScanQuota(userId, initial);
+    return initial;
+  }
+
+  function saveUserScanQuota(userId, quota) {
+    const key = `colspot_scan_quota_${userId}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(quota));
+    } catch (e) {
+      console.warn("Could not save scan quota:", e);
+    }
+  }
+
+  function updateScanQuotaText() {
+    const el = document.getElementById("scanQuotaText");
+    if (!el || !currentScanQuota) return;
+
+    const used = currentScanQuota.used || 0;
+    let remaining = SCAN_MAX_PER_MONTH - used;
+    if (remaining < 0) remaining = 0;
+
+    el.classList.remove("scan-quota-low", "scan-quota-zero");
+
+    if (remaining > 0) {
+      el.textContent = `You have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
+      if (remaining <= 5) el.classList.add("scan-quota-low");
+    } else {
+      el.textContent = `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Scanning will be available again next month.`;
+      el.classList.add("scan-quota-zero");
+    }
+  }
+
+  async function getUserContextForScan() {
+    const user = await ensureCurrentUser();
+    if (user) return { id: user.id, email: user.email || "" };
+
+    const cached = getCachedAuthFromLocalUser();
+    if (cached) {
+      return { id: cached.user_id || cached.id, email: cached.email || "" };
+    }
+    return null;
+  }
+
+  async function initScanQuotaUI() {
+    const quotaEl = document.getElementById("scanQuotaText");
+    if (!quotaEl) return;
+
+    const userCtx = await getUserContextForScan();
+    if (!userCtx || !userCtx.id) {
+      quotaEl.textContent = `You have ${SCAN_MAX_PER_MONTH} scans per month.`;
+      quotaEl.classList.remove("scan-quota-low", "scan-quota-zero");
+      currentScanQuota = null;
+      currentScanUserId = null;
+      return;
+    }
+
+    currentScanUserId = userCtx.id;
+    currentScanQuota = loadUserScanQuota(userCtx.id);
+    updateScanQuotaText();
+  }
+
+  function openScanFilePicker() {
+    const input = document.getElementById("scanFileInput");
+    if (input) input.click();
+  }
+
+  async function submitScanForm(event) {
+    event.preventDefault();
+
+    const statusEl = document.getElementById("scanStatusText");
+    const btn = document.getElementById("scanSubmitBtn");
+    const nameInput = document.getElementById("scanFileName");
+    const fileInput = document.getElementById("scanFileInput");
+    const formatRadio = document.querySelector('input[name="scanFormat"]:checked');
+
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+      if (statusEl) {
+        statusEl.className = "scan-status error";
+        statusEl.textContent = "Please choose a photo or PDF to scan.";
+      }
+      return;
+    }
+
+    const userCtx = await getUserContextForScan();
+    if (!userCtx) {
+      if (statusEl) {
+        statusEl.className = "scan-status error";
+        statusEl.textContent = "We could not find your account. Please sign in again.";
+      }
+      return;
+    }
+
+    currentScanUserId = userCtx.id;
+    currentScanQuota = loadUserScanQuota(userCtx.id);
+    const used = currentScanQuota.used || 0;
+
+    if (used >= SCAN_MAX_PER_MONTH) {
+      if (statusEl) {
+        statusEl.className = "scan-status error";
+        statusEl.textContent =
+          `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Try again next month.`;
+      }
+      updateScanQuotaText();
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const fileNameRaw = nameInput ? nameInput.value.trim() : "";
+    const fileName = fileNameRaw || file.name || "Untitled scan";
+    const outputFormat = formatRadio ? formatRadio.value : "excel";
+
+    if (statusEl) {
+      statusEl.className = "scan-status";
+      statusEl.textContent = "Uploading and scanning… please wait.";
+    }
+    if (btn) btn.disabled = true;
+
+    try {
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result || "";
+          const parts = String(result).split(",");
+          resolve(parts.length > 1 ? parts[1] : parts[0]);
+        };
+        reader.onerror = () => reject(new Error("Could not read file on device."));
+        reader.readAsDataURL(file);
+      });
+
+      const payload = {
+        user_id: userCtx.id,
+        file_name: fileName,
+        output_format: outputFormat,
+        file_data: base64Data,
+        mime_type: file.type || "application/octet-stream"
+      };
+
+      const resp = await fetch(SCAN_LAMBDA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      let data = null;
+      try {
+        data = await resp.json();
+      } catch {
+        data = null;
+      }
+
+      if (!resp.ok) {
+        const msg =
+          (data && (data.message || data.error)) || "Scan failed on server.";
+        throw new Error(msg);
+      }
+
+      if (typeof supabase !== "undefined" && userCtx && userCtx.id) {
+        try {
+          const record = {
+            user_id: userCtx.id,
+            title: fileName,
+            page_count: data?.page_count ?? null,
+            total_rows: data?.total_rows ?? null,
+            s3_object_key: data?.s3_object_key ?? null,
+            status: data?.status ?? "completed",
+            result_json: data?.result_json ?? null,
+            error_message: data?.error_message ?? null
+          };
+
+          if (data && data.scan_sheet_id) {
+            record.id = data.scan_sheet_id;
+          }
+
+          await supabase.from("scan_sheets").insert(record);
+        } catch (e) {
+          console.warn("Supabase scan_sheets insert failed:", e);
+        }
+      }
+
+      if (currentScanUserId) {
+        currentScanQuota = loadUserScanQuota(currentScanUserId);
+        currentScanQuota.used = (currentScanQuota.used || 0) + 1;
+        saveUserScanQuota(currentScanUserId, currentScanQuota);
+      }
+      updateScanQuotaText();
+
+      const remaining =
+        currentScanQuota
+          ? Math.max(0, SCAN_MAX_PER_MONTH - (currentScanQuota.used || 0))
+          : null;
+
+      if (statusEl) {
+        statusEl.className = "scan-status ok";
+
+        const remainingText =
+          remaining === null
+            ? ""
+            : ` You now have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
+
+        if (data && data.result_json && data.result_json.download_url) {
+          statusEl.innerHTML =
+            "Scan completed." +
+            remainingText +
+            "<br>It may take a few seconds to appear in <b>History</b>." +
+            '<br>Go to the <b>History</b> tab to view and download it, or ' +
+            '<a href="' +
+            data.result_json.download_url +
+            '" target="_blank" rel="noopener">open it now</a>.';
+        } else {
+          statusEl.textContent =
+            "Scan completed." +
+            remainingText +
+            " Go to the History tab to view and download it.";
+        }
+      }
+
+      fileInput.value = "";
+      const chosenText2 = document.getElementById("scanFileChosenText");
+      if (chosenText2) chosenText2.textContent = "";
+    } catch (err) {
+      console.error("Scan error:", err);
+
+      const rawMsg = err && err.message ? String(err.message).toLowerCase() : "";
+      const looksLikeNetwork =
+        rawMsg.includes("failed to fetch") ||
+        rawMsg.includes("network") ||
+        rawMsg.includes("timeout") ||
+        rawMsg.includes("timed out") ||
+        rawMsg.includes("err_name_not_resolved");
+
+      if (statusEl) {
+        statusEl.className = "scan-status error";
+        statusEl.textContent = looksLikeNetwork
+          ? "We couldn’t reach Colspot servers. Please check your internet connection and try again."
+          : err && err.message
+          ? err.message
+          : "Scan failed. Please try again.";
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function setupKeyboardNavHide() {
+    const focusSelector = "input, textarea, select, [contenteditable='true']";
+
+    document.addEventListener("focusin", (event) => {
+      if (event.target.matches(focusSelector)) {
+        document.body.classList.add("keyboard-open");
+      }
+    });
+
+    document.addEventListener("focusout", (event) => {
+      if (event.target.matches(focusSelector)) {
+        setTimeout(() => {
+          const active = document.activeElement;
+          if (!active || !active.matches(focusSelector)) {
+            document.body.classList.remove("keyboard-open");
+          }
+        }, 50);
+      }
+    });
+  }
+
+  setupKeyboardNavHide();
+
+  window.showScreen = showScreen;
+  window.goHome = goHome;
+  window.goToAttendance = goToAttendance;
+  window.goToHistory = goToHistory;
+  window.goToReports = goToReports;
+  window.goToAccount = goToAccount;
+  window.dismissAnnouncement = dismissAnnouncement;
+  window.openUpdateUrlFromRule = openUpdateUrlFromRule;
+  window.openScanFilePicker = openScanFilePicker;
+  window.submitScanForm = submitScanForm;
+</script>
 </body>
 </html>
