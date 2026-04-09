@@ -384,17 +384,13 @@
   const LOCAL_USER_KEY = "colspot_local_user";
   const AUTH_ROLE_KEY = "colspot_auth_role";
 
-  // Change only these if your actual file names differ
   const STUDENT_VERIFY_URL = "verify_class.html";
-  const LECTURER_VERIFY_URL = "lecturer_verify.html";
   const FACE_CAPTURE_URL = "face-capture.html";
   const STUDENT_MAIN_URL = "main.html";
   const LECTURER_MAIN_URL = "main_lecturer.html";
   const INDEX_URL = "index.html";
 
-  // Change only these if lecturer uses a different verification table
   const STUDENT_VERIFICATION_TABLE = "verification_course_forms";
-  const LECTURER_VERIFICATION_TABLE = "verification_course_forms";
 
   let activeSession = null;
   let activeRole = "student";
@@ -908,14 +904,9 @@
     };
   }
 
-  async function getVerificationState(userId, role) {
-    const verifyTable =
-      role === "lecturer"
-        ? LECTURER_VERIFICATION_TABLE
-        : STUDENT_VERIFICATION_TABLE;
-
+  async function getStudentVerificationState(userId) {
     const { data: verificationRow, error: verificationErr } = await window.supabase
-      .from(verifyTable)
+      .from(STUDENT_VERIFICATION_TABLE)
       .select("id,status")
       .eq("user_id", userId)
       .eq("status", "successful")
@@ -978,13 +969,6 @@
       lecturerIdInput.value = role === "lecturer" ? (profile?.staff_id || "") : "";
       lecturerIdInput.required = role === "lecturer";
     }
-  }
-
-  function getRoleRedirects(role) {
-    return {
-      verifyUrl: role === "lecturer" ? LECTURER_VERIFY_URL : STUDENT_VERIFY_URL,
-      mainUrl: role === "lecturer" ? LECTURER_MAIN_URL : STUDENT_MAIN_URL
-    };
   }
 
   async function goWithWelcome(message, nextUrl, role, delay = 1200) {
@@ -1081,14 +1065,28 @@
         console.error(e);
       }
 
-      const redirects = getRoleRedirects(activeRole);
-      const verificationState = await getVerificationState(session.user.id, activeRole);
+      if (activeRole === "lecturer") {
+        if (roleState.profile) {
+          await goWithWelcome(
+            "Welcome back. Taking you to your lecturer dashboard.",
+            LECTURER_MAIN_URL,
+            activeRole
+          );
+          return;
+        }
+
+        fillCompleteForm(session, activeRole, null);
+        showPanel("complete-panel");
+        return;
+      }
+
+      const verificationState = await getStudentVerificationState(session.user.id);
 
       if (roleState.profile) {
         if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
           await goWithWelcome(
-            `Your ${roleLabel(activeRole).toLowerCase()} account, verification, and face capture are ready.`,
-            redirects.mainUrl,
+            "Your student account, verification, and face capture are ready.",
+            STUDENT_MAIN_URL,
             activeRole
           );
           return;
@@ -1096,7 +1094,7 @@
 
         if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
           await goWithWelcome(
-            "Your verification is already complete. Next, complete face capture.",
+            "Your course form is already verified. Next, complete face capture.",
             FACE_CAPTURE_URL,
             activeRole
           );
@@ -1104,8 +1102,8 @@
         }
 
         await goWithWelcome(
-          `Welcome back. Please continue with ${roleLabel(activeRole).toLowerCase()} verification.`,
-          redirects.verifyUrl,
+          "Welcome back. Please continue with course form verification.",
+          STUDENT_VERIFY_URL,
           activeRole
         );
         return;
@@ -1114,7 +1112,7 @@
       if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
         await goWithWelcome(
           "Your verification is complete. Taking you into Colspot.",
-          redirects.mainUrl,
+          STUDENT_MAIN_URL,
           activeRole
         );
         return;
@@ -1122,7 +1120,7 @@
 
       if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
         await goWithWelcome(
-          "Your verification is complete. Next, complete face capture.",
+          "Your course form is verified. Next, complete face capture.",
           FACE_CAPTURE_URL,
           activeRole
         );
@@ -1207,50 +1205,57 @@
         if (authMetaErr) {
           console.error("auth.updateUser metadata error:", authMetaErr);
         }
-      } else {
-        const payload = {
-          user_id: activeSession.user.id,
+
+        saveLocalUserFromSession(activeSession, activeRole);
+        saveAuthRole(activeRole);
+
+        await goWithWelcome(
+          "Your student account has been completed. Next, continue your verification.",
+          STUDENT_VERIFY_URL,
+          activeRole,
+          1000
+        );
+        return;
+      }
+
+      const payload = {
+        user_id: activeSession.user.id,
+        full_name: fullName,
+        school_name: schoolName,
+        department: dept,
+        staff_id: lecturerId,
+        email
+      };
+
+      const { error } = await window.supabase
+        .from("lecturer_accounts")
+        .upsert(payload, { onConflict: "user_id" });
+
+      if (error) {
+        console.error("lecturer_accounts upsert error:", error);
+        throw new Error("We couldn’t save your lecturer details. Please try again.");
+      }
+
+      const { error: authMetaErr } = await window.supabase.auth.updateUser({
+        data: {
           full_name: fullName,
+          role: "lecturer",
           school_name: schoolName,
           department: dept,
-          staff_id: lecturerId,
-          email
-        };
-
-        const { error } = await window.supabase
-          .from("lecturer_accounts")
-          .upsert(payload, { onConflict: "user_id" });
-
-        if (error) {
-          console.error("lecturer_accounts upsert error:", error);
-          throw new Error("We couldn’t save your lecturer details. Please try again.");
+          staff_id: lecturerId
         }
+      });
 
-        const { error: authMetaErr } = await window.supabase.auth.updateUser({
-          data: {
-            full_name: fullName,
-            role: "lecturer",
-            school_name: schoolName,
-            department: dept,
-            staff_id: lecturerId
-          }
-        });
-
-        if (authMetaErr) {
-          console.error("auth.updateUser metadata error:", authMetaErr);
-        }
+      if (authMetaErr) {
+        console.error("auth.updateUser metadata error:", authMetaErr);
       }
 
       saveLocalUserFromSession(activeSession, activeRole);
       saveAuthRole(activeRole);
 
-      const redirects = getRoleRedirects(activeRole);
-
       await goWithWelcome(
-        activeRole === "lecturer"
-          ? "Your lecturer account has been completed. Next, continue your verification."
-          : "Your student account has been completed. Next, continue your verification.",
-        redirects.verifyUrl,
+        "Your lecturer account has been completed. Taking you to your dashboard.",
+        LECTURER_MAIN_URL,
         activeRole,
         1000
       );
