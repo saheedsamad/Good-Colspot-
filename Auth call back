@@ -768,15 +768,6 @@
     );
   }
 
-  function getDesiredRole(session) {
-    const metaRole = String(session?.user?.user_metadata?.role || "").toLowerCase().trim();
-    const savedRole = String(getSavedRole() || "").toLowerCase().trim();
-
-    if (metaRole === "student" || metaRole === "lecturer") return metaRole;
-    if (savedRole === "student" || savedRole === "lecturer") return savedRole;
-    return "student";
-  }
-
   function roleLabel(role) {
     return role === "lecturer" ? "Lecturer" : "Student";
   }
@@ -862,7 +853,73 @@
     };
   }
 
-  function analyzeRoleState(profiles, desiredRole, email) {
+  function resolveRoleFromProfiles(session, profiles) {
+    const userId = session.user.id;
+    const email = (session.user.email || "").trim().toLowerCase();
+    const savedRole = String(getSavedRole() || "").toLowerCase().trim();
+    const metaRole = String(session?.user?.user_metadata?.role || "").toLowerCase().trim();
+
+    if (profiles.lecturerByUser && profiles.lecturerByUser.user_id === userId) {
+      return "lecturer";
+    }
+
+    if (profiles.studentByUser && profiles.studentByUser.user_id === userId) {
+      return "student";
+    }
+
+    if (
+      profiles.lecturerByEmail &&
+      String(profiles.lecturerByEmail.email || "").toLowerCase() === email &&
+      savedRole === "lecturer"
+    ) {
+      return "lecturer";
+    }
+
+    if (
+      profiles.studentByEmail &&
+      String(profiles.studentByEmail.email || "").toLowerCase() === email &&
+      savedRole === "student"
+    ) {
+      return "student";
+    }
+
+    if (
+      profiles.lecturerByEmail &&
+      String(profiles.lecturerByEmail.email || "").toLowerCase() === email &&
+      metaRole === "lecturer"
+    ) {
+      return "lecturer";
+    }
+
+    if (
+      profiles.studentByEmail &&
+      String(profiles.studentByEmail.email || "").toLowerCase() === email &&
+      metaRole === "student"
+    ) {
+      return "student";
+    }
+
+    if (
+      profiles.lecturerByEmail &&
+      String(profiles.lecturerByEmail.email || "").toLowerCase() === email
+    ) {
+      return "lecturer";
+    }
+
+    if (
+      profiles.studentByEmail &&
+      String(profiles.studentByEmail.email || "").toLowerCase() === email
+    ) {
+      return "student";
+    }
+
+    if (savedRole === "lecturer" || savedRole === "student") return savedRole;
+    if (metaRole === "lecturer" || metaRole === "student") return metaRole;
+
+    return "student";
+  }
+
+  function analyzeRoleState(profiles, resolvedRole, email) {
     const emailLower = (email || "").trim().toLowerCase();
 
     const studentProfile =
@@ -877,31 +934,7 @@
         ? profiles.lecturerByEmail
         : null);
 
-    if (desiredRole === "student") {
-      if (lecturerProfile && !studentProfile) {
-        return {
-          allowed: false,
-          message:
-            "This email already belongs to a lecturer account. Please go back and sign in through the Lecturer flow."
-        };
-      }
-
-      return {
-        allowed: true,
-        role: "student",
-        profile: studentProfile
-      };
-    }
-
-    if (desiredRole === "lecturer") {
-      if (studentProfile && !lecturerProfile) {
-        return {
-          allowed: false,
-          message:
-            "You have already created a student account with this email. Please go back and sign in instead of creating another account."
-        };
-      }
-
+    if (resolvedRole === "lecturer") {
       return {
         allowed: true,
         role: "lecturer",
@@ -910,8 +943,9 @@
     }
 
     return {
-      allowed: false,
-      message: "We could not determine your role. Please go back and try again."
+      allowed: true,
+      role: "student",
+      profile: studentProfile
     };
   }
 
@@ -1022,10 +1056,12 @@
       }
 
       activeSession = session;
-      activeRole = getDesiredRole(session);
-      updateRoleUI(activeRole);
 
       const profiles = await getProfilesForSession(session);
+      activeRole = resolveRoleFromProfiles(session, profiles);
+      saveAuthRole(activeRole);
+      updateRoleUI(activeRole);
+
       const roleState = analyzeRoleState(
         profiles,
         activeRole,
@@ -1037,7 +1073,6 @@
       if (
         authIntent === "signup" &&
         activeRole === "student" &&
-        roleState.allowed &&
         roleState.profile
       ) {
         try {
@@ -1063,7 +1098,6 @@
       if (
         authIntent === "signup" &&
         activeRole === "lecturer" &&
-        roleState.allowed &&
         roleState.profile
       ) {
         try {
@@ -1085,17 +1119,6 @@
         );
         return;
       }
-
-      if (!roleState.allowed) {
-        showPanel("error-panel");
-        document.getElementById("error-box").textContent = roleState.message;
-        setMessage("error-message", "Please go back and sign in with the correct account flow.", "error");
-        return;
-      }
-
-      activeRole = roleState.role;
-      saveAuthRole(activeRole);
-      updateRoleUI(activeRole);
 
       try {
         await linkDeviceForSession(session);
