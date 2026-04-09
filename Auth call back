@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
-  <title>Colspot – Student Callback</title>
+  <title>Colspot – Auth Callback</title>
 
   <style>
     :root {
@@ -30,8 +30,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
     }
 
-    html,
-    body {
+    html, body {
       height: 100%;
       -webkit-text-size-adjust: 100%;
     }
@@ -277,9 +276,9 @@
         </div>
 
         <div id="loading-panel">
-          <div class="soft-badge">Student access</div>
+          <div id="loading-badge" class="soft-badge">Checking access</div>
           <h1>Checking your account</h1>
-          <p class="subtitle">Please wait while we confirm your Google sign in.</p>
+          <p class="subtitle">Please wait while we confirm your sign in and decide the next step.</p>
           <div class="info-box">
             We are preparing your Colspot access.
           </div>
@@ -287,53 +286,63 @@
         </div>
 
         <div id="welcome-panel" class="hidden">
-          <div class="soft-badge">Welcome</div>
-          <h1>Hello <span id="welcome-name" class="welcome-name">Student</span></h1>
+          <div id="welcome-badge" class="soft-badge">Welcome</div>
+          <h1>Hello <span id="welcome-name" class="welcome-name">User</span></h1>
           <p class="subtitle">Please wait while we prepare your account.</p>
           <div id="welcome-box" class="info-box">
-            Your Google sign in was successful.
+            Your sign in was successful.
           </div>
           <div id="welcome-message" class="message success">Redirecting…</div>
         </div>
 
         <div id="complete-panel" class="hidden">
-          <div class="soft-badge">Complete your account</div>
-          <h1>Finish student setup</h1>
-          <p class="subtitle">We got your Google account. Now complete your student details.</p>
+          <div id="complete-badge" class="soft-badge">Complete your account</div>
+          <h1 id="complete-title">Finish account setup</h1>
+          <p id="complete-subtitle" class="subtitle">We got your account. Now complete your details.</p>
 
-          <div class="info-box">
+          <div id="complete-info-box" class="info-box">
             Fill the details below once and we’ll save them to your Colspot account.
           </div>
 
-          <form id="student-complete-form">
-            <label for="student-fullname">Full name</label>
-            <input id="student-fullname" type="text" placeholder="Your full name" required />
+          <form id="account-complete-form">
+            <label for="account-fullname">Full name</label>
+            <input id="account-fullname" type="text" placeholder="Your full name" required />
 
-            <label for="student-email">Email</label>
-            <input id="student-email" type="email" placeholder="you@example.com" readonly />
+            <label for="account-email">Email</label>
+            <input id="account-email" type="email" placeholder="you@example.com" readonly />
 
-            <label for="student-schoolname">School name</label>
-            <input id="student-schoolname" type="text" placeholder="Ekiti State University" required />
+            <label for="account-schoolname">School name</label>
+            <input id="account-schoolname" type="text" placeholder="Ekiti State University" required />
 
-            <label for="student-dept">Department</label>
-            <input id="student-dept" type="text" placeholder="Computer Science" required />
+            <label for="account-dept">Department</label>
+            <input id="account-dept" type="text" placeholder="Computer Science" required />
 
-            <label for="student-matric">Matric number</label>
-            <input id="student-matric" type="text" placeholder="e.g. CSC/21/1234" required />
-            <div class="hint">
-              Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
+            <div id="student-id-wrap">
+              <label for="account-student-id">Matric number</label>
+              <input id="account-student-id" type="text" placeholder="e.g. CSC/21/1234" />
+              <div class="hint">
+                Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
+              </div>
             </div>
 
-            <button id="student-complete-btn" type="submit" class="primary">
-              <span id="student-complete-text">Complete account</span>
-              <span id="student-complete-loader" class="spinner hidden"></span>
+            <div id="lecturer-id-wrap" class="hidden">
+              <label for="account-lecturer-id">Staff ID</label>
+              <input id="account-lecturer-id" type="text" placeholder="Enter your staff ID" />
+              <div class="hint">
+                Make sure this staff ID is correct before continuing.
+              </div>
+            </div>
+
+            <button id="account-complete-btn" type="submit" class="primary">
+              <span id="account-complete-text">Complete account</span>
+              <span id="account-complete-loader" class="spinner hidden"></span>
             </button>
 
             <div id="complete-message" class="message"></div>
           </form>
 
           <button type="button" class="secondary-btn" onclick="logoutAndReturn()">
-            Use another Google account
+            Use another account
           </button>
         </div>
 
@@ -353,7 +362,7 @@
         <div id="error-panel" class="hidden">
           <div class="soft-badge">Something went wrong</div>
           <h1>We couldn’t continue</h1>
-          <p class="subtitle">There was a problem checking your Google sign in.</p>
+          <p class="subtitle">There was a problem checking your account.</p>
           <div id="error-box" class="info-box">
             Please try again.
           </div>
@@ -374,24 +383,29 @@
 <script>
   const LOCAL_USER_KEY = "colspot_local_user";
   const AUTH_ROLE_KEY = "colspot_auth_role";
-  const VERIFY_URL = "verify_class.html";
+
+  // Change only these if your actual file names differ
+  const STUDENT_VERIFY_URL = "verify_class.html";
+  const LECTURER_VERIFY_URL = "lecturer_verify.html";
   const FACE_CAPTURE_URL = "face-capture.html";
-  const MAIN_URL = "main.html";
+  const STUDENT_MAIN_URL = "main.html";
+  const LECTURER_MAIN_URL = "main_lecturer.html";
   const INDEX_URL = "index.html";
 
+  // Change only these if lecturer uses a different verification table
+  const STUDENT_VERIFICATION_TABLE = "verification_course_forms";
+  const LECTURER_VERIFICATION_TABLE = "verification_course_forms";
+
   let activeSession = null;
+  let activeRole = "student";
   let limitTimer = null;
 
   function showPanel(panelId) {
     const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (id === panelId) {
-        el.classList.remove("hidden");
-      } else {
-        el.classList.add("hidden");
-      }
+      el.classList.toggle("hidden", id !== panelId);
     });
   }
 
@@ -411,22 +425,18 @@
     btn.disabled = isLoading;
 
     if (text && loader) {
-      if (isLoading) {
-        text.classList.add("hidden");
-        loader.classList.remove("hidden");
-      } else {
-        text.classList.remove("hidden");
-        loader.classList.add("hidden");
-      }
+      text.classList.toggle("hidden", isLoading);
+      loader.classList.toggle("hidden", !isLoading);
     }
   }
 
-  function saveLocalUserFromSession(session) {
+  function saveLocalUserFromSession(session, role) {
     if (!session || !session.user) return;
     try {
       const payload = {
         id: session.user.id,
         email: session.user.email || "",
+        role: role || "",
         last_seen: new Date().toISOString(),
       };
       localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
@@ -451,6 +461,15 @@
     }
   }
 
+  function getSavedRole() {
+    try {
+      return localStorage.getItem(AUTH_ROLE_KEY) || "";
+    } catch (e) {
+      console.error("Could not read auth role:", e);
+      return "";
+    }
+  }
+
   function goBackToIndex() {
     window.location.href = INDEX_URL;
   }
@@ -464,7 +483,6 @@
       console.error("Signout failed:", e);
     }
     clearLocalUser();
-    saveAuthRole("student");
     window.location.href = INDEX_URL;
   }
 
@@ -534,11 +552,7 @@
     }
 
     if (platform === "ios") {
-      if (
-        !newId &&
-        nativePlugin &&
-        typeof nativePlugin.getDeviceId === "function"
-      ) {
+      if (!newId && nativePlugin && typeof nativePlugin.getDeviceId === "function") {
         try {
           const result = await nativePlugin.getDeviceId();
           const raw =
@@ -721,12 +735,12 @@
       if (Date.now() - started > maxMs) {
         throw new Error("Supabase is not ready yet.");
       }
-      await new Promise(resolve => setTimeout(resolve, 120));
+      await new Promise((resolve) => setTimeout(resolve, 120));
     }
     return window.supabase;
   }
 
-  function getGoogleName(session) {
+  function getDisplayName(session) {
     if (!session || !session.user) return "";
     const meta = session.user.user_metadata || {};
     return (
@@ -739,54 +753,169 @@
     );
   }
 
-  async function checkStudentProfile(session) {
+  function getDesiredRole(session) {
+    const metaRole = String(session?.user?.user_metadata?.role || "").toLowerCase().trim();
+    const savedRole = String(getSavedRole() || "").toLowerCase().trim();
+
+    if (metaRole === "student" || metaRole === "lecturer") return metaRole;
+    if (savedRole === "student" || savedRole === "lecturer") return savedRole;
+    return "student";
+  }
+
+  function roleLabel(role) {
+    return role === "lecturer" ? "Lecturer" : "Student";
+  }
+
+  function updateRoleUI(role) {
+    const loadingBadge = document.getElementById("loading-badge");
+    const welcomeBadge = document.getElementById("welcome-badge");
+    const completeBadge = document.getElementById("complete-badge");
+    const completeTitle = document.getElementById("complete-title");
+    const completeSubtitle = document.getElementById("complete-subtitle");
+    const studentWrap = document.getElementById("student-id-wrap");
+    const lecturerWrap = document.getElementById("lecturer-id-wrap");
+
+    const label = roleLabel(role);
+
+    if (loadingBadge) loadingBadge.textContent = `${label} access`;
+    if (welcomeBadge) welcomeBadge.textContent = `${label} access`;
+    if (completeBadge) completeBadge.textContent = `Complete ${label.toLowerCase()} account`;
+
+    if (completeTitle) {
+      completeTitle.textContent =
+        role === "lecturer" ? "Finish lecturer setup" : "Finish student setup";
+    }
+
+    if (completeSubtitle) {
+      completeSubtitle.textContent =
+        role === "lecturer"
+          ? "We got your account. Now complete your lecturer details."
+          : "We got your account. Now complete your student details.";
+    }
+
+    if (studentWrap) studentWrap.classList.toggle("hidden", role !== "student");
+    if (lecturerWrap) lecturerWrap.classList.toggle("hidden", role !== "lecturer");
+  }
+
+  async function getProfilesForSession(session) {
     const userId = session.user.id;
     const email = (session.user.email || "").trim().toLowerCase();
 
-    const { data: studentRow, error: studentErr } = await window.supabase
-      .from("student_accounts")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const [
+      studentByUser,
+      lecturerByUser,
+      studentByEmail,
+      lecturerByEmail
+    ] = await Promise.all([
+      window.supabase
+        .from("student_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      window.supabase
+        .from("lecturer_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      window.supabase
+        .from("student_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle(),
+      window.supabase
+        .from("lecturer_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle()
+    ]);
 
-    if (studentErr) {
-      console.error("student_accounts fetch error:", studentErr);
-      throw new Error("We couldn’t check your student profile.");
+    if (studentByUser.error) {
+      console.error("student_accounts by user error:", studentByUser.error);
+      throw new Error("We couldn’t check the student account.");
     }
 
-    if (studentRow) {
+    if (lecturerByUser.error) {
+      console.error("lecturer_accounts by user error:", lecturerByUser.error);
+      throw new Error("We couldn’t check the lecturer account.");
+    }
+
+    if (studentByEmail.error) {
+      console.error("student_accounts by email error:", studentByEmail.error);
+    }
+
+    if (lecturerByEmail.error) {
+      console.error("lecturer_accounts by email error:", lecturerByEmail.error);
+    }
+
+    return {
+      studentByUser: studentByUser.data || null,
+      lecturerByUser: lecturerByUser.data || null,
+      studentByEmail: studentByEmail.data || null,
+      lecturerByEmail: lecturerByEmail.data || null
+    };
+  }
+
+  function analyzeRoleState(profiles, desiredRole, email) {
+    const emailLower = (email || "").trim().toLowerCase();
+
+    const studentProfile =
+      profiles.studentByUser ||
+      (profiles.studentByEmail && String(profiles.studentByEmail.email || "").toLowerCase() === emailLower
+        ? profiles.studentByEmail
+        : null);
+
+    const lecturerProfile =
+      profiles.lecturerByUser ||
+      (profiles.lecturerByEmail && String(profiles.lecturerByEmail.email || "").toLowerCase() === emailLower
+        ? profiles.lecturerByEmail
+        : null);
+
+    if (desiredRole === "student") {
+      if (lecturerProfile && !studentProfile) {
+        return {
+          allowed: false,
+          message:
+            "This email already belongs to a lecturer account. Please go back and sign in through the Lecturer flow."
+        };
+      }
+
       return {
-        exists: true,
-        row: studentRow
+        allowed: true,
+        role: "student",
+        profile: studentProfile
       };
     }
 
-    const { data: lecturerRow, error: lecturerErr } = await window.supabase
-      .from("lecturer_accounts")
-      .select("user_id,email")
-      .eq("email", email)
-      .maybeSingle();
+    if (desiredRole === "lecturer") {
+      if (studentProfile && !lecturerProfile) {
+        return {
+          allowed: false,
+          message:
+            "You have already created a student account with this email. Please go back and sign in instead of creating another account."
+        };
+      }
 
-    if (lecturerErr) {
-      console.error("lecturer_accounts fetch error:", lecturerErr);
-    }
-
-    if (lecturerRow) {
       return {
-        exists: false,
-        lecturerConflict: true
+        allowed: true,
+        role: "lecturer",
+        profile: lecturerProfile
       };
     }
 
     return {
-      exists: false,
-      lecturerConflict: false
+      allowed: false,
+      message: "We could not determine your role. Please go back and try again."
     };
   }
 
-  async function getVerificationState(userId) {
+  async function getVerificationState(userId, role) {
+    const verifyTable =
+      role === "lecturer"
+        ? LECTURER_VERIFICATION_TABLE
+        : STUDENT_VERIFICATION_TABLE;
+
     const { data: verificationRow, error: verificationErr } = await window.supabase
-      .from("verification_course_forms")
+      .from(verifyTable)
       .select("id,status")
       .eq("user_id", userId)
       .eq("status", "successful")
@@ -822,21 +951,46 @@
     };
   }
 
-  function fillStudentFormFromSession(session) {
-    const fullName = getGoogleName(session);
-    const email = session.user.email || "";
+  function fillCompleteForm(session, role, profile) {
+    const fullName = profile?.full_name || getDisplayName(session);
+    const email = profile?.email || session.user.email || "";
+    const school = profile?.school_name || "";
+    const dept = profile?.department || "";
 
-    const fullNameInput = document.getElementById("student-fullname");
-    const emailInput = document.getElementById("student-email");
+    const fullNameInput = document.getElementById("account-fullname");
+    const emailInput = document.getElementById("account-email");
+    const schoolInput = document.getElementById("account-schoolname");
+    const deptInput = document.getElementById("account-dept");
+    const studentIdInput = document.getElementById("account-student-id");
+    const lecturerIdInput = document.getElementById("account-lecturer-id");
 
     if (fullNameInput) fullNameInput.value = fullName;
     if (emailInput) emailInput.value = email;
+    if (schoolInput) schoolInput.value = school;
+    if (deptInput) deptInput.value = dept;
+
+    if (studentIdInput) {
+      studentIdInput.value = role === "student" ? (profile?.matric_number || "") : "";
+      studentIdInput.required = role === "student";
+    }
+
+    if (lecturerIdInput) {
+      lecturerIdInput.value = role === "lecturer" ? (profile?.staff_id || "") : "";
+      lecturerIdInput.required = role === "lecturer";
+    }
   }
 
-  async function goWithWelcome(message, nextUrl, delay = 1200) {
+  function getRoleRedirects(role) {
+    return {
+      verifyUrl: role === "lecturer" ? LECTURER_VERIFY_URL : STUDENT_VERIFY_URL,
+      mainUrl: role === "lecturer" ? LECTURER_MAIN_URL : STUDENT_MAIN_URL
+    };
+  }
+
+  async function goWithWelcome(message, nextUrl, role, delay = 1200) {
     const welcomeName = document.getElementById("welcome-name");
     if (welcomeName) {
-      welcomeName.textContent = getGoogleName(activeSession) || "Student";
+      welcomeName.textContent = getDisplayName(activeSession) || roleLabel(role);
     }
 
     const welcomeBox = document.getElementById("welcome-box");
@@ -844,12 +998,13 @@
       welcomeBox.textContent = message;
     }
 
+    updateRoleUI(role);
     setMessage("welcome-message", "Redirecting…", "success");
     showPanel("welcome-panel");
 
     setTimeout(() => {
-      saveLocalUserFromSession(activeSession);
-      saveAuthRole("student");
+      saveLocalUserFromSession(activeSession, role);
+      saveAuthRole(role);
       window.location.href = nextUrl;
     }, delay);
   }
@@ -862,25 +1017,35 @@
       const { data, error } = await window.supabase.auth.getSession();
       if (error) {
         console.error("getSession error:", error);
-        throw new Error("We couldn’t confirm your Google session.");
+        throw new Error("We couldn’t confirm your session.");
       }
 
       const session = data?.session || null;
       if (!session || !session.user) {
-        throw new Error("No Google session was found. Please try again.");
+        throw new Error("No active session was found. Please try again.");
       }
 
       activeSession = session;
+      activeRole = getDesiredRole(session);
+      updateRoleUI(activeRole);
 
-      const profileCheck = await checkStudentProfile(session);
+      const profiles = await getProfilesForSession(session);
+      const roleState = analyzeRoleState(
+        profiles,
+        activeRole,
+        session.user.email || ""
+      );
 
-      if (profileCheck.lecturerConflict) {
+      if (!roleState.allowed) {
         showPanel("error-panel");
-        document.getElementById("error-box").textContent =
-          "This Google email appears to belong to a lecturer account. Please go back and use the Lecturer sign in flow instead.";
-        setMessage("error-message", "Student Google login is only for students.", "error");
+        document.getElementById("error-box").textContent = roleState.message;
+        setMessage("error-message", "Please go back and sign in with the correct account flow.", "error");
         return;
       }
+
+      activeRole = roleState.role;
+      saveAuthRole(activeRole);
+      updateRoleUI(activeRole);
 
       try {
         await linkDeviceForSession(session);
@@ -908,8 +1073,7 @@
         throw deviceErr;
       }
 
-      saveAuthRole("student");
-      saveLocalUserFromSession(session);
+      saveLocalUserFromSession(session, activeRole);
 
       try {
         await recordLoginEvent(session);
@@ -917,114 +1081,188 @@
         console.error(e);
       }
 
-      const verificationState = await getVerificationState(session.user.id);
+      const redirects = getRoleRedirects(activeRole);
+      const verificationState = await getVerificationState(session.user.id, activeRole);
 
-      if (profileCheck.exists) {
+      if (roleState.profile) {
         if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-          await goWithWelcome("Your account, course form, and face verification are ready.", MAIN_URL);
+          await goWithWelcome(
+            `Your ${roleLabel(activeRole).toLowerCase()} account, verification, and face capture are ready.`,
+            redirects.mainUrl,
+            activeRole
+          );
           return;
         }
 
         if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-          await goWithWelcome("Your course form is already verified. Next, complete face capture.", FACE_CAPTURE_URL);
+          await goWithWelcome(
+            "Your verification is already complete. Next, complete face capture.",
+            FACE_CAPTURE_URL,
+            activeRole
+          );
           return;
         }
 
-        await goWithWelcome("Welcome back. Please continue with course form verification.", VERIFY_URL);
+        await goWithWelcome(
+          `Welcome back. Please continue with ${roleLabel(activeRole).toLowerCase()} verification.`,
+          redirects.verifyUrl,
+          activeRole
+        );
         return;
       }
 
       if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-        await goWithWelcome("Your verification is complete. Taking you to Colspot.", MAIN_URL);
+        await goWithWelcome(
+          "Your verification is complete. Taking you into Colspot.",
+          redirects.mainUrl,
+          activeRole
+        );
         return;
       }
 
       if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-        await goWithWelcome("Your course form is verified. Next, complete face capture.", FACE_CAPTURE_URL);
+        await goWithWelcome(
+          "Your verification is complete. Next, complete face capture.",
+          FACE_CAPTURE_URL,
+          activeRole
+        );
         return;
       }
 
-      fillStudentFormFromSession(session);
+      fillCompleteForm(session, activeRole, null);
       showPanel("complete-panel");
     } catch (err) {
       console.error("Callback flow failed:", err);
       clearLocalUser();
       showPanel("error-panel");
       document.getElementById("error-box").textContent =
-        err.message || "We couldn’t finish your Google sign in.";
+        err.message || "We couldn’t finish checking your account.";
       setMessage("error-message", "Please go back and try again.", "error");
     }
   }
 
-  async function handleCompleteStudentProfile(event) {
+  async function handleCompleteAccount(event) {
     event.preventDefault();
-
     setMessage("complete-message", "");
 
     if (!activeSession || !activeSession.user) {
-      setMessage("complete-message", "Your session expired. Please sign in with Google again.", "error");
+      setMessage("complete-message", "Your session expired. Please sign in again.", "error");
       return;
     }
 
-    const fullName = (document.getElementById("student-fullname")?.value || "").trim();
-    const email = (document.getElementById("student-email")?.value || "").trim().toLowerCase();
-    const schoolName = (document.getElementById("student-schoolname")?.value || "").trim();
-    const dept = (document.getElementById("student-dept")?.value || "").trim();
-    const matric = (document.getElementById("student-matric")?.value || "").trim();
+    const fullName = (document.getElementById("account-fullname")?.value || "").trim();
+    const email = (document.getElementById("account-email")?.value || "").trim().toLowerCase();
+    const schoolName = (document.getElementById("account-schoolname")?.value || "").trim();
+    const dept = (document.getElementById("account-dept")?.value || "").trim();
+    const studentId = (document.getElementById("account-student-id")?.value || "").trim();
+    const lecturerId = (document.getElementById("account-lecturer-id")?.value || "").trim();
 
-    if (!fullName || !email || !schoolName || !dept || !matric) {
-      setMessage("complete-message", "Fill in all fields to complete your student account.", "error");
+    if (!fullName || !email || !schoolName || !dept) {
+      setMessage("complete-message", "Fill in all fields to complete your account.", "error");
+      return;
+    }
+
+    if (activeRole === "student" && !studentId) {
+      setMessage("complete-message", "Enter your matric number to continue.", "error");
+      return;
+    }
+
+    if (activeRole === "lecturer" && !lecturerId) {
+      setMessage("complete-message", "Enter your staff ID to continue.", "error");
       return;
     }
 
     try {
-      setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", true);
+      setButtonLoading("account-complete-btn", "account-complete-text", "account-complete-loader", true);
 
-      const payload = {
-        user_id: activeSession.user.id,
-        full_name: fullName,
-        school_name: schoolName,
-        department: dept,
-        matric_number: matric,
-        email
-      };
-
-      const { error } = await window.supabase
-        .from("student_accounts")
-        .upsert(payload, { onConflict: "user_id" });
-
-      if (error) {
-        console.error("student_accounts upsert error:", error);
-        throw new Error("We couldn’t save your student details. Please try again.");
-      }
-
-      const { error: authMetaErr } = await window.supabase.auth.updateUser({
-        data: {
+      if (activeRole === "student") {
+        const payload = {
+          user_id: activeSession.user.id,
           full_name: fullName,
-          role: "student",
           school_name: schoolName,
           department: dept,
-          matric_number: matric
-        }
-      });
+          matric_number: studentId,
+          email
+        };
 
-      if (authMetaErr) {
-        console.error("auth.updateUser metadata error:", authMetaErr);
+        const { error } = await window.supabase
+          .from("student_accounts")
+          .upsert(payload, { onConflict: "user_id" });
+
+        if (error) {
+          console.error("student_accounts upsert error:", error);
+          throw new Error("We couldn’t save your student details. Please try again.");
+        }
+
+        const { error: authMetaErr } = await window.supabase.auth.updateUser({
+          data: {
+            full_name: fullName,
+            role: "student",
+            school_name: schoolName,
+            department: dept,
+            matric_number: studentId
+          }
+        });
+
+        if (authMetaErr) {
+          console.error("auth.updateUser metadata error:", authMetaErr);
+        }
+      } else {
+        const payload = {
+          user_id: activeSession.user.id,
+          full_name: fullName,
+          school_name: schoolName,
+          department: dept,
+          staff_id: lecturerId,
+          email
+        };
+
+        const { error } = await window.supabase
+          .from("lecturer_accounts")
+          .upsert(payload, { onConflict: "user_id" });
+
+        if (error) {
+          console.error("lecturer_accounts upsert error:", error);
+          throw new Error("We couldn’t save your lecturer details. Please try again.");
+        }
+
+        const { error: authMetaErr } = await window.supabase.auth.updateUser({
+          data: {
+            full_name: fullName,
+            role: "lecturer",
+            school_name: schoolName,
+            department: dept,
+            staff_id: lecturerId
+          }
+        });
+
+        if (authMetaErr) {
+          console.error("auth.updateUser metadata error:", authMetaErr);
+        }
       }
 
-      saveLocalUserFromSession(activeSession);
-      saveAuthRole("student");
+      saveLocalUserFromSession(activeSession, activeRole);
+      saveAuthRole(activeRole);
 
-      await goWithWelcome("Your account has been completed. Next, verify your course form.", VERIFY_URL, 1000);
+      const redirects = getRoleRedirects(activeRole);
+
+      await goWithWelcome(
+        activeRole === "lecturer"
+          ? "Your lecturer account has been completed. Next, continue your verification."
+          : "Your student account has been completed. Next, continue your verification.",
+        redirects.verifyUrl,
+        activeRole,
+        1000
+      );
     } catch (err) {
-      console.error("Complete profile failed:", err);
+      console.error("Complete account failed:", err);
       setMessage("complete-message", err.message || "We couldn’t complete your account.", "error");
     } finally {
-      setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", false);
+      setButtonLoading("account-complete-btn", "account-complete-text", "account-complete-loader", false);
     }
   }
 
-  document.getElementById("student-complete-form")?.addEventListener("submit", handleCompleteStudentProfile);
+  document.getElementById("account-complete-form")?.addEventListener("submit", handleCompleteAccount);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", startCallbackFlow);
