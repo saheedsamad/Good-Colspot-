@@ -868,7 +868,13 @@ function hideResetPanel() {
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
   if (cached && cached.id) {
-    window.location.href = "main.html";
+const role = await resolveUserRole(data.session.user.id);
+
+if (role === "lecturer") {
+  window.location.href = "main_lecturer.html";
+} else {
+  window.location.href = "main.html";
+}
     return true;
   }
   return false;
