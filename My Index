@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Updated viewport: same as main, no zooming when typing/double-tap -->
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
@@ -20,6 +19,7 @@
       --border: #e2e8f0;
       --error: #dc2626;
       --success: #16a34a;
+      --soft: #eef4ff;
     }
 
     * {
@@ -30,7 +30,7 @@
     html,
     body {
       height: 100%;
-      -webkit-text-size-adjust: 100%; /* prevent iOS auto text resizing */
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -45,7 +45,6 @@
       touch-action: manipulation;
     }
 
-    /* Outer phone shell – same idea as main/session-live */
     .phone-shell {
       width: 100%;
       max-width: 420px;
@@ -57,7 +56,6 @@
       position: relative;
     }
 
-    /* ------------ Splash / loading screen ------------ */
     .splash {
       position: fixed;
       inset: 0;
@@ -103,8 +101,6 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
-    /* ------------ Auth card ------------ */
 
     .container {
       width: 100%;
@@ -156,6 +152,7 @@
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 18px;
+      line-height: 1.45;
     }
 
     .mode-toggle {
@@ -164,6 +161,7 @@
       border-radius: 999px;
       padding: 4px;
       margin-bottom: 20px;
+      gap: 4px;
     }
 
     .mode-btn {
@@ -177,6 +175,7 @@
       color: var(--muted);
       font-weight: 500;
       transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
     }
 
     .mode-btn.active {
@@ -196,7 +195,7 @@
     select {
       width: 100%;
       padding: 12px 13px;
-      font-size: 17px; /* >=16px so iOS does NOT zoom on focus */
+      font-size: 17px;
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 14px;
@@ -306,9 +305,10 @@
       color: var(--muted);
       margin-top: -6px;
       margin-bottom: 10px;
+      line-height: 1.45;
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
     .verify-title {
       text-align: center;
@@ -404,7 +404,6 @@
       background: var(--blue);
     }
 
-    /* New location note */
     .location-note {
       margin-top: 14px;
       font-size: 12px;
@@ -412,11 +411,214 @@
       text-align: center;
       line-height: 1.4;
     }
+
+    .auth-footer-links {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+
+    .auth-footer-links button {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .auth-footer-links button:hover {
+      text-decoration: underline;
+    }
+
+    .auth-footer-divider {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .role-select-panel {
+      margin-bottom: 12px;
+    }
+
+    .role-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .role-card-btn {
+      width: 100%;
+      border: 1px solid #dbe7ff;
+      background: #f8fbff;
+      border-radius: 18px;
+      padding: 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.06s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.06);
+    }
+
+    .role-card-btn:hover {
+      border-color: #bfd3ff;
+      background: #f4f8ff;
+    }
+
+    .role-card-btn:active {
+      transform: scale(0.985);
+    }
+
+    .role-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #dbe7ff;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .role-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .role-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .role-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .back-top-row {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .back-pill {
+      border: 1px solid #dbe7ff;
+      background: #f8fbff;
+      color: var(--blue);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .section-head-badge {
+      width: fit-content;
+      margin: 0 auto 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eef4ff;
+      border: 1px solid #dbe7ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .social-login-wrap {
+      margin-top: 10px;
+    }
+
+    .google-btn {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 14px;
+      border: 1px solid #dbe2f0;
+      background: #fff;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.05s;
+      padding: 14px 16px;
+    }
+
+    .google-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .google-btn:active {
+      transform: scale(0.98);
+    }
+
+    .google-g {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #4285F4;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 14px 0 12px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .auth-divider span {
+      padding: 0 12px;
+    }
+
+    .soft-note-box {
+      margin-top: 14px;
+      background: var(--soft);
+      border: 1px solid #dbe7ff;
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Splash / loading screen shown first -->
   <div id="splash-screen" class="splash">
     <div class="splash-card">
       <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="splash-logo" />
@@ -426,257 +628,400 @@
   </div>
 
   <div class="phone-shell">
-    <!-- Auth card is hidden at first; JS will show it only if user is NOT signed in -->
     <div id="auth-shell" class="container hidden">
       <div class="card">
         <div class="logo">
           <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
         </div>
 
-        <h1 id="card-title">Welcome back</h1>
-        <p class="subtitle" id="card-subtitle">Sign in to your Colspot account</p>
+        <!-- ROLE SELECT PAGE -->
+        <div id="role-select-panel" class="role-select-panel">
+          <h1>Select your role</h1>
+          <p class="subtitle">Choose how you want to continue into Colspot.</p>
 
-        <div id="mode-toggle" class="mode-toggle">
-          <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
-            Sign in
-          </button>
-          <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
-            Sign up
-          </button>
-        </div>
+          <div class="role-list">
+            <button type="button" class="role-card-btn" onclick="showAuthSection('student')">
+              <div class="role-icon">🎓</div>
+              <div class="role-text">
+                <div class="role-title">Student</div>
+                <div class="role-desc">Continue with Google only for faster sign in and sign up.</div>
+              </div>
+            </button>
 
-        <!-- SIGN-UP EMAIL VERIFICATION (OTP) -->
-        <div id="verify-panel" class="hidden">
-          <div class="verify-title">Verify your email</div>
+            <button type="button" class="role-card-btn" onclick="showAuthSection('lecturer')">
+              <div class="role-icon">👨‍🏫</div>
+              <div class="role-text">
+                <div class="role-title">Lecturer</div>
+                <div class="role-desc">Use your current sign in and sign up flow with official school email.</div>
+              </div>
+            </button>
 
-          <div class="verify-box">
-            We sent a 6-digit code to:<br>
-            <b id="verify-email">your@email.com</b><br><br>
-            Enter the code below to finish creating your account.
-          </div>
-
-          <label for="verify-code-input">Verification code</label>
-          <input id="verify-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-
-          <button id="verify-code-btn" type="button" class="primary">
-            <span id="verify-code-text">Verify &amp; continue</span>
-            <span id="verify-code-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <button id="resend-btn" type="button" class="text-link">Resend code</button>
-            <button id="back-to-signin-btn" type="button" class="text-link">Back</button>
-          </div>
-
-          <div id="verify-message" class="message"></div>
-        </div>
-
-        <!-- FORGOT PASSWORD – STEP 1: ENTER EMAIL -->
-        <div id="forgot-panel" class="hidden">
-          <div class="verify-title">Forgot password</div>
-          <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
-            Enter your email and we’ll send you a code to reset your password.
-          </p>
-
-          <div class="stepper">
-            <div class="step active">
-              <div class="step-circle">1</div>
-              <span>Enter Email</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <span>Verify Code</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <span>Reset Password</span>
-            </div>
-          </div>
-
-          <label for="forgot-email">Email</label>
-          <input id="forgot-email" type="email" placeholder="you@example.com" autocomplete="email" />
-
-          <button id="forgot-send-btn" type="button" class="primary">
-            <span id="forgot-send-text">Send verification code</span>
-            <span id="forgot-send-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <button id="forgot-back-btn" type="button" class="text-link">Back to sign in</button>
-          </div>
-
-          <div id="forgot-message" class="message"></div>
-        </div>
-
-        <!-- FORGOT PASSWORD – STEP 2 & 3: CODE + NEW PASSWORD -->
-        <div id="reset-panel" class="hidden">
-          <div class="verify-title">Reset your password</div>
-
-          <div class="stepper">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <span>Enter Email</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step active">
-              <div class="step-circle">2</div>
-              <span>Verify Code</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step active">
-              <div class="step-circle">3</div>
-              <span>Reset Password</span>
-            </div>
-          </div>
-
-          <div class="verify-box">
-            We sent a 6-digit reset code to:<br>
-            <b id="reset-email-label">your@email.com</b><br><br>
-            Enter the code and choose a new password.
-          </div>
-
-          <label for="reset-code">Reset code</label>
-          <input id="reset-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-
-          <label for="reset-password">New password</label>
-          <div class="password-row">
-            <input id="reset-password" type="password" placeholder="At least 6 characters" />
-            <button type="button" class="password-toggle" onclick="togglePassword('reset-password', this)">Show</button>
-          </div>
-          <div class="hint">
-            Use at least 6 characters, with <strong>letters and numbers</strong>.
-          </div>
-
-          <label for="reset-password2">Confirm new password</label>
-          <div class="password-row">
-            <input id="reset-password2" type="password" placeholder="Repeat password" />
-            <button type="button" class="password-toggle" onclick="togglePassword('reset-password2', this)">Show</button>
-          </div>
-
-          <button id="reset-submit-btn" type="button" class="primary">
-            <span id="reset-submit-text">Change password</span>
-            <span id="reset-submit-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <button id="reset-back-btn" type="button" class="text-link">Back to sign in</button>
-          </div>
-
-          <div id="reset-message" class="message"></div>
-        </div>
-
-        <!-- SIGN IN FORM -->
-        <form id="signin-form">
-          <label for="signin-email">Email</label>
-          <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
-
-          <label for="signin-password">Password</label>
-          <div class="password-row">
-            <input id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
-          </div>
-
-          <button id="signin-btn" type="submit" class="primary">
-            <span id="signin-text">Sign in</span>
-            <span id="signin-loader" class="spinner hidden"></span>
-          </button>
-
-          <!-- Contact us (left) + Forgot password? (right) -->
-          <div class="bottom-row">
-            <a href="contact.html" class="text-link">Contact us</a>
-            <button type="button" class="text-link" onclick="openForgotPasswordPage()">
-              Forgot password?
+            <button type="button" class="role-card-btn" onclick="showAuthSection('admin')">
+              <div class="role-icon">🛡️</div>
+              <div class="role-text">
+                <div class="role-title">Admin</div>
+                <div class="role-desc">Sign in with your email or username and password.</div>
+              </div>
             </button>
           </div>
 
-          <div id="signin-message" class="message"></div>
-        </form>
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON<br>
+            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+          </p>
 
-        <!-- SIGN UP FORM -->
-        <form id="signup-form" class="hidden">
-          <label for="signup-fullname">Full name</label>
-          <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
-
-          <label for="signup-role">Role</label>
-          <select id="signup-role" required>
-            <option value="">Select role</option>
-            <option value="student">Student</option>
-            <option value="lecturer">Lecturer</option>
-          </select>
-
-          <!-- Extra fields for STUDENT -->
-          <div id="student-extra" class="hidden">
-            <label for="signup-matric">Matric number</label>
-            <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
-            <div class="hint">
-              Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
-            </div>
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
           </div>
-
-          <label for="signup-dept">Department</label>
-          <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
-
-          <label for="signup-email">Email</label>
-          <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
-
-          <!-- Hint for LECTURER email -->
-          <div id="lecturer-email-hint" class="hint hidden">
-            Lecturers: please use your official <strong>school email</strong>
-            (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
-          </div>
-
-          <label for="signup-password">Password</label>
-          <div class="password-row">
-            <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
-          </div>
-          <div class="hint">
-            Use at least 6 characters, with <strong>letters and numbers</strong>.
-          </div>
-
-          <label for="signup-password2">Confirm password</label>
-          <div class="password-row">
-            <input id="signup-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
-          </div>
-
-          <button id="signup-btn" type="submit" class="primary">
-            <span id="signup-text">Create account</span>
-            <span id="signup-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row small">
-            <span style="color:var(--muted); font-size:13px; text-align:center;">
-              By signing up you agree to Colspot’s
-              <button type="button" class="link-inline" onclick="openPrivacy()">Privacy &amp; Policy</button>.
-            </span>
-          </div>
-
-          <div class="bottom-row small">
-            <span style="color:var(--muted); font-size:13px;">Already have an account?</span>
-            <button type="button" class="text-link" onclick="switchMode('signin')">Sign in</button>
-          </div>
-
-          <div id="signup-message" class="message"></div>
-        </form>
-
-        <div id="switch-row" class="bottom-row" style="margin-top:16px;">
-          <span id="switch-text" style="font-size:13px; color:var(--muted);">
-            Don’t have an account?
-          </span>
-          <button type="button" class="text-link" onclick="toggleAuthMode()">
-            <span id="switch-link-label">Create one</span>
-          </button>
         </div>
 
-        <!-- Short location note -->
-        <p class="location-note">
-          <strong>Colspot uses your location to work properly.</strong><br>
-          Please allow location when asked, and make sure Location is turned ON<br>
-          (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
-        </p>
+        <!-- STUDENT PAGE -->
+        <div id="student-auth-panel" class="hidden">
+          <div class="back-top-row">
+            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          </div>
+
+          <div class="section-head-badge">Student access</div>
+          <h1>Student sign in</h1>
+          <p class="subtitle">Use your Google account to sign in or sign up as a student.</p>
+
+          <div class="social-login-wrap">
+            <button type="button" class="google-btn" onclick="signInWithGoogle()">
+              <span class="google-g">G</span>
+              <span>Continue with Google</span>
+            </button>
+          </div>
+
+          <div class="soft-note-box">
+            Student accounts use Google only. After Google login, we’ll check if you already have a saved student profile or guide you to complete it.
+          </div>
+
+          <div class="bottom-row" style="margin-top:16px;">
+            <a href="contact.html" class="text-link">Contact us</a>
+            <button type="button" class="text-link" onclick="backToRoleSelection()">Change role</button>
+          </div>
+
+          <div id="student-google-message" class="message"></div>
+
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON<br>
+            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
+          </div>
+        </div>
+
+        <!-- LECTURER PAGE -->
+        <div id="lecturer-auth-panel" class="hidden">
+          <div class="back-top-row">
+            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          </div>
+
+          <div class="section-head-badge">Lecturer access</div>
+          <h1 id="card-title">Welcome back</h1>
+          <p class="subtitle" id="card-subtitle">Sign in to your Colspot lecturer account</p>
+
+          <div id="mode-toggle" class="mode-toggle">
+            <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
+              Sign in
+            </button>
+            <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
+              Sign up
+            </button>
+          </div>
+
+          <!-- SIGN-UP EMAIL VERIFICATION (OTP) -->
+          <div id="verify-panel" class="hidden">
+            <div class="verify-title">Verify your email</div>
+
+            <div class="verify-box">
+              We sent a 6-digit code to:<br>
+              <b id="verify-email">your@email.com</b><br><br>
+              Enter the code below to finish creating your account.
+            </div>
+
+            <label for="verify-code-input">Verification code</label>
+            <input id="verify-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+            <button id="verify-code-btn" type="button" class="primary">
+              <span id="verify-code-text">Verify &amp; continue</span>
+              <span id="verify-code-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="resend-btn" type="button" class="text-link">Resend code</button>
+              <button id="back-to-signin-btn" type="button" class="text-link">Back</button>
+            </div>
+
+            <div id="verify-message" class="message"></div>
+          </div>
+
+          <!-- FORGOT PASSWORD – STEP 1 -->
+          <div id="forgot-panel" class="hidden">
+            <div class="verify-title">Forgot password</div>
+            <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
+              Enter your email and we’ll send you a code to reset your password.
+            </p>
+
+            <div class="stepper">
+              <div class="step active">
+                <div class="step-circle">1</div>
+                <span>Enter Email</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step">
+                <div class="step-circle">2</div>
+                <span>Verify Code</span>
+              </div>
+              <div class="step-line"></div>
+              <div class="step">
+                <div class="step-circle">3</div>
+                <span>Reset Password</span>
+              </div>
+            </div>
+
+            <label for="forgot-email">Email</label>
+            <input id="forgot-email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+            <button id="forgot-send-btn" type="button" class="primary">
+              <span id="forgot-send-text">Send verification code</span>
+              <span id="forgot-send-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="forgot-back-btn" type="button" class="text-link">Back to sign in</button>
+            </div>
+
+            <div id="forgot-message" class="message"></div>
+          </div>
+
+          <!-- FORGOT PASSWORD – STEP 2 & 3 -->
+          <div id="reset-panel" class="hidden">
+            <div class="verify-title">Reset your password</div>
+
+            <div class="stepper">
+              <div class="step">
+                <div class="step-circle">1</div>
+                <span>Enter Email</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step active">
+                <div class="step-circle">2</div>
+                <span>Verify Code</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step active">
+                <div class="step-circle">3</div>
+                <span>Reset Password</span>
+              </div>
+            </div>
+
+            <div class="verify-box">
+              We sent a 6-digit reset code to:<br>
+              <b id="reset-email-label">your@email.com</b><br><br>
+              Enter the code and choose a new password.
+            </div>
+
+            <label for="reset-code">Reset code</label>
+            <input id="reset-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+            <label for="reset-password">New password</label>
+            <div class="password-row">
+              <input id="reset-password" type="password" placeholder="At least 6 characters" />
+              <button type="button" class="password-toggle" onclick="togglePassword('reset-password', this)">Show</button>
+            </div>
+            <div class="hint">
+              Use at least 6 characters, with <strong>letters and numbers</strong>.
+            </div>
+
+            <label for="reset-password2">Confirm new password</label>
+            <div class="password-row">
+              <input id="reset-password2" type="password" placeholder="Repeat password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('reset-password2', this)">Show</button>
+            </div>
+
+            <button id="reset-submit-btn" type="button" class="primary">
+              <span id="reset-submit-text">Change password</span>
+              <span id="reset-submit-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="reset-back-btn" type="button" class="text-link">Back to sign in</button>
+            </div>
+
+            <div id="reset-message" class="message"></div>
+          </div>
+
+          <!-- LECTURER SIGN IN FORM -->
+          <form id="signin-form">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+
+            <label for="signin-password">Password</label>
+            <div class="password-row">
+              <input id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
+            </div>
+
+            <button id="signin-btn" type="submit" class="primary">
+              <span id="signin-text">Sign in</span>
+              <span id="signin-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <a href="contact.html" class="text-link">Contact us</a>
+              <button type="button" class="text-link" onclick="openForgotPasswordPage()">
+                Forgot password?
+              </button>
+            </div>
+
+            <div id="signin-message" class="message"></div>
+          </form>
+
+          <!-- LECTURER SIGN UP FORM -->
+          <form id="signup-form" class="hidden">
+            <label for="signup-fullname">Full name</label>
+            <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
+
+            <label for="signup-role">Role</label>
+            <select id="signup-role" required>
+              <option value="">Select role</option>
+              <option value="student">Student</option>
+              <option value="lecturer">Lecturer</option>
+            </select>
+
+            <div id="student-extra" class="hidden">
+              <label for="signup-matric">Matric number</label>
+              <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
+              <div class="hint">
+                Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
+              </div>
+            </div>
+
+            <label for="signup-schoolname">School name</label>
+            <input id="signup-schoolname" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
+
+            <label for="signup-dept">Department</label>
+            <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
+
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+
+            <div id="lecturer-email-hint" class="hint hidden">
+              Lecturers: please use your official <strong>school email</strong>
+              (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
+            </div>
+
+            <label for="signup-password">Password</label>
+            <div class="password-row">
+              <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+            </div>
+            <div class="hint">
+              Use at least 6 characters, with <strong>letters and numbers</strong>.
+            </div>
+
+            <label for="signup-password2">Confirm password</label>
+            <div class="password-row">
+              <input id="signup-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
+            </div>
+
+            <button id="signup-btn" type="submit" class="primary">
+              <span id="signup-text">Create account</span>
+              <span id="signup-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row small">
+              <span style="color:var(--muted); font-size:13px; text-align:center;">
+                By signing up you agree to Colspot’s
+                <button type="button" class="link-inline" onclick="openPrivacy()">Privacy &amp; Policy</button>.
+              </span>
+            </div>
+
+            <div class="bottom-row small">
+              <span style="color:var(--muted); font-size:13px;">Already have an account?</span>
+              <button type="button" class="text-link" onclick="switchMode('signin')">Sign in</button>
+            </div>
+
+            <div id="signup-message" class="message"></div>
+          </form>
+
+          <div id="switch-row" class="bottom-row" style="margin-top:16px;">
+            <span id="switch-text" style="font-size:13px; color:var(--muted);">
+              Don’t have an account?
+            </span>
+            <button type="button" class="text-link" onclick="toggleAuthMode()">
+              <span id="switch-link-label">Create one</span>
+            </button>
+          </div>
+
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON<br>
+            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
+          </div>
+        </div>
+
+        <!-- ADMIN PAGE -->
+        <div id="admin-auth-panel" class="hidden">
+          <div class="back-top-row">
+            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          </div>
+
+          <div class="section-head-badge">Admin access</div>
+          <h1>Admin login</h1>
+          <p class="subtitle">Sign in with your email or username and password.</p>
+
+          <form id="admin-form">
+            <label for="admin-identifier">Email or Username</label>
+            <input id="admin-identifier" type="text" placeholder="Enter your email or username" autocomplete="username" />
+
+            <label for="admin-password">Password</label>
+            <div class="password-row">
+              <input id="admin-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('admin-password', this)">Show</button>
+            </div>
+
+            <button id="admin-btn" type="submit" class="primary">
+              <span id="admin-text">Admin login</span>
+              <span id="admin-loader" class="spinner hidden"></span>
+            </button>
+
+            <div id="admin-message" class="message"></div>
+          </form>
+
+          <div class="bottom-row" style="margin-top:16px;">
+            <a href="contact.html" class="text-link">Contact us</a>
+            <button type="button" class="text-link" onclick="backToRoleSelection()">Change role</button>
+          </div>
+
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON<br>
+            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -694,7 +1039,79 @@
       window.location.href = "privacy.html";
     }
 
-    // --- New role-based UI logic for Student / Lecturer ---
+    function openTerms() {
+      window.location.href = "terms.html";
+    }
+
+    function safeSetRole(role) {
+      try {
+        localStorage.setItem("colspot_auth_role", role);
+      } catch (e) {
+        console.error("Could not save auth role:", e);
+      }
+    }
+
+    function showAuthSection(role) {
+      const rolePanel = document.getElementById("role-select-panel");
+      const studentPanel = document.getElementById("student-auth-panel");
+      const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const adminPanel = document.getElementById("admin-auth-panel");
+
+      if (rolePanel) rolePanel.classList.add("hidden");
+      if (studentPanel) studentPanel.classList.add("hidden");
+      if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (adminPanel) adminPanel.classList.add("hidden");
+
+      if (role === "student" && studentPanel) {
+        safeSetRole("student");
+        studentPanel.classList.remove("hidden");
+      } else if (role === "lecturer" && lecturerPanel) {
+        safeSetRole("lecturer");
+        lecturerPanel.classList.remove("hidden");
+      } else if (role === "admin" && adminPanel) {
+        safeSetRole("admin");
+        adminPanel.classList.remove("hidden");
+      } else if (rolePanel) {
+        rolePanel.classList.remove("hidden");
+      }
+    }
+
+    function backToRoleSelection() {
+      const rolePanel = document.getElementById("role-select-panel");
+      const studentPanel = document.getElementById("student-auth-panel");
+      const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const adminPanel = document.getElementById("admin-auth-panel");
+
+      if (studentPanel) studentPanel.classList.add("hidden");
+      if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (adminPanel) adminPanel.classList.add("hidden");
+      if (rolePanel) rolePanel.classList.remove("hidden");
+    }
+
+    function signInWithGoogle() {
+      if (typeof window.signInWithGoogle === "function") {
+        window.signInWithGoogle();
+        return;
+      }
+
+      const msg = document.getElementById("student-google-message");
+      if (msg) {
+        msg.textContent = "Google login will be connected in auth.js.";
+        msg.className = "message error";
+      }
+    }
+
+    (function restoreSavedRoleView() {
+      try {
+        const savedRole = localStorage.getItem("colspot_auth_role");
+        if (savedRole === "student" || savedRole === "lecturer" || savedRole === "admin") {
+          window.__colspot_saved_role__ = savedRole;
+        }
+      } catch (e) {
+        console.error("Could not restore saved role:", e);
+      }
+    })();
+
     (function setupRoleUI() {
       const roleSelect = document.getElementById('signup-role');
       const studentExtra = document.getElementById('student-extra');
@@ -723,7 +1140,6 @@
       });
     })();
 
-    // --- Hard block lecturers from using personal emails on sign up ---
     (function guardLecturerEmail() {
       const form = document.getElementById('signup-form');
       const emailInput = document.getElementById('signup-email');
@@ -748,7 +1164,7 @@
 
       form.addEventListener('submit', function (event) {
         const role = roleSelect.value;
-        if (role !== 'lecturer') return; // only block lecturers
+        if (role !== 'lecturer') return;
 
         const rawEmail = (emailInput.value || '').trim().toLowerCase();
         const atIndex = rawEmail.lastIndexOf('@');
@@ -760,7 +1176,7 @@
 
         if (!domain || isBlockedDomain || (looksGenericPersonal && !isProbablySchool)) {
           event.preventDefault();
-          event.stopImmediatePropagation(); // stop auth.js from running
+          event.stopImmediatePropagation();
 
           if (messageEl) {
             messageEl.textContent =
@@ -773,11 +1189,15 @@
         }
       });
     })();
+
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.__colspot_saved_role__) {
+        showAuthSection(window.__colspot_saved_role__);
+      }
+    });
   </script>
 
-  <!-- Supabase client -->
   <script type="module" src="./client_supabase.js"></script>
-  <!-- Auth logic -->
   <script src="./auth.js"></script>
 </body>
 </html>
