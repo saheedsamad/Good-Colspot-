@@ -20,6 +20,9 @@
       --error: #dc2626;
       --success: #16a34a;
       --soft: #eef4ff;
+      --warn-bg: #fff7ed;
+      --warn-border: #fdba74;
+      --warn-text: #9a3412;
     }
 
     * {
@@ -131,6 +134,12 @@
       line-height: 1.45;
       margin-bottom: 14px;
       text-align: center;
+    }
+
+    .warning-box {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-text);
     }
 
     label {
@@ -251,6 +260,11 @@
       text-align: center;
       line-height: 1.45;
     }
+
+    .countdown {
+      font-weight: 800;
+      color: var(--blue);
+    }
   </style>
 </head>
 
@@ -262,36 +276,33 @@
           <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
         </div>
 
-        <!-- Loading -->
         <div id="loading-panel">
           <div class="soft-badge">Student access</div>
           <h1>Checking your account</h1>
           <p class="subtitle">Please wait while we confirm your Google sign in.</p>
           <div class="info-box">
-            We are checking whether you already have a saved student profile.
+            We are preparing your Colspot access.
           </div>
           <div class="message">Loading…</div>
         </div>
 
-        <!-- Existing student -->
         <div id="welcome-panel" class="hidden">
-          <div class="soft-badge">Welcome back</div>
+          <div class="soft-badge">Welcome</div>
           <h1>Hello <span id="welcome-name" class="welcome-name">Student</span></h1>
-          <p class="subtitle">Your student account is ready. Taking you into Colspot now.</p>
-          <div class="info-box">
-            Your Google sign in was successful and your saved student profile was found.
+          <p class="subtitle">Please wait while we prepare your account.</p>
+          <div id="welcome-box" class="info-box">
+            Your Google sign in was successful.
           </div>
-          <div id="welcome-message" class="message success">Redirecting to your dashboard…</div>
+          <div id="welcome-message" class="message success">Redirecting…</div>
         </div>
 
-        <!-- New student complete profile -->
         <div id="complete-panel" class="hidden">
           <div class="soft-badge">Complete your account</div>
           <h1>Finish student setup</h1>
           <p class="subtitle">We got your Google account. Now complete your student details.</p>
 
           <div class="info-box">
-            Student sign in uses Google only. Fill the details below once and we’ll save them to your Colspot account.
+            Fill the details below once and we’ll save them to your Colspot account.
           </div>
 
           <form id="student-complete-form">
@@ -326,7 +337,19 @@
           </button>
         </div>
 
-        <!-- Error -->
+        <div id="limit-panel" class="hidden">
+          <div class="soft-badge">Device limit reached</div>
+          <h1>Login blocked</h1>
+          <p class="subtitle">This account has already reached the maximum device limit.</p>
+          <div id="limit-box" class="info-box warning-box">
+            You have already linked Colspot to 2 phones. You’ll be returned to login in
+            <span id="limit-countdown" class="countdown">10</span>
+            seconds.
+          </div>
+          <div id="limit-message" class="message error">Please use a previously linked device or contact support.</div>
+          <button type="button" class="secondary-btn" onclick="goBackToIndex()">Back to login now</button>
+        </div>
+
         <div id="error-panel" class="hidden">
           <div class="soft-badge">Something went wrong</div>
           <h1>We couldn’t continue</h1>
@@ -351,11 +374,16 @@
   <script>
     const LOCAL_USER_KEY = "colspot_local_user";
     const AUTH_ROLE_KEY = "colspot_auth_role";
+    const VERIFY_URL = "verify_class.html";
+    const FACE_CAPTURE_URL = "face-capture.html";
+    const MAIN_URL = "main.html";
+    const INDEX_URL = "index.html";
 
     let activeSession = null;
+    let limitTimer = null;
 
     function showPanel(panelId) {
-      const ids = ["loading-panel", "welcome-panel", "complete-panel", "error-panel"];
+      const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
       ids.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -416,7 +444,7 @@
     }
 
     function goBackToIndex() {
-      window.location.href = "index.html";
+      window.location.href = INDEX_URL;
     }
 
     async function logoutAndReturn() {
@@ -431,7 +459,26 @@
         localStorage.removeItem(LOCAL_USER_KEY);
       } catch (e) {}
       saveAuthRole("student");
-      window.location.href = "index.html";
+      window.location.href = INDEX_URL;
+    }
+
+    function startLimitCountdown(seconds = 10) {
+      const countdownEl = document.getElementById("limit-countdown");
+      let remaining = seconds;
+
+      if (countdownEl) countdownEl.textContent = String(remaining);
+
+      if (limitTimer) clearInterval(limitTimer);
+
+      limitTimer = setInterval(() => {
+        remaining -= 1;
+        if (countdownEl) countdownEl.textContent = String(remaining);
+
+        if (remaining <= 0) {
+          clearInterval(limitTimer);
+          logoutAndReturn();
+        }
+      }, 1000);
     }
 
     function generateRandomId() {
@@ -593,7 +640,9 @@
       }
 
       if (byUser && byUser.length >= 2) {
-        throw new Error("You’ve already linked Colspot to 2 phones.");
+        const limitError = new Error("You’ve already linked Colspot to 2 phones.");
+        limitError.code = "DEVICE_LIMIT";
+        throw limitError;
       }
 
       const { error: insertErr } = await window.supabase.from("user_devices").insert({
@@ -604,6 +653,12 @@
 
       if (insertErr) {
         console.error("user_devices insert error:", insertErr);
+        const msg = String(insertErr.message || "").toLowerCase();
+        if (msg.includes("already linked 2 phones")) {
+          const limitError = new Error("You’ve already linked Colspot to 2 phones.");
+          limitError.code = "DEVICE_LIMIT";
+          throw limitError;
+        }
         throw new Error("We couldn’t finish linking your device.");
       }
     }
@@ -699,6 +754,44 @@
       };
     }
 
+    async function getVerificationState(userId) {
+      const { data: verificationRow, error: verificationErr } = await window.supabase
+        .from("verification_course_forms")
+        .select("id,status")
+        .eq("user_id", userId)
+        .eq("status", "successful")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (verificationErr) {
+        console.error("verification fetch error:", verificationErr);
+        throw new Error("We couldn’t check your verification state.");
+      }
+
+      const { data: faceRow, error: faceErr } = await window.supabase
+        .from("face_profiles")
+        .select("user_id, face_verified, capture_status")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (faceErr) {
+        console.error("face fetch error:", faceErr);
+        throw new Error("We couldn’t check your face verification state.");
+      }
+
+      const hasVerifiedForm = !!verificationRow;
+      const faceStatus = String(faceRow?.capture_status || "").toLowerCase().trim();
+      const hasVerifiedFace =
+        !!faceRow &&
+        (faceRow.face_verified === true || faceStatus === "approved" || faceStatus === "verified");
+
+      return {
+        hasVerifiedForm,
+        hasVerifiedFace
+      };
+    }
+
     function fillStudentFormFromSession(session) {
       const fullName = getGoogleName(session);
       const email = session.user.email || "";
@@ -708,6 +801,25 @@
 
       if (fullNameInput) fullNameInput.value = fullName;
       if (emailInput) emailInput.value = email;
+    }
+
+    async function goWithWelcome(message, nextUrl, delay = 1200) {
+      const welcomeName = document.getElementById("welcome-name");
+      if (welcomeName) {
+        welcomeName.textContent = getGoogleName(activeSession) || "Student";
+      }
+
+      const welcomeBox = document.getElementById("welcome-box");
+      if (welcomeBox) {
+        welcomeBox.textContent = message;
+      }
+
+      setMessage("welcome-message", "Redirecting…", "success");
+      showPanel("welcome-panel");
+
+      setTimeout(() => {
+        window.location.href = nextUrl;
+      }, delay);
     }
 
     async function startCallbackFlow() {
@@ -740,33 +852,50 @@
           return;
         }
 
+        try {
+          await linkDeviceForSession(session);
+        } catch (deviceErr) {
+          console.error(deviceErr);
+
+          if (deviceErr.code === "DEVICE_LIMIT" || String(deviceErr.message || "").toLowerCase().includes("2 phones")) {
+            showPanel("limit-panel");
+            startLimitCountdown(10);
+            return;
+          }
+
+          throw deviceErr;
+        }
+
+        try {
+          await recordLoginEvent(session);
+        } catch (e) {
+          console.error(e);
+        }
+
+        const verificationState = await getVerificationState(session.user.id);
+
         if (profileCheck.exists) {
-          const displayName =
-            profileCheck.row.full_name ||
-            getGoogleName(session) ||
-            "Student";
-
-          const welcomeName = document.getElementById("welcome-name");
-          if (welcomeName) welcomeName.textContent = displayName;
-
-          try {
-            await linkDeviceForSession(session);
-          } catch (deviceErr) {
-            console.error(deviceErr);
+          if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
+            await goWithWelcome("Your account, course form, and face verification are ready.", MAIN_URL);
+            return;
           }
 
-          try {
-            await recordLoginEvent(session);
-          } catch (e) {
-            console.error(e);
+          if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
+            await goWithWelcome("Your course form is already verified. Next, complete face capture.", FACE_CAPTURE_URL);
+            return;
           }
 
-          showPanel("welcome-panel");
+          await goWithWelcome("Welcome back. Please continue with course form verification.", VERIFY_URL);
+          return;
+        }
 
-          setTimeout(() => {
-            window.location.href = "main.html";
-          }, 1000);
+        if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
+          await goWithWelcome("Your verification is complete. Taking you to Colspot.", MAIN_URL);
+          return;
+        }
 
+        if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
+          await goWithWelcome("Your course form is verified. Next, complete face capture.", FACE_CAPTURE_URL);
           return;
         }
 
@@ -784,7 +913,6 @@
     async function handleCompleteStudentProfile(event) {
       event.preventDefault();
 
-      const msgEl = document.getElementById("complete-message");
       setMessage("complete-message", "");
 
       if (!activeSession || !activeSession.user) {
@@ -838,23 +966,10 @@
           console.error("auth.updateUser metadata error:", authMetaErr);
         }
 
-        try {
-          await linkDeviceForSession(activeSession);
-        } catch (deviceErr) {
-          console.error(deviceErr);
-        }
+        saveLocalUserFromSession(activeSession);
+        saveAuthRole("student");
 
-        try {
-          await recordLoginEvent(activeSession);
-        } catch (e) {
-          console.error(e);
-        }
-
-        setMessage("complete-message", "Student account completed. Redirecting…", "success");
-
-        setTimeout(() => {
-          window.location.href = "main.html";
-        }, 900);
+        await goWithWelcome("Your account has been completed. Next, verify your course form.", VERIFY_URL, 1000);
       } catch (err) {
         console.error("Complete profile failed:", err);
         setMessage("complete-message", err.message || "We couldn’t complete your account.", "error");
