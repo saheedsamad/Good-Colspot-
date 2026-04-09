@@ -599,45 +599,65 @@
   const FACE_CAPTURE_URL = "face-capture.html";
   const MAIN_URL = "main.html";
   const INDEX_URL = "index.html";
-  const DEBUG_MODE = false;
 
   const el = (id) => document.getElementById(id);
 
+  let pickedFile = null;
+  let uploadedPath = null;
+  let extracted = null;
+  let currentUser = null;
+  let verificationLocked = false;
+
+  function saveLocalUser(user) {
+    if (!user || !user.id) return;
+    try {
+      localStorage.setItem("colspot_local_user", JSON.stringify({
+        id: user.id,
+        email: user.email || "",
+        last_seen: new Date().toISOString()
+      }));
+      localStorage.setItem("colspot_auth_role", "student");
+    } catch (e) {
+      console.error("Could not save local user cache:", e);
+    }
+  }
+
+  function clearMsgs() {
+    const ids = ["msgErr", "msgOk", "msgWarn"];
+    ids.forEach((id) => {
+      const node = el(id);
+      if (!node) return;
+      node.style.display = "none";
+      node.textContent = "";
+      node.className = node.className.includes("warn") ? "msg warn" : "msg";
+    });
+  }
+
   function showErr(msg) {
-    el("msgWarn").style.display = "none";
-    el("msgOk").style.display = "none";
+    clearMsgs();
+    if (!el("msgErr")) return;
     el("msgErr").style.display = "block";
     el("msgErr").textContent = msg || "";
   }
 
   function showOk(msg) {
-    el("msgWarn").style.display = "none";
-    el("msgErr").style.display = "none";
+    clearMsgs();
+    if (!el("msgOk")) return;
     el("msgOk").style.display = "block";
     el("msgOk").textContent = msg || "";
   }
 
   function showWarn(msg) {
-    el("msgErr").style.display = "none";
-    el("msgOk").style.display = "none";
+    clearMsgs();
+    if (!el("msgWarn")) return;
     el("msgWarn").style.display = "block";
     el("msgWarn").className = "msg warn";
     el("msgWarn").textContent = msg || "";
   }
 
-  function clearMsgs() {
-    el("msgErr").style.display = "none";
-    el("msgOk").style.display = "none";
-    el("msgWarn").style.display = "none";
-    el("msgErr").textContent = "";
-    el("msgOk").textContent = "";
-    el("msgWarn").textContent = "";
-    el("msgWarn").className = "msg";
-  }
-
   function setLoading(on) {
-    el("loading").style.display = on ? "block" : "none";
-    el("btnExtract").disabled = on || !pickedFile || verificationLocked;
+    if (el("loading")) el("loading").style.display = on ? "block" : "none";
+    if (el("btnExtract")) el("btnExtract").disabled = on || !pickedFile || verificationLocked;
     if (el("btnContinue")) el("btnContinue").disabled = on || verificationLocked;
     if (el("btnCancel")) el("btnCancel").disabled = on || verificationLocked;
     if (el("btnReset")) el("btnReset").disabled = on || verificationLocked;
@@ -652,9 +672,6 @@
     return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
   }
 
-  function setDebug() {}
-  function clearDebug() {}
-
   function normalizeText(value) {
     return String(value || "").trim();
   }
@@ -663,20 +680,16 @@
     return String(value || "").trim().toUpperCase();
   }
 
-  let pickedFile = null;
-  let uploadedPath = null;
-  let extracted = null;
-  let currentUser = null;
-  let verificationLocked = false;
-  let verificationAlreadyExists = false;
-
   async function getUser() {
     const sb = window.supabase;
-    if (!sb) throw new Error("Supabase not loaded. Check client_supabase.js");
+    if (!sb) throw new Error("Supabase not loaded.");
 
     const { data, error } = await sb.auth.getUser();
     if (error) throw error;
-    if (data && data.user) return data.user;
+    if (data && data.user) {
+      saveLocalUser(data.user);
+      return data.user;
+    }
 
     try {
       const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
@@ -695,20 +708,20 @@
     if (!currentUser || !currentUser.id) {
       currentUser = await getUser();
     }
-
     if (!currentUser || !currentUser.id) {
       throw new Error("Could not find your account. Please sign in again.");
     }
-
+    saveLocalUser(currentUser);
     return currentUser;
   }
 
   function renderPreview(file) {
-    el("preview").style.display = "flex";
-    el("fileName").textContent = file.name || "Selected file";
-    el("fileSize").textContent = bytesToSize(file.size);
+    if (el("preview")) el("preview").style.display = "flex";
+    if (el("fileName")) el("fileName").textContent = file.name || "Selected file";
+    if (el("fileSize")) el("fileSize").textContent = bytesToSize(file.size);
 
     const thumb = el("thumb");
+    if (!thumb) return;
     thumb.innerHTML = "";
 
     const div = document.createElement("div");
@@ -718,61 +731,46 @@
   }
 
   function paintExtracted(details) {
-    el("vFullName").textContent = details?.full_name || "—";
-    el("vMatric").textContent = details?.matric_no || details?.matric || "—";
-    el("vSchool").textContent = normalizeUpper(details?.school_name) || "—";
-    el("vDept").textContent = details?.department || "—";
-    el("vProgramme").textContent = details?.programme || "—";
-    el("vFaculty").textContent = details?.faculty || "—";
-    el("vLevel").textContent = details?.level || "—";
-    el("vSession").textContent = details?.session || "—";
-    el("vSemester").textContent = details?.semester || "—";
+    if (el("vFullName")) el("vFullName").textContent = details?.full_name || "—";
+    if (el("vMatric")) el("vMatric").textContent = details?.matric_no || details?.matric || "—";
+    if (el("vSchool")) el("vSchool").textContent = normalizeUpper(details?.school_name) || "—";
+    if (el("vDept")) el("vDept").textContent = details?.department || "—";
+    if (el("vProgramme")) el("vProgramme").textContent = details?.programme || "—";
+    if (el("vFaculty")) el("vFaculty").textContent = details?.faculty || "—";
+    if (el("vLevel")) el("vLevel").textContent = details?.level || "—";
+    if (el("vSession")) el("vSession").textContent = details?.session || "—";
+    if (el("vSemester")) el("vSemester").textContent = details?.semester || "—";
   }
 
   function clearExtractedDetails() {
     extracted = null;
     uploadedPath = null;
-    el("details").style.display = "none";
-    el("vFullName").textContent = "—";
-    el("vMatric").textContent = "—";
-    el("vSchool").textContent = "—";
-    el("vDept").textContent = "—";
-    el("vProgramme").textContent = "—";
-    el("vFaculty").textContent = "—";
-    el("vLevel").textContent = "—";
-    el("vSession").textContent = "—";
-    el("vSemester").textContent = "—";
+    if (el("details")) el("details").style.display = "none";
+    ["vFullName","vMatric","vSchool","vDept","vProgramme","vFaculty","vLevel","vSession","vSemester"]
+      .forEach((id) => { if (el(id)) el(id).textContent = "—"; });
   }
 
   function lockVerificationUi() {
     verificationLocked = true;
-
-    if (el("fileInput")) el("fileInput").disabled = true;
-    if (el("btnExtract")) el("btnExtract").disabled = true;
-    if (el("btnReset")) el("btnReset").disabled = true;
-    if (el("btnContinue")) el("btnContinue").disabled = true;
-    if (el("btnCancel")) el("btnCancel").disabled = true;
-
-    const fileBtn = el("fileBtn");
-    if (fileBtn) {
-      fileBtn.style.pointerEvents = "none";
-      fileBtn.style.opacity = ".55";
+    ["fileInput","btnExtract","btnReset","btnContinue","btnCancel"].forEach((id) => {
+      if (el(id)) el(id).disabled = true;
+    });
+    if (el("fileBtn")) {
+      el("fileBtn").style.pointerEvents = "none";
+      el("fileBtn").style.opacity = ".55";
     }
   }
 
   function unlockVerificationUi() {
     verificationLocked = false;
-
     if (el("fileInput")) el("fileInput").disabled = false;
     if (el("btnExtract")) el("btnExtract").disabled = !pickedFile;
     if (el("btnReset")) el("btnReset").disabled = false;
     if (el("btnContinue")) el("btnContinue").disabled = false;
     if (el("btnCancel")) el("btnCancel").disabled = false;
-
-    const fileBtn = el("fileBtn");
-    if (fileBtn) {
-      fileBtn.style.pointerEvents = "auto";
-      fileBtn.style.opacity = "1";
+    if (el("fileBtn")) {
+      el("fileBtn").style.pointerEvents = "auto";
+      el("fileBtn").style.opacity = "1";
     }
   }
 
@@ -781,7 +779,6 @@
     uploadedPath = null;
     extracted = null;
     verificationLocked = false;
-    verificationAlreadyExists = false;
 
     if (el("fileInput")) {
       el("fileInput").value = "";
@@ -796,16 +793,13 @@
     }
     if (el("btnContinue")) el("btnContinue").disabled = false;
     if (el("btnCancel")) el("btnCancel").disabled = false;
-    if (el("details")) el("details").style.display = "none";
 
     clearMsgs();
-    clearDebug();
     setLoading(false);
 
-    const fileBtn = el("fileBtn");
-    if (fileBtn) {
-      fileBtn.style.pointerEvents = "auto";
-      fileBtn.style.opacity = "1";
+    if (el("fileBtn")) {
+      el("fileBtn").style.pointerEvents = "auto";
+      el("fileBtn").style.opacity = "1";
     }
 
     clearExtractedDetails();
@@ -1044,8 +1038,6 @@
     const alreadyHasFace = await hasVerifiedFaceAlready();
 
     if (existingVerification) {
-      verificationAlreadyExists = true;
-
       extracted = existingVerification.extracted_json || {
         full_name: existingVerification.full_name,
         matric_no: existingVerification.matric_no,
@@ -1069,6 +1061,7 @@
 
       try {
         localStorage.setItem("colspot_verification_done", "true");
+        saveLocalUser(currentUser);
       } catch {}
 
       if (alreadyHasFace) {
@@ -1082,6 +1075,7 @@
         }
 
         setTimeout(() => {
+          saveLocalUser(currentUser);
           window.location.href = MAIN_URL;
         }, silent ? 250 : 700);
 
@@ -1097,6 +1091,7 @@
       }
 
       setTimeout(() => {
+        saveLocalUser(currentUser);
         window.location.href = FACE_CAPTURE_URL;
       }, silent ? 250 : 700);
 
@@ -1128,6 +1123,7 @@
 
     try {
       localStorage.setItem("colspot_verification_done", "true");
+      saveLocalUser(currentUser);
     } catch {}
 
     if (alreadyHasFace) {
@@ -1138,6 +1134,7 @@
 
       showOk("Verification successful. Face already captured before. Redirecting to main...");
       setTimeout(() => {
+        saveLocalUser(currentUser);
         window.location.href = MAIN_URL;
       }, 700);
       return;
@@ -1150,6 +1147,7 @@
 
     showOk("Verification successful. Redirecting to face capture...");
     setTimeout(() => {
+      saveLocalUser(currentUser);
       window.location.href = FACE_CAPTURE_URL;
     }, 700);
   }
@@ -1158,6 +1156,7 @@
     try {
       resetAll();
       currentUser = await getUser();
+      saveLocalUser(currentUser);
 
       if (!currentUser || !currentUser.id) {
         throw new Error("Not signed in.");
@@ -1252,6 +1251,7 @@
         setLoading(true);
 
         await ensureCurrentUser();
+        saveLocalUser(currentUser);
 
         uploadedPath = await uploadToStorage(pickedFile);
         const data = await callExtractFunction(uploadedPath, pickedFile);
@@ -1327,6 +1327,7 @@
         setLoading(true);
 
         await ensureCurrentUser();
+        saveLocalUser(currentUser);
 
         const duplicateExists = await checkDuplicateMatricInVerificationCourseForms();
         if (duplicateExists) {
