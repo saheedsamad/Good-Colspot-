@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,8 +118,8 @@
     .card {
       width: 100%;
       background: var(--card);
-      border-radius: 24px;
-      padding: 24px 20px 20px;
+      border-radius: 28px;
+      padding: 22px 18px 20px;
       box-shadow: 0 12px 35px rgba(0,0,0,0.08);
       animation: fadeIn 0.35s ease;
     }
@@ -127,13 +129,45 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    .top-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      min-height: 56px;
+    }
+
+    .top-back-btn {
+      position: absolute;
+      left: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      border: 1px solid #dbe7ff;
+      background: #f8fbff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.08);
+      padding: 0;
+    }
+
+    .top-back-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--blue);
+      stroke-width: 2;
+      fill: none;
+    }
+
     .logo {
       text-align: center;
-      margin-bottom: 12px;
     }
 
     .logo img {
-      height: 52px;
+      height: 54px;
       width: auto;
       display: inline-block;
       border-radius: 12px;
@@ -143,7 +177,7 @@
     h1 {
       text-align: center;
       font-size: 22px;
-      margin: 4px 0 4px;
+      margin: 8px 0 4px;
       color: var(--text);
     }
 
@@ -196,7 +230,7 @@
       width: 100%;
       padding: 12px 13px;
       font-size: 17px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid var(--border);
       margin-bottom: 14px;
       outline: none;
@@ -214,7 +248,7 @@
     button.primary {
       width: 100%;
       padding: 14px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: none;
       font-size: 16px;
       font-weight: 600;
@@ -409,7 +443,7 @@
       font-size: 12px;
       color: var(--muted);
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .auth-footer-links {
@@ -444,10 +478,6 @@
       font-size: 12px;
     }
 
-    .role-select-panel {
-      margin-bottom: 12px;
-    }
-
     .role-list {
       display: flex;
       flex-direction: column;
@@ -459,7 +489,7 @@
       width: 100%;
       border: 1px solid #dbe7ff;
       background: #f8fbff;
-      border-radius: 18px;
+      border-radius: 20px;
       padding: 16px 14px;
       display: flex;
       align-items: center;
@@ -480,16 +510,25 @@
     }
 
     .role-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #ffffff;
       border: 1px solid #dbe7ff;
-      font-size: 22px;
       flex-shrink: 0;
+    }
+
+    .role-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: #1d4ed8;
+      stroke-width: 1.9;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .role-text {
@@ -508,23 +547,6 @@
       font-size: 13px;
       color: var(--muted);
       line-height: 1.4;
-    }
-
-    .back-top-row {
-      display: flex;
-      justify-content: flex-start;
-      margin-bottom: 14px;
-    }
-
-    .back-pill {
-      border: 1px solid #dbe7ff;
-      background: #f8fbff;
-      color: var(--blue);
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
     }
 
     .section-head-badge {
@@ -584,36 +606,11 @@
       flex-shrink: 0;
     }
 
-    .auth-divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin: 14px 0 12px;
-      color: #94a3b8;
-      font-size: 13px;
-    }
-
-    .auth-divider::before,
-    .auth-divider::after {
-      content: "";
-      flex: 1;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .auth-divider span {
-      padding: 0 12px;
-    }
-
-    .soft-note-box {
-      margin-top: 14px;
-      background: var(--soft);
-      border: 1px solid #dbe7ff;
-      border-radius: 14px;
-      padding: 12px;
-      text-align: center;
-      font-size: 13px;
+    .school-loading-note {
+      margin-top: -8px;
+      margin-bottom: 10px;
+      font-size: 12px;
       color: var(--muted);
-      line-height: 1.45;
     }
   </style>
 </head>
@@ -630,45 +627,65 @@
   <div class="phone-shell">
     <div id="auth-shell" class="container hidden">
       <div class="card">
-        <div class="logo">
-          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
-        </div>
 
         <!-- ROLE SELECT PAGE -->
-        <div id="role-select-panel" class="role-select-panel">
+        <div id="role-select-panel">
+          <div class="top-row">
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
+          </div>
+
           <h1>Select your role</h1>
           <p class="subtitle">Choose how you want to continue into Colspot.</p>
 
           <div class="role-list">
             <button type="button" class="role-card-btn" onclick="showAuthSection('student')">
-              <div class="role-icon">🎓</div>
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M3 9l9-4 9 4-9 4-9-4Z"></path>
+                  <path d="M7 11v4c0 1.8 2.2 3 5 3s5-1.2 5-3v-4"></path>
+                  <path d="M21 10v5"></path>
+                </svg>
+              </div>
               <div class="role-text">
                 <div class="role-title">Student</div>
-                <div class="role-desc">Continue with Google only for faster sign in and sign up.</div>
+                <div class="role-desc">Click here if you are a student</div>
               </div>
             </button>
 
             <button type="button" class="role-card-btn" onclick="showAuthSection('lecturer')">
-              <div class="role-icon">👨‍🏫</div>
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+                  <path d="M5 20a7 7 0 0 1 14 0"></path>
+                  <path d="M18 6h3v5h-3"></path>
+                </svg>
+              </div>
               <div class="role-text">
                 <div class="role-title">Lecturer</div>
-                <div class="role-desc">Use your current sign in and sign up flow with official school email.</div>
+                <div class="role-desc">Click here if you are a lecturer</div>
               </div>
             </button>
 
             <button type="button" class="role-card-btn" onclick="showAuthSection('admin')">
-              <div class="role-icon">🛡️</div>
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4Z"></path>
+                  <path d="M12 10v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg>
+              </div>
               <div class="role-text">
                 <div class="role-title">Admin</div>
-                <div class="role-desc">Sign in with your email or username and password.</div>
+                <div class="role-desc">Click here if you are an admin</div>
               </div>
             </button>
           </div>
 
           <p class="location-note">
             <strong>Colspot uses your location to work properly.</strong><br>
-            Please allow location when asked, and make sure Location is turned ON<br>
-            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+            Please allow location when asked, and make sure Location is turned ON.
           </p>
 
           <div class="auth-footer-links">
@@ -680,13 +697,21 @@
 
         <!-- STUDENT PAGE -->
         <div id="student-auth-panel" class="hidden">
-          <div class="back-top-row">
-            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
           </div>
 
           <div class="section-head-badge">Student access</div>
-          <h1>Student sign in</h1>
-          <p class="subtitle">Use your Google account to sign in or sign up as a student.</p>
+          <h1>Continue with Google</h1>
+          <p class="subtitle">Use your current login</p>
 
           <div class="social-login-wrap">
             <button type="button" class="google-btn" onclick="signInWithGoogle()">
@@ -695,21 +720,11 @@
             </button>
           </div>
 
-          <div class="soft-note-box">
-            Student accounts use Google only. After Google login, we’ll check if you already have a saved student profile or guide you to complete it.
-          </div>
-
-          <div class="bottom-row" style="margin-top:16px;">
-            <a href="contact.html" class="text-link">Contact us</a>
-            <button type="button" class="text-link" onclick="backToRoleSelection()">Change role</button>
-          </div>
-
           <div id="student-google-message" class="message"></div>
 
           <p class="location-note">
             <strong>Colspot uses your location to work properly.</strong><br>
-            Please allow location when asked, and make sure Location is turned ON<br>
-            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+            Please allow location when asked, and make sure Location is turned ON.
           </p>
 
           <div class="auth-footer-links">
@@ -721,8 +736,16 @@
 
         <!-- LECTURER PAGE -->
         <div id="lecturer-auth-panel" class="hidden">
-          <div class="back-top-row">
-            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
           </div>
 
           <div class="section-head-badge">Lecturer access</div>
@@ -803,7 +826,7 @@
             <div id="forgot-message" class="message"></div>
           </div>
 
-          <!-- FORGOT PASSWORD – STEP 2 & 3 -->
+          <!-- RESET PASSWORD -->
           <div id="reset-panel" class="hidden">
             <div class="verify-title">Reset your password</div>
 
@@ -860,7 +883,7 @@
             <div id="reset-message" class="message"></div>
           </div>
 
-          <!-- LECTURER SIGN IN FORM -->
+          <!-- LECTURER SIGN IN -->
           <form id="signin-form">
             <label for="signin-email">Email</label>
             <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
@@ -886,38 +909,25 @@
             <div id="signin-message" class="message"></div>
           </form>
 
-          <!-- LECTURER SIGN UP FORM -->
+          <!-- LECTURER SIGN UP -->
           <form id="signup-form" class="hidden">
             <label for="signup-fullname">Full name</label>
             <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
 
-            <label for="signup-role">Role</label>
-            <select id="signup-role" required>
-              <option value="">Select role</option>
-              <option value="student">Student</option>
-              <option value="lecturer">Lecturer</option>
-            </select>
-
-            <div id="student-extra" class="hidden">
-              <label for="signup-matric">Matric number</label>
-              <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
-              <div class="hint">
-                Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
-              </div>
-            </div>
-
             <label for="signup-schoolname">School name</label>
-            <input id="signup-schoolname" type="text" placeholder="Ekiti State University" autocomplete="organization" required />
+            <select id="signup-schoolname" required>
+              <option value="">Select school</option>
+            </select>
+            <div id="school-loading-note" class="school-loading-note">Loading schools...</div>
 
-            <label for="signup-dept">Department</label>
-            <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
+            <label for="signup-staffid">Staff ID</label>
+            <input id="signup-staffid" type="text" placeholder="Enter your staff ID" autocomplete="off" required />
 
-            <label for="signup-email">Email</label>
-            <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+            <label for="signup-email">School email</label>
+            <input id="signup-email" type="email" placeholder="you@school.edu" autocomplete="email" required />
 
-            <div id="lecturer-email-hint" class="hint hidden">
-              Lecturers: please use your official <strong>school email</strong>
-              (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
+            <div id="lecturer-email-hint" class="hint">
+              Use your official school email only.
             </div>
 
             <label for="signup-password">Password</label>
@@ -943,7 +953,7 @@
             <div class="bottom-row small">
               <span style="color:var(--muted); font-size:13px; text-align:center;">
                 By signing up you agree to Colspot’s
-                <button type="button" class="link-inline" onclick="openPrivacy()">Privacy &amp; Policy</button>.
+                <button type="button" class="link-inline" onclick="openPrivacy()">Privacy Policy</button>.
               </span>
             </div>
 
@@ -966,8 +976,7 @@
 
           <p class="location-note">
             <strong>Colspot uses your location to work properly.</strong><br>
-            Please allow location when asked, and make sure Location is turned ON<br>
-            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+            Please allow location when asked, and make sure Location is turned ON.
           </p>
 
           <div class="auth-footer-links">
@@ -979,13 +988,21 @@
 
         <!-- ADMIN PAGE -->
         <div id="admin-auth-panel" class="hidden">
-          <div class="back-top-row">
-            <button type="button" class="back-pill" onclick="backToRoleSelection()">← Back</button>
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
           </div>
 
           <div class="section-head-badge">Admin access</div>
           <h1>Admin login</h1>
-          <p class="subtitle">Sign in with your email or username and password.</p>
+          <p class="subtitle">Use your current login</p>
 
           <form id="admin-form">
             <label for="admin-identifier">Email or Username</label>
@@ -1005,15 +1022,9 @@
             <div id="admin-message" class="message"></div>
           </form>
 
-          <div class="bottom-row" style="margin-top:16px;">
-            <a href="contact.html" class="text-link">Contact us</a>
-            <button type="button" class="text-link" onclick="backToRoleSelection()">Change role</button>
-          </div>
-
           <p class="location-note">
             <strong>Colspot uses your location to work properly.</strong><br>
-            Please allow location when asked, and make sure Location is turned ON<br>
-            (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
+            Please allow location when asked, and make sure Location is turned ON.
           </p>
 
           <div class="auth-footer-links">
@@ -1022,6 +1033,7 @@
             <button type="button" onclick="openTerms()">Terms of Service</button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -1036,11 +1048,11 @@
     }
 
     function openPrivacy() {
-      window.location.href = "privacy.html";
+      window.location.href = "Privacy.html";
     }
 
     function openTerms() {
-      window.location.href = "terms.html";
+      window.location.href = "Term.html";
     }
 
     function safeSetRole(role) {
@@ -1101,6 +1113,48 @@
       }
     }
 
+    async function waitForSupabaseAndLoadSchools() {
+      const schoolSelect = document.getElementById("signup-schoolname");
+      const loadingNote = document.getElementById("school-loading-note");
+      if (!schoolSelect) return;
+
+      let tries = 0;
+      while (!window.supabase && tries < 50) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        tries++;
+      }
+
+      if (!window.supabase) {
+        if (loadingNote) loadingNote.textContent = "Could not load schools.";
+        return;
+      }
+
+      try {
+        const { data, error } = await window.supabase
+          .from("schools")
+          .select("id, name")
+          .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        schoolSelect.innerHTML = '<option value="">Select school</option>';
+
+        (data || []).forEach((school) => {
+          const option = document.createElement("option");
+          option.value = school.name;
+          option.textContent = school.name;
+          schoolSelect.appendChild(option);
+        });
+
+        if (loadingNote) {
+          loadingNote.textContent = data && data.length ? "" : "No schools found.";
+        }
+      } catch (err) {
+        console.error("Failed to load schools:", err);
+        if (loadingNote) loadingNote.textContent = "Could not load schools.";
+      }
+    }
+
     (function restoreSavedRoleView() {
       try {
         const savedRole = localStorage.getItem("colspot_auth_role");
@@ -1112,63 +1166,31 @@
       }
     })();
 
-    (function setupRoleUI() {
-      const roleSelect = document.getElementById('signup-role');
-      const studentExtra = document.getElementById('student-extra');
-      const lecturerHint = document.getElementById('lecturer-email-hint');
-      const matricInput = document.getElementById('signup-matric');
-
-      if (!roleSelect) return;
-
-      roleSelect.addEventListener('change', function () {
-        const role = roleSelect.value;
-
-        if (role === 'student') {
-          if (studentExtra) studentExtra.classList.remove('hidden');
-          if (lecturerHint) lecturerHint.classList.add('hidden');
-        } else if (role === 'lecturer') {
-          if (studentExtra) {
-            studentExtra.classList.add('hidden');
-            if (matricInput) matricInput.value = '';
-          }
-          if (lecturerHint) lecturerHint.classList.remove('hidden');
-        } else {
-          if (studentExtra) studentExtra.classList.add('hidden');
-          if (lecturerHint) lecturerHint.classList.add('hidden');
-          if (matricInput) matricInput.value = '';
-        }
-      });
-    })();
-
     (function guardLecturerEmail() {
-      const form = document.getElementById('signup-form');
-      const emailInput = document.getElementById('signup-email');
-      const roleSelect = document.getElementById('signup-role');
-      const messageEl = document.getElementById('signup-message');
+      const form = document.getElementById("signup-form");
+      const emailInput = document.getElementById("signup-email");
+      const messageEl = document.getElementById("signup-message");
 
-      if (!form || !emailInput || !roleSelect) return;
+      if (!form || !emailInput) return;
 
       const blockedDomains = [
-        'gmail.com', 'gmail.com.ng',
-        'yahoo.com', 'yahoo.com.ng',
-        'hotmail.com',
-        'outlook.com', 'outlook.com.ng',
-        'live.com', 'live.com.ng',
-        'icloud.com', 'me.com',
-        'aol.com',
-        'gmx.com',
-        'protonmail.com', 'proton.me',
-        'yandex.com',
-        'zoho.com'
+        "gmail.com", "gmail.com.ng",
+        "yahoo.com", "yahoo.com.ng",
+        "hotmail.com",
+        "outlook.com", "outlook.com.ng",
+        "live.com", "live.com.ng",
+        "icloud.com", "me.com",
+        "aol.com",
+        "gmx.com",
+        "protonmail.com", "proton.me",
+        "yandex.com",
+        "zoho.com"
       ];
 
-      form.addEventListener('submit', function (event) {
-        const role = roleSelect.value;
-        if (role !== 'lecturer') return;
-
-        const rawEmail = (emailInput.value || '').trim().toLowerCase();
-        const atIndex = rawEmail.lastIndexOf('@');
-        const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : '';
+      form.addEventListener("submit", function (event) {
+        const rawEmail = (emailInput.value || "").trim().toLowerCase();
+        const atIndex = rawEmail.lastIndexOf("@");
+        const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : "";
 
         const isBlockedDomain = blockedDomains.includes(domain);
         const looksGenericPersonal = /gmail\.|yahoo\.|hotmail\.|outlook\.|icloud\.|live\.|gmx\.|proton|yandex\.|aol\.|zoho\./.test(domain);
@@ -1180,9 +1202,9 @@
 
           if (messageEl) {
             messageEl.textContent =
-              'Lecturers must sign up with an official school email (e.g. name@university.edu), not a personal email like Gmail/Yahoo/Outlook.';
-            messageEl.classList.remove('success');
-            messageEl.classList.add('error');
+              "Lecturers must sign up with an official school email, not a personal email like Gmail/Yahoo/Outlook.";
+            messageEl.classList.remove("success");
+            messageEl.classList.add("error");
           }
 
           emailInput.focus();
@@ -1194,6 +1216,7 @@
       if (window.__colspot_saved_role__) {
         showAuthSection(window.__colspot_saved_role__);
       }
+      waitForSupabaseAndLoadSchools();
     });
   </script>
 
