@@ -23,6 +23,9 @@ const AUTH_INTENT_KEY = "colspot_auth_intent";
 const LOCAL_USER_KEY = "colspot_local_user";
 const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+// ----------------------------
+// Intent / role cache helpers
+// ----------------------------
 function saveAuthIntent(intent) {
   try {
     localStorage.setItem(AUTH_INTENT_KEY, intent || "");
@@ -36,6 +39,31 @@ function clearAuthIntent() {
     localStorage.removeItem(AUTH_INTENT_KEY);
   } catch (e) {
     console.error("Could not clear auth intent:", e);
+  }
+}
+
+function saveAuthRole(role) {
+  try {
+    localStorage.setItem(AUTH_ROLE_KEY, role || "");
+  } catch (e) {
+    console.error("Could not save auth role:", e);
+  }
+}
+
+function getAuthRole() {
+  try {
+    return localStorage.getItem(AUTH_ROLE_KEY) || "";
+  } catch (e) {
+    console.error("Could not get auth role:", e);
+    return "";
+  }
+}
+
+function clearAuthRole() {
+  try {
+    localStorage.removeItem(AUTH_ROLE_KEY);
+  } catch (e) {
+    console.error("Could not clear auth role:", e);
   }
 }
 
@@ -105,25 +133,8 @@ const MSG = {
 };
 
 /* ----------------------------
- * Role helpers
+ * Backup page helpers
  * ---------------------------- */
-function saveAuthRole(role) {
-  try {
-    localStorage.setItem(AUTH_ROLE_KEY, role || "");
-  } catch (e) {
-    console.error("Could not save auth role:", e);
-  }
-}
-
-function getAuthRole() {
-  try {
-    return localStorage.getItem(AUTH_ROLE_KEY) || "";
-  } catch (e) {
-    console.error("Could not get auth role:", e);
-    return "";
-  }
-}
-
 function getSignupRole() {
   const roleSelect =
     document.getElementById("signup-role") ||
@@ -857,9 +868,10 @@ function switchMode(mode) {
   const switchLabel = document.getElementById("switch-link-label");
 
   clearMessages();
-  saveAuthRole("lecturer");
 
   if (mode === "signin") {
+    clearAuthRole();
+
     if (signinForm) signinForm.classList.remove("hidden");
     if (signupForm) signupForm.classList.add("hidden");
 
@@ -867,7 +879,7 @@ function switchMode(mode) {
     if (tabSignup) tabSignup.classList.remove("active");
 
     if (title) title.textContent = "Welcome back";
-    if (subtitle) subtitle.textContent = "Sign in to your Colspot lecturer account";
+    if (subtitle) subtitle.textContent = "Sign in with your email and password";
 
     if (switchText) switchText.textContent = "Don’t have an account?";
     if (switchLabel) switchLabel.textContent = "Create one";
@@ -879,15 +891,16 @@ function switchMode(mode) {
     if (tabSignup) tabSignup.classList.add("active");
 
     if (title) title.textContent = "Create your account";
-    if (subtitle) subtitle.textContent = "Sign up as a lecturer";
+    if (subtitle) subtitle.textContent = "Backup sign up for student or lecturer";
 
     if (switchText) switchText.textContent = "Already have an account?";
     if (switchLabel) switchLabel.textContent = "Sign in";
 
     const roleSelect = document.getElementById("signup-role");
     if (roleSelect) {
-      roleSelect.value = "lecturer";
+      roleSelect.value = roleSelect.value || "lecturer";
       roleSelect.dispatchEvent(new Event("change"));
+      saveAuthRole(roleSelect.value || "lecturer");
     }
   }
 }
@@ -1022,10 +1035,10 @@ function hideResetPanel() {
 
   if (currentMode === "signin") {
     if (title) title.textContent = "Welcome back";
-    if (subtitle) subtitle.textContent = "Sign in to your Colspot lecturer account";
+    if (subtitle) subtitle.textContent = "Sign in with your email and password";
   } else {
     if (title) title.textContent = "Create your account";
-    if (subtitle) subtitle.textContent = "Sign up as a lecturer";
+    if (subtitle) subtitle.textContent = "Backup sign up for student or lecturer";
   }
   showMainForms();
 }
@@ -1136,8 +1149,9 @@ async function signInWithGoogle() {
   }
 
   try {
-saveAuthRole("student");
-saveAuthIntent("signin");
+    saveAuthRole("student");
+    saveAuthIntent("signin");
+
     if (msgEl) {
       msgEl.textContent = MSG.GOOGLE_REDIRECTING;
       msgEl.className = "message success";
@@ -1173,14 +1187,16 @@ saveAuthIntent("signin");
 }
 
 /* ----------------------------
- * Lecturer sign in
+ * Backup sign in for both roles
  * ---------------------------- */
 const signinFormEl = document.getElementById("signin-form");
 if (signinFormEl) {
   signinFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
-saveAuthRole("lecturer");
-saveAuthIntent("signin");
+
+    clearAuthRole();
+    saveAuthIntent("signin");
+
     const email = document.getElementById("signin-email")?.value?.trim() || "";
     const password = document.getElementById("signin-password")?.value || "";
     const msgEl = document.getElementById("signin-message");
@@ -1257,8 +1273,9 @@ saveAuthIntent("signin");
         );
 
         await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
+
         await resolveUserRole(data.session.user.id, data.session.user.email || email);
+        saveLocalUserFromSession(data.session);
       }
 
       goToAuthCallback();
@@ -1278,16 +1295,16 @@ saveAuthIntent("signin");
 }
 
 /* ----------------------------
- * Lecturer/backup sign up
+ * Backup sign up for both roles
  * ---------------------------- */
 const signupFormEl = document.getElementById("signup-form");
 if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-   const role = getSignupRole();
-saveAuthRole(role);
-saveAuthIntent("signup");
+    const role = getSignupRole();
+    saveAuthRole(role);
+    saveAuthIntent("signup");
 
     const fullName = document.getElementById("signup-fullname")?.value?.trim() || "";
     const schoolName = document.getElementById("signup-schoolname")?.value?.trim() || "";
@@ -1308,7 +1325,7 @@ saveAuthIntent("signup");
       return;
     }
 
-    if (!fullName || !schoolName || !accountId || !email || !password || !password2) {
+    if (!fullName || !schoolName || !dept || !accountId || !email || !password || !password2) {
       msgEl.textContent = MSG.SIGNUP_MISSING_FIELDS;
       msgEl.className = "message error";
       return;
@@ -1518,7 +1535,6 @@ document
         );
 
         await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
 
         try {
           if (pendingSignup) {
@@ -1539,6 +1555,7 @@ document
           data.session.user.id,
           data.session.user.email || email
         );
+        saveLocalUserFromSession(data.session);
       }
 
       msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
@@ -1848,8 +1865,8 @@ document
         }
 
         await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
         await resolveUserRole(data.session.user.id, data.session.user.email || email);
+        saveLocalUserFromSession(data.session);
       }
 
       msgEl.textContent = MSG.RESET_OK_REDIRECT;
@@ -1893,6 +1910,7 @@ if (adminFormEl) {
   adminFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
     saveAuthRole("admin");
+    clearAuthIntent();
 
     const identifier = (document.getElementById("admin-identifier")?.value || "").trim();
     const password = document.getElementById("admin-password")?.value || "";
