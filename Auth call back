@@ -435,6 +435,14 @@
     }
   }
 
+  function clearLocalUser() {
+    try {
+      localStorage.removeItem(LOCAL_USER_KEY);
+    } catch (e) {
+      console.error("Could not clear local user cache:", e);
+    }
+  }
+
   function saveAuthRole(role) {
     try {
       localStorage.setItem(AUTH_ROLE_KEY, role);
@@ -455,9 +463,7 @@
     } catch (e) {
       console.error("Signout failed:", e);
     }
-    try {
-      localStorage.removeItem(LOCAL_USER_KEY);
-    } catch (e) {}
+    clearLocalUser();
     saveAuthRole("student");
     window.location.href = INDEX_URL;
   }
@@ -865,8 +871,6 @@
       }
 
       activeSession = session;
-      saveAuthRole("student");
-      saveLocalUserFromSession(session);
 
       const profileCheck = await checkStudentProfile(session);
 
@@ -886,12 +890,14 @@
         const deviceMessage = String(deviceErr.message || "").toLowerCase();
 
         if (deviceErr.code === "DEVICE_LIMIT" || deviceMessage.includes("2 phones")) {
+          clearLocalUser();
           showPanel("limit-panel");
           startLimitCountdown(10);
           return;
         }
 
         if (deviceErr.code === "DEVICE_CONFLICT" || deviceMessage.includes("another colspot account")) {
+          clearLocalUser();
           showPanel("error-panel");
           document.getElementById("error-box").textContent =
             "This device is already linked to another Colspot account.";
@@ -901,6 +907,9 @@
 
         throw deviceErr;
       }
+
+      saveAuthRole("student");
+      saveLocalUserFromSession(session);
 
       try {
         await recordLoginEvent(session);
@@ -939,6 +948,7 @@
       showPanel("complete-panel");
     } catch (err) {
       console.error("Callback flow failed:", err);
+      clearLocalUser();
       showPanel("error-panel");
       document.getElementById("error-box").textContent =
         err.message || "We couldn’t finish your Google sign in.";
