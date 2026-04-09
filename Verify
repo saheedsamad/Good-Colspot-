@@ -1,3 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <title>Colspot • Verification</title>
+
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --blue-soft:#eef4ff;
+      --bg:#f4f7ff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --danger:#ef4444;
+      --ok:#16a34a;
+      --warn:#d97706;
+      --shadow:0 14px 32px rgba(15,23,42,.10);
+      --shadow-soft:0 10px 24px rgba(37,99,235,.10);
+      --radius:24px;
+      --radius-sm:18px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, #dfeeff 0%, #f7faff 42%, #ffffff 100%);
+      color:var(--text);
+      min-height:100%;
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+    }
+
+    body::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    .phone-shell{
+      width:100%;
+      max-width:460px;
+      min-height:100vh;
+      padding:18px 14px 28px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 2px 14px;
+    }
+
+    .back-btn{
+      width:44px;
+      height:44px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      box-shadow:0 8px 20px rgba(15,23,42,.06);
+      flex-shrink:0;
+    }
+
+    .back-btn svg{
+      width:18px;
+      height:18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex:1;
+      min-width:0;
+    }
+
+    .brand-logo{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      border:1px solid var(--line);
+      flex-shrink:0;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .brand-title{
+      font-weight:900;
+      letter-spacing:-.02em;
+      font-size:17px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#10224a;
+    }
+
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero{
+      background:
+        linear-gradient(180deg, rgba(37,99,235,.11), rgba(37,99,235,.04));
+      border:1px solid rgba(37,99,235,.12);
+      border-radius:var(--radius);
+      padding:18px 16px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-20px;
+      top:-18px;
+      width:110px;
+      height:110px;
+      border-radius:50%;
+      background:rgba(37,99,235,.08);
+    }
+
+    .hero h1{
+      margin:0 0 7px;
+      font-size:22px;
+      line-height:1.15;
+      letter-spacing:-.03em;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero p{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+      position:relative;
+      z-index:1;
+      max-width:320px;
+    }
+
+    .card{
+      margin-top:14px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:16px 16px 12px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .card-head .title{
+      font-weight:900;
+      font-size:15px;
+      margin:0;
+      letter-spacing:-.02em;
+    }
+
+    .card-head .sub{
+      margin:6px 0 0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .card-body{
+      padding:14px;
+    }
+
+    .upload-box{
+      border:1.6px dashed #cbd5e1;
+      border-radius:20px;
+      padding:14px;
+      background:#fbfdff;
+    }
+
+    .upload-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .file-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 15px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      cursor:pointer;
+      font-weight:800;
+      font-size:13px;
+      box-shadow:0 8px 18px rgba(15,23,42,.04);
+    }
+
+    .file-btn svg{
+      width:18px;
+      height:18px;
+      color:var(--blue);
+    }
+
+    #fileInput{
+      display:none;
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .preview{
+      margin-top:14px;
+      display:none;
+      gap:12px;
+      align-items:center;
+      padding:12px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+
+    .thumb{
+      width:58px;
+      height:58px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      flex-shrink:0;
+    }
+
+    .thumb .pdf{
+      font-weight:900;
+      color:var(--blue);
+      font-size:12px;
+      letter-spacing:.08em;
+    }
+
+    .file-meta{
+      flex:1;
+      min-width:0;
+    }
+
+    .file-meta .name{
+      font-weight:900;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0f172a;
+    }
+
+    .file-meta .size{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:18px;
+      padding:14px 14px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:15px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:.18s ease;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      margin-top:12px;
+      box-shadow:0 14px 26px rgba(37,99,235,.18);
+    }
+
+    .btn-primary:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    .btn-ghost{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+      margin-top:10px;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .btn-half{
+      flex:1;
+      min-width:140px;
+    }
+
+    .loading{
+      display:none;
+      margin-top:12px;
+      padding:13px 14px;
+      border-radius:18px;
+      border:1px solid rgba(37,99,235,.18);
+      background:rgba(37,99,235,.06);
+      color:#1e40af;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:600;
+    }
+
+    .spinner{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      border:2px solid rgba(30,64,175,.25);
+      border-top-color:#1e40af;
+      display:inline-block;
+      animation:spin .9s linear infinite;
+      vertical-align:-3px;
+      margin-right:8px;
+    }
+
+    @keyframes spin{
+      to{ transform:rotate(360deg) }
+    }
+
+    .msg{
+      display:none;
+      margin-top:12px;
+      padding:12px 12px;
+      border-radius:18px;
+      font-size:13px;
+      line-height:1.5;
+      border:1px solid var(--line);
+      background:#fff;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .msg.err{
+      border-color:rgba(239,68,68,.22);
+      background:rgba(239,68,68,.08);
+      color:#7f1d1d;
+    }
+
+    .msg.ok{
+      border-color:rgba(22,163,74,.22);
+      background:rgba(22,163,74,.08);
+      color:#14532d;
+    }
+
+    .msg.warn{
+      display:block;
+      border-color:rgba(217,119,6,.22);
+      background:rgba(217,119,6,.08);
+      color:#92400e;
+    }
+
+    .details{
+      margin-top:14px;
+      display:none;
+      border-top:1px solid var(--line);
+      padding-top:14px;
+    }
+
+    .status-card{
+      margin-bottom:12px;
+      border:1px solid rgba(22,163,74,.18);
+      background:rgba(22,163,74,.07);
+      color:#166534;
+      border-radius:18px;
+      padding:12px 13px;
+      font-size:13px;
+      line-height:1.5;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .field{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px 13px;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,.03);
+    }
+
+    .label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:5px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:800;
+    }
+
+    .value{
+      font-weight:900;
+      font-size:14px;
+      word-break:break-word;
+      color:#0f172a;
+      line-height:1.35;
+    }
+
+    .footer-note{
+      margin-top:14px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+      text-align:center;
+      padding:0 8px;
+    }
+
+    @media (max-width:360px){
+      .btn-row{
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone-shell">
+    <div class="topbar">
+      <button class="back-btn" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="asset/logo walpaper.jpeg" alt="Colspot" />
+        </div>
+        <div style="min-width:0">
+          <div class="brand-title">Verification</div>
+          <div class="brand-sub">Upload course form PDF to verify your profile</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="hero">
+      <h1>Verify your student profile</h1>
+      <p>
+        Upload your course form PDF for verification. We will review the file, show your details to you, then you can continue or cancel.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <p class="title">Step 1 • Upload course form PDF</p>
+        <p class="sub">Upload a clear course form PDF only. Make sure the text is readable before you continue.</p>
+      </div>
+
+      <div class="card-body">
+        <div class="upload-box">
+          <div class="upload-row">
+            <label class="file-btn" for="fileInput" id="fileBtn">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 16V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Choose file
+            </label>
+            <input id="fileInput" type="file" accept="application/pdf" />
+          </div>
+
+          <div class="hint">
+            Accepted: PDF only. Upload your official course form so we can verify your profile details.
+          </div>
+
+          <div id="preview" class="preview">
+            <div class="thumb" id="thumb"></div>
+            <div class="file-meta">
+              <div class="name" id="fileName">—</div>
+              <div class="size" id="fileSize">—</div>
+            </div>
+          </div>
+
+          <div id="loading" class="loading">
+            <span class="spinner"></span>
+            Verifying your course form… please wait.
+          </div>
+
+          <div id="msgErr" class="msg err"></div>
+          <div id="msgOk" class="msg ok"></div>
+          <div id="msgWarn" class="msg"></div>
+
+          <button id="btnExtract" class="btn btn-primary" disabled>
+            Verify details
+          </button>
+
+          <button id="btnReset" class="btn btn-ghost" style="display:none;">
+            Upload another file
+          </button>
+
+          <div id="details" class="details">
+            <div class="status-card">
+              Your course form has been checked. Please review the verified details carefully before you continue.
+            </div>
+
+            <div class="grid">
+              <div class="field"><div class="label">Full name</div><div class="value" id="vFullName">—</div></div>
+              <div class="field"><div class="label">Matric / Staff ID</div><div class="value" id="vMatric">—</div></div>
+              <div class="field"><div class="label">School name</div><div class="value" id="vSchool">—</div></div>
+              <div class="field"><div class="label">Department</div><div class="value" id="vDept">—</div></div>
+              <div class="field"><div class="label">Programme</div><div class="value" id="vProgramme">—</div></div>
+              <div class="field"><div class="label">Faculty</div><div class="value" id="vFaculty">—</div></div>
+              <div class="field"><div class="label">Level</div><div class="value" id="vLevel">—</div></div>
+              <div class="field"><div class="label">Session</div><div class="value" id="vSession">—</div></div>
+              <div class="field"><div class="label">Semester</div><div class="value" id="vSemester">—</div></div>
+            </div>
+
+            <div class="btn-row">
+              <button id="btnContinue" class="btn btn-primary btn-half" type="button">
+                Continue
+              </button>
+
+              <button id="btnCancel" class="btn btn-ghost btn-half" type="button">
+                Cancel
+              </button>
+            </div>
+
+            <div class="footer-note">
+              Review the verified details carefully before you continue.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Colspot will only use this file for verification. You can delete your account anytime.
+    </div>
+  </div>
+
+  <script type="module" src="./client_supabase.js"></script>
+  <script src="./guard_session.js"></script>
 <script>
   const BUCKET = "verification_uploads";
   const EXTRACT_FN_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/extract-clearance";
