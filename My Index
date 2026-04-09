@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -612,6 +611,22 @@
       font-size: 12px;
       color: var(--muted);
     }
+
+    .role-backup-box {
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+      padding: 12px 12px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .role-backup-note {
+      margin-top: -6px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
   </style>
 </head>
 
@@ -911,6 +926,17 @@
 
           <!-- LECTURER SIGN UP -->
           <form id="signup-form" class="hidden">
+            <div class="role-backup-box">
+              <label for="signup-role">Role</label>
+              <select id="signup-role">
+                <option value="lecturer" selected>Lecturer</option>
+                <option value="student">Student</option>
+              </select>
+              <div class="role-backup-note">
+                Lecturer is the default. Change it to Student only if you are using this page as a backup sign-up flow.
+              </div>
+            </div>
+
             <label for="signup-fullname">Full name</label>
             <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
 
@@ -920,10 +946,20 @@
             </select>
             <div id="school-loading-note" class="school-loading-note">Loading schools...</div>
 
-            <label for="signup-staffid">Staff ID</label>
-            <input id="signup-staffid" type="text" placeholder="Enter your staff ID" autocomplete="off" required />
+            <label for="signup-dept">Department</label>
+            <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization-title" />
 
-            <label for="signup-email">School email</label>
+            <div id="lecturer-id-wrap">
+              <label for="signup-staffid">Staff ID</label>
+              <input id="signup-staffid" type="text" placeholder="Enter your staff ID" autocomplete="off" />
+            </div>
+
+            <div id="student-id-wrap" class="hidden">
+              <label for="signup-studentid">Matric number</label>
+              <input id="signup-studentid" type="text" placeholder="Enter your matric number" autocomplete="off" />
+            </div>
+
+            <label for="signup-email" id="signup-email-label">School email</label>
             <input id="signup-email" type="email" placeholder="you@school.edu" autocomplete="email" required />
 
             <div id="lecturer-email-hint" class="hint">
@@ -1113,6 +1149,43 @@
       }
     }
 
+    function updateLecturerSignupRoleUI() {
+      const roleSelect = document.getElementById("signup-role");
+      const currentRole = (roleSelect?.value || "lecturer").toLowerCase();
+
+      const lecturerWrap = document.getElementById("lecturer-id-wrap");
+      const studentWrap = document.getElementById("student-id-wrap");
+      const lecturerInput = document.getElementById("signup-staffid");
+      const studentInput = document.getElementById("signup-studentid");
+      const emailLabel = document.getElementById("signup-email-label");
+      const emailHint = document.getElementById("lecturer-email-hint");
+      const subtitle = document.getElementById("card-subtitle");
+
+      if (currentRole === "student") {
+        if (lecturerWrap) lecturerWrap.classList.add("hidden");
+        if (studentWrap) studentWrap.classList.remove("hidden");
+        if (lecturerInput) lecturerInput.value = "";
+        if (emailLabel) emailLabel.textContent = "Email";
+        if (emailHint) {
+          emailHint.textContent = "Use the same email you want to use for your student account.";
+        }
+        if (subtitle && document.getElementById("signup-form") && !document.getElementById("signup-form").classList.contains("hidden")) {
+          subtitle.textContent = "Backup sign up flow";
+        }
+      } else {
+        if (lecturerWrap) lecturerWrap.classList.remove("hidden");
+        if (studentWrap) studentWrap.classList.add("hidden");
+        if (studentInput) studentInput.value = "";
+        if (emailLabel) emailLabel.textContent = "School email";
+        if (emailHint) {
+          emailHint.textContent = "Use your official school email only.";
+        }
+        if (subtitle && document.getElementById("signup-form") && !document.getElementById("signup-form").classList.contains("hidden")) {
+          subtitle.textContent = "Sign up as a lecturer";
+        }
+      }
+    }
+
     async function waitForSupabaseAndLoadSchools() {
       const schoolSelect = document.getElementById("signup-schoolname");
       const loadingNote = document.getElementById("school-loading-note");
@@ -1169,6 +1242,7 @@
     (function guardLecturerEmail() {
       const form = document.getElementById("signup-form");
       const emailInput = document.getElementById("signup-email");
+      const roleSelect = document.getElementById("signup-role");
       const messageEl = document.getElementById("signup-message");
 
       if (!form || !emailInput) return;
@@ -1188,6 +1262,9 @@
       ];
 
       form.addEventListener("submit", function (event) {
+        const role = (roleSelect?.value || "lecturer").toLowerCase();
+        if (role !== "lecturer") return;
+
         const rawEmail = (emailInput.value || "").trim().toLowerCase();
         const atIndex = rawEmail.lastIndexOf("@");
         const domain = atIndex >= 0 ? rawEmail.slice(atIndex + 1) : "";
@@ -1213,9 +1290,18 @@
     })();
 
     window.addEventListener("DOMContentLoaded", function () {
+      const roleSelect = document.getElementById("signup-role");
+      if (roleSelect) {
+        roleSelect.value = "lecturer";
+        roleSelect.addEventListener("change", updateLecturerSignupRoleUI);
+      }
+
+      updateLecturerSignupRoleUI();
+
       if (window.__colspot_saved_role__) {
         showAuthSection(window.__colspot_saved_role__);
       }
+
       waitForSupabaseAndLoadSchools();
     });
   </script>
