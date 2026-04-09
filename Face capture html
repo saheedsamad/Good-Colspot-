@@ -642,336 +642,456 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
-  <script>
-    const FACE_ENROLL_FUNCTION_URL = `${window.SUPABASE_URL}/functions/v1/face-enroll`;
-    const SUCCESS_REDIRECT_URL = "main.html";
+<script>
+  const FACE_ENROLL_FUNCTION_URL = `${window.SUPABASE_URL}/functions/v1/face-enroll`;
+  const SUCCESS_REDIRECT_URL = "main.html";
+  const VERIFY_CLASS_URL = "verify_class.html";
+  const INDEX_URL = "index.html";
+  const VERIFICATION_TABLE = "verification_course_forms";
+  const FACE_TABLE = "face_profiles";
 
-    const supabaseClient = window.supabase.createClient(
-      window.SUPABASE_URL,
-      window.SUPABASE_ANON_KEY
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
+
+  const video = document.getElementById("cameraVideo");
+  const overlayCanvas = document.getElementById("overlayCanvas");
+  const overlayCtx = overlayCanvas.getContext("2d");
+  const captureCanvas = document.getElementById("captureCanvas");
+  const captureCtx = captureCanvas.getContext("2d");
+  const capturePreview = document.getElementById("capturePreview");
+
+  const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+  const cameraBadge = document.getElementById("cameraBadge");
+
+  const statusTitle = document.getElementById("statusTitle");
+  const statusSub = document.getElementById("statusSub");
+  const errorMsg = document.getElementById("errorMsg");
+  const successMsg = document.getElementById("successMsg");
+
+  const startCameraBtn = document.getElementById("startCameraBtn");
+  const stopCameraBtn = document.getElementById("stopCameraBtn");
+  const retakeBtn = document.getElementById("retakeBtn");
+  const continueBtn = document.getElementById("continueBtn");
+  const backBtn = document.getElementById("backBtn");
+  const whyBtn = document.getElementById("whyBtn");
+  const captureActions = document.getElementById("captureActions");
+  const approvedModal = document.getElementById("approvedModal");
+  const modalCountdown = document.getElementById("modalCountdown");
+
+  let mediaStream = null;
+  let mpCamera = null;
+  let faceMesh = null;
+  let scanningActive = false;
+  let captureLocked = false;
+  let finalBase64 = null;
+  let finalMimeType = "image/jpeg";
+  let bootUserId = null;
+
+  let poseHoldFrames = 0;
+  let currentStepIndex = 0;
+  const scanSequence = ["center", "left", "right", "center"];
+  const POSE_HOLD_TARGET = 8;
+
+  function showError(message) {
+    if (!errorMsg) return;
+    errorMsg.textContent = message || "";
+    errorMsg.classList.toggle("hidden", !message);
+  }
+
+  function showSuccess(message) {
+    if (!successMsg) return;
+    successMsg.textContent = message || "";
+    successMsg.classList.toggle("hidden", !message);
+  }
+
+  function clearFlashMessages() {
+    showError("");
+    showSuccess("");
+  }
+
+  function setStatus(title, sub = "") {
+    if (statusTitle) statusTitle.textContent = title || "";
+    if (statusSub) statusSub.textContent = sub || "";
+  }
+
+  function setCameraBadge(text) {
+    if (cameraBadge) cameraBadge.textContent = text || "";
+  }
+
+  function setButtonsForIdle() {
+    if (startCameraBtn) startCameraBtn.classList.remove("hidden");
+    if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
+    if (captureActions) captureActions.classList.add("hidden");
+  }
+
+  function setButtonsForLiveCamera() {
+    if (startCameraBtn) startCameraBtn.classList.add("hidden");
+    if (stopCameraBtn) stopCameraBtn.classList.remove("hidden");
+    if (captureActions) captureActions.classList.add("hidden");
+  }
+
+  function setButtonsForCaptured() {
+    if (startCameraBtn) startCameraBtn.classList.add("hidden");
+    if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
+    if (captureActions) captureActions.classList.remove("hidden");
+  }
+
+  function updateSequenceUI() {
+    const circles = document.querySelectorAll(".fc-step-circle");
+    const lines = document.querySelectorAll(".fc-step-line");
+
+    circles.forEach((el, index) => {
+      el.classList.remove("active", "done");
+      el.textContent = String(index + 1);
+    });
+
+    lines.forEach((el) => el.classList.remove("done"));
+
+    for (let i = 0; i < circles.length; i++) {
+      if (i < currentStepIndex) {
+        circles[i].classList.add("done");
+        circles[i].textContent = "✓";
+      } else if (i === currentStepIndex) {
+        circles[i].classList.add("active");
+        circles[i].textContent = String(i + 1);
+      }
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      if (i < currentStepIndex) lines[i].classList.add("done");
+    }
+
+    if (statusTitle) {
+      statusTitle.textContent = currentInstruction();
+    }
+  }
+
+  function resetSequenceState() {
+    currentStepIndex = 0;
+    poseHoldFrames = 0;
+    captureLocked = false;
+    updateSequenceUI();
+  }
+
+  function currentInstruction() {
+    const step = scanSequence[currentStepIndex] || "center";
+    if (step === "center") return "Look straight";
+    if (step === "left") return "Turn left";
+    if (step === "right") return "Turn right";
+    return "Hold still";
+  }
+
+  function clearOverlay() {
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+  }
+
+  function resizeOverlayToVideo() {
+    const width = video.videoWidth || 720;
+    const height = video.videoHeight || 960;
+    overlayCanvas.width = width;
+    overlayCanvas.height = height;
+  }
+
+  function ratioBetween(leftX, rightX, targetX) {
+    const width = rightX - leftX;
+    if (!width || Math.abs(width) < 0.00001) return 0.5;
+    return (targetX - leftX) / width;
+  }
+
+  function computePose(landmarks) {
+    const leftEyeOuter = landmarks[33];
+    const rightEyeOuter = landmarks[263];
+    const noseTip = landmarks[1];
+
+    const ratio = ratioBetween(leftEyeOuter.x, rightEyeOuter.x, noseTip.x);
+
+    if (ratio >= 0.45 && ratio <= 0.55) return "center";
+    if (ratio < 0.43) return "left";
+    if (ratio > 0.57) return "right";
+    return "unknown";
+  }
+
+  function isFaceCentered(landmarks) {
+    const leftCheek = landmarks[234];
+    const rightCheek = landmarks[454];
+    const forehead = landmarks[10];
+    const chin = landmarks[152];
+
+    const centerX = (leftCheek.x + rightCheek.x) / 2;
+    const centerY = (forehead.y + chin.y) / 2;
+
+    return centerX >= 0.35 && centerX <= 0.65 && centerY >= 0.30 && centerY <= 0.66;
+  }
+
+  function drawResults(results) {
+    resizeOverlayToVideo();
+    clearOverlay();
+
+    if (!results || !results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+      return;
+    }
+
+    const landmarks = results.multiFaceLandmarks[0];
+
+    drawConnectors(
+      overlayCtx,
+      landmarks,
+      FACEMESH_TESSELATION,
+      { color: "rgba(255,255,255,0.07)", lineWidth: 1 }
     );
 
-    const video = document.getElementById("cameraVideo");
-    const overlayCanvas = document.getElementById("overlayCanvas");
-    const overlayCtx = overlayCanvas.getContext("2d");
-    const captureCanvas = document.getElementById("captureCanvas");
-    const captureCtx = captureCanvas.getContext("2d");
-    const capturePreview = document.getElementById("capturePreview");
+    drawConnectors(
+      overlayCtx,
+      landmarks,
+      FACEMESH_FACE_OVAL,
+      { color: "rgba(59,130,246,0.95)", lineWidth: 2 }
+    );
+  }
 
-    const cameraPlaceholder = document.getElementById("cameraPlaceholder");
-    const cameraBadge = document.getElementById("cameraBadge");
+  function hidePlaceholder() {
+    if (cameraPlaceholder) cameraPlaceholder.classList.add("hidden");
+  }
 
-    const statusTitle = document.getElementById("statusTitle");
-    const statusSub = document.getElementById("statusSub");
-    const errorMsg = document.getElementById("errorMsg");
-    const successMsg = document.getElementById("successMsg");
+  function showPlaceholder() {
+    if (cameraPlaceholder) cameraPlaceholder.classList.remove("hidden");
+  }
 
-    const startCameraBtn = document.getElementById("startCameraBtn");
-    const stopCameraBtn = document.getElementById("stopCameraBtn");
-    const retakeBtn = document.getElementById("retakeBtn");
-    const continueBtn = document.getElementById("continueBtn");
-    const backBtn = document.getElementById("backBtn");
-    const whyBtn = document.getElementById("whyBtn");
-    const captureActions = document.getElementById("captureActions");
-    const approvedModal = document.getElementById("approvedModal");
-    const modalCountdown = document.getElementById("modalCountdown");
+  function showCapturedPreview(base64) {
+    if (capturePreview) {
+      capturePreview.src = base64;
+      capturePreview.classList.remove("hidden");
+    }
+    if (video) video.classList.add("hidden");
+  }
 
-    let mediaStream = null;
-    let mpCamera = null;
-    let faceMesh = null;
-    let scanningActive = false;
-    let captureLocked = false;
-    let finalBase64 = null;
-    let finalMimeType = "image/jpeg";
+  function hideCapturedPreview() {
+    if (capturePreview) {
+      capturePreview.src = "";
+      capturePreview.classList.add("hidden");
+    }
+    if (video) video.classList.remove("hidden");
+  }
 
-    let poseHoldFrames = 0;
-    let currentStepIndex = 0;
-    const scanSequence = ["center", "left", "right", "center"];
-    const POSE_HOLD_TARGET = 8;
-
-    function showError(message) {
-      if (!errorMsg) return;
-      errorMsg.textContent = message || "";
-      errorMsg.classList.toggle("hidden", !message);
+  function stopTracksOnly() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+      mediaStream = null;
     }
 
-    function showSuccess(message) {
-      if (!successMsg) return;
-      successMsg.textContent = message || "";
-      successMsg.classList.toggle("hidden", !message);
+    if (mpCamera && typeof mpCamera.stop === "function") {
+      try {
+        mpCamera.stop();
+      } catch (_) {}
     }
 
-    function clearFlashMessages() {
-      showError("");
-      showSuccess("");
-    }
+    mpCamera = null;
+    scanningActive = false;
+  }
 
-    function setStatus(title, sub = "") {
-      if (statusTitle) statusTitle.textContent = title || "";
-      if (statusSub) statusSub.textContent = sub || "";
-    }
+  function fullResetToIdle() {
+    stopTracksOnly();
+    clearOverlay();
+    finalBase64 = null;
+    hideCapturedPreview();
+    showPlaceholder();
+    setButtonsForIdle();
+    resetSequenceState();
+    clearFlashMessages();
+    setCameraBadge("Look straight, turn left, turn right, then look straight again");
+    setStatus("Look straight", "Start your camera and follow the movement guide.");
+  }
 
-    function setCameraBadge(text) {
-      if (cameraBadge) cameraBadge.textContent = text || "";
-    }
+  function buildCaptureMeta() {
+    return {
+      source: "camera",
+      stepSequence: scanSequence,
+      deviceId:
+        localStorage.getItem("colspot_device_id") ||
+        localStorage.getItem("device_id") ||
+        localStorage.getItem("colspot_device_id_v2") ||
+        null
+    };
+  }
 
-    function setButtonsForIdle() {
-      if (startCameraBtn) startCameraBtn.classList.remove("hidden");
-      if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
-      if (captureActions) captureActions.classList.add("hidden");
-    }
+  function openApprovedModal() {
+    if (approvedModal) approvedModal.classList.remove("hidden");
+    let seconds = 5;
+    if (modalCountdown) modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
 
-    function setButtonsForLiveCamera() {
-      if (startCameraBtn) startCameraBtn.classList.add("hidden");
-      if (stopCameraBtn) stopCameraBtn.classList.remove("hidden");
-      if (captureActions) captureActions.classList.add("hidden");
-    }
-
-    function setButtonsForCaptured() {
-      if (startCameraBtn) startCameraBtn.classList.add("hidden");
-      if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
-      if (captureActions) captureActions.classList.remove("hidden");
-    }
-
-    function updateSequenceUI() {
-      const step2 = document.getElementById("statusTitle");
-      const circles = document.querySelectorAll(".fc-step-circle");
-      const lines = document.querySelectorAll(".fc-step-line");
-
-      circles.forEach((el, index) => {
-        el.classList.remove("active", "done");
-        el.textContent = String(index + 1);
-      });
-
-      lines.forEach((el) => el.classList.remove("done"));
-
-      for (let i = 0; i < circles.length; i++) {
-        if (i < currentStepIndex) {
-          circles[i].classList.add("done");
-          circles[i].textContent = "✓";
-        } else if (i === currentStepIndex) {
-          circles[i].classList.add("active");
-          circles[i].textContent = String(i + 1);
-        }
+    const timer = setInterval(() => {
+      seconds -= 1;
+      if (modalCountdown) {
+        modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
       }
 
-      for (let i = 0; i < lines.length; i++) {
-        if (i < currentStepIndex) lines[i].classList.add("done");
+      if (seconds <= 0) {
+        clearInterval(timer);
+        window.location.href = SUCCESS_REDIRECT_URL;
       }
+    }, 1000);
+  }
 
-      if (step2) {
-        step2.textContent = currentInstruction();
-      }
+  async function ensureSession() {
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error || !data?.session) {
+      window.location.href = INDEX_URL;
+      return null;
     }
 
-    function resetSequenceState() {
-      currentStepIndex = 0;
-      poseHoldFrames = 0;
-      captureLocked = false;
-      updateSequenceUI();
+    return data.session;
+  }
+
+  async function getCurrentUserId() {
+    const session = await ensureSession();
+    if (!session || !session.user) return null;
+    return session.user.id;
+  }
+
+  async function hasSuccessfulCourseVerification(userId) {
+    if (!userId) return false;
+
+    const { data, error } = await supabaseClient
+      .from(VERIFICATION_TABLE)
+      .select("id,status")
+      .eq("user_id", userId)
+      .eq("status", "successful")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("verification_course_forms check failed:", error);
+      throw error;
     }
 
-    function currentInstruction() {
-      const step = scanSequence[currentStepIndex] || "center";
-      if (step === "center") return "Look straight";
-      if (step === "left") return "Turn left";
-      if (step === "right") return "Turn right";
-      return "Hold still";
+    return !!data;
+  }
+
+  async function hasVerifiedFaceAlready(userId) {
+    if (!userId) return false;
+
+    const { data, error } = await supabaseClient
+      .from(FACE_TABLE)
+      .select("user_id, face_verified, capture_status")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("face_profiles check failed:", error);
+      throw error;
     }
 
-    function clearOverlay() {
-      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    if (!data) return false;
+
+    const status = String(data.capture_status || "").toLowerCase().trim();
+    return data.face_verified === true || status === "approved" || status === "verified";
+  }
+
+  async function enforceFacePageAccess() {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
+
+    bootUserId = userId;
+
+    const hasCourseVerification = await hasSuccessfulCourseVerification(userId);
+    if (!hasCourseVerification) {
+      window.location.href = VERIFY_CLASS_URL;
+      return false;
     }
 
-    function resizeOverlayToVideo() {
-      const width = video.videoWidth || 720;
-      const height = video.videoHeight || 960;
-      overlayCanvas.width = width;
-      overlayCanvas.height = height;
+    const hasFace = await hasVerifiedFaceAlready(userId);
+    if (hasFace) {
+      localStorage.setItem("colspot_face_enrolled", "true");
+      localStorage.setItem("colspot_verification_done", "true");
+      localStorage.removeItem("colspot_face_step_ready");
+      window.location.href = SUCCESS_REDIRECT_URL;
+      return false;
     }
 
-    function ratioBetween(leftX, rightX, targetX) {
-      const width = rightX - leftX;
-      if (!width || Math.abs(width) < 0.00001) return 0.5;
-      return (targetX - leftX) / width;
-    }
+    localStorage.setItem("colspot_verification_done", "true");
+    localStorage.setItem("colspot_face_step_ready", "true");
+    return true;
+  }
 
-    function computePose(landmarks) {
-      const leftEyeOuter = landmarks[33];
-      const rightEyeOuter = landmarks[263];
-      const noseTip = landmarks[1];
+  async function initFaceMesh() {
+    if (faceMesh) return;
 
-      const ratio = ratioBetween(leftEyeOuter.x, rightEyeOuter.x, noseTip.x);
+    faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
 
-      if (ratio >= 0.45 && ratio <= 0.55) return "center";
-      if (ratio < 0.43) return "left";
-      if (ratio > 0.57) return "right";
-      return "unknown";
-    }
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
 
-    function isFaceCentered(landmarks) {
-      const leftCheek = landmarks[234];
-      const rightCheek = landmarks[454];
-      const forehead = landmarks[10];
-      const chin = landmarks[152];
+    faceMesh.onResults((results) => {
+      drawResults(results);
 
-      const centerX = (leftCheek.x + rightCheek.x) / 2;
-      const centerY = (forehead.y + chin.y) / 2;
+      if (!scanningActive || captureLocked) return;
 
-      return centerX >= 0.35 && centerX <= 0.65 && centerY >= 0.30 && centerY <= 0.66;
-    }
+      const faces = results.multiFaceLandmarks || [];
 
-    function drawResults(results) {
-      resizeOverlayToVideo();
-      clearOverlay();
-
-      if (!results || !results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+      if (!faces.length) {
+        poseHoldFrames = 0;
+        setCameraBadge("No face detected");
+        setStatus("Look straight", "Position your face inside the frame.");
         return;
       }
 
-      const landmarks = results.multiFaceLandmarks[0];
+      const landmarks = faces[0];
+      const centered = isFaceCentered(landmarks);
+      const expectedPose = scanSequence[currentStepIndex] || null;
 
-      drawConnectors(
-        overlayCtx,
-        landmarks,
-        FACEMESH_TESSELATION,
-        { color: "rgba(255,255,255,0.07)", lineWidth: 1 }
-      );
-
-      drawConnectors(
-        overlayCtx,
-        landmarks,
-        FACEMESH_FACE_OVAL,
-        { color: "rgba(59,130,246,0.95)", lineWidth: 2 }
-      );
-    }
-
-    function hidePlaceholder() {
-      if (cameraPlaceholder) cameraPlaceholder.classList.add("hidden");
-    }
-
-    function showPlaceholder() {
-      if (cameraPlaceholder) cameraPlaceholder.classList.remove("hidden");
-    }
-
-    function showCapturedPreview(base64) {
-      if (capturePreview) {
-        capturePreview.src = base64;
-        capturePreview.classList.remove("hidden");
-      }
-      if (video) video.classList.add("hidden");
-    }
-
-    function hideCapturedPreview() {
-      if (capturePreview) {
-        capturePreview.src = "";
-        capturePreview.classList.add("hidden");
-      }
-      if (video) video.classList.remove("hidden");
-    }
-
-    function stopTracksOnly() {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
-        mediaStream = null;
+      if (!expectedPose) {
+        captureLocked = true;
+        scanningActive = false;
+        setCameraBadge("Capturing...");
+        setStatus("Hold still", "We are capturing your face now.");
+        setTimeout(captureFrame, 400);
+        return;
       }
 
-      if (mpCamera && typeof mpCamera.stop === "function") {
-        try {
-          mpCamera.stop();
-        } catch (_) {}
+      const pose = computePose(landmarks);
+
+      if (!centered) {
+        poseHoldFrames = 0;
+        setCameraBadge("Move into frame");
+        setStatus("Center your face", "Move your face into the frame and keep only one face visible.");
+        return;
       }
 
-      mpCamera = null;
-      scanningActive = false;
-    }
+      setCameraBadge(currentInstruction());
 
-    function fullResetToIdle() {
-      stopTracksOnly();
-      clearOverlay();
-      finalBase64 = null;
-      hideCapturedPreview();
-      showPlaceholder();
-      setButtonsForIdle();
-      resetSequenceState();
-      clearFlashMessages();
-      setCameraBadge("Look straight, turn left, turn right, then look straight again");
-      setStatus("Look straight", "Start your camera and follow the movement guide.");
-    }
+      if (pose === expectedPose) {
+        poseHoldFrames += 1;
+        clearFlashMessages();
 
-    function buildCaptureMeta() {
-      return {
-        source: "camera",
-        stepSequence: scanSequence,
-        deviceId:
-          localStorage.getItem("colspot_device_id") ||
-          localStorage.getItem("device_id") ||
-          null
-      };
-    }
+        let detectedText = "Look straight";
+        if (expectedPose === "left") detectedText = "Turn left";
+        if (expectedPose === "right") detectedText = "Turn right";
 
-    function openApprovedModal() {
-      if (approvedModal) approvedModal.classList.remove("hidden");
-      let seconds = 5;
-      if (modalCountdown) modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
-
-      const timer = setInterval(() => {
-        seconds -= 1;
-        if (modalCountdown) {
-          modalCountdown.textContent = `Redirecting in ${seconds} seconds...`;
-        }
-
-        if (seconds <= 0) {
-          clearInterval(timer);
-          window.location.href = SUCCESS_REDIRECT_URL;
-        }
-      }, 1000);
-    }
-
-    async function ensureSession() {
-      const { data, error } = await supabaseClient.auth.getSession();
-
-      if (error || !data?.session) {
-        window.location.href = "index.html";
-        return null;
+        setStatus(
+          currentInstruction(),
+          `${detectedText} detected. Hold still...`
+        );
+      } else {
+        poseHoldFrames = 0;
+        setStatus(currentInstruction(), "Follow the movement guide.");
       }
 
-      return data.session;
-    }
+      if (poseHoldFrames >= POSE_HOLD_TARGET) {
+        currentStepIndex += 1;
+        poseHoldFrames = 0;
+        updateSequenceUI();
 
-    async function initFaceMesh() {
-      if (faceMesh) return;
-
-      faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-      });
-
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6
-      });
-
-      faceMesh.onResults((results) => {
-        drawResults(results);
-
-        if (!scanningActive || captureLocked) return;
-
-        const faces = results.multiFaceLandmarks || [];
-
-        if (!faces.length) {
-          poseHoldFrames = 0;
-          setCameraBadge("No face detected");
-          setStatus("Look straight", "Position your face inside the frame.");
-          return;
-        }
-
-        const landmarks = faces[0];
-        const centered = isFaceCentered(landmarks);
-        const expectedPose = scanSequence[currentStepIndex] || null;
-
-        if (!expectedPose) {
+        if (currentStepIndex >= scanSequence.length) {
           captureLocked = true;
           scanningActive = false;
           setCameraBadge("Capturing...");
@@ -980,267 +1100,252 @@
           return;
         }
 
-        const pose = computePose(landmarks);
-
-        if (!centered) {
-          poseHoldFrames = 0;
-          setCameraBadge("Move into frame");
-          setStatus("Center your face", "Move your face into the frame and keep only one face visible.");
-          return;
-        }
-
+        setStatus(currentInstruction(), "Good. Move to the next step.");
         setCameraBadge(currentInstruction());
-
-        if (pose === expectedPose) {
-          poseHoldFrames += 1;
-          clearFlashMessages();
-
-          let detectedText = "Look straight";
-          if (expectedPose === "left") detectedText = "Turn left";
-          if (expectedPose === "right") detectedText = "Turn right";
-
-          setStatus(
-            currentInstruction(),
-            `${detectedText} detected. Hold still...`
-          );
-        } else {
-          poseHoldFrames = 0;
-          setStatus(currentInstruction(), "Follow the movement guide.");
-        }
-
-        if (poseHoldFrames >= POSE_HOLD_TARGET) {
-          currentStepIndex += 1;
-          poseHoldFrames = 0;
-          updateSequenceUI();
-
-          if (currentStepIndex >= scanSequence.length) {
-            captureLocked = true;
-            scanningActive = false;
-            setCameraBadge("Capturing...");
-            setStatus("Hold still", "We are capturing your face now.");
-            setTimeout(captureFrame, 400);
-            return;
-          }
-
-          setStatus(currentInstruction(), "Good. Move to the next step.");
-          setCameraBadge(currentInstruction());
-        }
-      });
-    }
-
-    function captureFrame() {
-      const width = video.videoWidth;
-      const height = video.videoHeight;
-
-      if (!width || !height) {
-        captureLocked = false;
-        scanningActive = true;
-        showError("Camera is not ready yet. Please try again.");
-        return;
       }
+    });
+  }
 
-      captureCanvas.width = width;
-      captureCanvas.height = height;
+  function captureFrame() {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
 
-      captureCtx.save();
-      captureCtx.translate(width, 0);
-      captureCtx.scale(-1, 1);
-      captureCtx.drawImage(video, 0, 0, width, height);
-      captureCtx.restore();
-
-      finalBase64 = captureCanvas.toDataURL(finalMimeType, 0.95);
-      showCapturedPreview(finalBase64);
-
-      scanningActive = false;
-      setButtonsForCaptured();
-      setCameraBadge("Capture ready");
-      showSuccess("Face captured successfully.");
-      setStatus("Capture ready", "Review your capture or continue.");
-    }
-
-    async function startCamera() {
-      clearFlashMessages();
-      await ensureSession();
-
-      try {
-        stopTracksOnly();
-        hideCapturedPreview();
-        showPlaceholder();
-        resetSequenceState();
-        finalBase64 = null;
-
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "user",
-            width: { ideal: 720 },
-            height: { ideal: 960 }
-          },
-          audio: false
-        });
-
-        video.srcObject = mediaStream;
-        await video.play();
-
-        await initFaceMesh();
-
-        mpCamera = new Camera(video, {
-          onFrame: async () => {
-            if (faceMesh) {
-              await faceMesh.send({ image: video });
-            }
-          },
-          width: 720,
-          height: 960
-        });
-
-        await mpCamera.start();
-
-        scanningActive = true;
-        hidePlaceholder();
-        setButtonsForLiveCamera();
-        setCameraBadge("Look straight");
-        setStatus("Look straight", "Start by looking straight at the camera.");
-      } catch (err) {
-        console.error(err);
-        showError("Camera access failed. Please allow camera permission and try again.");
-        setStatus("Camera access failed", "Permission is required to continue.");
-        fullResetToIdle();
-      }
-    }
-
-    async function uploadToEdge() {
-      clearFlashMessages();
-
-      const session = await ensureSession();
-      if (!session) return;
-
-      if (!finalBase64) {
-        showError("No captured image found. Please retake your face.");
-        return;
-      }
-
-      continueBtn.disabled = true;
-      retakeBtn.disabled = true;
-      setStatus("Saving your face...", "Please wait while we upload your face image.");
-      setCameraBadge("Uploading...");
-
-      try {
-        const res = await fetch(FACE_ENROLL_FUNCTION_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            imageBase64: finalBase64,
-            mimeType: finalMimeType,
-            captureMeta: buildCaptureMeta()
-          })
-        });
-
-        const result = await res.json().catch(() => ({}));
-
-        if (result && result.status === "duplicate") {
-          continueBtn.disabled = false;
-          retakeBtn.disabled = false;
-          showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
-          setStatus("Verification failed", "This face is already linked to another account.");
-          setCameraBadge("Capture ready");
-          return;
-        }
-
-        if (result && result.status === "already_enrolled") {
-          showSuccess("Your face has already been verified before. Redirecting to main...");
-          setStatus("Already verified", "Your face is already linked to this account.");
-          setCameraBadge("Approved");
-          setTimeout(() => {
-            window.location.href = SUCCESS_REDIRECT_URL;
-          }, 5000);
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error(result.error || "Failed to save face.");
-        }
-
-        localStorage.setItem("colspot_face_enrolled", "true");
-        localStorage.removeItem("colspot_face_step_ready");
-
-        showSuccess("Verification approved successfully.");
-        setStatus("Approved", "Your face has been verified successfully.");
-        setCameraBadge("Approved");
-        openApprovedModal();
-      } catch (err) {
-        console.error(err);
-        continueBtn.disabled = false;
-        retakeBtn.disabled = false;
-
-        const rawMessage = err?.message || "Could not save your face. Please try again.";
-        const lower = String(rawMessage).toLowerCase();
-
-        if (lower.includes("duplicate")) {
-          showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
-          setStatus("Verification failed", "This face is already linked to another account.");
-        } else {
-          showError(rawMessage);
-          setStatus("Upload failed", "Please check your connection and try again.");
-        }
-
-        setCameraBadge("Capture ready");
-      }
-    }
-
-    function retakeCapture() {
-      clearFlashMessages();
-      hideCapturedPreview();
-      finalBase64 = null;
+    if (!width || !height) {
       captureLocked = false;
       scanningActive = true;
+      showError("Camera is not ready yet. Please try again.");
+      return;
+    }
+
+    captureCanvas.width = width;
+    captureCanvas.height = height;
+
+    captureCtx.save();
+    captureCtx.translate(width, 0);
+    captureCtx.scale(-1, 1);
+    captureCtx.drawImage(video, 0, 0, width, height);
+    captureCtx.restore();
+
+    finalBase64 = captureCanvas.toDataURL(finalMimeType, 0.95);
+    showCapturedPreview(finalBase64);
+
+    scanningActive = false;
+    setButtonsForCaptured();
+    setCameraBadge("Capture ready");
+    showSuccess("Face captured successfully.");
+    setStatus("Capture ready", "Review your capture or continue.");
+  }
+
+  async function startCamera() {
+    clearFlashMessages();
+
+    const allowed = await enforceFacePageAccess();
+    if (!allowed) return;
+
+    try {
+      stopTracksOnly();
+      hideCapturedPreview();
+      showPlaceholder();
       resetSequenceState();
+      finalBase64 = null;
+
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 720 },
+          height: { ideal: 960 }
+        },
+        audio: false
+      });
+
+      video.srcObject = mediaStream;
+      await video.play();
+
+      await initFaceMesh();
+
+      mpCamera = new Camera(video, {
+        onFrame: async () => {
+          if (faceMesh) {
+            await faceMesh.send({ image: video });
+          }
+        },
+        width: 720,
+        height: 960
+      });
+
+      await mpCamera.start();
+
+      scanningActive = true;
+      hidePlaceholder();
       setButtonsForLiveCamera();
       setCameraBadge("Look straight");
-      setStatus("Look straight", "Start again by looking straight at the camera.");
-    }
-
-    if (backBtn) {
-      backBtn.addEventListener("click", () => {
-        window.history.back();
-      });
-    }
-
-    if (whyBtn) {
-      whyBtn.addEventListener("click", () => {
-        alert("This helps Colspot confirm that a real live student is completing verification.");
-      });
-    }
-
-    if (startCameraBtn) {
-      startCameraBtn.addEventListener("click", startCamera);
-    }
-
-    if (stopCameraBtn) {
-      stopCameraBtn.addEventListener("click", () => {
-        fullResetToIdle();
-      });
-    }
-
-    if (retakeBtn) {
-      retakeBtn.addEventListener("click", retakeCapture);
-    }
-
-    if (continueBtn) {
-      continueBtn.addEventListener("click", uploadToEdge);
-    }
-
-    window.addEventListener("beforeunload", () => {
-      stopTracksOnly();
-    });
-
-    (async function boot() {
-      const session = await ensureSession();
-      if (!session) return;
+      setStatus("Look straight", "Start by looking straight at the camera.");
+    } catch (err) {
+      console.error(err);
+      showError("Camera access failed. Please allow camera permission and try again.");
+      setStatus("Camera access failed", "Permission is required to continue.");
       fullResetToIdle();
-    })();
-  </script>
+    }
+  }
+
+  async function uploadToEdge() {
+    clearFlashMessages();
+
+    const session = await ensureSession();
+    if (!session) return;
+
+    const userId = session.user?.id || bootUserId || null;
+    if (!userId) {
+      window.location.href = INDEX_URL;
+      return;
+    }
+
+    const hasCourseVerification = await hasSuccessfulCourseVerification(userId);
+    if (!hasCourseVerification) {
+      showError("Complete course form verification first.");
+      setStatus("Verification required", "You must verify your course form before face capture.");
+      setTimeout(() => {
+        window.location.href = VERIFY_CLASS_URL;
+      }, 800);
+      return;
+    }
+
+    if (!finalBase64) {
+      showError("No captured image found. Please retake your face.");
+      return;
+    }
+
+    continueBtn.disabled = true;
+    retakeBtn.disabled = true;
+    setStatus("Saving your face...", "Please wait while we upload your face image.");
+    setCameraBadge("Uploading...");
+
+    try {
+      const res = await fetch(FACE_ENROLL_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          imageBase64: finalBase64,
+          mimeType: finalMimeType,
+          captureMeta: buildCaptureMeta()
+        })
+      });
+
+      const result = await res.json().catch(() => ({}));
+
+      if (result && result.status === "duplicate") {
+        continueBtn.disabled = false;
+        retakeBtn.disabled = false;
+        showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
+        setStatus("Verification failed", "This face is already linked to another account.");
+        setCameraBadge("Capture ready");
+        return;
+      }
+
+      if (result && result.status === "already_enrolled") {
+        localStorage.setItem("colspot_face_enrolled", "true");
+        localStorage.setItem("colspot_verification_done", "true");
+        localStorage.removeItem("colspot_face_step_ready");
+
+        showSuccess("Your face has already been verified before. Redirecting to main...");
+        setStatus("Already verified", "Your face is already linked to this account.");
+        setCameraBadge("Approved");
+        setTimeout(() => {
+          window.location.href = SUCCESS_REDIRECT_URL;
+        }, 1200);
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to save face.");
+      }
+
+      localStorage.setItem("colspot_face_enrolled", "true");
+      localStorage.setItem("colspot_verification_done", "true");
+      localStorage.removeItem("colspot_face_step_ready");
+
+      showSuccess("Verification approved successfully.");
+      setStatus("Approved", "Your face has been verified successfully.");
+      setCameraBadge("Approved");
+      openApprovedModal();
+    } catch (err) {
+      console.error(err);
+      continueBtn.disabled = false;
+      retakeBtn.disabled = false;
+
+      const rawMessage = err?.message || "Could not save your face. Please try again.";
+      const lower = String(rawMessage).toLowerCase();
+
+      if (lower.includes("duplicate")) {
+        showError("This face is already registered to another account in your school. If there is any issue, please contact support from your profile.");
+        setStatus("Verification failed", "This face is already linked to another account.");
+      } else {
+        showError(rawMessage);
+        setStatus("Upload failed", "Please check your connection and try again.");
+      }
+
+      setCameraBadge("Capture ready");
+    }
+  }
+
+  function retakeCapture() {
+    clearFlashMessages();
+    hideCapturedPreview();
+    finalBase64 = null;
+    captureLocked = false;
+    scanningActive = true;
+    resetSequenceState();
+    setButtonsForLiveCamera();
+    setCameraBadge("Look straight");
+    setStatus("Look straight", "Start again by looking straight at the camera.");
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      window.location.href = VERIFY_CLASS_URL;
+    });
+  }
+
+  if (whyBtn) {
+    whyBtn.addEventListener("click", () => {
+      alert("This helps Colspot confirm that a real live student is completing verification.");
+    });
+  }
+
+  if (startCameraBtn) {
+    startCameraBtn.addEventListener("click", startCamera);
+  }
+
+  if (stopCameraBtn) {
+    stopCameraBtn.addEventListener("click", () => {
+      fullResetToIdle();
+    });
+  }
+
+  if (retakeBtn) {
+    retakeBtn.addEventListener("click", retakeCapture);
+  }
+
+  if (continueBtn) {
+    continueBtn.addEventListener("click", uploadToEdge);
+  }
+
+  window.addEventListener("beforeunload", () => {
+    stopTracksOnly();
+  });
+
+  (async function boot() {
+    const session = await ensureSession();
+    if (!session) return;
+
+    const allowed = await enforceFacePageAccess();
+    if (!allowed) return;
+
+    fullResetToIdle();
+  })();
+</script>
 </body>
 </html>
