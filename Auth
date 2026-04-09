@@ -20,9 +20,18 @@ const APP_VERSION = "1.0.0";
 // Version rule cache key
 const VERSION_RULE_KEY = "colspot_version_rule_v1";
 const AUTH_ROLE_KEY = "colspot_auth_role";
+const LOCAL_USER_KEY = "colspot_local_user";
+const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // ----------------------------
-// Message strings (user-friendly)
+// Paths
+// ----------------------------
+const AUTH_CALLBACK_PATH = "auth_callback.html"; // change only if your real callback filename differs
+const INDEX_PATH = "index.html";
+const ADMIN_MAIN_PATH = "main.html";
+
+// ----------------------------
+// Message strings
 // ----------------------------
 const MSG = {
   OFFLINE_BANNER: "No internet connection. We’ll keep trying in the background.",
@@ -40,6 +49,7 @@ const MSG = {
   SIGNUP_SEND_CODE_FAIL: "We couldn’t send the verification code. Please try again.",
   SIGNUP_SEND_CODE_OK: "We’ve sent a code to your email. Please check your inbox (and spam folder).",
   SIGNUP_SAVE_PROFILE_FAIL: "Your email was verified, but we couldn’t finish saving your account details. Please contact support.",
+  SIGNUP_ALREADY_EXISTS: "You have already created an account with this email. Please go back and sign in.",
 
   VERIFY_NO_EMAIL: "We couldn’t find the email for this verification. Please start sign up again.",
   VERIFY_MISSING_CODE: "Enter the verification code from your email.",
@@ -56,7 +66,6 @@ const MSG = {
   DEVICE_REGISTER_FAIL: "We couldn’t link this device to your account. Please try again.",
 
   FORGOT_NO_EMAIL: "Enter the email you use for Colspot.",
-  FORGOT_THROTTLE_FAIL: "Too many reset attempts. Please wait a few minutes and try again.",
   FORGOT_THROTTLED: "You’ve requested too many reset codes. Please wait a few minutes and try again.",
   FORGOT_SEND_FAIL: "We couldn’t send a reset code. Please try again.",
   FORGOT_SEND_OK: "We’ve sent a reset code to your email.",
@@ -65,7 +74,6 @@ const MSG = {
   RESET_MISSING_CODE: "Enter the reset code from your email.",
   RESET_WEAK_PASSWORD: "New password must be at least 6 characters and include letters and numbers.",
   RESET_PASSWORD_MISMATCH: "New passwords do not match.",
-  RESET_PASSWORD_REUSED: "You’ve used this password before. Please choose a new password you haven’t used on Colspot.",
   RESET_FAIL_VERIFY: "The reset code is incorrect or expired.",
   RESET_FAIL_UPDATE: "We couldn’t update your password. Please try again.",
   RESET_OK_REDIRECT: "Password updated. Signing you in…",
@@ -77,9 +85,6 @@ const MSG = {
   ADMIN_GENERIC: "We couldn’t sign you in as admin. Please try again.",
   ADMIN_USERNAME_NOT_SUPPORTED: "Username login will work after admin username lookup is connected. For now, use admin email.",
 
-  INIT_SUPABASE_MISSING: "Sign-in system is not ready yet. Please refresh and try again.",
-
-  VERSION_CHECK_FAIL: "We couldn’t check for updates. Please try again.",
   VERSION_HARD_BLOCK: "Your Colspot app is out of date. Please update from the store to continue."
 };
 
@@ -88,7 +93,7 @@ const MSG = {
  * ---------------------------- */
 function saveAuthRole(role) {
   try {
-    localStorage.setItem(AUTH_ROLE_KEY, role);
+    localStorage.setItem(AUTH_ROLE_KEY, role || "");
   } catch (e) {
     console.error("Could not save auth role:", e);
   }
@@ -100,6 +105,169 @@ function getAuthRole() {
   } catch (e) {
     console.error("Could not get auth role:", e);
     return "";
+  }
+}
+
+function getSignupRole() {
+  const roleSelect =
+    document.getElementById("signup-role") ||
+    document.getElementById("lecturer-signup-role");
+
+  const raw = (roleSelect?.value || "lecturer").toLowerCase().trim();
+  return raw === "student" ? "student" : "lecturer";
+}
+
+function getSignupDept() {
+  return (
+    document.getElementById("signup-dept")?.value?.trim() ||
+    document.getElementById("signup-department")?.value?.trim() ||
+    ""
+  );
+}
+
+function getSignupAccountId(role) {
+  if (role === "student") {
+    return (
+      document.getElementById("signup-matric")?.value?.trim() ||
+      document.getElementById("signup-studentid")?.value?.trim() ||
+      ""
+    );
+  }
+
+  return (
+    document.getElementById("signup-staffid")?.value?.trim() ||
+    document.getElementById("signup-matric")?.value?.trim() ||
+    ""
+  );
+}
+
+/* ----------------------------
+ * Redirect helpers
+ * ---------------------------- */
+function goToAuthCallback() {
+  window.location.href = AUTH_CALLBACK_PATH;
+}
+
+async function resolveUserRole(userId, userEmail = "") {
+  if (!userId || !window.supabase) return getAuthRole() || "";
+
+  try {
+    const { data: studentByUser } = await supabase
+      .from("student_accounts")
+      .select("user_id,email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (studentByUser?.user_id) {
+      saveAuthRole("student");
+      return "student";
+    }
+
+    const { data: lecturerByUser } = await supabase
+      .from("lecturer_accounts")
+      .select("user_id,email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (lecturerByUser?.user_id) {
+      saveAuthRole("lecturer");
+      return "lecturer";
+    }
+
+    const email = String(userEmail || "").trim().toLowerCase();
+
+    if (email) {
+      const { data: studentByEmail } = await supabase
+        .from("student_accounts")
+        .select("user_id,email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (studentByEmail?.user_id) {
+        saveAuthRole("student");
+        return "student";
+      }
+
+      const { data: lecturerByEmail } = await supabase
+        .from("lecturer_accounts")
+        .select("user_id,email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (lecturerByEmail?.user_id) {
+        saveAuthRole("lecturer");
+        return "lecturer";
+      }
+    }
+
+    return getAuthRole() || "";
+  } catch (e) {
+    console.error("resolveUserRole failed:", e);
+    return getAuthRole() || "";
+  }
+}
+
+/* ----------------------------
+ * Existing account checks
+ * ---------------------------- */
+async function checkExistingAccountForSignup(email, role) {
+  if (!window.supabase || !email) return { exists: false, message: "" };
+
+  const cleanEmail = String(email).trim().toLowerCase();
+
+  try {
+    const [studentRes, lecturerRes] = await Promise.all([
+      supabase
+        .from("student_accounts")
+        .select("user_id,email,full_name")
+        .eq("email", cleanEmail)
+        .maybeSingle(),
+      supabase
+        .from("lecturer_accounts")
+        .select("user_id,email,full_name")
+        .eq("email", cleanEmail)
+        .maybeSingle()
+    ]);
+
+    const studentRow = studentRes.data || null;
+    const lecturerRow = lecturerRes.data || null;
+
+    if (role === "student") {
+      if (studentRow) {
+        return {
+          exists: true,
+          message: MSG.SIGNUP_ALREADY_EXISTS
+        };
+      }
+
+      if (lecturerRow) {
+        return {
+          exists: true,
+          message: "This email already belongs to a lecturer account. Please go back and sign in through the Lecturer flow."
+        };
+      }
+    }
+
+    if (role === "lecturer") {
+      if (lecturerRow) {
+        return {
+          exists: true,
+          message: MSG.SIGNUP_ALREADY_EXISTS
+        };
+      }
+
+      if (studentRow) {
+        return {
+          exists: true,
+          message: "You have already created a student account with this email. Please go back and sign in."
+        };
+      }
+    }
+
+    return { exists: false, message: "" };
+  } catch (e) {
+    console.error("checkExistingAccountForSignup failed:", e);
+    return { exists: false, message: "" };
   }
 }
 
@@ -207,11 +375,11 @@ if (typeof window !== "undefined") {
 }
 
 /* ----------------------------
- * Semver helper for version rules
+ * Semver helper
  * ---------------------------- */
 function parseSemver(v) {
   if (!v) return [0, 0, 0];
-  const parts = v.split(".").map((x) => parseInt(x, 10) || 0);
+  const parts = String(v).split(".").map((x) => parseInt(x, 10) || 0);
   return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
 }
 
@@ -252,6 +420,17 @@ function getVersionRuleCache() {
   }
 }
 
+async function fetchVersionRuleFrom(tableName) {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("*")
+    .eq("platform", APP_PLATFORM)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 async function checkAndCacheVersionRules() {
   if (!window.supabase) {
     return getVersionRuleCache();
@@ -262,15 +441,18 @@ async function checkAndCacheVersionRules() {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("app_version_rules")
-      .select("*")
-      .eq("platform", APP_PLATFORM)
-      .maybeSingle();
+    let data = null;
 
-    if (error) {
-      console.error("app_version_rules fetch error:", error);
-      return getVersionRuleCache();
+    try {
+      data = await fetchVersionRuleFrom("app_version_rule");
+    } catch (e1) {
+      console.warn("app_version_rule fetch failed, trying app_version_rules:", e1);
+      try {
+        data = await fetchVersionRuleFrom("app_version_rules");
+      } catch (e2) {
+        console.error("Version rule fetch failed:", e2);
+        return getVersionRuleCache();
+      }
     }
 
     if (!data) {
@@ -279,38 +461,36 @@ async function checkAndCacheVersionRules() {
       return rule;
     }
 
-    const {
-      min_soft_version,
-      min_hard_version,
-      deadline,
-      message_title,
-      message_body,
-      update_url
-    } = data;
+    const minSoftVersion = data.min_soft_version || data.mini_soft_version || "";
+    const minHardVersion = data.min_hard_version || data.mini_hard_version || "";
+    const deadline = data.deadline || null;
+    const messageTitle = data.message_title || "";
+    const messageBody = data.message_body || "";
+    const updateUrl = data.update_url || "";
 
     let mode = "ok";
 
-    if (min_hard_version && compareSemver(APP_VERSION, min_hard_version) < 0) {
+    if (minHardVersion && compareSemver(APP_VERSION, minHardVersion) < 0) {
       mode = "hard";
     }
 
     if (deadline) {
       const now = new Date();
       const d = new Date(deadline);
-      if (now > d && min_hard_version && compareSemver(APP_VERSION, min_hard_version) < 0) {
+      if (now > d && minHardVersion && compareSemver(APP_VERSION, minHardVersion) < 0) {
         mode = "hard";
       }
     }
 
-    if (mode !== "hard" && min_soft_version && compareSemver(APP_VERSION, min_soft_version) < 0) {
+    if (mode !== "hard" && minSoftVersion && compareSemver(APP_VERSION, minSoftVersion) < 0) {
       mode = "soft";
     }
 
     const rule = {
       mode,
-      title: message_title || "",
-      body: message_body || "",
-      update_url: update_url || ""
+      title: messageTitle,
+      body: messageBody,
+      update_url: updateUrl
     };
 
     saveVersionRuleCache(rule);
@@ -322,17 +502,15 @@ async function checkAndCacheVersionRules() {
 }
 
 /* ----------------------------
- * Local state (cached user)
+ * Local state
  * ---------------------------- */
-const LOCAL_USER_KEY = "colspot_local_user";
-const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
 function saveLocalUserFromSession(session) {
   if (!session || !session.user) return;
   try {
     const payload = {
       id: session.user.id,
       email: session.user.email || "",
+      role: getAuthRole() || "",
       last_seen: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
@@ -385,7 +563,7 @@ function isStrongPassword(pw) {
 }
 
 /* ----------------------------
- * Device ID + rules
+ * Device ID + device rules
  * ---------------------------- */
 function generateRandomId() {
   try {
@@ -414,7 +592,6 @@ async function getOrCreateDeviceId() {
     if (typeof window !== "undefined" && window.localStorage) {
       const existing = window.localStorage.getItem(storageKey);
       if (existing && typeof existing === "string" && existing.trim() !== "") {
-        console.log("[Colspot] Using stored device id:", existing);
         return existing;
       }
     }
@@ -432,8 +609,6 @@ async function getOrCreateDeviceId() {
           typeof window.Capacitor.getPlatform === "function"
           ? window.Capacitor.getPlatform()
           : "web");
-
-  console.log("[Colspot] Generating new device id for platform:", platform);
 
   let nativePlugin = null;
   if (
@@ -459,28 +634,18 @@ async function getOrCreateDeviceId() {
     typeof nativePlugin.getDeviceId === "function"
   ) {
     try {
-      console.log("[Colspot] Trying Android native getDeviceId...");
       const result = await nativePlugin.getDeviceId();
-
       if (result && typeof result.value === "string" && result.value.trim() !== "") {
         newId = result.value.trim();
-        console.log("[Colspot] Got Android native device id:", newId);
-      } else {
-        console.warn("[Colspot] Android plugin returned empty value, will fall back.");
       }
     } catch (err) {
-      console.error("[Colspot] Error from Android native plugin:", err);
+      console.error("Android native device id error:", err);
     }
   }
 
   if (platform === "ios") {
-    if (
-      !newId &&
-      nativePlugin &&
-      typeof nativePlugin.getDeviceId === "function"
-    ) {
+    if (!newId && nativePlugin && typeof nativePlugin.getDeviceId === "function") {
       try {
-        console.log("[Colspot] Trying iOS native getDeviceId...");
         const result = await nativePlugin.getDeviceId();
         const raw =
           (result &&
@@ -489,12 +654,9 @@ async function getOrCreateDeviceId() {
 
         if (raw && typeof raw === "string" && raw.trim() !== "") {
           newId = raw.trim();
-          console.log("[Colspot] Got iOS native device id:", newId);
-        } else {
-          console.warn("[Colspot] iOS native plugin returned empty value, will try Device.getId().");
         }
       } catch (err) {
-        console.error("[Colspot] Error from iOS native plugin:", err);
+        console.error("iOS native device id error:", err);
       }
     }
 
@@ -507,32 +669,24 @@ async function getOrCreateDeviceId() {
       typeof window.Capacitor.Plugins.Device.getId === "function"
     ) {
       try {
-        console.log("[Colspot] Trying Capacitor Device.getId on iOS...");
         const result = await window.Capacitor.Plugins.Device.getId();
-        const raw =
-          (result && (result.identifier || result.uuid || result.id)) || "";
-
+        const raw = (result && (result.identifier || result.uuid || result.id)) || "";
         if (raw && typeof raw === "string" && raw.trim() !== "") {
           newId = "I-" + raw.trim();
-          console.log("[Colspot] Got iOS Device.getId identifier:", newId);
-        } else {
-          console.warn("[Colspot] Device.getId() returned empty identifier, will fall back.");
         }
       } catch (err) {
-        console.error("[Colspot] Error calling Device.getId() on iOS:", err);
+        console.error("Device.getId error:", err);
       }
     }
   }
 
   if (!newId) {
     newId = "B-" + generateRandomId();
-    console.warn("[Colspot] Falling back to browser/emulator id:", newId);
   }
 
   try {
     if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.setItem(storageKey, newId);
-      console.log("[Colspot] Stored device id:", newId);
     }
   } catch (e) {
     console.error("Could not save device id to localStorage:", e);
@@ -595,7 +749,6 @@ async function linkDeviceForSession(session) {
 
   if (byDevice && byDevice.length > 0) {
     const row = byDevice[0];
-
     if (row.user_id !== userId) {
       throw new Error(MSG.DEVICE_CONFLICT);
     } else {
@@ -642,7 +795,7 @@ async function linkDeviceForSession(session) {
 }
 
 /* ----------------------------
- * LOGIN ANALYTICS helper
+ * Login analytics helper
  * ---------------------------- */
 async function recordLoginEvent(session) {
   if (!session || !session.user || !window.supabase) return;
@@ -863,18 +1016,11 @@ function hideResetPanel() {
 
 /* ----------------------------
  * Redirect if already signed in
- * LOCAL ONLY (fast door)
  * ---------------------------- */
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
   if (cached && cached.id) {
-const role = await resolveUserRole(data.session.user.id);
-
-if (role === "lecturer") {
-  window.location.href = "main_lecturer.html";
-} else {
-  window.location.href = "main.html";
-}
+    goToAuthCallback();
     return true;
   }
   return false;
@@ -903,7 +1049,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       user_id: userId,
       full_name: fullName,
       school_name: schoolName,
-      department: dept,
+      department: dept || "",
       matric_number: accountId,
       email: emailToSave
     };
@@ -921,7 +1067,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       user_id: userId,
       full_name: fullName,
       school_name: schoolName,
-      department: dept,
+      department: dept || "",
       staff_id: accountId,
       email: emailToSave
     };
@@ -938,7 +1084,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
 }
 
 /* ----------------------------
- * STUDENT GOOGLE ONLY
+ * Student Google only
  * ---------------------------- */
 async function signInWithGoogle() {
   const msgEl = document.getElementById("student-google-message");
@@ -981,7 +1127,7 @@ async function signInWithGoogle() {
       msgEl.className = "message success";
     }
 
-    const redirectTo = `${window.location.origin}/auth-verify_class.html`;
+    const redirectTo = `${window.location.origin}/${AUTH_CALLBACK_PATH}`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -1011,7 +1157,7 @@ async function signInWithGoogle() {
 }
 
 /* ----------------------------
- * LECTURER SIGN IN
+ * Lecturer sign in
  * ---------------------------- */
 const signinFormEl = document.getElementById("signin-form");
 if (signinFormEl) {
@@ -1019,8 +1165,8 @@ if (signinFormEl) {
     e.preventDefault();
     saveAuthRole("lecturer");
 
-    const email = document.getElementById("signin-email").value.trim();
-    const password = document.getElementById("signin-password").value;
+    const email = document.getElementById("signin-email")?.value?.trim() || "";
+    const password = document.getElementById("signin-password")?.value || "";
     const msgEl = document.getElementById("signin-message");
     msgEl.textContent = "";
     msgEl.className = "message";
@@ -1096,9 +1242,10 @@ if (signinFormEl) {
 
         await recordLoginEvent(data.session);
         saveLocalUserFromSession(data.session);
+        await resolveUserRole(data.session.user.id, data.session.user.email || email);
       }
 
-      window.location.href = "main.html";
+      goToAuthCallback();
     } catch (err) {
       console.error(err);
       if (isLikelyOfflineError(err)) {
@@ -1115,22 +1262,23 @@ if (signinFormEl) {
 }
 
 /* ----------------------------
- * LECTURER SIGN UP
+ * Lecturer/backup sign up
  * ---------------------------- */
 const signupFormEl = document.getElementById("signup-form");
 if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
-    saveAuthRole("lecturer");
 
-    const fullName = document.getElementById("signup-fullname").value.trim();
-    const role = "lecturer";
-    const schoolName = document.getElementById("signup-schoolname")?.value.trim() || "";
-    const dept = document.getElementById("signup-dept").value.trim();
-    const accountId = document.getElementById("signup-matric").value.trim();
-    const email = document.getElementById("signup-email").value.trim().toLowerCase();
-    const password = document.getElementById("signup-password").value;
-    const password2 = document.getElementById("signup-password2").value;
+    const role = getSignupRole();
+    saveAuthRole(role);
+
+    const fullName = document.getElementById("signup-fullname")?.value?.trim() || "";
+    const schoolName = document.getElementById("signup-schoolname")?.value?.trim() || "";
+    const dept = getSignupDept();
+    const accountId = getSignupAccountId(role);
+    const email = document.getElementById("signup-email")?.value?.trim()?.toLowerCase() || "";
+    const password = document.getElementById("signup-password")?.value || "";
+    const password2 = document.getElementById("signup-password2")?.value || "";
 
     const msgEl = document.getElementById("signup-message");
     msgEl.textContent = "";
@@ -1143,7 +1291,7 @@ if (signupFormEl) {
       return;
     }
 
-    if (!fullName || !schoolName || !dept || !accountId || !email || !password || !password2) {
+    if (!fullName || !schoolName || !accountId || !email || !password || !password2) {
       msgEl.textContent = MSG.SIGNUP_MISSING_FIELDS;
       msgEl.className = "message error";
       return;
@@ -1170,6 +1318,13 @@ if (signupFormEl) {
     try {
       setButtonLoading("signup-btn", "signup-text", "signup-loader", true);
 
+      const existing = await checkExistingAccountForSignup(email, role);
+      if (existing.exists) {
+        msgEl.textContent = existing.message || MSG.SIGNUP_ALREADY_EXISTS;
+        msgEl.className = "message error";
+        return;
+      }
+
       pendingSignup = {
         email,
         password,
@@ -1181,13 +1336,16 @@ if (signupFormEl) {
       };
 
       localStorage.setItem("colspot_pending_email", email);
+      saveAuthRole(role);
 
       const metadata = {
         full_name: fullName,
         role,
         school_name: schoolName,
-        department: dept,
-        staff_id: accountId,
+        department: dept || "",
+        ...(role === "student"
+          ? { matric_number: accountId }
+          : { staff_id: accountId })
       };
 
       const { error } = await supabase.auth.signInWithOtp({
@@ -1235,7 +1393,7 @@ if (signupFormEl) {
 }
 
 /* ----------------------------
- * VERIFY CODE (finish lecturer sign-up, set password)
+ * Verify code
  * ---------------------------- */
 document
   .getElementById("verify-code-btn")
@@ -1245,7 +1403,7 @@ document
     msgEl.textContent = "";
     msgEl.className = "message";
 
-    const code = (codeInput.value || "").trim();
+    const code = (codeInput?.value || "").trim();
     const email =
       (pendingSignup && pendingSignup.email) ||
       localStorage.getItem("colspot_pending_email") ||
@@ -1304,8 +1462,10 @@ document
           full_name: fullName,
           role,
           school_name: schoolName,
-          department: dept,
-          staff_id: accountId,
+          department: dept || "",
+          ...(role === "student"
+            ? { matric_number: accountId }
+            : { staff_id: accountId })
         };
 
         const { error: updateError } = await supabase.auth.updateUser({
@@ -1344,24 +1504,31 @@ document
         saveLocalUserFromSession(data.session);
 
         try {
-          await saveSignupAccountRow(
-            data.session.user.id,
-            pendingSignup,
-            data.session.user.email
-          );
+          if (pendingSignup) {
+            await saveSignupAccountRow(
+              data.session.user.id,
+              pendingSignup,
+              data.session.user.email
+            );
+          }
         } catch (profileErr) {
           console.error("account table save error:", profileErr);
           msgEl.textContent = MSG.SIGNUP_SAVE_PROFILE_FAIL;
           msgEl.className = "message error";
           return;
         }
+
+        await resolveUserRole(
+          data.session.user.id,
+          data.session.user.email || email
+        );
       }
 
       msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
       msgEl.className = "message success";
 
       setTimeout(() => {
-        window.location.href = "main.html";
+        goToAuthCallback();
       }, 800);
     } catch (err) {
       console.error(err);
@@ -1378,7 +1545,7 @@ document
   });
 
 /* ----------------------------
- * RESEND SIGN-UP CODE
+ * Resend sign-up code
  * ---------------------------- */
 document
   .getElementById("resend-btn")
@@ -1429,7 +1596,7 @@ document
   });
 
 /* ----------------------------
- * BACK TO SIGN IN (from verify panel)
+ * Back to sign in (from verify panel)
  * ---------------------------- */
 document
   .getElementById("back-to-signin-btn")
@@ -1441,7 +1608,7 @@ document
   });
 
 /* ----------------------------
- * FORGOT PASSWORD (lecturer)
+ * Forgot password
  * ---------------------------- */
 function openForgotPasswordPage() {
   resetEmail = null;
@@ -1583,9 +1750,9 @@ document
 document
   .getElementById("reset-submit-btn")
   ?.addEventListener("click", async () => {
-    const code = document.getElementById("reset-code").value.trim();
-    const newPw = document.getElementById("reset-password").value;
-    const newPw2 = document.getElementById("reset-password2").value;
+    const code = document.getElementById("reset-code")?.value?.trim() || "";
+    const newPw = document.getElementById("reset-password")?.value || "";
+    const newPw2 = document.getElementById("reset-password2")?.value || "";
     const msgEl = document.getElementById("reset-message");
     msgEl.textContent = "";
     msgEl.className = "message";
@@ -1649,7 +1816,7 @@ document
       });
 
       if (updateError) {
-        console.error("Password update error (ignored for reset flow):", updateError);
+        console.error("Password update error:", updateError);
       }
 
       if (data && data.session) {
@@ -1665,13 +1832,14 @@ document
 
         await recordLoginEvent(data.session);
         saveLocalUserFromSession(data.session);
+        await resolveUserRole(data.session.user.id, data.session.user.email || email);
       }
 
       msgEl.textContent = MSG.RESET_OK_REDIRECT;
       msgEl.className = "message success";
 
       setTimeout(() => {
-        window.location.href = "main.html";
+        goToAuthCallback();
       }, 800);
     } catch (err) {
       console.error(err);
@@ -1701,7 +1869,7 @@ document
   });
 
 /* ----------------------------
- * ADMIN LOGIN
+ * Admin login
  * ---------------------------- */
 const adminFormEl = document.getElementById("admin-form");
 if (adminFormEl) {
@@ -1802,7 +1970,7 @@ if (adminFormEl) {
         saveLocalUserFromSession(data.session);
       }
 
-      window.location.href = "main.html";
+      window.location.href = ADMIN_MAIN_PATH;
     } catch (err) {
       console.error("Admin login failed:", err);
       if (msgEl) {
@@ -1821,6 +1989,12 @@ if (adminFormEl) {
 async function initAuth() {
   const splash = document.getElementById("splash-screen");
   const authShell = document.getElementById("auth-shell");
+
+  try {
+    await checkAndCacheVersionRules();
+  } catch (e) {
+    console.error("Version check failed during init:", e);
+  }
 
   const redirected = await redirectIfSignedIn();
   if (redirected) return;
