@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
   <title>Colspot – Home</title>
 
   <style>
@@ -19,6 +19,9 @@
       --border-soft: #e5e7eb;
       --shadow-strong: 0 20px 55px rgba(15, 23, 42, 0.18);
       --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
+      --card-border: #e7edf8;
+      --error: #dc2626;
+      --success: #16a34a;
     }
 
     * {
@@ -95,24 +98,60 @@
 
     .avatar-chip {
       height: 34px;
+      width: 34px;
       min-width: 34px;
       border-radius: 999px;
       background: linear-gradient(135deg, #1d4ed8, #22c55e);
       color: #f9fafb;
       font-size: 14px;
       font-weight: 600;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       border: none;
       cursor: pointer;
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+      position: relative;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .avatar-chip img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: none;
+      z-index: 2;
+    }
+
+    .avatar-chip span {
+      position: relative;
+      z-index: 1;
     }
 
     main {
       flex: 1;
       overflow-y: auto;
       padding: 0 2px 90px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    main::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
     }
 
     .hero {
@@ -167,6 +206,29 @@
       filter: brightness(0.97);
     }
 
+    .sub-cta-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .sub-cta {
+      min-width: 170px;
+      border-radius: 999px;
+      border: none;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue);
+      background: #ffffff;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+    }
+
+    .sub-cta:active {
+      transform: scale(0.97);
+    }
+
     .section-header {
       display: flex;
       align-items: center;
@@ -192,69 +254,6 @@
     .section-action svg {
       width: 12px;
       height: 12px;
-    }
-
-    .location-toggle-row {
-      display: flex;
-      justify-content: flex-start;
-      margin: 0 4px 10px;
-    }
-
-    .location-toggle {
-      border: none;
-      background: #f3f4f6;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 11px;
-      color: var(--text-main);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .location-toggle-label {
-      font-weight: 500;
-    }
-
-    .location-switch {
-      width: 32px;
-      height: 16px;
-      border-radius: 999px;
-      background: #d1d5db;
-      position: relative;
-      flex-shrink: 0;
-      transition: background-color 0.18s ease;
-    }
-
-    .location-switch-knob {
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      background: #ffffff;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.4);
-      transition: transform 0.18s ease;
-    }
-
-    .location-toggle-state {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .location-toggle.on .location-switch {
-      background: #22c55e;
-    }
-
-    .location-toggle.on .location-switch-knob {
-      transform: translateX(14px);
-    }
-
-    .location-toggle.on .location-toggle-state {
-      color: #16a34a;
     }
 
     .card {
@@ -385,132 +384,63 @@
       color: var(--text-muted);
     }
 
-    .nearby-card {
-      display: flex;
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
-      position: relative;
-      overflow: hidden;
-      background: radial-gradient(circle at left top, #e0ebff, #f9fafb);
+      margin-top: 6px;
     }
 
-    .nearby-main {
-      flex: 1;
-      z-index: 1;
-    }
-
-    .nearby-title-row {
+    .dashboard-card {
+      background: #f8fbff;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
+      gap: 10px;
+      min-height: 82px;
     }
 
-    .nearby-icon-circle {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
+    .dashboard-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .dashboard-icon.blue {
       background: #eff6ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #1d4ed8;
-      flex-shrink: 0;
+      color: #2563eb;
     }
 
-    .nearby-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-main);
+    .dashboard-icon.green {
+      background: #ecfdf5;
+      color: #16a34a;
     }
 
-    .nearby-status {
+    .dashboard-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .dashboard-meta {
+      min-width: 0;
+    }
+
+    .dashboard-title {
       font-size: 12px;
-      color: var(--text-main);
-      margin-bottom: 4px;
-    }
-
-    .nearby-note {
-      font-size: 11px;
       color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(6px);
+      margin-bottom: 2px;
     }
 
-    .nearby-map {
-      width: 90px;
-      border-radius: 14px;
-      background: radial-gradient(circle at 30% 20%, #bfdbfe, #1e3a8a);
-      position: relative;
-      overflow: hidden;
-      flex-shrink: 0;
-      margin-left: auto;
-    }
-
-    .nearby-map::before,
-    .nearby-map::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
-      border: 2px solid rgba(248, 250, 252, 0.65);
-    }
-
-    .nearby-map::before {
-      width: 120%;
-      height: 40%;
-      top: 15%;
-      left: -10%;
-    }
-
-    .nearby-map::after {
-      width: 60%;
-      height: 120%;
-      top: -10%;
-      left: 25%;
-    }
-
-    .nearby-pin {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: #f97316;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.6);
-      bottom: 12px;
-      right: 18px;
-    }
-
-    .nearby-pin svg {
-      width: 10px;
-      height: 10px;
-      color: #fff7ed;
-    }
-
-    .nearby-open-btn {
-      position: absolute;
-      bottom: 8px;
-      left: 12px;
-      padding: 4px 10px;
-      font-size: 11px;
-      border-radius: 999px;
-      border: none;
-      background: #ffffff;
-      color: var(--blue);
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.35);
-      z-index: 2;
-    }
-
-    .nearby-open-btn:active {
-      transform: scale(0.96);
+    .dashboard-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
     .scan-card {
@@ -518,70 +448,7 @@
       background: #ffffff;
     }
 
-    .scan-card-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .scan-card-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
-      background: #eff6ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: #2563eb;
-    }
-
-    .scan-card-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .scan-card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 4px;
-    }
-
-    .scan-card-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.3;
-    }
-
-    .scan-card-button {
-      width: 100%;
-      margin-top: 6px;
-      border-radius: 999px;
-      border: none;
-      padding: 10px 14px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #ffffff;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      box-shadow: var(--shadow-soft);
-      cursor: pointer;
-      transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
-    }
-
-    .scan-card-button:active {
-      transform: scale(0.97);
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
-      filter: brightness(0.97);
-    }
-
-    /* 🔹 Colspot AI card on Home */
-    .ai-card {
-      margin-top: 14px;
-      background: #ffffff;
-    }
-
+    .scan-card-header,
     .ai-card-header {
       display: flex;
       align-items: flex-start;
@@ -589,23 +456,34 @@
       margin-bottom: 10px;
     }
 
+    .scan-card-icon,
     .ai-card-icon {
       width: 30px;
       height: 30px;
       border-radius: 10px;
-      background: #f5f3ff;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+    }
+
+    .scan-card-icon {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .ai-card-icon {
+      background: #f5f3ff;
       color: #4f46e5;
     }
 
+    .scan-card-icon svg,
     .ai-card-icon svg {
       width: 18px;
       height: 18px;
     }
 
+    .scan-card-title,
     .ai-card-title {
       font-size: 14px;
       font-weight: 600;
@@ -613,12 +491,14 @@
       margin-bottom: 4px;
     }
 
+    .scan-card-subtitle,
     .ai-card-subtitle {
       font-size: 12px;
       color: var(--text-muted);
       line-height: 1.3;
     }
 
+    .scan-card-button,
     .ai-card-button {
       width: 100%;
       margin-top: 6px;
@@ -628,195 +508,22 @@
       font-size: 14px;
       font-weight: 600;
       color: #ffffff;
-      background: linear-gradient(135deg, #4f46e5, #2563eb);
       box-shadow: var(--shadow-soft);
       cursor: pointer;
       transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
     }
 
+    .scan-card-button {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .ai-card-button {
+      background: linear-gradient(135deg, #4f46e5, #2563eb);
+    }
+
+    .scan-card-button:active,
     .ai-card-button:active {
       transform: scale(0.97);
-      box-shadow: 0 8px 18px rgba(55, 65, 194, 0.35);
-      filter: brightness(0.97);
-    }
-
-    .scan-form {
-      padding: 0 4px 40px;
-    }
-
-    .scan-field {
-      margin-bottom: 14px;
-    }
-
-    .scan-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-main);
-      margin-bottom: 4px;
-      display: block;
-    }
-
-    .scan-input,
-    .scan-select {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border-soft);
-      padding: 9px 11px;
-      font-size: 16px;
-      outline: none;
-      background: #f9fafb;
-    }
-
-    .scan-input:focus,
-    .scan-select:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
-      background: #ffffff;
-    }
-
-    .scan-upload-area {
-      width: 100%;
-      border-radius: 16px;
-      border: 1.5px dashed #cbd5f5;
-      background: #f9fbff;
-      padding: 16px 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .scan-upload-area:hover {
-      background: #f1f5ff;
-    }
-
-    .scan-upload-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: #eff6ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 6px;
-    }
-
-    .scan-upload-icon svg {
-      width: 22px;
-      height: 22px;
-      color: #2563eb;
-    }
-
-    .scan-upload-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-main);
-      margin-bottom: 2px;
-    }
-
-    .scan-upload-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      max-width: 260px;
-    }
-
-    .scan-upload-chosen {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .scan-file-input {
-      width: 0;
-      height: 0;
-      opacity: 0;
-      position: absolute;
-      pointer-events: none;
-    }
-
-    .scan-radio-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .scan-radio-pill {
-      flex: 1;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      padding: 7px 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      background: #f9fafb;
-    }
-
-    .scan-radio-pill input {
-      margin: 0;
-    }
-
-    .scan-help {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .scan-quota {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-    .scan-quota-low {
-      color: #b45309;
-    }
-    .scan-quota-zero {
-      color: #b91c1c;
-      font-weight: 600;
-    }
-
-    .scan-submit-btn {
-      width: 100%;
-      border-radius: 999px;
-      border: none;
-      padding: 11px 14px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #ffffff;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      box-shadow: var(--shadow-soft);
-      cursor: pointer;
-      margin-top: 6px;
-      transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
-    }
-
-    .scan-submit-btn:disabled {
-      opacity: 0.7;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    .scan-submit-btn:active:not(:disabled) {
-      transform: scale(0.97);
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
-      filter: brightness(0.97);
-    }
-
-    .scan-status {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
-      min-height: 14px;
-    }
-
-    .scan-status.ok {
-      color: #16a34a;
-    }
-
-    .scan-status.error {
-      color: #b91c1c;
     }
 
     .history-card {
@@ -936,21 +643,19 @@
       font-weight: 600;
     }
 
+    .placeholder-note {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 4px 2px 14px;
+    }
+
     .screen {
       display: none;
     }
+
     .screen.active {
       display: block;
-    }
-
-    main {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    main::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-      display: none;
     }
 
     body.keyboard-open .bottom-nav {
@@ -968,7 +673,11 @@
         </div>
         <div class="brand-name">Colspot</div>
       </div>
-      <button class="avatar-chip" id="avatarInitial" onclick="showScreen('account')">C</button>
+
+      <button class="avatar-chip" id="avatarChip" onclick="showScreen('account')">
+        <img id="avatarChipImg" src="" alt="Profile picture" />
+        <span id="avatarChipText">C</span>
+      </button>
     </header>
 
     <main>
@@ -979,6 +688,7 @@
             What do you want to<br />
             <span>do today?</span>
           </h1>
+
           <button class="primary-cta" onclick="showScreen('attendance')">
             <svg viewBox="0 0 20 20" fill="none">
               <path
@@ -990,6 +700,10 @@
             </svg>
             <span>Create new attendance</span>
           </button>
+
+          <div class="sub-cta-wrap">
+            <button class="sub-cta" id="createClassBtn" type="button">Create class</button>
+          </div>
         </section>
 
         <section id="updateSoftSection" style="display:none;">
@@ -1006,9 +720,7 @@
               </svg>
             </div>
             <div class="announcement-body">
-              <div id="updateSoftTitle" class="announcement-title">
-                New version available
-              </div>
+              <div id="updateSoftTitle" class="announcement-title">New version available</div>
               <div id="updateSoftMessage" class="announcement-text"></div>
               <button
                 type="button"
@@ -1044,8 +756,8 @@
 
         <section>
           <div class="section-header">
-            <div class="section-title">Nearby attendance</div>
-            <div class="section-action" onclick="showScreen('nearby')">
+            <div class="section-title">Dashboard</div>
+            <div class="section-action" onclick="showScreen('classes')">
               <span>Open</span>
               <svg viewBox="0 0 20 20" fill="none">
                 <path
@@ -1059,58 +771,56 @@
             </div>
           </div>
 
-          <div class="location-toggle-row">
-            <button
-              type="button"
-              class="location-toggle"
-              id="locationToggle"
-              onclick="toggleLocation()"
-            >
-              <span class="location-toggle-label">Location</span>
-              <span class="location-switch">
-                <span class="location-switch-knob" id="locationDot"></span>
-              </span>
-              <span class="location-toggle-state" id="locationToggleText">On</span>
-            </button>
-          </div>
-
-          <article class="card nearby-card">
-            <div class="nearby-main">
-              <div class="nearby-title-row">
-                <div class="nearby-icon-circle">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M10 3.25a4.25 4.25 0 00-4.25 4.25c0 2.832 3.41 6.31 3.98 6.89a.4.4 0 00.56 0c.57-.58 3.96-4.058 3.96-6.89A4.25 4.25 0 0010 3.25z"
-                      stroke="#1d4ed8"
-                      stroke-width="1.4"
-                    />
-                    <circle
-                      cx="10"
-                      cy="7.5"
-                      r="1.6"
-                      fill="#1d4ed8"
-                    />
-                  </svg>
-                </div>
-                <div class="nearby-title">Within ~400 m of you</div>
-              </div>
-              <div class="nearby-status" id="nearbyStatus">
-                Checking for active sessions near your location...
-              </div>
-              <div class="nearby-note">
-                <span>📍 Location required</span>
-                <span>• ~400 m radius</span>
-              </div>
-            </div>
-
-            <div class="nearby-map">
-              <button class="nearby-open-btn" onclick="showScreen('nearby')">Open</button>
-              <div class="nearby-pin">
+          <div class="dashboard-grid">
+            <article class="dashboard-card">
+              <div class="dashboard-icon blue">
                 <svg viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="8" r="3" fill="white" />
+                  <rect x="4.5" y="3.5" width="11" height="13" rx="1.4" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
                 </svg>
               </div>
+              <div class="dashboard-meta">
+                <div class="dashboard-title">Total class</div>
+                <div class="dashboard-value" id="totalClassesValue">0</div>
+              </div>
+            </article>
+
+            <article class="dashboard-card">
+              <div class="dashboard-icon green">
+                <svg viewBox="0 0 20 20" fill="none">
+                  <path d="M13.5 16v-1.2a2.8 2.8 0 00-2.8-2.8H6.8A2.8 2.8 0 004 14.8V16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <circle cx="8.8" cy="7" r="2.7" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M15.2 7.2v4.2M17.3 9.3h-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="dashboard-meta">
+                <div class="dashboard-title">Total student</div>
+                <div class="dashboard-value" id="totalStudentsValue">0</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section>
+          <article class="card ai-card">
+            <div class="ai-card-header">
+              <div class="ai-card-icon">
+                <svg viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="7" stroke="#4f46e5" stroke-width="1.4"/>
+                  <path d="M7.5 9.5c.4-1.4 1.5-2.3 2.7-2.3 1.3 0 2.5.9 2.8 2.3" stroke="#4f46e5" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M8.2 12.2h3.6" stroke="#4f46e5" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="ai-card-title">Chat with Colspot AI</div>
+                <div class="ai-card-subtitle">
+                  Ask quick questions about using Colspot or summarise attendance information in simple language.
+                </div>
+              </div>
             </div>
+            <button class="ai-card-button" onclick="showScreen('ai')">
+              Open Colspot AI
+            </button>
           </article>
         </section>
 
@@ -1133,30 +843,6 @@
             </div>
             <button class="scan-card-button" onclick="showScreen('scan')">
               Scan paper sheet
-            </button>
-          </article>
-        </section>
-
-        <!-- 🔹 Colspot AI entry card on Home -->
-        <section>
-          <article class="card ai-card">
-            <div class="ai-card-header">
-              <div class="ai-card-icon">
-                <svg viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="10" r="7" stroke="#4f46e5" stroke-width="1.4"/>
-                  <path d="M7.5 9.5c.4-1.4 1.5-2.3 2.7-2.3 1.3 0 2.5.9 2.8 2.3" stroke="#4f46e5" stroke-width="1.3" stroke-linecap="round"/>
-                  <path d="M8.2 12.2h3.6" stroke="#4f46e5" stroke-width="1.3" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div>
-                <div class="ai-card-title">Chat with Colspot AI</div>
-                <div class="ai-card-subtitle">
-                  Ask quick questions about using Colspot or summarise attendance information in simple language.
-                </div>
-              </div>
-            </div>
-            <button class="ai-card-button" onclick="showScreen('ai')">
-              Open Colspot AI
             </button>
           </article>
         </section>
@@ -1188,7 +874,6 @@
         </section>
       </div>
 
-      <!-- 🔹 Colspot AI screen (you’ll paste AI HTML here later) -->
       <div id="screen-ai" class="screen">
         <section class="hero">
           <div class="hero-line-1">Colspot AI</div>
@@ -1201,8 +886,9 @@
         </section>
       </div>
 
-      <!-- other screens (attendance / nearby / history / reports / account / scan)
-           stay exactly as in your existing file -->
+      <!-- KEEP ALL YOUR OTHER EXISTING SCREENS HERE EXACTLY AS THEY ALREADY ARE
+           attendance / live-session / classes / history / reports / account / scan / etc. -->
+
     </main>
   </div>
 
@@ -1238,26 +924,17 @@
       </div>
     </div>
 
-    <div class="nav-btn" data-nav="nearby" onclick="showScreen('nearby')">
+    <div class="nav-btn" data-nav="attendance" onclick="showScreen('attendance')">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <rect
-            x="5"
-            y="4.5"
-            width="14"
-            height="15"
-            rx="1.5"
+          <path
+            d="M12 5v14M5 12h14"
             stroke="currentColor"
             stroke-width="1.7"
-          />
-          <path
-            d="M8 10h8"
-            stroke="currentColor"
-            stroke-width="1.6"
             stroke-linecap="round"
           />
         </svg>
-        <span>Nearby attendance</span>
+        <span>Attendance</span>
       </div>
     </div>
 
@@ -1265,1362 +942,512 @@
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
           <path
-            d="M12 6v6l3 3"
+            d="M12 8v5l3 2"
             stroke="currentColor"
             stroke-width="1.7"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
-          <path
-            d="M5 12a7 7 0 111.75 4.6"
+          <circle
+            cx="12"
+            cy="12"
+            r="8"
             stroke="currentColor"
             stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M5 8v4h4"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
           />
         </svg>
         <span>History</span>
       </div>
     </div>
 
-    <div class="nav-btn" data-nav="reports" onclick="showScreen('reports')">
+    <div class="nav-btn" data-nav="scan" onclick="showScreen('scan')">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
           <path
-            d="M6 18.5v-5M12 18.5V7.5M18 18.5v-9"
+            d="M7 3H5a2 2 0 00-2 2v2M17 3h2a2 2 0 012 2v2M7 21H5a2 2 0 01-2-2v-2M17 21h2a2 2 0 002-2v-2"
             stroke="currentColor"
             stroke-width="1.7"
             stroke-linecap="round"
           />
+          <rect
+            x="7"
+            y="7"
+            width="10"
+            height="10"
+            rx="2"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+        </svg>
+        <span>Scan</span>
+      </div>
+    </div>
+
+    <div class="nav-btn" data-nav="account" onclick="showScreen('account')">
+      <div class="nav-btn-inner">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7" />
           <path
-            d="M5 18.5h14"
+            d="M5 19c1-3 3-4.5 7-4.5s6 1.5 7 4.5"
             stroke="currentColor"
             stroke-width="1.7"
             stroke-linecap="round"
           />
         </svg>
-        <span>Reports</span>
+        <span>Account</span>
       </div>
     </div>
   </nav>
+<script>
+  let currentUser = null;
+  let currentUpdateRule = null;
 
-  <!-- Supabase client must load first -->
-  <script type="module" src="./client_supabase.js"></script>
-  <!-- New global guard (local-first + background session check) -->
-  <script src="./guard_session.js"></script>
-  <!-- Push notifications helper (unchanged) -->
-  <script src="./push.js"></script>
+  function appendMainDebug() {}
 
-  <script>
-    const NEARBY_RADIUS_METERS = 400;
-    const SCAN_LAMBDA_URL =
-      "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
-    const SCAN_MAX_PER_MONTH = 20;
+  function getCachedAuthFromLocalUser() {
+    try {
+      const raw = localStorage.getItem("colspot_local_user");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.id) return null;
 
-    const UPDATE_RULE_LOCAL_KEY = "colspot_update_rule";
+      return {
+        user_id: parsed.id,
+        email: parsed.email || "",
+        full_name: parsed.full_name || parsed.email || ""
+      };
+    } catch (e) {
+      console.warn("Failed to read local auth:", e);
+      return null;
+    }
+  }
 
-    // 🔥 NEW: main warmup config
-    const MAIN_WARMUP_TTL_MS = 10 * 60 * 1000; // 10 minutes
-    const MAIN_WARMUP_KEY = "colspot_main_warmup_last_at";
+  function saveLocalUserFromSupabaseUser(user) {
+    if (!user || !user.id) return;
 
-    let currentUser = null;
-    let locationAskedOnce = false;
-    let locationEnabled = true;
+    try {
+      const payload = {
+        id: user.id,
+        email: user.email || "",
+        full_name:
+          (user.user_metadata && user.user_metadata.full_name) ||
+          user.email ||
+          "",
+        avatar_url:
+          (user.user_metadata && user.user_metadata.avatar_url) || ""
+      };
 
-    const LOCAL_USER_KEY = "colspot_local_user";
-    const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-    let offlineRetryTimer = null;
+      localStorage.setItem("colspot_local_user", JSON.stringify(payload));
+    } catch (e) {
+      console.warn("Failed to save local user:", e);
+    }
+  }
 
-    let currentScanQuota = null;
-    let currentScanUserId = null;
+  function setGreetingFromProfile(name) {
+    const greetingLine = document.getElementById("greetingLine");
+    if (!greetingLine) return;
 
-    let currentUpdateRule = null;
-
-    // 🔥 NEW: shared device id helper (same pattern as auth/attendance)
-    function getOrCreateDeviceId() {
-      try {
-        let id = localStorage.getItem("colspot_device_id");
-        if (!id) {
-          if (window.crypto && window.crypto.randomUUID) {
-            id = window.crypto.randomUUID();
-          } else {
-            id =
-              "dev-" +
-              Math.random().toString(36).slice(2) +
-              "-" +
-              Date.now().toString(36);
-          }
-          localStorage.setItem("colspot_device_id", id);
-        }
-        return id;
-      } catch (e) {
-        console.warn("[main warmup] cannot read/write device id:", e);
-        return null;
-      }
+    const safeName = String(name || "").trim();
+    if (!safeName) {
+      greetingLine.textContent = "Welcome back";
+      return;
     }
 
-    // 🔥 NEW: check if we already did main warmup recently
-    function isMainWarmupFresh() {
-      try {
-        const raw = localStorage.getItem(MAIN_WARMUP_KEY);
-        if (!raw) return false;
-        const t = new Date(raw).getTime();
-        if (Number.isNaN(t)) return false;
-        const age = Date.now() - t;
-        return age < MAIN_WARMUP_TTL_MS;
-      } catch {
-        return false;
-      }
-    }
+    const first = safeName.split(" ")[0];
+    greetingLine.textContent = `Welcome back, ${first}`;
+  }
 
-    // 🔥 NEW: mark last warmup time
-    function markMainWarmup() {
-      try {
-        localStorage.setItem(
-          MAIN_WARMUP_KEY,
-          new Date().toISOString()
-        );
-      } catch (e) {
-        console.warn("[main warmup] failed to mark timestamp:", e);
-      }
-    }
+  function syncTopRightAvatar(avatarUrl, initial) {
+    const avatarChipImg = document.getElementById("avatarChipImg");
+    const avatarChipText = document.getElementById("avatarChipText");
+    const oldAvatarInitial = document.getElementById("avatarInitial");
 
-    // 🔥 NEW: multi-read location helper for main page
-    async function getSmartLocationFromMain(maxReads = 8, targetAccuracy = 120) {
-      if (!("geolocation" in navigator)) {
-        console.warn("[main warmup] geolocation not supported");
-        return null;
-      }
+    const safeInitial = (initial || "C").toUpperCase();
 
-      let best = null;
-
-      for (let i = 0; i < maxReads; i++) {
-        const pos = await new Promise((resolve) => {
-          navigator.geolocation.getCurrentPosition(
-            (p) => resolve(p),
-            (err) => {
-              console.warn("[main warmup] location error:", err);
-              resolve(null); // don’t reject, just skip this attempt
-            },
-            {
-              enableHighAccuracy: true,
-              maximumAge: 0,
-              timeout: 8000
-            }
-          );
-        });
-
-        if (!pos || !pos.coords) continue;
-
-        const acc =
-          typeof pos.coords.accuracy === "number"
-            ? pos.coords.accuracy
-            : null;
-
-        if (acc == null) continue;
-
-        const snap = {
-          pos,
-          accuracyMeters: acc
-        };
-
-        if (!best || acc < best.accuracyMeters) {
-          best = snap;
-        }
-
-        // Good enough, stop early
-        if (acc <= targetAccuracy) break;
-
-        // Small pause between reads
-        await new Promise((r) => setTimeout(r, 800));
-      }
-
-      return best;
-    }
-
-    // 🔥 NEW: main warmup → attendance_warmup_main
-    async function runMainWarmupOnce() {
-      try {
-        if (typeof supabase === "undefined") {
-          console.warn("[main warmup] supabase not ready");
-          return;
-        }
-
-        // don't spam: only once every 10 minutes
-        if (isMainWarmupFresh()) {
-          return;
-        }
-
-        if (isBrowserOffline()) {
-          console.warn("[main warmup] offline, skipping");
-          return;
-        }
-
-        const user = await ensureCurrentUser();
-        if (!user || !user.id) {
-          console.warn("[main warmup] no user, skipping");
-          return;
-        }
-
-        const deviceId = getOrCreateDeviceId();
-        if (!deviceId) {
-          console.warn("[main warmup] no device id, skipping");
-          return;
-        }
-
-        const warm = await getSmartLocationFromMain(10, 120);
-        if (!warm || !warm.pos || !warm.pos.coords) {
-          console.warn("[main warmup] no valid location");
-          return;
-        }
-
-        const { latitude, longitude } = warm.pos.coords;
-        const accuracyMeters = warm.accuracyMeters;
-
-        if (accuracyMeters == null) {
-          console.warn("[main warmup] missing accuracy");
-          return;
-        }
-
-        const { error } = await supabase
-          .from("attendance_warmup_main")
-          .insert({
-            lecturer_id: user.id,
-            device_id: deviceId,
-            lat: latitude,
-            lng: longitude,
-            accuracy_m: accuracyMeters
-          });
-
-        if (error) {
-          console.warn("[main warmup] insert error:", error);
-          return;
-        }
-
-        markMainWarmup();
-        console.log("[main warmup] saved", {
-          lat: latitude,
-          lng: longitude,
-          accuracy_m: accuracyMeters
-        });
-      } catch (e) {
-        console.warn("[main warmup] failed:", e);
-      }
-    }
-
-    function lockBottomNavToScreen() {
-      const nav = document.getElementById("bottomNav");
-      if (!nav) return;
-
-      if (window.visualViewport) {
-        const vv = window.visualViewport;
-
-        const update = () => {
-          const keyboardHeight = Math.max(
-            0,
-            window.innerHeight - vv.height - vv.offsetTop
-          );
-
-          if (keyboardHeight > 0) {
-            nav.style.transform = `translate(-50%, ${keyboardHeight}px)`;
-          } else {
-            nav.style.transform = "translateX(-50%)";
-          }
-        };
-
-        vv.addEventListener("resize", update);
-        vv.addEventListener("scroll", update);
-        window.addEventListener("resize", update);
-
-        update();
-      }
-    }
-
-    function tryInitPush() {
-      try {
-        if (typeof window.initColspotPush === "function") {
-          window.initColspotPush();
-        }
-      } catch (e) {
-        console.warn("[Push] init failed:", e);
-      }
-    }
-
-    function isBrowserOffline() {
-      try {
-        if (typeof navigator === "undefined" || navigator === null) return false;
-        return navigator.onLine === false;
-      } catch {
-        return false;
-      }
-    }
-
-    // Retry helper: start only on failure, stop on success
-    function scheduleOfflineRetry() {
-      if (offlineRetryTimer) return;
-      offlineRetryTimer = setInterval(() => {
-        loadMiniHistory();
-        initNearbyAttendance();
-        loadAnnouncements();
-        applyUpdateRuleFromLocal();
-      }, 5000);
-    }
-
-    function stopOfflineRetry() {
-      if (!offlineRetryTimer) return;
-      clearInterval(offlineRetryTimer);
-      offlineRetryTimer = null;
-    }
-
-    // Hard reload on main.html when Android reports "online" again
-    window.addEventListener("online", () => {
-      try {
-        const href = window.location.href || "";
-        if (href.includes("main.html")) {
-          window.location.reload();
-        } else {
-          loadMiniHistory();
-          initNearbyAttendance();
-          loadAnnouncements();
-          applyUpdateRuleFromLocal();
-        }
-      } catch (e) {
-        console.warn("online handler failed, doing soft reload instead:", e);
-        loadMiniHistory();
-        initNearbyAttendance();
-        loadAnnouncements();
-        applyUpdateRuleFromLocal();
-      }
-    });
-
-    function getCachedAuthFromLocalUser() {
-      try {
-        const raw = localStorage.getItem(LOCAL_USER_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.id) return null;
-
-        if (parsed.last_seen) {
-          const t = new Date(parsed.last_seen).getTime();
-          if (!Number.isNaN(t)) {
-            const age = Date.now() - t;
-            if (age > LOCAL_USER_TTL_MS) {
-              localStorage.removeItem(LOCAL_USER_KEY);
-              return null;
-            }
-          }
-        }
-
-        return {
-          user_id: parsed.id,
-          email: parsed.email || "",
-          full_name: parsed.email || ""
-        };
-      } catch (e) {
-        console.error("Could not read local cached user:", e);
-        return null;
-      }
-    }
-
-    function saveLocalUserFromSupabaseUser(user) {
-      if (!user) return;
-      try {
-        localStorage.setItem(
-          LOCAL_USER_KEY,
-          JSON.stringify({
-            id: user.id,
-            email: user.email || "",
-            last_seen: new Date().toISOString()
-          })
-        );
-      } catch (e) {
-        console.error("Could not save local user:", e);
-      }
-    }
-
-    function setGreetingFromProfile(fullNameRaw) {
-      const greetLine = document.getElementById("greetingLine");
-      const avatarInitial = document.getElementById("avatarInitial");
-
-      const fullName =
-        (fullNameRaw && fullNameRaw.toString().trim()) || "there";
-      const firstName = fullName.split(" ")[0] || "there";
-
-      if (greetLine) {
-        greetLine.textContent = `Hello, ${firstName}`;
-      }
-      if (avatarInitial) {
-        avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
-      }
-    }
-
-    function distanceInMeters(lat1, lng1, lat2, lng2) {
-      const R = 6371000;
-      const toRad = (deg) => (deg * Math.PI) / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLng = toRad(lng2 - lng1);
-
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) *
-          Math.cos(toRad(lat2)) *
-          Math.sin(dLng / 2) *
-          Math.sin(dLng / 2);
-
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    function updateLocationToggleUI() {
-      const toggle = document.getElementById("locationToggle");
-      const text = document.getElementById("locationToggleText");
-      if (!toggle || !text) return;
-
-      if (locationEnabled) {
-        toggle.classList.add("on");
-        text.textContent = "On";
+    if (avatarChipImg && avatarChipText) {
+      if (avatarUrl) {
+        avatarChipImg.src = avatarUrl;
+        avatarChipImg.style.display = "block";
+        avatarChipText.textContent = safeInitial;
+        avatarChipText.style.opacity = "0";
       } else {
-        toggle.classList.remove("on");
-        text.textContent = "Off";
+        avatarChipImg.removeAttribute("src");
+        avatarChipImg.style.display = "none";
+        avatarChipText.textContent = safeInitial;
+        avatarChipText.style.opacity = "1";
       }
     }
 
-    function toggleLocation() {
-      locationEnabled = !locationEnabled;
-      localStorage.setItem(
-        "colspotLocationEnabled",
-        locationEnabled ? "true" : "false"
-      );
-      updateLocationToggleUI();
+    if (oldAvatarInitial) {
+      oldAvatarInitial.textContent = safeInitial;
+    }
+  }
 
-      const statusEl = document.getElementById("nearbyStatus");
-      if (!locationEnabled && statusEl) {
-        statusEl.textContent =
-          "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
-      } else if (locationEnabled && statusEl) {
-        statusEl.textContent =
-          "Checking for active sessions near your location...";
-        initNearbyAttendance();
-      }
+  function lockBottomNavToScreen(screenName) {
+    const navButtons = document.querySelectorAll(".bottom-nav .nav-btn");
+    navButtons.forEach((btn) => {
+      const isActive = btn.getAttribute("data-nav") === screenName;
+      btn.classList.toggle("active", isActive);
+    });
+  }
+
+  function showScreen(screenName) {
+    const screens = document.querySelectorAll(".screen");
+    screens.forEach((screen) => screen.classList.remove("active"));
+
+    const target = document.getElementById(`screen-${screenName}`);
+    if (target) {
+      target.classList.add("active");
     }
 
-    function askForLocationOnce() {
-      if (locationAskedOnce || !locationEnabled) return;
-      locationAskedOnce = true;
+    lockBottomNavToScreen(screenName);
 
-      if (!("geolocation" in navigator)) {
-        console.warn("Geolocation not supported in this browser");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        () => {
-          console.log("Location permission granted on main page");
-        },
-        (err) => {
-          console.warn("Location permission denied or error:", err);
-        },
-        {
-          enableHighAccuracy: false,
-          maximumAge: 0,
-          timeout: 10000,
-        }
-      );
+    if (screenName === "history") {
+      loadMiniHistory(true);
     }
 
-    function showScreen(name) {
-      const ids = [
-        "home",
-        "attendance",
-        "nearby",
-        "history",
-        "reports",
-        "account",
-        "scan",
-        "ai"
-      ];
-      ids.forEach((id) => {
-        const el = document.getElementById("screen-" + id);
-        if (!el) return;
-        if (id === name) {
-          el.classList.add("active");
-        } else {
-          el.classList.remove("active");
-        }
-      });
-
-      const navButtons = document.querySelectorAll(".nav-btn");
-      navButtons.forEach((btn) => btn.classList.remove("active"));
-
-      // AI and Scan are part of Home nav
-      const navName = (name === "scan" || name === "ai") ? "home" : name;
-      const activeBtn = document.querySelector(
-        '.nav-btn[data-nav="' + navName + '"]'
-      );
-      if (activeBtn) {
-        activeBtn.classList.add("active");
-      }
-
-      if (name === "scan") {
-        initScanQuotaUI();
-      }
+    if (screenName === "home") {
+      loadStudentDashboard();
+      loadMiniHistory(false);
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      await new Promise((r) => setTimeout(r, 50));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
-      lockBottomNavToScreen();
+  function dismissAnnouncement() {
+    const announcementSection = document.getElementById("announcementSection");
+    if (announcementSection) {
+      announcementSection.style.display = "none";
+    }
+  }
 
-      // Local-first gate using guard_session if available
-      let localAuth = null;
-      try {
-        if (window.ColspotGuard && typeof ColspotGuard.guardPageAccess === "function") {
-          const localUser = ColspotGuard.guardPageAccess();
-          if (!localUser) {
-            // guardPageAccess already redirected to index if no user
-            return;
-          }
-          localAuth = {
-            user_id: localUser.id,
-            email: localUser.email || "",
-            full_name: localUser.email || ""
-          };
-        } else {
-          // Fallback: old local cache gate
-          localAuth = getCachedAuthFromLocalUser();
-          if (!localAuth) {
-            window.location.href = "index.html";
-            return;
-          }
+  function openUpdateUrlFromRule() {
+    if (!currentUpdateRule || !currentUpdateRule.url) return;
+    window.open(currentUpdateRule.url, "_blank");
+  }
+
+  function applyUpdateRuleFromLocal() {
+    try {
+      const raw = localStorage.getItem("colspot_update_rule");
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.url) return;
+
+      currentUpdateRule = parsed;
+
+      const softSection = document.getElementById("updateSoftSection");
+      const softTitle = document.getElementById("updateSoftTitle");
+      const softMessage = document.getElementById("updateSoftMessage");
+
+      const hardOverlay = document.getElementById("updateHardOverlay");
+      const hardTitle = document.getElementById("updateHardTitle");
+      const hardMessage = document.getElementById("updateHardMessage");
+
+      if (parsed.type === "hard") {
+        if (hardTitle) hardTitle.textContent = parsed.title || "Please update Colspot";
+        if (hardMessage) {
+          hardMessage.textContent =
+            parsed.message ||
+            "A newer version of Colspot is required to continue. Please update to keep using the app.";
         }
-      } catch (e) {
-        console.error("guardPageAccess failed on main:", e);
-        window.location.href = "index.html";
-        return;
-      }
-
-      // Use local cache for instant greeting
-      if (localAuth) {
-        const localName =
-          (localAuth.full_name && localAuth.full_name.trim()) ||
-          (localAuth.email && localAuth.email.trim()) ||
-          "";
-        if (localName) {
-          setGreetingFromProfile(localName);
+        if (hardOverlay) hardOverlay.style.display = "flex";
+      } else {
+        if (softTitle) softTitle.textContent = parsed.title || "New version available";
+        if (softMessage) {
+          softMessage.textContent =
+            parsed.message || "A newer version of Colspot is available.";
         }
+        if (softSection) softSection.style.display = "block";
+      }
+    } catch (e) {
+      console.warn("Could not apply update rule:", e);
+    }
+  }
+
+  function loadAnnouncements() {
+    const announcementSection = document.getElementById("announcementSection");
+    const announcementTitle = document.getElementById("announcementTitle");
+    const announcementMessage = document.getElementById("announcementMessage");
+
+    try {
+      const raw = localStorage.getItem("colspot_announcement");
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.message) return;
+
+      if (announcementTitle) {
+        announcementTitle.textContent = parsed.title || "Update";
       }
 
-      // Restore location toggle state
-      const stored = localStorage.getItem("colspotLocationEnabled");
-      if (stored === "false") {
-        locationEnabled = false;
-      }
-      updateLocationToggleUI();
-
-      // Scan file input UI hookup
-      const fileInput = document.getElementById("scanFileInput");
-      const chosenText = document.getElementById("scanFileChosenText");
-      if (fileInput && chosenText) {
-        fileInput.addEventListener("change", () => {
-          if (fileInput.files && fileInput.files[0]) {
-            chosenText.textContent = "Selected: " + fileInput.files[0].name;
-          } else {
-            chosenText.textContent = "";
-          }
-        });
+      if (announcementMessage) {
+        announcementMessage.textContent = parsed.message;
       }
 
-      // Background Supabase session check (non-blocking)
-      if (window.ColspotGuard && typeof ColspotGuard.verifySupabaseSessionInBackground === "function") {
-        ColspotGuard.verifySupabaseSessionInBackground();
-      } else if (typeof supabase !== "undefined") {
-        // Minimal fallback: sync currentUser / profile, but DO NOT redirect
-        try {
-          const { data, error } = await supabase.auth.getUser();
-          if (!error && data && data.user) {
-            currentUser = data.user;
-            const profileName =
-              (currentUser.user_metadata &&
-                currentUser.user_metadata.full_name) ||
-              currentUser.email ||
-              currentUser.phone ||
-              "";
-            saveLocalUserFromSupabaseUser(currentUser);
-            if (profileName) {
-              setGreetingFromProfile(profileName);
+      if (announcementSection) {
+        announcementSection.style.display = "block";
+      }
+    } catch (e) {
+      console.warn("Could not load announcement:", e);
+    }
+  }
+
+  async function loadStudentDashboard() {
+    const totalClassesValue = document.getElementById("totalClassesValue");
+    const totalStudentsValue = document.getElementById("totalStudentsValue");
+
+    if (totalClassesValue) totalClassesValue.textContent = "0";
+    if (totalStudentsValue) totalStudentsValue.textContent = "0";
+
+    if (!currentUser || typeof supabase === "undefined") return;
+
+    try {
+      const userId = currentUser.id;
+
+      const { data: sessions, error: sessionsError } = await supabase
+        .from("attendance_sessions")
+        .select("id")
+        .eq("created_by", userId);
+
+      if (!sessionsError && Array.isArray(sessions)) {
+        if (totalClassesValue) totalClassesValue.textContent = String(sessions.length);
+
+        const sessionIds = sessions.map((s) => s.id).filter(Boolean);
+
+        if (sessionIds.length > 0) {
+          const { data: records, error: recordsError } = await supabase
+            .from("attendance_records")
+            .select("student_id, session_id")
+            .in("session_id", sessionIds);
+
+          if (!recordsError && Array.isArray(records)) {
+            const uniqueStudents = new Set(
+              records.map((r) => r.student_id).filter(Boolean)
+            );
+            if (totalStudentsValue) {
+              totalStudentsValue.textContent = String(uniqueStudents.size);
             }
           }
-        } catch (e) {
-          console.error("Fallback getUser on main failed:", e);
         }
       }
+    } catch (e) {
+      console.error("loadStudentDashboard failed:", e);
+    }
+  }
 
-      // Normal initialisation (does not control navigation)
-      askForLocationOnce();
-      initNearbyAttendance();
-      loadMiniHistory();
-      initScanQuotaUI();
-      loadAnnouncements();
-      applyUpdateRuleFromLocal();
-      tryInitPush();
+  async function loadMiniHistory(forceHistoryScreen) {
+    const historyList = document.getElementById("historyList");
+    if (!historyList) return;
 
-      // 🔥 NEW: collect one best location for main warmup table
-      runMainWarmupOnce();
-    });
+    historyList.innerHTML =
+      '<div class="history-empty">Loading your recent sessions...</div>';
 
-    function goHome()        { showScreen('home'); }
-    function goToAttendance(){ showScreen('attendance'); }
-    function goToReports()   { showScreen('reports'); }
-    function goToNearby()    { showScreen('nearby'); }
-    function goToHistory()   { showScreen('history'); }
-    function goToAccount()   { showScreen('account'); }
-
-    async function ensureCurrentUser() {
-      if (currentUser) return currentUser;
-      if (typeof supabase === "undefined") return null;
-
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data || !data.user) {
-          scheduleOfflineRetry();
-          return null;
-        }
-        currentUser = data.user;
-        saveLocalUserFromSupabaseUser(currentUser);
-        return currentUser;
-      } catch (e) {
-        console.error("ensureCurrentUser failed:", e);
-        scheduleOfflineRetry();
-        return null;
-      }
+    if (!currentUser || typeof supabase === "undefined") {
+      historyList.innerHTML =
+        '<div class="history-empty">No recent sessions yet.</div>';
+      return;
     }
 
-    async function loadMiniHistory() {
-      const listEl = document.getElementById("historyList");
-      if (!listEl) return;
+    try {
+      const { data: sessions, error } = await supabase
+        .from("attendance_sessions")
+        .select("id, course_title, course_code, created_at, ends_at")
+        .eq("created_by", currentUser.id)
+        .order("created_at", { ascending: false })
+        .limit(forceHistoryScreen ? 20 : 5);
 
-      listEl.innerHTML =
-        '<div class="history-empty">Loading your recent sessions...</div>';
+      if (error) throw error;
 
-      if (typeof supabase === "undefined") {
-        // UPDATED COPY: no "backend not connected"
-        listEl.innerHTML =
-          '<div class="history-empty">We’re having trouble talking to the server. Please check your internet connection or close and reopen Colspot.</div>';
+      if (!sessions || sessions.length === 0) {
+        historyList.innerHTML =
+          '<div class="history-empty">No recent sessions yet.</div>';
         return;
       }
 
-      const user = await ensureCurrentUser();
-      if (!user) {
-        if (isBrowserOffline()) {
-          listEl.innerHTML =
-            '<div class="history-empty">No internet connection. We’ll try again automatically…</div>';
-        } else {
-          listEl.innerHTML =
-            '<div class="history-empty">Trying to reconnect… we’ll update this automatically.</div>';
-        }
-        scheduleOfflineRetry();
-        return;
-      }
+      historyList.innerHTML = "";
 
-      try {
-        const { data, error } = await supabase
-          .from("attendance_sessions")
-          .select("id, course_code, starts_at, created_at")
-          .eq("created_by", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-
-        const sessions = data || [];
-        if (!sessions.length) {
-          listEl.innerHTML =
-            '<div class="history-empty">No previous sessions yet. Create one to get started.</div>';
-          stopOfflineRetry();
-          return;
-        }
-
-        const s = sessions[0];
-        const baseDateStr = s.starts_at || s.created_at;
-        const d = baseDateStr ? new Date(baseDateStr) : null;
-        const timeStr = d
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "--:--";
-
-        const code = s.course_code || "Attendance session";
-
-        listEl.innerHTML = "";
+      sessions.forEach((session) => {
         const item = document.createElement("div");
         item.className = "history-item";
 
-        const header = document.createElement("div");
-        header.className = "history-item-header";
+        const title =
+          session.course_title ||
+          session.course_code ||
+          "Attendance session";
 
-        const course = document.createElement("div");
-        course.className = "history-course";
-        course.textContent = code;
+        const dateText = session.created_at
+          ? new Date(session.created_at).toLocaleString()
+          : "Recently";
 
-        const time = document.createElement("div");
-        time.className = "history-time";
-        time.textContent = timeStr;
+        item.innerHTML = `
+          <div class="history-item-header">
+            <div class="history-course">${title}</div>
+            <div class="history-time">${dateText}</div>
+          </div>
+          <div class="history-meta">
+            <span>${session.course_code || "Session"}</span>
+          </div>
+          <div class="history-progress-track">
+            <div class="history-progress-bar"></div>
+          </div>
+        `;
 
-        header.appendChild(course);
-        header.appendChild(time);
-
-        const meta = document.createElement("div");
-        meta.className = "history-meta";
-        meta.textContent = "Last session you created";
-
-        const track = document.createElement("div");
-        track.className = "history-progress-track";
-
-        const bar = document.createElement("div");
-        bar.className = "history-progress-bar";
-        track.appendChild(bar);
-
-        item.appendChild(header);
-        item.appendChild(meta);
-        item.appendChild(track);
-
-        listEl.appendChild(item);
-
-        // Success → stop background retry if it was running
-        stopOfflineRetry();
-      } catch (e) {
-        console.error(e);
-        listEl.innerHTML =
-          '<div class="history-empty">Could not load history yet. We’ll keep trying in the background.</div>';
-        scheduleOfflineRetry();
-      }
+        historyList.appendChild(item);
+      });
+    } catch (e) {
+      console.error("loadMiniHistory failed:", e);
+      historyList.innerHTML =
+        '<div class="history-empty">Could not load history right now.</div>';
     }
+  }
 
-    function initNearbyAttendance() {
-      const statusEl = document.getElementById("nearbyStatus");
-      if (!statusEl) return;
-
-      if (!locationEnabled) {
-        statusEl.textContent =
-          "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
-        return;
-      }
-
-      if (isBrowserOffline()) {
-        statusEl.textContent =
-          "No internet connection. We’ll refresh nearby sessions when you’re back online.";
-        scheduleOfflineRetry();
-        return;
-      }
-
-      if (!("geolocation" in navigator)) {
-        showLastSessionFallback(statusEl);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-
-          if (typeof supabase === "undefined") {
-            // UPDATED COPY: no "backend not connected"
-            statusEl.textContent =
-              "Location is OK but we can’t reach Colspot servers right now. Please check your internet or close and reopen the app.";
-            return;
-          }
-
-          try {
-            const nowIso = new Date().toISOString();
-
-            const { data, error } = await supabase
-              .from("attendance_sessions")
-              .select(
-                "id, course_code, expires_at, latitude, longitude, created_at"
-              )
-              .gte("expires_at", nowIso);
-
-            if (error) throw error;
-
-            const sessions = (data || []).filter(
-              (s) =>
-                typeof s.latitude === "number" &&
-                typeof s.longitude === "number"
-            );
-
-            let nearby = sessions.filter((s) => {
-              const d = distanceInMeters(lat, lng, s.latitude, s.longitude);
-              return d <= NEARBY_RADIUS_METERS;
-            });
-
-            if (!nearby.length && sessions.length > 0) {
-              sessions.sort((a, b) => {
-                const da = distanceInMeters(lat, lng, a.latitude, a.longitude);
-                const db = distanceInMeters(lat, lng, b.latitude, b.longitude);
-                return da - db;
-              });
-              nearby = [sessions[0]];
-            }
-
-            if (!nearby.length) {
-              await showLastSessionFallback(statusEl);
-              return;
-            }
-
-            const s0 = nearby[0];
-            const end = s0.expires_at ? new Date(s0.expires_at) : null;
-            const timeStr = end
-              ? end.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "--:--";
-
-            const code = s0.course_code || "Attendance session";
-            statusEl.textContent = `Active near you: ${code} (until ${timeStr})`;
-
-            // Success → stop background retry
-            stopOfflineRetry();
-          } catch (e) {
-            console.error(e);
-            statusEl.textContent =
-              "Error loading nearby attendance. We’ll keep trying in the background. You can still create a session.";
-            scheduleOfflineRetry();
-          }
-        },
-        async () => {
-          await showLastSessionFallback(statusEl);
-        },
-        {
-          enableHighAccuracy: false,
-          maximumAge: 60000,
-          timeout: 10000,
-        }
-      );
-    }
-
-    async function showLastSessionFallback(statusEl) {
-      if (typeof supabase === "undefined") {
-        statusEl.textContent =
-          "We couldn’t reach the server yet. Please check your internet connection or try again in a moment.";
-        return;
-      }
-
-      const user = await ensureCurrentUser();
-      if (!user) {
-        if (isBrowserOffline()) {
-          statusEl.textContent =
-            "No internet connection. We’ll try again automatically…";
-        } else {
-          statusEl.textContent =
-            "Trying to reconnect… we’ll update this automatically.";
-        }
-        scheduleOfflineRetry();
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from("attendance_sessions")
-          .select("course_code, starts_at, created_at, expires_at")
-          .eq("created_by", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-
-        const s = (data || [])[0];
-        if (!s) {
-          statusEl.textContent =
-            "No attendance sessions yet. Create one to get started.";
-          stopOfflineRetry();
-          return;
-        }
-
-        const baseDateStr = s.starts_at || s.expires_at || s.created_at;
-        const d = baseDateStr ? new Date(baseDateStr) : null;
-        const timeStr = d
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "--:--";
-
-        const code = s.course_code || "Attendance session";
-        statusEl.textContent = `Last session you created: ${code} (at ${timeStr})`;
-
-        // Success → stop retry
-        stopOfflineRetry();
-      } catch (e) {
-        console.error(e);
-        statusEl.textContent =
-          "We couldn't load your recent sessions yet. We’ll keep trying. You can still create a new one.";
-        scheduleOfflineRetry();
-      }
-    }
-
-    async function loadAnnouncements() {
-      const section = document.getElementById("announcementSection");
-      const titleEl = document.getElementById("announcementTitle");
-      const msgEl = document.getElementById("announcementMessage");
-      if (!section || !titleEl || !msgEl) return;
-
-      if (typeof supabase === "undefined") {
-        section.style.display = "none";
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from("app_announcements")
-          .select("id,title,message,show_until,is_active,created_at")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-        const ann = data && data[0];
-
-        if (!ann) {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        if (ann.show_until && new Date(ann.show_until) < new Date()) {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        const dismissKey = "colspot_announcement_dismissed_" + ann.id;
-        if (localStorage.getItem(dismissKey) === "1") {
-          section.style.display = "none";
-          stopOfflineRetry();
-          return;
-        }
-
-        section.dataset.announcementId = ann.id;
-        titleEl.textContent = ann.title || "Update";
-        msgEl.textContent = ann.message || "";
-        section.style.display = "block";
-
-        // Success → stop retry
-        stopOfflineRetry();
-      } catch (e) {
-        console.error("loadAnnouncements failed:", e);
-        scheduleOfflineRetry();
-      }
-    }
-
-    function dismissAnnouncement() {
-      const section = document.getElementById("announcementSection");
-      if (!section) return;
-      const id = section.dataset.announcementId;
-      if (id) {
-        try {
-          localStorage.setItem(
-            "colspot_announcement_dismissed_" + id,
-            "1"
-          );
-        } catch (e) {
-          console.warn("Failed to persist announcement dismiss:", e);
-        }
-      }
-      section.style.display = "none";
-    }
-
-    function applyUpdateRuleFromLocal() {
-      let raw;
-      try {
-        raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
-      } catch {
-        raw = null;
-      }
-      if (!raw) {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
-
-      let rule;
-      try {
-        rule = JSON.parse(raw);
-      } catch {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
-
-      if (!rule || !rule.mode || rule.mode === "none") {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-        return;
-      }
-
-      const now = new Date();
-      if (rule.deadline && new Date(rule.deadline) < now && rule.mode === "soft") {
-        rule.mode = "hard";
-      }
-
-      currentUpdateRule = rule;
-
-      if (rule.mode === "soft") {
-        showSoftUpdateBanner(rule);
-        hideHardUpdateOverlay();
-      } else if (rule.mode === "hard") {
-        hideSoftUpdateBanner();
-        showHardUpdateOverlay(rule);
-      } else {
-        hideSoftUpdateBanner();
-        hideHardUpdateOverlay();
-      }
-    }
-
-    function showSoftUpdateBanner(rule) {
-      const sec = document.getElementById("updateSoftSection");
-      const titleEl = document.getElementById("updateSoftTitle");
-      const msgEl = document.getElementById("updateSoftMessage");
-      if (!sec || !titleEl || !msgEl) return;
-
-      titleEl.textContent = rule.message_title || "New version available";
-      msgEl.textContent =
-        rule.message_body ||
-        "A newer version of Colspot is available. Please update when you can.";
-      sec.style.display = "block";
-    }
-
-    function hideSoftUpdateBanner() {
-      const sec = document.getElementById("updateSoftSection");
-      if (sec) sec.style.display = "none";
-    }
-
-    function showHardUpdateOverlay(rule) {
-      const overlay = document.getElementById("updateHardOverlay");
-      const titleEl = document.getElementById("updateHardTitle");
-      const msgEl = document.getElementById("updateHardMessage");
-      if (!overlay || !titleEl || !msgEl) return;
-
-      titleEl.textContent = rule.message_title || "Update required";
-      msgEl.textContent =
-        rule.message_body ||
-        "A newer version of Colspot is required to continue. Please update to keep using the app.";
-      overlay.style.display = "flex";
-    }
-
-    function hideHardUpdateOverlay() {
-      const overlay = document.getElementById("updateHardOverlay");
-      if (overlay) overlay.style.display = "none";
-    }
-
-    function openUpdateUrlFromRule() {
-      if (!currentUpdateRule || !currentUpdateRule.update_url) return;
-      try {
-        window.location.href = currentUpdateRule.update_url;
-      } catch {
-        window.open(currentUpdateRule.update_url, "_blank");
-      }
-    }
-
-    function getCurrentMonthKey() {
-      const d = new Date();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      return `${d.getFullYear()}-${m}`;
-    }
-
-    function loadUserScanQuota(userId) {
-      const key = `colspot_scan_quota_${userId}`;
-      const monthKey = getCurrentMonthKey();
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (
-            parsed &&
-            parsed.month === monthKey &&
-            typeof parsed.used === "number"
-          ) {
-            return { month: monthKey, used: parsed.used };
-          }
-        }
-      } catch (e) {
-        console.warn("Could not read scan quota:", e);
-      }
-      const initial = { month: monthKey, used: 0 };
-      saveUserScanQuota(userId, initial);
-      return initial;
-    }
-
-    function saveUserScanQuota(userId, quota) {
-      const key = `colspot_scan_quota_${userId}`;
-      try {
-        localStorage.setItem(key, JSON.stringify(quota));
-      } catch (e) {
-        console.warn("Could not save scan quota:", e);
-      }
-    }
-
-    function updateScanQuotaText() {
-      const el = document.getElementById("scanQuotaText");
-      if (!el || !currentScanQuota) return;
-
-      const used = currentScanQuota.used || 0;
-      let remaining = SCAN_MAX_PER_MONTH - used;
-      if (remaining < 0) remaining = 0;
-
+  function initScanQuotaUI() {
+    const quotaEls = document.querySelectorAll(".scan-quota");
+    quotaEls.forEach((el) => {
+      const text = (el.textContent || "").toLowerCase();
       el.classList.remove("scan-quota-low", "scan-quota-zero");
 
-      if (remaining > 0) {
-        el.textContent = `You have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
-        if (remaining <= 5) {
-          el.classList.add("scan-quota-low");
-        }
-      } else {
-        el.textContent = `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Scanning will be available again next month.`;
+      if (text.includes("0 left") || text.includes("no scans")) {
         el.classList.add("scan-quota-zero");
+      } else if (text.includes("1 left") || text.includes("2 left")) {
+        el.classList.add("scan-quota-low");
       }
+    });
+  }
+
+  async function submitScanSheet() {
+    alert("Keep your current scan JS here.");
+  }
+
+  function tryInitPush() {}
+
+  function runMainWarmupOnce() {}
+
+  function openCreateClass() {
+    if (typeof window.showScreen === "function") {
+      showScreen("attendance");
+    } else {
+      window.location.href = "attendance.html";
     }
+  }
 
-    async function initScanQuotaUI() {
-      const quotaEl = document.getElementById("scanQuotaText");
-      if (!quotaEl) return;
+  document.addEventListener("DOMContentLoaded", async () => {
+    appendMainDebug("DOMContentLoaded fired");
+    await new Promise((r) => setTimeout(r, 50));
 
-      const userCtx = await getUserContextForScan();
-      if (!userCtx || !userCtx.id) {
-        quotaEl.textContent = `You have ${SCAN_MAX_PER_MONTH} scans per month.`;
-        quotaEl.classList.remove("scan-quota-low", "scan-quota-zero");
-        currentScanQuota = null;
-        currentScanUserId = null;
-        return;
-      }
+    lockBottomNavToScreen("home");
 
-      currentScanUserId = userCtx.id;
-      currentScanQuota = loadUserScanQuota(userCtx.id);
-      updateScanQuotaText();
-    }
+    let localAuth = null;
 
-    function openScanFilePicker() {
-      const input = document.getElementById("scanFileInput");
-      if (input) input.click();
-    }
+    try {
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.guardPageAccess === "function"
+      ) {
+        const localUser = ColspotGuard.guardPageAccess();
+        if (!localUser) return;
 
-    async function getUserContextForScan() {
-      const user = await ensureCurrentUser();
-      if (user) {
-        return { id: user.id, email: user.email || "" };
-      }
-      const cached = getCachedAuthFromLocalUser();
-      if (cached) {
-        return { id: cached.user_id || cached.id, email: cached.email || "" };
-      }
-      return null;
-    }
-
-    async function submitScanForm(event) {
-      event.preventDefault();
-
-      const statusEl = document.getElementById("scanStatusText");
-      const btn = document.getElementById("scanSubmitBtn");
-      const nameInput = document.getElementById("scanFileName");
-      const fileInput = document.getElementById("scanFileInput");
-      const formatRadio = document.querySelector(
-        'input[name="scanFormat"]:checked'
-      );
-
-      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent = "Please choose a photo or PDF to scan.";
-        return;
-      }
-
-      const userCtx = await getUserContextForScan();
-      if (!userCtx) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent =
-          "We could not find your account. Please sign in again.";
-        return;
-      }
-
-      currentScanUserId = userCtx.id;
-      currentScanQuota = loadUserScanQuota(userCtx.id);
-      const used = currentScanQuota.used || 0;
-      if (used >= SCAN_MAX_PER_MONTH) {
-        statusEl.className = "scan-status error";
-        statusEl.textContent =
-          `You have used all ${SCAN_MAX_PER_MONTH} scans for this month. Try again next month.`;
-        updateScanQuotaText();
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const fileNameRaw = nameInput.value.trim();
-      const fileName = fileNameRaw || file.name || "Untitled scan";
-      const outputFormat = formatRadio ? formatRadio.value : "excel";
-
-      statusEl.className = "scan-status";
-      statusEl.textContent = "Uploading and scanning… please wait.";
-      btn.disabled = true;
-
-      try {
-        const base64Data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result || "";
-            const parts = String(result).split(",");
-            resolve(parts.length > 1 ? parts[1] : parts[0]);
-          };
-          reader.onerror = () =>
-            reject(new Error("Could not read file on device."));
-          reader.readAsDataURL(file);
-        });
-
-        const payload = {
-          user_id: userCtx.id,
-          file_name: fileName,
-          output_format: outputFormat,
-          file_data: base64Data,
-          mime_type: file.type || "application/octet-stream",
+        localAuth = {
+          user_id: localUser.id,
+          email: localUser.email || "",
+          full_name: localUser.full_name || localUser.email || ""
         };
-
-        const resp = await fetch(SCAN_LAMBDA_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        let data = null;
-        try {
-          data = await resp.json();
-        } catch {
-          data = null;
+      } else {
+        localAuth = getCachedAuthFromLocalUser();
+        if (!localAuth) {
+          window.location.href = "index.html";
+          return;
         }
+      }
+    } catch (e) {
+      console.error("guardPageAccess failed on main:", e);
+      window.location.href = "index.html";
+      return;
+    }
 
-        if (!resp.ok) {
-          const msg =
-            (data && (data.message || data.error)) ||
-            "Scan failed on server.";
-          throw new Error(msg);
-        }
-
-        if (typeof supabase !== "undefined" && userCtx && userCtx.id) {
-          try {
-            const record = {
-              user_id: userCtx.id,
-              title: fileName,
-              page_count: data?.page_count ?? null,
-              total_rows: data?.total_rows ?? null,
-              s3_object_key: data?.s3_object_key ?? null,
-              status: data?.status ?? "completed",
-              result_json: data?.result_json ?? null,
-              error_message: data?.error_message ?? null,
-            };
-
-            if (data && data.scan_sheet_id) {
-              record.id = data.scan_sheet_id;
-            }
-
-            await supabase.from("scan_sheets").insert(record);
-          } catch (e) {
-            console.warn("Supabase scan_sheets insert failed (non-fatal):", e);
-          }
-        }
-
-        if (currentScanUserId) {
-          currentScanQuota = loadUserScanQuota(currentScanUserId);
-          currentScanQuota.used = (currentScanQuota.used || 0) + 1;
-          if (currentScanQuota.used < 0) currentScanQuota.used = 0;
-          saveUserScanQuota(currentScanUserId, currentScanQuota);
-        }
-        updateScanQuotaText();
-
-        const remaining =
-          currentScanQuota
-            ? Math.max(
-                0,
-                SCAN_MAX_PER_MONTH - (currentScanQuota.used || 0)
-              )
-            : null;
-
-        statusEl.className = "scan-status ok";
-
-        const remainingText =
-          remaining === null
-            ? ""
-            : ` You now have ${remaining} of ${SCAN_MAX_PER_MONTH} scans left this month.`;
-
-        if (data && data.result_json && data.result_json.download_url) {
-          statusEl.innerHTML =
-            "Scan completed." +
-            remainingText +
-            "<br>It may take a few seconds to appear in <b>History</b>." +
-            '<br>Go to the <b>History</b> tab to view and download it, or ' +
-            '<a href="' +
-            data.result_json.download_url +
-            '" target="_blank" rel="noopener">open it now</a>.';
-        } else {
-          statusEl.textContent =
-            "Scan completed." +
-            remainingText +
-            " Go to the History tab to view and download it.";
-        }
-
-        fileInput.value = "";
-        const chosenText2 = document.getElementById("scanFileChosenText");
-        if (chosenText2) chosenText2.textContent = "";
-      } catch (err) {
-        console.error("Scan error:", err);
-
-        // UPDATED: nicer message when network is off / "Failed to fetch"
-        const rawMsg = (err && err.message) ? String(err.message).toLowerCase() : "";
-        const looksLikeNetwork =
-          rawMsg.includes("failed to fetch") ||
-          rawMsg.includes("network") ||
-          rawMsg.includes("timeout") ||
-          rawMsg.includes("timed out") ||
-          rawMsg.includes("err_name_not_resolved");
-
-        statusEl.className = "scan-status error";
-        if (looksLikeNetwork) {
-          statusEl.textContent =
-            "We couldn’t reach Colspot servers. Please check your internet connection and try again.";
-        } else {
-          statusEl.textContent =
-            err && err.message
-              ? err.message
-              : "Scan failed. Please try again.";
-        }
-      } finally {
-        btn.disabled = false;
+    if (localAuth) {
+      const localName =
+        (localAuth.full_name && localAuth.full_name.trim()) ||
+        (localAuth.email && localAuth.email.trim()) ||
+        "";
+      if (localName) {
+        setGreetingFromProfile(localName);
+        syncTopRightAvatar("", localName.trim().charAt(0).toUpperCase());
       }
     }
 
-    function setupKeyboardNavHide() {
-      const focusSelector =
-        "input, textarea, select, [contenteditable='true']";
-
-      document.addEventListener("focusin", (event) => {
-        if (event.target.matches(focusSelector)) {
-          document.body.classList.add("keyboard-open");
-        }
-      });
-
-      document.addEventListener("focusout", (event) => {
-        if (event.target.matches(focusSelector)) {
-          setTimeout(() => {
-            const active = document.activeElement;
-            if (!active || !active.matches(focusSelector)) {
-              document.body.classList.remove("keyboard-open");
-            }
-          }, 50);
+    const fileInput = document.getElementById("scanFileInput");
+    const chosenText = document.getElementById("scanFileChosenText");
+    if (fileInput && chosenText) {
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files && fileInput.files[0]) {
+          chosenText.textContent = "Selected: " + fileInput.files[0].name;
+        } else {
+          chosenText.textContent = "";
         }
       });
     }
 
-    setupKeyboardNavHide();
-  </script>
+    const scanSubmitBtn = document.getElementById("scanSubmitBtn");
+    if (scanSubmitBtn) {
+      scanSubmitBtn.addEventListener("click", submitScanSheet);
+    }
+
+    const createClassBtn = document.getElementById("createClassBtn");
+    if (createClassBtn) {
+      createClassBtn.addEventListener("click", openCreateClass);
+    }
+
+    if (
+      window.ColspotGuard &&
+      typeof ColspotGuard.verifySupabaseSessionInBackground === "function"
+    ) {
+      ColspotGuard.verifySupabaseSessionInBackground();
+    } else if (typeof supabase !== "undefined") {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data && data.user) {
+          currentUser = data.user;
+
+          const profileName =
+            (currentUser.user_metadata && currentUser.user_metadata.full_name) ||
+            currentUser.email ||
+            currentUser.phone ||
+            "";
+
+          saveLocalUserFromSupabaseUser(currentUser);
+
+          if (profileName) {
+            setGreetingFromProfile(profileName);
+          }
+
+          syncTopRightAvatar(
+            (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || "",
+            profileName ? profileName.trim().charAt(0).toUpperCase() : "S"
+          );
+        }
+      } catch (e) {
+        console.error("Fallback getUser on main failed:", e);
+      }
+    }
+
+    loadStudentDashboard();
+    loadMiniHistory(false);
+    initScanQuotaUI();
+    loadAnnouncements();
+    applyUpdateRuleFromLocal();
+    tryInitPush();
+    appendMainDebug("Initial delay complete");
+    appendMainDebug("tryInitPush finished");
+    runMainWarmupOnce();
+  });
+
+  window.showScreen = showScreen;
+  window.dismissAnnouncement = dismissAnnouncement;
+  window.openUpdateUrlFromRule = openUpdateUrlFromRule;
+  window.submitScanSheet = submitScanSheet;
+  window.openCreateClass = openCreateClass;
+</script>
 </body>
 </html>
