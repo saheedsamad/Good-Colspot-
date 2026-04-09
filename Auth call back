@@ -371,620 +371,656 @@
 
   <script type="module" src="./client_supabase.js"></script>
 
-  <script>
-    const LOCAL_USER_KEY = "colspot_local_user";
-    const AUTH_ROLE_KEY = "colspot_auth_role";
-    const VERIFY_URL = "verify_class.html";
-    const FACE_CAPTURE_URL = "face-capture.html";
-    const MAIN_URL = "main.html";
-    const INDEX_URL = "index.html";
+<script>
+  const LOCAL_USER_KEY = "colspot_local_user";
+  const AUTH_ROLE_KEY = "colspot_auth_role";
+  const VERIFY_URL = "verify_class.html";
+  const FACE_CAPTURE_URL = "face-capture.html";
+  const MAIN_URL = "main.html";
+  const INDEX_URL = "index.html";
 
-    let activeSession = null;
-    let limitTimer = null;
+  let activeSession = null;
+  let limitTimer = null;
 
-    function showPanel(panelId) {
-      const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (id === panelId) {
-          el.classList.remove("hidden");
-        } else {
-          el.classList.add("hidden");
-        }
-      });
-    }
-
-    function setMessage(id, text, cls = "") {
+  function showPanel(panelId) {
+    const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
+    ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.textContent = text || "";
-      el.className = "message" + (cls ? " " + cls : "");
-    }
+      if (id === panelId) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    });
+  }
 
-    function setButtonLoading(btnId, textId, loaderId, isLoading) {
-      const btn = document.getElementById(btnId);
-      const text = document.getElementById(textId);
-      const loader = document.getElementById(loaderId);
+  function setMessage(id, text, cls = "") {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "message" + (cls ? " " + cls : "");
+  }
 
-      if (!btn) return;
-      btn.disabled = isLoading;
+  function setButtonLoading(btnId, textId, loaderId, isLoading) {
+    const btn = document.getElementById(btnId);
+    const text = document.getElementById(textId);
+    const loader = document.getElementById(loaderId);
 
-      if (text && loader) {
-        if (isLoading) {
-          text.classList.add("hidden");
-          loader.classList.remove("hidden");
-        } else {
-          text.classList.remove("hidden");
-          loader.classList.add("hidden");
-        }
+    if (!btn) return;
+    btn.disabled = isLoading;
+
+    if (text && loader) {
+      if (isLoading) {
+        text.classList.add("hidden");
+        loader.classList.remove("hidden");
+      } else {
+        text.classList.remove("hidden");
+        loader.classList.add("hidden");
       }
     }
+  }
 
-    function saveLocalUserFromSession(session) {
-      if (!session || !session.user) return;
-      try {
-        const payload = {
-          id: session.user.id,
-          email: session.user.email || "",
-          last_seen: new Date().toISOString(),
-        };
-        localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
-      } catch (e) {
-        console.error("Could not write local user cache:", e);
+  function saveLocalUserFromSession(session) {
+    if (!session || !session.user) return;
+    try {
+      const payload = {
+        id: session.user.id,
+        email: session.user.email || "",
+        last_seen: new Date().toISOString(),
+      };
+      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.error("Could not write local user cache:", e);
+    }
+  }
+
+  function saveAuthRole(role) {
+    try {
+      localStorage.setItem(AUTH_ROLE_KEY, role);
+    } catch (e) {
+      console.error("Could not save auth role:", e);
+    }
+  }
+
+  function goBackToIndex() {
+    window.location.href = INDEX_URL;
+  }
+
+  async function logoutAndReturn() {
+    try {
+      if (window.supabase) {
+        await window.supabase.auth.signOut();
       }
+    } catch (e) {
+      console.error("Signout failed:", e);
     }
+    try {
+      localStorage.removeItem(LOCAL_USER_KEY);
+    } catch (e) {}
+    saveAuthRole("student");
+    window.location.href = INDEX_URL;
+  }
 
-    function saveAuthRole(role) {
-      try {
-        localStorage.setItem(AUTH_ROLE_KEY, role);
-      } catch (e) {
-        console.error("Could not save auth role:", e);
-      }
-    }
+  function startLimitCountdown(seconds = 10) {
+    const countdownEl = document.getElementById("limit-countdown");
+    let remaining = seconds;
 
-    function goBackToIndex() {
-      window.location.href = INDEX_URL;
-    }
+    if (countdownEl) countdownEl.textContent = String(remaining);
 
-    async function logoutAndReturn() {
-      try {
-        if (window.supabase) {
-          await window.supabase.auth.signOut();
-        }
-      } catch (e) {
-        console.error("Signout failed:", e);
-      }
-      try {
-        localStorage.removeItem(LOCAL_USER_KEY);
-      } catch (e) {}
-      saveAuthRole("student");
-      window.location.href = INDEX_URL;
-    }
+    if (limitTimer) clearInterval(limitTimer);
 
-    function startLimitCountdown(seconds = 10) {
-      const countdownEl = document.getElementById("limit-countdown");
-      let remaining = seconds;
-
+    limitTimer = setInterval(() => {
+      remaining -= 1;
       if (countdownEl) countdownEl.textContent = String(remaining);
 
-      if (limitTimer) clearInterval(limitTimer);
-
-      limitTimer = setInterval(() => {
-        remaining -= 1;
-        if (countdownEl) countdownEl.textContent = String(remaining);
-
-        if (remaining <= 0) {
-          clearInterval(limitTimer);
-          logoutAndReturn();
-        }
-      }, 1000);
-    }
-
-    function generateRandomId() {
-      try {
-        if (window.crypto && typeof window.crypto.randomUUID === "function") {
-          return window.crypto.randomUUID();
-        }
-      } catch (e) {}
-      return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
-    }
-
-    async function getOrCreateDeviceId() {
-      const storageKey = "colspot_device_id_v2";
-
-      try {
-        const existing = localStorage.getItem(storageKey);
-        if (existing && existing.trim()) return existing;
-      } catch (e) {}
-
-      let newId = null;
-      const platform =
-        window.Capacitor && typeof window.Capacitor.getPlatform === "function"
-          ? window.Capacitor.getPlatform()
-          : "web";
-
-      let nativePlugin = null;
-      if (window.Capacitor && window.Capacitor.Plugins) {
-        nativePlugin =
-          window.Capacitor.Plugins.ColspotNative ||
-          window.Capacitor.Plugins.ColspotNativePlugin ||
-          null;
+      if (remaining <= 0) {
+        clearInterval(limitTimer);
+        logoutAndReturn();
       }
+    }, 1000);
+  }
 
+  function generateRandomId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+    } catch (e) {}
+    return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+  }
+
+  async function getOrCreateDeviceId() {
+    const storageKey = "colspot_device_id_v2";
+
+    try {
+      const existing = localStorage.getItem(storageKey);
+      if (existing && existing.trim()) return existing;
+    } catch (e) {}
+
+    let newId = null;
+    const platform =
+      window.Capacitor && typeof window.Capacitor.getPlatform === "function"
+        ? window.Capacitor.getPlatform()
+        : "web";
+
+    let nativePlugin = null;
+    if (window.Capacitor && window.Capacitor.Plugins) {
+      nativePlugin =
+        window.Capacitor.Plugins.ColspotNative ||
+        window.Capacitor.Plugins.ColspotNativePlugin ||
+        null;
+    }
+
+    if (
+      platform === "android" &&
+      nativePlugin &&
+      typeof nativePlugin.getDeviceId === "function"
+    ) {
+      try {
+        const result = await nativePlugin.getDeviceId();
+        if (result && typeof result.value === "string" && result.value.trim()) {
+          newId = result.value.trim();
+        }
+      } catch (err) {
+        console.error("Android native device id failed:", err);
+      }
+    }
+
+    if (platform === "ios") {
       if (
-        platform === "android" &&
+        !newId &&
         nativePlugin &&
         typeof nativePlugin.getDeviceId === "function"
       ) {
         try {
           const result = await nativePlugin.getDeviceId();
-          if (result && typeof result.value === "string" && result.value.trim()) {
-            newId = result.value.trim();
+          const raw =
+            (result && (result.value || result.identifier || result.id || result.uuid)) || "";
+          if (raw && raw.trim()) {
+            newId = raw.trim();
           }
         } catch (err) {
-          console.error("Android native device id failed:", err);
+          console.error("iOS native device id failed:", err);
         }
       }
 
-      if (platform === "ios") {
-        if (
-          !newId &&
-          nativePlugin &&
-          typeof nativePlugin.getDeviceId === "function"
-        ) {
-          try {
-            const result = await nativePlugin.getDeviceId();
-            const raw =
-              (result && (result.value || result.identifier || result.id || result.uuid)) || "";
-            if (raw && raw.trim()) {
-              newId = raw.trim();
-            }
-          } catch (err) {
-            console.error("iOS native device id failed:", err);
+      if (
+        !newId &&
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.Device &&
+        typeof window.Capacitor.Plugins.Device.getId === "function"
+      ) {
+        try {
+          const result = await window.Capacitor.Plugins.Device.getId();
+          const raw = (result && (result.identifier || result.uuid || result.id)) || "";
+          if (raw && raw.trim()) {
+            newId = "I-" + raw.trim();
           }
-        }
-
-        if (
-          !newId &&
-          window.Capacitor &&
-          window.Capacitor.Plugins &&
-          window.Capacitor.Plugins.Device &&
-          typeof window.Capacitor.Plugins.Device.getId === "function"
-        ) {
-          try {
-            const result = await window.Capacitor.Plugins.Device.getId();
-            const raw = (result && (result.identifier || result.uuid || result.id)) || "";
-            if (raw && raw.trim()) {
-              newId = "I-" + raw.trim();
-            }
-          } catch (err) {
-            console.error("Device.getId failed:", err);
-          }
+        } catch (err) {
+          console.error("Device.getId failed:", err);
         }
       }
-
-      if (!newId) {
-        newId = "B-" + generateRandomId();
-      }
-
-      try {
-        localStorage.setItem(storageKey, newId);
-      } catch (e) {}
-
-      return newId;
     }
 
-    async function getDeviceName() {
-      try {
-        if (
-          window.Capacitor &&
-          window.Capacitor.Plugins &&
-          window.Capacitor.Plugins.Device &&
-          typeof window.Capacitor.Plugins.Device.getInfo === "function"
-        ) {
-          const info = await window.Capacitor.Plugins.Device.getInfo();
-          const platform = (info.platform || "").toLowerCase();
-
-          if (platform === "ios") return "iPhone";
-
-          let name = (info.model || info.name || "").trim();
-          if (!name) name = "Android device";
-          return name;
-        }
-      } catch (err) {
-        console.error("getDeviceName failed:", err);
-      }
-
-      return "Browser";
+    if (!newId) {
+      newId = "B-" + generateRandomId();
     }
 
-    async function linkDeviceForSession(session) {
-      if (!session || !session.user || !window.supabase) return;
+    try {
+      localStorage.setItem(storageKey, newId);
+    } catch (e) {}
 
-      const userId = session.user.id;
-      const deviceId = await getOrCreateDeviceId();
-      const deviceName = await getDeviceName();
+    return newId;
+  }
 
-      if (!deviceId) {
-        throw new Error("We couldn’t get a device ID. Please try again.");
+  async function getDeviceName() {
+    try {
+      if (
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.Device &&
+        typeof window.Capacitor.Plugins.Device.getInfo === "function"
+      ) {
+        const info = await window.Capacitor.Plugins.Device.getInfo();
+        const platform = (info.platform || "").toLowerCase();
+
+        if (platform === "ios") return "iPhone";
+
+        let name = (info.model || info.name || "").trim();
+        if (!name) name = "Android device";
+        return name;
+      }
+    } catch (err) {
+      console.error("getDeviceName failed:", err);
+    }
+
+    return "Browser";
+  }
+
+  async function linkDeviceForSession(session) {
+    if (!session || !session.user || !window.supabase) return;
+
+    const userId = session.user.id;
+    const deviceId = await getOrCreateDeviceId();
+    const deviceName = await getDeviceName();
+
+    if (!deviceId) {
+      throw new Error("We couldn’t get a device ID. Please try again.");
+    }
+
+    const { data: byDevice, error: errA } = await window.supabase
+      .from("user_devices")
+      .select("id,user_id,device_id")
+      .eq("device_id", deviceId);
+
+    if (errA) {
+      console.error("user_devices by device error:", errA);
+      throw new Error("We couldn’t link this device right now.");
+    }
+
+    if (byDevice && byDevice.length > 0) {
+      const row = byDevice[0];
+      if (row.user_id !== userId) {
+        const conflictError = new Error("This phone is already linked to another Colspot account.");
+        conflictError.code = "DEVICE_CONFLICT";
+        throw conflictError;
+      } else {
+        return;
+      }
+    }
+
+    const { data: byUser, error: errB } = await window.supabase
+      .from("user_devices")
+      .select("id,device_id")
+      .eq("user_id", userId);
+
+    if (errB) {
+      console.error("user_devices by user error:", errB);
+      throw new Error("We couldn’t link this device right now.");
+    }
+
+    if (byUser && byUser.length >= 2) {
+      const limitError = new Error("You’ve already linked Colspot to 2 phones.");
+      limitError.code = "DEVICE_LIMIT";
+      throw limitError;
+    }
+
+    const { error: insertErr } = await window.supabase.from("user_devices").insert({
+      user_id: userId,
+      device_id: deviceId,
+      device_name: deviceName,
+    });
+
+    if (insertErr) {
+      console.error("user_devices insert error:", insertErr);
+
+      const msg = String(insertErr.message || "").toLowerCase();
+      const details = String(insertErr.details || "").toLowerCase();
+      const code = String(insertErr.code || "").toLowerCase();
+
+      if (
+        msg.includes("user_devices_device_id_key") ||
+        details.includes("user_devices_device_id_key") ||
+        (msg.includes("duplicate key") && msg.includes("device_id")) ||
+        (details.includes("duplicate key") && details.includes("device_id")) ||
+        code === "23505"
+      ) {
+        const conflictError = new Error("This phone is already linked to another Colspot account.");
+        conflictError.code = "DEVICE_CONFLICT";
+        throw conflictError;
       }
 
-      const { data: byDevice, error: errA } = await window.supabase
-        .from("user_devices")
-        .select("id,user_id,device_id")
-        .eq("device_id", deviceId);
-
-      if (errA) {
-        console.error("user_devices by device error:", errA);
-        throw new Error("We couldn’t link this device right now.");
-      }
-
-      if (byDevice && byDevice.length > 0) {
-        const row = byDevice[0];
-        if (row.user_id !== userId) {
-          throw new Error("This phone is already linked to another Colspot account.");
-        } else {
-          return;
-        }
-      }
-
-      const { data: byUser, error: errB } = await window.supabase
-        .from("user_devices")
-        .select("id,device_id")
-        .eq("user_id", userId);
-
-      if (errB) {
-        console.error("user_devices by user error:", errB);
-        throw new Error("We couldn’t link this device right now.");
-      }
-
-      if (byUser && byUser.length >= 2) {
+      if (
+        msg.includes("user_devices_user_id_key") ||
+        details.includes("user_devices_user_id_key") ||
+        msg.includes("already linked 2 phones") ||
+        details.includes("already linked 2 phones")
+      ) {
         const limitError = new Error("You’ve already linked Colspot to 2 phones.");
         limitError.code = "DEVICE_LIMIT";
         throw limitError;
       }
 
-      const { error: insertErr } = await window.supabase.from("user_devices").insert({
+      throw new Error("We couldn’t finish linking your device.");
+    }
+  }
+
+  async function recordLoginEvent(session) {
+    if (!session || !session.user || !window.supabase) return;
+
+    const userId = session.user.id;
+    const deviceId = await getOrCreateDeviceId();
+    const deviceName = await getDeviceName();
+    if (!deviceId) return;
+
+    try {
+      const { error } = await window.supabase.from("user_login_events").insert({
         user_id: userId,
         device_id: deviceId,
         device_name: deviceName,
       });
-
-      if (insertErr) {
-        console.error("user_devices insert error:", insertErr);
-        const msg = String(insertErr.message || "").toLowerCase();
-        if (msg.includes("already linked 2 phones")) {
-          const limitError = new Error("You’ve already linked Colspot to 2 phones.");
-          limitError.code = "DEVICE_LIMIT";
-          throw limitError;
-        }
-        throw new Error("We couldn’t finish linking your device.");
+      if (error) {
+        console.error("recordLoginEvent insert error:", error);
       }
+    } catch (err) {
+      console.error("recordLoginEvent failed:", err);
+    }
+  }
+
+  async function waitForSupabase(maxMs = 12000) {
+    const started = Date.now();
+    while (!window.supabase) {
+      if (Date.now() - started > maxMs) {
+        throw new Error("Supabase is not ready yet.");
+      }
+      await new Promise(resolve => setTimeout(resolve, 120));
+    }
+    return window.supabase;
+  }
+
+  function getGoogleName(session) {
+    if (!session || !session.user) return "";
+    const meta = session.user.user_metadata || {};
+    return (
+      meta.full_name ||
+      meta.name ||
+      meta.user_name ||
+      meta.display_name ||
+      session.user.email?.split("@")[0] ||
+      ""
+    );
+  }
+
+  async function checkStudentProfile(session) {
+    const userId = session.user.id;
+    const email = (session.user.email || "").trim().toLowerCase();
+
+    const { data: studentRow, error: studentErr } = await window.supabase
+      .from("student_accounts")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (studentErr) {
+      console.error("student_accounts fetch error:", studentErr);
+      throw new Error("We couldn’t check your student profile.");
     }
 
-    async function recordLoginEvent(session) {
-      if (!session || !session.user || !window.supabase) return;
-
-      const userId = session.user.id;
-      const deviceId = await getOrCreateDeviceId();
-      const deviceName = await getDeviceName();
-      if (!deviceId) return;
-
-      try {
-        const { error } = await window.supabase.from("user_login_events").insert({
-          user_id: userId,
-          device_id: deviceId,
-          device_name: deviceName,
-        });
-        if (error) {
-          console.error("recordLoginEvent insert error:", error);
-        }
-      } catch (err) {
-        console.error("recordLoginEvent failed:", err);
-      }
+    if (studentRow) {
+      return {
+        exists: true,
+        row: studentRow
+      };
     }
 
-    async function waitForSupabase(maxMs = 12000) {
-      const started = Date.now();
-      while (!window.supabase) {
-        if (Date.now() - started > maxMs) {
-          throw new Error("Supabase is not ready yet.");
-        }
-        await new Promise(resolve => setTimeout(resolve, 120));
-      }
-      return window.supabase;
+    const { data: lecturerRow, error: lecturerErr } = await window.supabase
+      .from("lecturer_accounts")
+      .select("user_id,email")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (lecturerErr) {
+      console.error("lecturer_accounts fetch error:", lecturerErr);
     }
 
-    function getGoogleName(session) {
-      if (!session || !session.user) return "";
-      const meta = session.user.user_metadata || {};
-      return (
-        meta.full_name ||
-        meta.name ||
-        meta.user_name ||
-        meta.display_name ||
-        session.user.email?.split("@")[0] ||
-        ""
-      );
-    }
-
-    async function checkStudentProfile(session) {
-      const userId = session.user.id;
-      const email = (session.user.email || "").trim().toLowerCase();
-
-      const { data: studentRow, error: studentErr } = await window.supabase
-        .from("student_accounts")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (studentErr) {
-        console.error("student_accounts fetch error:", studentErr);
-        throw new Error("We couldn’t check your student profile.");
-      }
-
-      if (studentRow) {
-        return {
-          exists: true,
-          row: studentRow
-        };
-      }
-
-      const { data: lecturerRow, error: lecturerErr } = await window.supabase
-        .from("lecturer_accounts")
-        .select("user_id,email")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (lecturerErr) {
-        console.error("lecturer_accounts fetch error:", lecturerErr);
-      }
-
-      if (lecturerRow) {
-        return {
-          exists: false,
-          lecturerConflict: true
-        };
-      }
-
+    if (lecturerRow) {
       return {
         exists: false,
-        lecturerConflict: false
+        lecturerConflict: true
       };
     }
 
-    async function getVerificationState(userId) {
-      const { data: verificationRow, error: verificationErr } = await window.supabase
-        .from("verification_course_forms")
-        .select("id,status")
-        .eq("user_id", userId)
-        .eq("status", "successful")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    return {
+      exists: false,
+      lecturerConflict: false
+    };
+  }
 
-      if (verificationErr) {
-        console.error("verification fetch error:", verificationErr);
-        throw new Error("We couldn’t check your verification state.");
-      }
+  async function getVerificationState(userId) {
+    const { data: verificationRow, error: verificationErr } = await window.supabase
+      .from("verification_course_forms")
+      .select("id,status")
+      .eq("user_id", userId)
+      .eq("status", "successful")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-      const { data: faceRow, error: faceErr } = await window.supabase
-        .from("face_profiles")
-        .select("user_id, face_verified, capture_status")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (faceErr) {
-        console.error("face fetch error:", faceErr);
-        throw new Error("We couldn’t check your face verification state.");
-      }
-
-      const hasVerifiedForm = !!verificationRow;
-      const faceStatus = String(faceRow?.capture_status || "").toLowerCase().trim();
-      const hasVerifiedFace =
-        !!faceRow &&
-        (faceRow.face_verified === true || faceStatus === "approved" || faceStatus === "verified");
-
-      return {
-        hasVerifiedForm,
-        hasVerifiedFace
-      };
+    if (verificationErr) {
+      console.error("verification fetch error:", verificationErr);
+      throw new Error("We couldn’t check your verification state.");
     }
 
-    function fillStudentFormFromSession(session) {
-      const fullName = getGoogleName(session);
-      const email = session.user.email || "";
+    const { data: faceRow, error: faceErr } = await window.supabase
+      .from("face_profiles")
+      .select("user_id, face_verified, capture_status")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-      const fullNameInput = document.getElementById("student-fullname");
-      const emailInput = document.getElementById("student-email");
-
-      if (fullNameInput) fullNameInput.value = fullName;
-      if (emailInput) emailInput.value = email;
+    if (faceErr) {
+      console.error("face fetch error:", faceErr);
+      throw new Error("We couldn’t check your face verification state.");
     }
 
-    async function goWithWelcome(message, nextUrl, delay = 1200) {
-      const welcomeName = document.getElementById("welcome-name");
-      if (welcomeName) {
-        welcomeName.textContent = getGoogleName(activeSession) || "Student";
-      }
+    const hasVerifiedForm = !!verificationRow;
+    const faceStatus = String(faceRow?.capture_status || "").toLowerCase().trim();
+    const hasVerifiedFace =
+      !!faceRow &&
+      (faceRow.face_verified === true || faceStatus === "approved" || faceStatus === "verified");
 
-      const welcomeBox = document.getElementById("welcome-box");
-      if (welcomeBox) {
-        welcomeBox.textContent = message;
-      }
+    return {
+      hasVerifiedForm,
+      hasVerifiedFace
+    };
+  }
 
-      setMessage("welcome-message", "Redirecting…", "success");
-      showPanel("welcome-panel");
+  function fillStudentFormFromSession(session) {
+    const fullName = getGoogleName(session);
+    const email = session.user.email || "";
 
-      setTimeout(() => {
-        window.location.href = nextUrl;
-      }, delay);
+    const fullNameInput = document.getElementById("student-fullname");
+    const emailInput = document.getElementById("student-email");
+
+    if (fullNameInput) fullNameInput.value = fullName;
+    if (emailInput) emailInput.value = email;
+  }
+
+  async function goWithWelcome(message, nextUrl, delay = 1200) {
+    const welcomeName = document.getElementById("welcome-name");
+    if (welcomeName) {
+      welcomeName.textContent = getGoogleName(activeSession) || "Student";
     }
 
-    async function startCallbackFlow() {
+    const welcomeBox = document.getElementById("welcome-box");
+    if (welcomeBox) {
+      welcomeBox.textContent = message;
+    }
+
+    setMessage("welcome-message", "Redirecting…", "success");
+    showPanel("welcome-panel");
+
+    setTimeout(() => {
+      saveLocalUserFromSession(activeSession);
+      saveAuthRole("student");
+      window.location.href = nextUrl;
+    }, delay);
+  }
+
+  async function startCallbackFlow() {
+    try {
+      showPanel("loading-panel");
+      await waitForSupabase();
+
+      const { data, error } = await window.supabase.auth.getSession();
+      if (error) {
+        console.error("getSession error:", error);
+        throw new Error("We couldn’t confirm your Google session.");
+      }
+
+      const session = data?.session || null;
+      if (!session || !session.user) {
+        throw new Error("No Google session was found. Please try again.");
+      }
+
+      activeSession = session;
+      saveAuthRole("student");
+      saveLocalUserFromSession(session);
+
+      const profileCheck = await checkStudentProfile(session);
+
+      if (profileCheck.lecturerConflict) {
+        showPanel("error-panel");
+        document.getElementById("error-box").textContent =
+          "This Google email appears to belong to a lecturer account. Please go back and use the Lecturer sign in flow instead.";
+        setMessage("error-message", "Student Google login is only for students.", "error");
+        return;
+      }
+
       try {
-        showPanel("loading-panel");
-        await waitForSupabase();
+        await linkDeviceForSession(session);
+      } catch (deviceErr) {
+        console.error(deviceErr);
 
-        const { data, error } = await window.supabase.auth.getSession();
-        if (error) {
-          console.error("getSession error:", error);
-          throw new Error("We couldn’t confirm your Google session.");
+        const deviceMessage = String(deviceErr.message || "").toLowerCase();
+
+        if (deviceErr.code === "DEVICE_LIMIT" || deviceMessage.includes("2 phones")) {
+          showPanel("limit-panel");
+          startLimitCountdown(10);
+          return;
         }
 
-        const session = data?.session || null;
-        if (!session || !session.user) {
-          throw new Error("No Google session was found. Please try again.");
-        }
-
-        activeSession = session;
-        saveAuthRole("student");
-        saveLocalUserFromSession(session);
-
-        const profileCheck = await checkStudentProfile(session);
-
-        if (profileCheck.lecturerConflict) {
+        if (deviceErr.code === "DEVICE_CONFLICT" || deviceMessage.includes("another colspot account")) {
           showPanel("error-panel");
           document.getElementById("error-box").textContent =
-            "This Google email appears to belong to a lecturer account. Please go back and use the Lecturer sign in flow instead.";
-          setMessage("error-message", "Student Google login is only for students.", "error");
+            "This device is already linked to another Colspot account.";
+          setMessage("error-message", "Use the correct phone for this account or contact support.", "error");
           return;
         }
 
-        try {
-          await linkDeviceForSession(session);
-        } catch (deviceErr) {
-          console.error(deviceErr);
+        throw deviceErr;
+      }
 
-          if (deviceErr.code === "DEVICE_LIMIT" || String(deviceErr.message || "").toLowerCase().includes("2 phones")) {
-            showPanel("limit-panel");
-            startLimitCountdown(10);
-            return;
-          }
+      try {
+        await recordLoginEvent(session);
+      } catch (e) {
+        console.error(e);
+      }
 
-          throw deviceErr;
-        }
+      const verificationState = await getVerificationState(session.user.id);
 
-        try {
-          await recordLoginEvent(session);
-        } catch (e) {
-          console.error(e);
-        }
-
-        const verificationState = await getVerificationState(session.user.id);
-
-        if (profileCheck.exists) {
-          if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-            await goWithWelcome("Your account, course form, and face verification are ready.", MAIN_URL);
-            return;
-          }
-
-          if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-            await goWithWelcome("Your course form is already verified. Next, complete face capture.", FACE_CAPTURE_URL);
-            return;
-          }
-
-          await goWithWelcome("Welcome back. Please continue with course form verification.", VERIFY_URL);
-          return;
-        }
-
+      if (profileCheck.exists) {
         if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-          await goWithWelcome("Your verification is complete. Taking you to Colspot.", MAIN_URL);
+          await goWithWelcome("Your account, course form, and face verification are ready.", MAIN_URL);
           return;
         }
 
         if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-          await goWithWelcome("Your course form is verified. Next, complete face capture.", FACE_CAPTURE_URL);
+          await goWithWelcome("Your course form is already verified. Next, complete face capture.", FACE_CAPTURE_URL);
           return;
         }
 
-        fillStudentFormFromSession(session);
-        showPanel("complete-panel");
-      } catch (err) {
-        console.error("Callback flow failed:", err);
-        showPanel("error-panel");
-        document.getElementById("error-box").textContent =
-          err.message || "We couldn’t finish your Google sign in.";
-        setMessage("error-message", "Please go back and try again.", "error");
+        await goWithWelcome("Welcome back. Please continue with course form verification.", VERIFY_URL);
+        return;
       }
+
+      if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
+        await goWithWelcome("Your verification is complete. Taking you to Colspot.", MAIN_URL);
+        return;
+      }
+
+      if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
+        await goWithWelcome("Your course form is verified. Next, complete face capture.", FACE_CAPTURE_URL);
+        return;
+      }
+
+      fillStudentFormFromSession(session);
+      showPanel("complete-panel");
+    } catch (err) {
+      console.error("Callback flow failed:", err);
+      showPanel("error-panel");
+      document.getElementById("error-box").textContent =
+        err.message || "We couldn’t finish your Google sign in.";
+      setMessage("error-message", "Please go back and try again.", "error");
+    }
+  }
+
+  async function handleCompleteStudentProfile(event) {
+    event.preventDefault();
+
+    setMessage("complete-message", "");
+
+    if (!activeSession || !activeSession.user) {
+      setMessage("complete-message", "Your session expired. Please sign in with Google again.", "error");
+      return;
     }
 
-    async function handleCompleteStudentProfile(event) {
-      event.preventDefault();
+    const fullName = (document.getElementById("student-fullname")?.value || "").trim();
+    const email = (document.getElementById("student-email")?.value || "").trim().toLowerCase();
+    const schoolName = (document.getElementById("student-schoolname")?.value || "").trim();
+    const dept = (document.getElementById("student-dept")?.value || "").trim();
+    const matric = (document.getElementById("student-matric")?.value || "").trim();
 
-      setMessage("complete-message", "");
+    if (!fullName || !email || !schoolName || !dept || !matric) {
+      setMessage("complete-message", "Fill in all fields to complete your student account.", "error");
+      return;
+    }
 
-      if (!activeSession || !activeSession.user) {
-        setMessage("complete-message", "Your session expired. Please sign in with Google again.", "error");
-        return;
+    try {
+      setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", true);
+
+      const payload = {
+        user_id: activeSession.user.id,
+        full_name: fullName,
+        school_name: schoolName,
+        department: dept,
+        matric_number: matric,
+        email
+      };
+
+      const { error } = await window.supabase
+        .from("student_accounts")
+        .upsert(payload, { onConflict: "user_id" });
+
+      if (error) {
+        console.error("student_accounts upsert error:", error);
+        throw new Error("We couldn’t save your student details. Please try again.");
       }
 
-      const fullName = (document.getElementById("student-fullname")?.value || "").trim();
-      const email = (document.getElementById("student-email")?.value || "").trim().toLowerCase();
-      const schoolName = (document.getElementById("student-schoolname")?.value || "").trim();
-      const dept = (document.getElementById("student-dept")?.value || "").trim();
-      const matric = (document.getElementById("student-matric")?.value || "").trim();
-
-      if (!fullName || !email || !schoolName || !dept || !matric) {
-        setMessage("complete-message", "Fill in all fields to complete your student account.", "error");
-        return;
-      }
-
-      try {
-        setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", true);
-
-        const payload = {
-          user_id: activeSession.user.id,
+      const { error: authMetaErr } = await window.supabase.auth.updateUser({
+        data: {
           full_name: fullName,
+          role: "student",
           school_name: schoolName,
           department: dept,
-          matric_number: matric,
-          email
-        };
-
-        const { error } = await window.supabase
-          .from("student_accounts")
-          .upsert(payload, { onConflict: "user_id" });
-
-        if (error) {
-          console.error("student_accounts upsert error:", error);
-          throw new Error("We couldn’t save your student details. Please try again.");
+          matric_number: matric
         }
+      });
 
-        const { error: authMetaErr } = await window.supabase.auth.updateUser({
-          data: {
-            full_name: fullName,
-            role: "student",
-            school_name: schoolName,
-            department: dept,
-            matric_number: matric
-          }
-        });
-
-        if (authMetaErr) {
-          console.error("auth.updateUser metadata error:", authMetaErr);
-        }
-
-        saveLocalUserFromSession(activeSession);
-        saveAuthRole("student");
-
-        await goWithWelcome("Your account has been completed. Next, verify your course form.", VERIFY_URL, 1000);
-      } catch (err) {
-        console.error("Complete profile failed:", err);
-        setMessage("complete-message", err.message || "We couldn’t complete your account.", "error");
-      } finally {
-        setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", false);
+      if (authMetaErr) {
+        console.error("auth.updateUser metadata error:", authMetaErr);
       }
-    }
 
-    document.getElementById("student-complete-form")?.addEventListener("submit", handleCompleteStudentProfile);
+      saveLocalUserFromSession(activeSession);
+      saveAuthRole("student");
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", startCallbackFlow);
-    } else {
-      startCallbackFlow();
+      await goWithWelcome("Your account has been completed. Next, verify your course form.", VERIFY_URL, 1000);
+    } catch (err) {
+      console.error("Complete profile failed:", err);
+      setMessage("complete-message", err.message || "We couldn’t complete your account.", "error");
+    } finally {
+      setButtonLoading("student-complete-btn", "student-complete-text", "student-complete-loader", false);
     }
-  </script>
+  }
+
+  document.getElementById("student-complete-form")?.addEventListener("submit", handleCompleteStudentProfile);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startCallbackFlow);
+  } else {
+    startCallbackFlow();
+  }
+</script>
 </body>
 </html>
