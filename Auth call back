@@ -383,6 +383,7 @@
 <script>
   const LOCAL_USER_KEY = "colspot_local_user";
   const AUTH_ROLE_KEY = "colspot_auth_role";
+  const AUTH_INTENT_KEY = "colspot_auth_intent";
 
   const STUDENT_VERIFY_URL = "verify_class.html";
   const FACE_CAPTURE_URL = "face-capture.html";
@@ -466,6 +467,23 @@
     }
   }
 
+  function getSavedIntent() {
+    try {
+      return localStorage.getItem(AUTH_INTENT_KEY) || "";
+    } catch (e) {
+      console.error("Could not read auth intent:", e);
+      return "";
+    }
+  }
+
+  function clearSavedIntent() {
+    try {
+      localStorage.removeItem(AUTH_INTENT_KEY);
+    } catch (e) {
+      console.error("Could not clear auth intent:", e);
+    }
+  }
+
   function goBackToIndex() {
     window.location.href = INDEX_URL;
   }
@@ -479,6 +497,7 @@
       console.error("Signout failed:", e);
     }
     clearLocalUser();
+    clearSavedIntent();
     window.location.href = INDEX_URL;
   }
 
@@ -835,14 +854,6 @@
       throw new Error("We couldn’t check the lecturer account.");
     }
 
-    if (studentByEmail.error) {
-      console.error("student_accounts by email error:", studentByEmail.error);
-    }
-
-    if (lecturerByEmail.error) {
-      console.error("lecturer_accounts by email error:", lecturerByEmail.error);
-    }
-
     return {
       studentByUser: studentByUser.data || null,
       lecturerByUser: lecturerByUser.data || null,
@@ -989,6 +1000,7 @@
     setTimeout(() => {
       saveLocalUserFromSession(activeSession, role);
       saveAuthRole(role);
+      clearSavedIntent();
       window.location.href = nextUrl;
     }, delay);
   }
@@ -1020,6 +1032,60 @@
         session.user.email || ""
       );
 
+      const authIntent = getSavedIntent();
+
+      if (
+        authIntent === "signup" &&
+        activeRole === "student" &&
+        roleState.allowed &&
+        roleState.profile
+      ) {
+        try {
+          await window.supabase.auth.signOut();
+        } catch (e) {
+          console.error("Signout after duplicate student signup failed:", e);
+        }
+
+        clearLocalUser();
+        clearSavedIntent();
+
+        showPanel("error-panel");
+        document.getElementById("error-box").textContent =
+          "You have already created a student account with this email.";
+        setMessage(
+          "error-message",
+          "Please go back and sign in instead of creating another account.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        authIntent === "signup" &&
+        activeRole === "lecturer" &&
+        roleState.allowed &&
+        roleState.profile
+      ) {
+        try {
+          await window.supabase.auth.signOut();
+        } catch (e) {
+          console.error("Signout after duplicate lecturer signup failed:", e);
+        }
+
+        clearLocalUser();
+        clearSavedIntent();
+
+        showPanel("error-panel");
+        document.getElementById("error-box").textContent =
+          "You have already created a lecturer account with this email.";
+        setMessage(
+          "error-message",
+          "Please go back and sign in instead of creating another account.",
+          "error"
+        );
+        return;
+      }
+
       if (!roleState.allowed) {
         showPanel("error-panel");
         document.getElementById("error-box").textContent = roleState.message;
@@ -1040,6 +1106,7 @@
 
         if (deviceErr.code === "DEVICE_LIMIT" || deviceMessage.includes("2 phones")) {
           clearLocalUser();
+          clearSavedIntent();
           showPanel("limit-panel");
           startLimitCountdown(10);
           return;
@@ -1047,6 +1114,7 @@
 
         if (deviceErr.code === "DEVICE_CONFLICT" || deviceMessage.includes("another colspot account")) {
           clearLocalUser();
+          clearSavedIntent();
           showPanel("error-panel");
           document.getElementById("error-box").textContent =
             "This device is already linked to another Colspot account.";
@@ -1132,6 +1200,7 @@
     } catch (err) {
       console.error("Callback flow failed:", err);
       clearLocalUser();
+      clearSavedIntent();
       showPanel("error-panel");
       document.getElementById("error-box").textContent =
         err.message || "We couldn’t finish checking your account.";
