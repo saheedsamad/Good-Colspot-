@@ -19,6 +19,7 @@ const APP_VERSION = "1.0.0";
 
 // Version rule cache key
 const VERSION_RULE_KEY = "colspot_version_rule_v1";
+const AUTH_ROLE_KEY = "colspot_auth_role";
 
 // ----------------------------
 // Message strings (user-friendly)
@@ -69,11 +70,38 @@ const MSG = {
   RESET_FAIL_UPDATE: "We couldn’t update your password. Please try again.",
   RESET_OK_REDIRECT: "Password updated. Signing you in…",
 
+  GOOGLE_START_FAIL: "We couldn’t start Google sign in. Please try again.",
+  GOOGLE_REDIRECTING: "Redirecting to Google…",
+
+  ADMIN_MISSING_FIELDS: "Enter your email/username and password.",
+  ADMIN_GENERIC: "We couldn’t sign you in as admin. Please try again.",
+  ADMIN_USERNAME_NOT_SUPPORTED: "Username login will work after admin username lookup is connected. For now, use admin email.",
+
   INIT_SUPABASE_MISSING: "Sign-in system is not ready yet. Please refresh and try again.",
 
   VERSION_CHECK_FAIL: "We couldn’t check for updates. Please try again.",
   VERSION_HARD_BLOCK: "Your Colspot app is out of date. Please update from the store to continue."
 };
+
+/* ----------------------------
+ * Role helpers
+ * ---------------------------- */
+function saveAuthRole(role) {
+  try {
+    localStorage.setItem(AUTH_ROLE_KEY, role);
+  } catch (e) {
+    console.error("Could not save auth role:", e);
+  }
+}
+
+function getAuthRole() {
+  try {
+    return localStorage.getItem(AUTH_ROLE_KEY) || "";
+  } catch (e) {
+    console.error("Could not get auth role:", e);
+    return "";
+  }
+}
 
 /* ----------------------------
  * Small UI helpers
@@ -104,6 +132,8 @@ function clearMessages() {
     "verify-message",
     "reset-message",
     "forgot-message",
+    "student-google-message",
+    "admin-message"
   ];
   ids.forEach((id) => {
     const el = document.getElementById(id);
@@ -294,7 +324,6 @@ async function checkAndCacheVersionRules() {
 /* ----------------------------
  * Local state (cached user)
  * ---------------------------- */
-
 const LOCAL_USER_KEY = "colspot_local_user";
 const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -358,7 +387,6 @@ function isStrongPassword(pw) {
 /* ----------------------------
  * Device ID + rules
  * ---------------------------- */
-
 function generateRandomId() {
   try {
     if (
@@ -616,7 +644,6 @@ async function linkDeviceForSession(session) {
 /* ----------------------------
  * LOGIN ANALYTICS helper
  * ---------------------------- */
-
 async function recordLoginEvent(session) {
   if (!session || !session.user || !window.supabase) return;
 
@@ -661,6 +688,7 @@ function switchMode(mode) {
   const switchLabel = document.getElementById("switch-link-label");
 
   clearMessages();
+  saveAuthRole("lecturer");
 
   if (mode === "signin") {
     if (signinForm) signinForm.classList.remove("hidden");
@@ -670,7 +698,7 @@ function switchMode(mode) {
     if (tabSignup) tabSignup.classList.remove("active");
 
     if (title) title.textContent = "Welcome back";
-    if (subtitle) subtitle.textContent = "Sign in to your Colspot account";
+    if (subtitle) subtitle.textContent = "Sign in to your Colspot lecturer account";
 
     if (switchText) switchText.textContent = "Don’t have an account?";
     if (switchLabel) switchLabel.textContent = "Create one";
@@ -682,10 +710,16 @@ function switchMode(mode) {
     if (tabSignup) tabSignup.classList.add("active");
 
     if (title) title.textContent = "Create your account";
-    if (subtitle) subtitle.textContent = "Sign up as a student or lecturer";
+    if (subtitle) subtitle.textContent = "Sign up as a lecturer";
 
     if (switchText) switchText.textContent = "Already have an account?";
     if (switchLabel) switchLabel.textContent = "Sign in";
+
+    const roleSelect = document.getElementById("signup-role");
+    if (roleSelect) {
+      roleSelect.value = "lecturer";
+      roleSelect.dispatchEvent(new Event("change"));
+    }
   }
 }
 
@@ -819,10 +853,10 @@ function hideResetPanel() {
 
   if (currentMode === "signin") {
     if (title) title.textContent = "Welcome back";
-    if (subtitle) subtitle.textContent = "Sign in to your Colspot account";
+    if (subtitle) subtitle.textContent = "Sign in to your Colspot lecturer account";
   } else {
     if (title) title.textContent = "Create your account";
-    if (subtitle) subtitle.textContent = "Sign up as a student or lecturer";
+    if (subtitle) subtitle.textContent = "Sign up as a lecturer";
   }
   showMainForms();
 }
@@ -841,7 +875,7 @@ async function redirectIfSignedIn() {
 }
 
 /* ----------------------------
- * Save role profile into new tables
+ * Save role profile into tables
  * ---------------------------- */
 async function saveSignupAccountRow(userId, signupData, userEmail) {
   if (!userId || !signupData || !window.supabase) {
@@ -872,9 +906,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       .from("student_accounts")
       .upsert(payload, { onConflict: "user_id" });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     return;
   }
 
@@ -892,9 +924,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       .from("lecturer_accounts")
       .upsert(payload, { onConflict: "user_id" });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     return;
   }
 
@@ -902,12 +932,86 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
 }
 
 /* ----------------------------
- * SIGN IN (email + password) → main.html
+ * STUDENT GOOGLE ONLY
+ * ---------------------------- */
+async function signInWithGoogle() {
+  const msgEl = document.getElementById("student-google-message");
+  if (msgEl) {
+    msgEl.textContent = "";
+    msgEl.className = "message";
+  }
+
+  const rule = getVersionRuleCache();
+  if (rule && rule.mode === "hard") {
+    if (msgEl) {
+      msgEl.textContent = MSG.VERSION_HARD_BLOCK;
+      msgEl.className = "message error";
+    }
+    return;
+  }
+
+  if (isBrowserOffline()) {
+    updateOfflineUI();
+    if (msgEl) {
+      msgEl.textContent = MSG.OFFLINE_SIGNIN;
+      msgEl.className = "message error";
+    }
+    return;
+  }
+
+  if (!window.supabase) {
+    if (msgEl) {
+      msgEl.textContent = MSG.AUTH_NOT_READY;
+      msgEl.className = "message error";
+    }
+    return;
+  }
+
+  try {
+    saveAuthRole("student");
+
+    if (msgEl) {
+      msgEl.textContent = MSG.GOOGLE_REDIRECTING;
+      msgEl.className = "message success";
+    }
+
+    const redirectTo = `${window.location.origin}/auth-callback.html`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account"
+        }
+      }
+    });
+
+    if (error) {
+      console.error("Google sign-in error:", error);
+      if (msgEl) {
+        msgEl.textContent = MSG.GOOGLE_START_FAIL;
+        msgEl.className = "message error";
+      }
+    }
+  } catch (err) {
+    console.error("Google sign-in start failed:", err);
+    if (msgEl) {
+      msgEl.textContent = MSG.GOOGLE_START_FAIL;
+      msgEl.className = "message error";
+    }
+  }
+}
+
+/* ----------------------------
+ * LECTURER SIGN IN
  * ---------------------------- */
 const signinFormEl = document.getElementById("signin-form");
 if (signinFormEl) {
   signinFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
+    saveAuthRole("lecturer");
 
     const email = document.getElementById("signin-email").value.trim();
     const password = document.getElementById("signin-password").value;
@@ -1005,15 +1109,16 @@ if (signinFormEl) {
 }
 
 /* ----------------------------
- * SIGN UP (email + password)
+ * LECTURER SIGN UP
  * ---------------------------- */
 const signupFormEl = document.getElementById("signup-form");
 if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
+    saveAuthRole("lecturer");
 
     const fullName = document.getElementById("signup-fullname").value.trim();
-    const role = document.getElementById("signup-role").value;
+    const role = "lecturer";
     const schoolName = document.getElementById("signup-schoolname")?.value.trim() || "";
     const dept = document.getElementById("signup-dept").value.trim();
     const accountId = document.getElementById("signup-matric").value.trim();
@@ -1032,7 +1137,7 @@ if (signupFormEl) {
       return;
     }
 
-    if (!fullName || !role || !schoolName || !dept || !accountId || !email || !password || !password2) {
+    if (!fullName || !schoolName || !dept || !accountId || !email || !password || !password2) {
       msgEl.textContent = MSG.SIGNUP_MISSING_FIELDS;
       msgEl.className = "message error";
       return;
@@ -1071,22 +1176,13 @@ if (signupFormEl) {
 
       localStorage.setItem("colspot_pending_email", email);
 
-      const metadata =
-        role === "student"
-          ? {
-              full_name: fullName,
-              role,
-              school_name: schoolName,
-              department: dept,
-              matric_number: accountId,
-            }
-          : {
-              full_name: fullName,
-              role,
-              school_name: schoolName,
-              department: dept,
-              staff_id: accountId,
-            };
+      const metadata = {
+        full_name: fullName,
+        role,
+        school_name: schoolName,
+        department: dept,
+        staff_id: accountId,
+      };
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -1133,7 +1229,7 @@ if (signupFormEl) {
 }
 
 /* ----------------------------
- * VERIFY CODE (finish sign-up, set password)
+ * VERIFY CODE (finish lecturer sign-up, set password)
  * ---------------------------- */
 document
   .getElementById("verify-code-btn")
@@ -1198,22 +1294,13 @@ document
           accountId
         } = pendingSignup;
 
-        const metadata =
-          role === "student"
-            ? {
-                full_name: fullName,
-                role,
-                school_name: schoolName,
-                department: dept,
-                matric_number: accountId,
-              }
-            : {
-                full_name: fullName,
-                role,
-                school_name: schoolName,
-                department: dept,
-                staff_id: accountId,
-              };
+        const metadata = {
+          full_name: fullName,
+          role,
+          school_name: schoolName,
+          department: dept,
+          staff_id: accountId,
+        };
 
         const { error: updateError } = await supabase.auth.updateUser({
           password,
@@ -1348,7 +1435,7 @@ document
   });
 
 /* ----------------------------
- * FORGOT PASSWORD (OTP + set new password)
+ * FORGOT PASSWORD (lecturer)
  * ---------------------------- */
 function openForgotPasswordPage() {
   resetEmail = null;
@@ -1546,12 +1633,7 @@ document
 
       if (error) {
         console.error(error);
-        if (isLikelyOfflineError(error)) {
-          updateOfflineUI();
-          msgEl.textContent = MSG.RESET_FAIL_VERIFY;
-        } else {
-          msgEl.textContent = MSG.RESET_FAIL_VERIFY;
-        }
+        msgEl.textContent = MSG.RESET_FAIL_VERIFY;
         msgEl.className = "message error";
         return;
       }
@@ -1587,12 +1669,7 @@ document
       }, 800);
     } catch (err) {
       console.error(err);
-      if (isLikelyOfflineError(err)) {
-        updateOfflineUI();
-        msgEl.textContent = MSG.RESET_FAIL_UPDATE;
-      } else {
-        msgEl.textContent = MSG.RESET_FAIL_UPDATE;
-      }
+      msgEl.textContent = MSG.RESET_FAIL_UPDATE;
       msgEl.className = "message error";
     } finally {
       setButtonLoading(
@@ -1618,31 +1695,166 @@ document
   });
 
 /* ----------------------------
- * Init – LOCAL ONLY fast-door
+ * ADMIN LOGIN
+ * ---------------------------- */
+const adminFormEl = document.getElementById("admin-form");
+if (adminFormEl) {
+  adminFormEl.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    saveAuthRole("admin");
+
+    const identifier = (document.getElementById("admin-identifier")?.value || "").trim();
+    const password = document.getElementById("admin-password")?.value || "";
+    const msgEl = document.getElementById("admin-message");
+
+    if (msgEl) {
+      msgEl.textContent = "";
+      msgEl.className = "message";
+    }
+
+    const rule = getVersionRuleCache();
+    if (rule && rule.mode === "hard") {
+      if (msgEl) {
+        msgEl.textContent = MSG.VERSION_HARD_BLOCK;
+        msgEl.className = "message error";
+      }
+      return;
+    }
+
+    if (!identifier || !password) {
+      if (msgEl) {
+        msgEl.textContent = MSG.ADMIN_MISSING_FIELDS;
+        msgEl.className = "message error";
+      }
+      return;
+    }
+
+    if (isBrowserOffline()) {
+      updateOfflineUI();
+      if (msgEl) {
+        msgEl.textContent = MSG.OFFLINE_SIGNIN;
+        msgEl.className = "message error";
+      }
+      return;
+    }
+
+    if (!window.supabase) {
+      if (msgEl) {
+        msgEl.textContent = MSG.AUTH_NOT_READY;
+        msgEl.className = "message error";
+      }
+      return;
+    }
+
+    if (!identifier.includes("@")) {
+      if (msgEl) {
+        msgEl.textContent = MSG.ADMIN_USERNAME_NOT_SUPPORTED;
+        msgEl.className = "message error";
+      }
+      return;
+    }
+
+    try {
+      setButtonLoading("admin-btn", "admin-text", "admin-loader", true);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: identifier.toLowerCase(),
+        password,
+      });
+
+      if (error) {
+        console.error("Admin login error:", error);
+        if (msgEl) {
+          msgEl.textContent = MSG.ADMIN_GENERIC;
+          msgEl.className = "message error";
+        }
+        return;
+      }
+
+      if (data && data.session && data.session.user) {
+        try {
+          await linkDeviceForSession(data.session);
+        } catch (deviceErr) {
+          await supabase.auth.signOut();
+          clearLocalUser();
+          if (msgEl) {
+            msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
+            msgEl.className = "message error";
+          }
+          return;
+        }
+
+        localStorage.setItem(
+          "colspot_last_user",
+          JSON.stringify({
+            id: data.session.user.id,
+            email: data.session.user.email,
+          })
+        );
+
+        await recordLoginEvent(data.session);
+        saveLocalUserFromSession(data.session);
+      }
+
+      window.location.href = "main.html";
+    } catch (err) {
+      console.error("Admin login failed:", err);
+      if (msgEl) {
+        msgEl.textContent = MSG.ADMIN_GENERIC;
+        msgEl.className = "message error";
+      }
+    } finally {
+      setButtonLoading("admin-btn", "admin-text", "admin-loader", false);
+    }
+  });
+}
+
+/* ----------------------------
+ * Init
  * ---------------------------- */
 async function initAuth() {
   const splash = document.getElementById("splash-screen");
   const authShell = document.getElementById("auth-shell");
 
   const redirected = await redirectIfSignedIn();
-  if (redirected) {
-    return;
-  }
+  if (redirected) return;
 
   if (splash) splash.classList.add("hidden");
   if (authShell) authShell.classList.remove("hidden");
-  switchMode("signin");
+
+  const savedRole = getAuthRole();
+
+  if (savedRole === "lecturer") {
+    if (typeof window.showAuthSection === "function") {
+      window.showAuthSection("lecturer");
+    }
+    switchMode("signin");
+  } else if (savedRole === "student") {
+    if (typeof window.showAuthSection === "function") {
+      window.showAuthSection("student");
+    }
+  } else if (savedRole === "admin") {
+    if (typeof window.showAuthSection === "function") {
+      window.showAuthSection("admin");
+    }
+  } else if (typeof window.backToRoleSelection === "function") {
+    window.backToRoleSelection();
+  }
+
   updateOfflineUI();
 }
+
+/* ----------------------------
+ * Expose for HTML onclick
+ * ---------------------------- */
+window.openForgotPasswordPage = openForgotPasswordPage;
+window.handleForgotPassword = handleForgotPassword;
+window.switchMode = switchMode;
+window.toggleAuthMode = toggleAuthMode;
+window.signInWithGoogle = signInWithGoogle;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initAuth);
 } else {
   initAuth();
 }
-
-// expose for HTML onclick
-window.openForgotPasswordPage = openForgotPasswordPage;
-window.handleForgotPassword = handleForgotPassword;
-window.switchMode = switchMode;
-window.toggleAuthMode = toggleAuthMode;
