@@ -1378,7 +1378,7 @@
         <span>Reports</span>
       </div>
     </div>
-</nav>
+  </nav>
 
 <script type="module" src="./client_supabase.js"></script>
 <script src="./guard_session.js"></script>
@@ -1958,13 +1958,10 @@
         window.ColspotGuard &&
         typeof ColspotGuard.guardPageAccess === "function"
       ) {
-        const localUser = await ColspotGuard.guardRolePageAccess({
-  requiredRole: "student",
-  redirectTo: "index.html",
-  studentHome: "main.html",
-  lecturerHome: "main_lecturer.html"
-});
-if (!localUser) return;
+        const localUser = ColspotGuard.guardPageAccess();
+        if (!localUser) {
+          return;
+        }
 
         localAuth = {
           user_id: localUser.id,
