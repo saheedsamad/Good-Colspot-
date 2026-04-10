@@ -1010,8 +1010,8 @@
   let currentScanQuota = null;
   let currentScanUserId = null;
   let currentUpdateRule = null;
-let mainDebugLines = [];
-let mainDebugHideTimer = null;
+  let mainDebugLines = [];
+  let mainDebugHideTimer = null;
 
   function appendMainDebug(message, data) {
     try {
@@ -1045,43 +1045,44 @@ let mainDebugHideTimer = null;
         box = document.createElement("div");
         box.id = "mainDebugBox";
         box.style.position = "fixed";
-box.style.left = "50%";
-box.style.transform = "translateX(-50%)";
-box.style.width = "min(360px, calc(100vw - 24px))";
-box.style.right = "auto";
-box.style.bottom = "calc(env(safe-area-inset-bottom) + 78px)";
-box.style.zIndex = "999999";
-box.style.background = "rgba(15,23,42,0.92)";
-box.style.color = "#fff";
-box.style.borderRadius = "14px";
-box.style.padding = "10px 12px";
-box.style.fontSize = "11px";
-box.style.lineHeight = "1.4";
-box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.25)";
-box.style.maxHeight = "180px";
-box.style.overflowY = "auto";
-box.style.whiteSpace = "pre-wrap";
-box.style.wordBreak = "break-word";
+        box.style.left = "50%";
+        box.style.transform = "translateX(-50%)";
+        box.style.width = "min(360px, calc(100vw - 24px))";
+        box.style.right = "auto";
+        box.style.bottom = "calc(env(safe-area-inset-bottom) + 78px)";
+        box.style.zIndex = "999999";
+        box.style.background = "rgba(15,23,42,0.92)";
+        box.style.color = "#fff";
+        box.style.borderRadius = "14px";
+        box.style.padding = "10px 12px";
+        box.style.fontSize = "11px";
+        box.style.lineHeight = "1.4";
+        box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.25)";
+        box.style.maxHeight = "180px";
+        box.style.overflowY = "auto";
+        box.style.whiteSpace = "pre-wrap";
+        box.style.wordBreak = "break-word";
         document.body.appendChild(box);
       }
 
       box.textContent = mainDebugLines.join("\n");
-box.style.display = "block";
+      box.style.display = "block";
 
-if (mainDebugHideTimer) {
-  clearTimeout(mainDebugHideTimer);
-}
+      if (mainDebugHideTimer) {
+        clearTimeout(mainDebugHideTimer);
+      }
 
-mainDebugHideTimer = setTimeout(() => {
-  try {
-    const existingBox = document.getElementById("mainDebugBox");
-    if (existingBox) {
-      existingBox.style.display = "none";
-    }
-  } catch (_) {}
-}, 60000);
+      mainDebugHideTimer = setTimeout(() => {
+        try {
+          const existingBox = document.getElementById("mainDebugBox");
+          if (existingBox) {
+            existingBox.style.display = "none";
+          }
+        } catch (_) {}
+      }, 60000);
 
-console.log("[MAIN DEBUG]", message, data || "");} catch (e) {
+      console.log("[MAIN DEBUG]", message, data || "");
+    } catch (e) {
       console.warn("appendMainDebug failed:", e);
     }
   }
@@ -1100,13 +1101,16 @@ console.log("[MAIN DEBUG]", message, data || "");} catch (e) {
     try {
       reasonText =
         event.reason?.message ||
-        (typeof event.reason === "string" ? event.reason : JSON.stringify(event.reason));
+        (typeof event.reason === "string"
+          ? event.reason
+          : JSON.stringify(event.reason));
     } catch {
       reasonText = "Unknown promise rejection";
     }
 
     appendMainDebug("unhandledrejection", reasonText);
   });
+
   function norm(value) {
     return String(value || "").trim();
   }
@@ -1178,15 +1182,40 @@ console.log("[MAIN DEBUG]", message, data || "");} catch (e) {
   function setGreetingFromProfile(fullNameRaw) {
     const greetLine = document.getElementById("greetingLine");
     const avatarInitial = document.getElementById("avatarInitial");
+    const avatarChipText = document.getElementById("avatarChipText");
 
     const fullName = (fullNameRaw && String(fullNameRaw).trim()) || "there";
     const firstName = fullName.split(" ")[0] || "there";
+    const firstLetter = (firstName[0] || "C").toUpperCase();
 
     if (greetLine) {
       greetLine.textContent = `Hello, ${firstName}`;
     }
     if (avatarInitial) {
-      avatarInitial.textContent = (firstName[0] || "C").toUpperCase();
+      avatarInitial.textContent = firstLetter;
+    }
+    if (avatarChipText) {
+      avatarChipText.textContent = firstLetter;
+    }
+  }
+
+  function syncTopRightAvatar(photoUrl, fallbackLetter) {
+    const img = document.getElementById("avatarChipImg");
+    const text = document.getElementById("avatarChipText");
+    if (!img || !text) return;
+
+    const letter = (fallbackLetter || "L").toString().trim().charAt(0).toUpperCase() || "L";
+
+    if (photoUrl) {
+      img.src = photoUrl;
+      img.style.display = "block";
+      text.textContent = letter;
+      text.style.opacity = "0";
+    } else {
+      img.removeAttribute("src");
+      img.style.display = "none";
+      text.textContent = letter;
+      text.style.opacity = "1";
     }
   }
 
@@ -1371,7 +1400,7 @@ console.log("[MAIN DEBUG]", message, data || "");} catch (e) {
     }
   }
 
-    function tryInitPush() {
+  function tryInitPush() {
     try {
       appendMainDebug("tryInitPush called");
 
@@ -1414,93 +1443,94 @@ console.log("[MAIN DEBUG]", message, data || "");} catch (e) {
     }
   }
 
-function showScreen(name) {
-  const ids = [
-    "home",
-    "attendance",
-    "classes",
-    "history",
-    "reports",
-    "account",
-    "scan",
-    "ai",
-    "live-session",
-    "live-class",
-    "view-message",
-    "fill-form",
-    "fill-form-details",
-    "student_report",
-    "report-details"
-  ];
+  function showScreen(name) {
+    const ids = [
+      "home",
+      "attendance",
+      "classes",
+      "history",
+      "reports",
+      "account",
+      "scan",
+      "ai",
+      "live-session",
+      "live-class",
+      "view-message",
+      "fill-form",
+      "fill-form-details",
+      "student_report",
+      "report-details"
+    ];
 
-  ids.forEach((id) => {
-    const el = document.getElementById("screen-" + id);
-    if (!el) return;
-    if (id === name) {
-      el.classList.add("active");
-    } else {
-      el.classList.remove("active");
+    ids.forEach((id) => {
+      const el = document.getElementById("screen-" + id);
+      if (!el) return;
+      if (id === name) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach((btn) => btn.classList.remove("active"));
+
+    const navName =
+      (name === "scan" ||
+        name === "ai" ||
+        name === "attendance" ||
+        name === "live-session" ||
+        name === "live-class" ||
+        name === "view-message" ||
+        name === "fill-form" ||
+        name === "fill-form-details" ||
+        name === "student_report" ||
+        name === "report-details")
+        ? "home"
+        : name;
+
+    const activeBtn = document.querySelector(
+      '.nav-btn[data-nav="' + navName + '"]'
+    );
+    if (activeBtn) activeBtn.classList.add("active");
+
+    if (name === "scan" && typeof initScanQuotaUI === "function") {
+      initScanQuotaUI();
     }
-  });
 
-  const navButtons = document.querySelectorAll(".nav-btn");
-  navButtons.forEach((btn) => btn.classList.remove("active"));
+    if (name === "classes" && typeof renderLecturerClassesScreen === "function") {
+      renderLecturerClassesScreen();
+    }
 
-  const navName =
-    (name === "scan" ||
-      name === "ai" ||
-      name === "attendance" ||
-      name === "live-session" ||
-      name === "live-class" ||
-      name === "view-message" ||
-      name === "fill-form" ||
-      name === "fill-form-details" ||
-      name === "student_report" ||
-      name === "report-details")
-      ? "home"
-      : name;
+    if (name === "live-session" && typeof openLiveSessionScreen === "function") {
+      openLiveSessionScreen();
+    }
 
-  const activeBtn = document.querySelector(
-    '.nav-btn[data-nav="' + navName + '"]'
-  );
-  if (activeBtn) activeBtn.classList.add("active");
+    if (name === "live-class" && typeof openLiveClassScreen === "function") {
+      openLiveClassScreen();
+    }
 
-  if (name === "scan" && typeof initScanQuotaUI === "function") {
-    initScanQuotaUI();
+    if (name === "view-message" && typeof openViewMessageScreen === "function") {
+      openViewMessageScreen();
+    }
+
+    if (name === "fill-form" && typeof openFillFormScreen === "function") {
+      openFillFormScreen();
+    }
+
+    if (name === "fill-form-details" && typeof openFillFormDetailsScreen === "function") {
+      openFillFormDetailsScreen();
+    }
+
+    if (name === "student_report" && typeof openStudentReportScreen === "function") {
+      openStudentReportScreen();
+    }
+
+    if (name === "report-details" && typeof openReportDetailsScreen === "function") {
+      openReportDetailsScreen();
+    }
   }
 
-  if (name === "classes" && typeof renderLecturerClassesScreen === "function") {
-    renderLecturerClassesScreen();
-  }
-
-  if (name === "live-session" && typeof openLiveSessionScreen === "function") {
-    openLiveSessionScreen();
-  }
-
-  if (name === "live-class" && typeof openLiveClassScreen === "function") {
-    openLiveClassScreen();
-  }
-
-  if (name === "view-message" && typeof openViewMessageScreen === "function") {
-    openViewMessageScreen();
-  }
-
-  if (name === "fill-form" && typeof openFillFormScreen === "function") {
-    openFillFormScreen();
-  }
-
-  if (name === "fill-form-details" && typeof openFillFormDetailsScreen === "function") {
-    openFillFormDetailsScreen();
-  }
-
-  if (name === "student_report" && typeof openStudentReportScreen === "function") {
-    openStudentReportScreen();
-  }
-
-  if (name === "report-details" && typeof openReportDetailsScreen === "function") {
-    openReportDetailsScreen();
-  }
-}
   function mirrorHistoryToAlt() {
     const src = document.getElementById("historyList");
     const dest = document.getElementById("historyListAlt");
@@ -1831,7 +1861,10 @@ function showScreen(name) {
               month_key: getCurrentMonthKey()
             });
 
-          if (tryInsert.error && String(tryInsert.error.message || "").toLowerCase().includes("month_key")) {
+          if (
+            tryInsert.error &&
+            String(tryInsert.error.message || "").toLowerCase().includes("month_key")
+          ) {
             await supabase.from("scan_sheets").insert(insertPayload);
           }
         }
@@ -1947,8 +1980,12 @@ function showScreen(name) {
 
     if (!softSection || !softTitle || !softMessage) return;
 
-    softTitle.textContent = rule.title || "New version available";
-    softMessage.textContent = rule.message || "Please update Colspot.";
+    softTitle.textContent =
+      rule.message_title || "New version available";
+    softMessage.textContent =
+      rule.message_body ||
+      "A newer version of Colspot is available. Please update when you can.";
+
     softSection.style.display = "block";
   }
 
@@ -1959,9 +1996,10 @@ function showScreen(name) {
 
     if (!hardOverlay || !hardTitle || !hardMessage) return;
 
-    hardTitle.textContent = rule.title || "Please update Colspot";
+    hardTitle.textContent =
+      rule.message_title || "Update required";
     hardMessage.textContent =
-      rule.message ||
+      rule.message_body ||
       "A newer version of Colspot is required to continue. Please update to keep using the app.";
 
     hardOverlay.style.display = "flex";
@@ -1999,17 +2037,29 @@ function showScreen(name) {
       return;
     }
 
-    currentUpdateRule = rule;
+    const normalizedRule = { ...rule };
+    const now = new Date();
 
-    if (rule.mode === "hard") {
+    if (
+      normalizedRule.deadline &&
+      !Number.isNaN(new Date(normalizedRule.deadline).getTime()) &&
+      new Date(normalizedRule.deadline) < now &&
+      normalizedRule.mode === "soft"
+    ) {
+      normalizedRule.mode = "hard";
+    }
+
+    currentUpdateRule = normalizedRule;
+
+    if (normalizedRule.mode === "hard") {
       hideSoftUpdateBanner();
-      showHardUpdateOverlay(rule);
+      showHardUpdateOverlay(normalizedRule);
       return;
     }
 
-    if (rule.mode === "soft") {
+    if (normalizedRule.mode === "soft") {
       hideHardUpdateOverlay();
-      showSoftUpdateBanner(rule);
+      showSoftUpdateBanner(normalizedRule);
       return;
     }
 
@@ -2018,8 +2068,13 @@ function showScreen(name) {
   }
 
   function openUpdateUrlFromRule() {
-    if (!currentUpdateRule || !currentUpdateRule.url) return;
-    window.open(currentUpdateRule.url, "_blank");
+    if (!currentUpdateRule || !currentUpdateRule.update_url) return;
+
+    try {
+      window.location.href = currentUpdateRule.update_url;
+    } catch {
+      window.open(currentUpdateRule.update_url, "_blank");
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -2034,13 +2089,13 @@ function showScreen(name) {
         window.ColspotGuard &&
         typeof ColspotGuard.guardPageAccess === "function"
       ) {
-       const localUser = await ColspotGuard.guardRolePageAccess({
-  requiredRole: "lecturer",
-  redirectTo: "index.html",
-  studentHome: "main.html",
-  lecturerHome: "main_lecturer.html"
-});
-if (!localUser) return;
+        const localUser = await ColspotGuard.guardRolePageAccess({
+          requiredRole: "lecturer",
+          redirectTo: "index.html",
+          studentHome: "main.html",
+          lecturerHome: "main_lecturer.html"
+        });
+        if (!localUser) return;
 
         localAuth = {
           user_id: localUser.id,
@@ -2102,20 +2157,20 @@ if (!localUser) return;
         const { data, error } = await supabase.auth.getUser();
         if (!error && data && data.user) {
           currentUser = data.user;
-        const profileName =
-  (currentUser.user_metadata && currentUser.user_metadata.full_name) ||
-  currentUser.email ||
-  currentUser.phone ||
-  "";
-saveLocalUserFromSupabaseUser(currentUser);
-if (profileName) {
-  setGreetingFromProfile(profileName);
-}
+          const profileName =
+            (currentUser.user_metadata && currentUser.user_metadata.full_name) ||
+            currentUser.email ||
+            currentUser.phone ||
+            "";
+          saveLocalUserFromSupabaseUser(currentUser);
+          if (profileName) {
+            setGreetingFromProfile(profileName);
+          }
 
-syncTopRightAvatar(
-  (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || "",
-  profileName ? profileName.trim().charAt(0).toUpperCase() : "L"
-);
+          syncTopRightAvatar(
+            (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || "",
+            profileName ? profileName.trim().charAt(0).toUpperCase() : "L"
+          );
         }
       } catch (e) {
         console.error("Fallback getUser on main failed:", e);
@@ -2128,7 +2183,7 @@ syncTopRightAvatar(
     loadAnnouncements();
     applyUpdateRuleFromLocal();
     tryInitPush();
-appendMainDebug("Initial delay complete");
+    appendMainDebug("Initial delay complete");
     appendMainDebug("tryInitPush finished");
     runMainWarmupOnce();
   });
