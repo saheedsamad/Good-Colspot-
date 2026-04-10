@@ -392,6 +392,7 @@
   const INDEX_URL = "index.html";
 
   const STUDENT_VERIFICATION_TABLE = "verification_course_forms";
+  const APP_DEEP_LINK_CALLBACK = "com.colspot.app://auth-callback";
 
   let activeSession = null;
   let activeRole = "student";
@@ -755,6 +756,56 @@
     return window.supabase;
   }
 
+  async function getSessionFromCallback() {
+    await waitForSupabase();
+
+    const href = window.location.href || "";
+    const search = window.location.search || "";
+    const hash = window.location.hash || "";
+
+    try {
+      if (search.includes("code=")) {
+        const code = new URL(href).searchParams.get("code");
+        if (code) {
+          const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error("exchangeCodeForSession error:", error);
+          }
+          if (data && data.session) {
+            return data.session;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed exchanging auth code:", e);
+    }
+
+    try {
+      if (
+        hash.includes("access_token=") ||
+        href.startsWith(APP_DEEP_LINK_CALLBACK)
+      ) {
+        const { data, error } = await window.supabase.auth.getSession();
+        if (error) {
+          console.error("getSession after callback error:", error);
+        }
+        if (data && data.session) {
+          return data.session;
+        }
+      }
+    } catch (e) {
+      console.error("Failed restoring session from callback URL:", e);
+    }
+
+    const { data, error } = await window.supabase.auth.getSession();
+    if (error) {
+      console.error("getSession fallback error:", error);
+      throw new Error("We couldn’t confirm your session.");
+    }
+
+    return data?.session || null;
+  }
+
   function getDisplayName(session) {
     if (!session || !session.user) return "";
     const meta = session.user.user_metadata || {};
@@ -924,13 +975,15 @@
 
     const studentProfile =
       profiles.studentByUser ||
-      (profiles.studentByEmail && String(profiles.studentByEmail.email || "").toLowerCase() === emailLower
+      (profiles.studentByEmail &&
+      String(profiles.studentByEmail.email || "").toLowerCase() === emailLower
         ? profiles.studentByEmail
         : null);
 
     const lecturerProfile =
       profiles.lecturerByUser ||
-      (profiles.lecturerByEmail && String(profiles.lecturerByEmail.email || "").toLowerCase() === emailLower
+      (profiles.lecturerByEmail &&
+      String(profiles.lecturerByEmail.email || "").toLowerCase() === emailLower
         ? profiles.lecturerByEmail
         : null);
 
@@ -1042,15 +1095,8 @@
   async function startCallbackFlow() {
     try {
       showPanel("loading-panel");
-      await waitForSupabase();
 
-      const { data, error } = await window.supabase.auth.getSession();
-      if (error) {
-        console.error("getSession error:", error);
-        throw new Error("We couldn’t confirm your session.");
-      }
-
-      const session = data?.session || null;
+      const session = await getSessionFromCallback();
       if (!session || !session.user) {
         throw new Error("No active session was found. Please try again.");
       }
