@@ -42,7 +42,7 @@ function clearAuthIntent() {
 // ----------------------------
 // Paths
 // ----------------------------
-const AUTH_CALLBACK_PATH = "auth-callback.html"; // change only if your real callback filename differs
+const AUTH_CALLBACK_PATH = "auth-callback.html";
 const INDEX_PATH = "index.html";
 const ADMIN_MAIN_PATH = "main.html";
 
@@ -373,14 +373,12 @@ function updateOfflineUI() {
     if (offline) {
       msgEl.textContent = MSG.OFFLINE_SIGNIN_HINT;
       msgEl.className = "message error";
-    } else {
-      if (
-        msgEl.textContent &&
-        msgEl.textContent.toLowerCase().includes("offline")
-      ) {
-        msgEl.textContent = "";
-        msgEl.className = "message";
-      }
+    } else if (
+      msgEl.textContent &&
+      msgEl.textContent.toLowerCase().includes("offline")
+    ) {
+      msgEl.textContent = "";
+      msgEl.className = "message";
     }
   }
 }
@@ -594,11 +592,7 @@ function generateRandomId() {
     console.error("randomUUID failed, using fallback:", e);
   }
 
-  return (
-    Math.random().toString(36).slice(2) +
-    "-" +
-    Date.now().toString(36)
-  );
+  return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
 }
 
 async function getOrCreateDeviceId() {
@@ -1136,55 +1130,6 @@ async function signInWithGoogle() {
   }
 
   try {
-saveAuthRole("student");
-saveAuthIntent("signin");
-    if (msgEl) {
-      msgEl.textContent = MSG.GOOGLE_REDIRECTING;
-      msgEl.className = "message success";
-    }
-const isNativeApp =
-  !!window.Capacitor &&
-  typeof window.Capacitor.isNativePlatform === "function" &&
-  window.Capacitor.isNativePlatform();
-
-const redirectTo = isNativeApp
-  ? "com.colspot.app://auth-callback"
-  : `${window.location.origin}/auth-callback.html`;
-
-async function signInWithGoogle() {
-  const msgEl = document.getElementById("student-google-message");
-  if (msgEl) {
-    msgEl.textContent = "";
-    msgEl.className = "message";
-  }
-
-  const rule = getVersionRuleCache();
-  if (rule && rule.mode === "hard") {
-    if (msgEl) {
-      msgEl.textContent = MSG.VERSION_HARD_BLOCK;
-      msgEl.className = "message error";
-    }
-    return;
-  }
-
-  if (isBrowserOffline()) {
-    updateOfflineUI();
-    if (msgEl) {
-      msgEl.textContent = MSG.OFFLINE_SIGNIN;
-      msgEl.className = "message error";
-    }
-    return;
-  }
-
-  if (!window.supabase) {
-    if (msgEl) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-    }
-    return;
-  }
-
-  try {
     saveAuthRole("student");
     saveAuthIntent("signin");
 
@@ -1241,22 +1186,6 @@ async function signInWithGoogle() {
   }
 }
 
-    if (error) {
-      console.error("Google sign-in error:", error);
-      if (msgEl) {
-        msgEl.textContent = MSG.GOOGLE_START_FAIL;
-        msgEl.className = "message error";
-      }
-    }
-  } catch (err) {
-    console.error("Google sign-in start failed:", err);
-    if (msgEl) {
-      msgEl.textContent = MSG.GOOGLE_START_FAIL;
-      msgEl.className = "message error";
-    }
-  }
-}
-
 /* ----------------------------
  * Lecturer sign in
  * ---------------------------- */
@@ -1264,8 +1193,9 @@ const signinFormEl = document.getElementById("signin-form");
 if (signinFormEl) {
   signinFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
-saveAuthRole("lecturer");
-saveAuthIntent("signin");
+    saveAuthRole("lecturer");
+    saveAuthIntent("signin");
+
     const email = document.getElementById("signin-email")?.value?.trim() || "";
     const password = document.getElementById("signin-password")?.value || "";
     const msgEl = document.getElementById("signin-message");
@@ -1370,9 +1300,9 @@ if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-   const role = getSignupRole();
-saveAuthRole(role);
-saveAuthIntent("signup");
+    const role = getSignupRole();
+    saveAuthRole(role);
+    saveAuthIntent("signup");
 
     const fullName = document.getElementById("signup-fullname")?.value?.trim() || "";
     const schoolName = document.getElementById("signup-schoolname")?.value?.trim() || "";
@@ -1497,217 +1427,211 @@ saveAuthIntent("signup");
 /* ----------------------------
  * Verify code
  * ---------------------------- */
-document
-  .getElementById("verify-code-btn")
-  ?.addEventListener("click", async () => {
-    const codeInput = document.getElementById("verify-code-input");
-    const msgEl = document.getElementById("verify-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+document.getElementById("verify-code-btn")?.addEventListener("click", async () => {
+  const codeInput = document.getElementById("verify-code-input");
+  const msgEl = document.getElementById("verify-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const code = (codeInput?.value || "").trim();
-    const email =
-      (pendingSignup && pendingSignup.email) ||
-      localStorage.getItem("colspot_pending_email") ||
-      "";
+  const code = (codeInput?.value || "").trim();
+  const email =
+    (pendingSignup && pendingSignup.email) ||
+    localStorage.getItem("colspot_pending_email") ||
+    "";
 
-    if (!email) {
-      msgEl.textContent = MSG.VERIFY_NO_EMAIL;
+  if (!email) {
+    msgEl.textContent = MSG.VERIFY_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!code || code.length < 4) {
+    msgEl.textContent = MSG.VERIFY_MISSING_CODE;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    setButtonLoading(
+      "verify-code-btn",
+      "verify-code-text",
+      "verify-code-loader",
+      true
+    );
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: "email",
+    });
+
+    if (error) {
+      console.error(error);
+      msgEl.textContent = MSG.VERIFY_FAIL;
       msgEl.className = "message error";
       return;
     }
 
-    if (!code || code.length < 4) {
-      msgEl.textContent = MSG.VERIFY_MISSING_CODE;
-      msgEl.className = "message error";
-      return;
-    }
+    if (pendingSignup && pendingSignup.password) {
+      const {
+        password,
+        fullName,
+        role,
+        schoolName,
+        dept,
+        accountId
+      } = pendingSignup;
 
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
+      const metadata = {
+        full_name: fullName,
+        role,
+        school_name: schoolName,
+        department: dept || "",
+        ...(role === "student"
+          ? { matric_number: accountId }
+          : { staff_id: accountId })
+      };
 
-    try {
-      setButtonLoading(
-        "verify-code-btn",
-        "verify-code-text",
-        "verify-code-loader",
-        true
-      );
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: "email",
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+        data: metadata,
       });
 
-      if (error) {
-        console.error(error);
-        msgEl.textContent = MSG.VERIFY_FAIL;
+      if (updateError) {
+        console.error(updateError);
+        msgEl.textContent = MSG.VERIFY_SET_PASSWORD_FAIL;
+        msgEl.className = "message error";
+        return;
+      }
+    }
+
+    if (data && data.session) {
+      try {
+        await linkDeviceForSession(data.session);
+      } catch (deviceErr) {
+        await supabase.auth.signOut();
+        clearLocalUser();
+        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
         msgEl.className = "message error";
         return;
       }
 
-      if (pendingSignup && pendingSignup.password) {
-        const {
-          password,
-          fullName,
-          role,
-          schoolName,
-          dept,
-          accountId
-        } = pendingSignup;
+      localStorage.setItem(
+        "colspot_last_user",
+        JSON.stringify({
+          id: data.session.user.id,
+          email: data.session.user.email,
+        })
+      );
 
-        const metadata = {
-          full_name: fullName,
-          role,
-          school_name: schoolName,
-          department: dept || "",
-          ...(role === "student"
-            ? { matric_number: accountId }
-            : { staff_id: accountId })
-        };
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
 
-        const { error: updateError } = await supabase.auth.updateUser({
-          password,
-          data: metadata,
-        });
-
-        if (updateError) {
-          console.error(updateError);
-          msgEl.textContent = MSG.VERIFY_SET_PASSWORD_FAIL;
-          msgEl.className = "message error";
-          return;
+      try {
+        if (pendingSignup) {
+          await saveSignupAccountRow(
+            data.session.user.id,
+            pendingSignup,
+            data.session.user.email
+          );
         }
+      } catch (profileErr) {
+        console.error("account table save error:", profileErr);
+        msgEl.textContent = MSG.SIGNUP_SAVE_PROFILE_FAIL;
+        msgEl.className = "message error";
+        return;
       }
 
-      if (data && data.session) {
-        try {
-          await linkDeviceForSession(data.session);
-        } catch (deviceErr) {
-          await supabase.auth.signOut();
-          clearLocalUser();
-          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-
-        localStorage.setItem(
-          "colspot_last_user",
-          JSON.stringify({
-            id: data.session.user.id,
-            email: data.session.user.email,
-          })
-        );
-
-        await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
-
-        try {
-          if (pendingSignup) {
-            await saveSignupAccountRow(
-              data.session.user.id,
-              pendingSignup,
-              data.session.user.email
-            );
-          }
-        } catch (profileErr) {
-          console.error("account table save error:", profileErr);
-          msgEl.textContent = MSG.SIGNUP_SAVE_PROFILE_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-
-        await resolveUserRole(
-          data.session.user.id,
-          data.session.user.email || email
-        );
-      }
-
-      msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
-      msgEl.className = "message success";
-
-      setTimeout(() => {
-        goToAuthCallback();
-      }, 800);
-    } catch (err) {
-      console.error(err);
-      msgEl.textContent = MSG.VERIFY_FAIL;
-      msgEl.className = "message error";
-    } finally {
-      setButtonLoading(
-        "verify-code-btn",
-        "verify-code-text",
-        "verify-code-loader",
-        false
+      await resolveUserRole(
+        data.session.user.id,
+        data.session.user.email || email
       );
     }
-  });
+
+    msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
+    msgEl.className = "message success";
+
+    setTimeout(() => {
+      goToAuthCallback();
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.VERIFY_FAIL;
+    msgEl.className = "message error";
+  } finally {
+    setButtonLoading(
+      "verify-code-btn",
+      "verify-code-text",
+      "verify-code-loader",
+      false
+    );
+  }
+});
 
 /* ----------------------------
  * Resend sign-up code
  * ---------------------------- */
-document
-  .getElementById("resend-btn")
-  ?.addEventListener("click", async () => {
-    const msgEl = document.getElementById("verify-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+document.getElementById("resend-btn")?.addEventListener("click", async () => {
+  const msgEl = document.getElementById("verify-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const email =
-      (pendingSignup && pendingSignup.email) ||
-      localStorage.getItem("colspot_pending_email") ||
-      "";
+  const email =
+    (pendingSignup && pendingSignup.email) ||
+    localStorage.getItem("colspot_pending_email") ||
+    "";
 
-    if (!email) {
-      msgEl.textContent = MSG.RESEND_NO_EMAIL;
-      msgEl.className = "message error";
-      return;
-    }
+  if (!email) {
+    msgEl.textContent = MSG.RESEND_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
 
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
 
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-        },
-      });
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
 
-      if (error) {
-        console.error(error);
-        msgEl.textContent = MSG.RESEND_FAIL;
-        msgEl.className = "message error";
-        return;
-      }
-
-      msgEl.textContent = MSG.RESEND_OK;
-      msgEl.className = "message success";
-    } catch (err) {
-      console.error(err);
+    if (error) {
+      console.error(error);
       msgEl.textContent = MSG.RESEND_FAIL;
       msgEl.className = "message error";
+      return;
     }
-  });
+
+    msgEl.textContent = MSG.RESEND_OK;
+    msgEl.className = "message success";
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.RESEND_FAIL;
+    msgEl.className = "message error";
+  }
+});
 
 /* ----------------------------
  * Back to sign in (from verify panel)
  * ---------------------------- */
-document
-  .getElementById("back-to-signin-btn")
-  ?.addEventListener("click", () => {
-    pendingSignup = null;
-    hideVerifyPanel();
-    showMainForms();
-    switchMode("signin");
-  });
+document.getElementById("back-to-signin-btn")?.addEventListener("click", () => {
+  pendingSignup = null;
+  hideVerifyPanel();
+  showMainForms();
+  switchMode("signin");
+});
 
 /* ----------------------------
  * Forgot password
@@ -1785,10 +1709,7 @@ async function handleForgotPassword() {
           msgEl.textContent = MSG.FORGOT_THROTTLED;
           msgEl.className = "message error";
         }
-      } else if (
-        lower.includes("user") &&
-        lower.includes("not")
-      ) {
+      } else if (lower.includes("user") && lower.includes("not")) {
         if (msgEl) {
           msgEl.textContent =
             "We couldn’t find any Colspot account with that email.";
@@ -1837,138 +1758,130 @@ async function handleForgotPassword() {
   }
 }
 
-document
-  .getElementById("forgot-send-btn")
-  ?.addEventListener("click", handleForgotPassword);
+document.getElementById("forgot-send-btn")?.addEventListener("click", handleForgotPassword);
 
-document
-  .getElementById("forgot-back-btn")
-  ?.addEventListener("click", () => {
-    resetEmail = null;
-    hideForgotPanel();
-    switchMode("signin");
-  });
+document.getElementById("forgot-back-btn")?.addEventListener("click", () => {
+  resetEmail = null;
+  hideForgotPanel();
+  switchMode("signin");
+});
 
-document
-  .getElementById("reset-submit-btn")
-  ?.addEventListener("click", async () => {
-    const code = document.getElementById("reset-code")?.value?.trim() || "";
-    const newPw = document.getElementById("reset-password")?.value || "";
-    const newPw2 = document.getElementById("reset-password2")?.value || "";
-    const msgEl = document.getElementById("reset-message");
-    msgEl.textContent = "";
-    msgEl.className = "message";
+document.getElementById("reset-submit-btn")?.addEventListener("click", async () => {
+  const code = document.getElementById("reset-code")?.value?.trim() || "";
+  const newPw = document.getElementById("reset-password")?.value || "";
+  const newPw2 = document.getElementById("reset-password2")?.value || "";
+  const msgEl = document.getElementById("reset-message");
+  msgEl.textContent = "";
+  msgEl.className = "message";
 
-    const email =
-      resetEmail || localStorage.getItem("colspot_reset_email") || "";
+  const email =
+    resetEmail || localStorage.getItem("colspot_reset_email") || "";
 
-    if (!email) {
-      msgEl.textContent = MSG.RESET_NO_EMAIL;
+  if (!email) {
+    msgEl.textContent = MSG.RESET_NO_EMAIL;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!code || code.length < 4) {
+    msgEl.textContent = MSG.RESET_MISSING_CODE;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!isStrongPassword(newPw)) {
+    msgEl.textContent = MSG.RESET_WEAK_PASSWORD;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (newPw !== newPw2) {
+    msgEl.textContent = MSG.RESET_PASSWORD_MISMATCH;
+    msgEl.className = "message error";
+    return;
+  }
+
+  if (!window.supabase) {
+    msgEl.textContent = MSG.AUTH_NOT_READY;
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    setButtonLoading(
+      "reset-submit-btn",
+      "reset-submit-text",
+      "reset-submit-loader",
+      true
+    );
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: "email",
+    });
+
+    if (error) {
+      console.error(error);
+      msgEl.textContent = MSG.RESET_FAIL_VERIFY;
       msgEl.className = "message error";
       return;
     }
 
-    if (!code || code.length < 4) {
-      msgEl.textContent = MSG.RESET_MISSING_CODE;
-      msgEl.className = "message error";
-      return;
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPw,
+    });
+
+    if (updateError) {
+      console.error("Password update error:", updateError);
     }
 
-    if (!isStrongPassword(newPw)) {
-      msgEl.textContent = MSG.RESET_WEAK_PASSWORD;
-      msgEl.className = "message error";
-      return;
-    }
-
-    if (newPw !== newPw2) {
-      msgEl.textContent = MSG.RESET_PASSWORD_MISMATCH;
-      msgEl.className = "message error";
-      return;
-    }
-
-    if (!window.supabase) {
-      msgEl.textContent = MSG.AUTH_NOT_READY;
-      msgEl.className = "message error";
-      return;
-    }
-
-    try {
-      setButtonLoading(
-        "reset-submit-btn",
-        "reset-submit-text",
-        "reset-submit-loader",
-        true
-      );
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: "email",
-      });
-
-      if (error) {
-        console.error(error);
-        msgEl.textContent = MSG.RESET_FAIL_VERIFY;
+    if (data && data.session) {
+      try {
+        await linkDeviceForSession(data.session);
+      } catch (deviceErr) {
+        await supabase.auth.signOut();
+        clearLocalUser();
+        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
         msgEl.className = "message error";
         return;
       }
 
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPw,
-      });
-
-      if (updateError) {
-        console.error("Password update error:", updateError);
-      }
-
-      if (data && data.session) {
-        try {
-          await linkDeviceForSession(data.session);
-        } catch (deviceErr) {
-          await supabase.auth.signOut();
-          clearLocalUser();
-          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-          msgEl.className = "message error";
-          return;
-        }
-
-        await recordLoginEvent(data.session);
-        saveLocalUserFromSession(data.session);
-        await resolveUserRole(data.session.user.id, data.session.user.email || email);
-      }
-
-      msgEl.textContent = MSG.RESET_OK_REDIRECT;
-      msgEl.className = "message success";
-
-      setTimeout(() => {
-        goToAuthCallback();
-      }, 800);
-    } catch (err) {
-      console.error(err);
-      msgEl.textContent = MSG.RESET_FAIL_UPDATE;
-      msgEl.className = "message error";
-    } finally {
-      setButtonLoading(
-        "reset-submit-btn",
-        "reset-submit-text",
-        "reset-submit-loader",
-        false
-      );
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
+      await resolveUserRole(data.session.user.id, data.session.user.email || email);
     }
-  });
 
-document
-  .getElementById("reset-back-btn")
-  ?.addEventListener("click", () => {
-    resetEmail = null;
-    try {
-      localStorage.removeItem("colspot_reset_email");
-    } catch (e) {
-      console.error("Could not clear reset email cache:", e);
-    }
-    hideResetPanel();
-    switchMode("signin");
-  });
+    msgEl.textContent = MSG.RESET_OK_REDIRECT;
+    msgEl.className = "message success";
+
+    setTimeout(() => {
+      goToAuthCallback();
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = MSG.RESET_FAIL_UPDATE;
+    msgEl.className = "message error";
+  } finally {
+    setButtonLoading(
+      "reset-submit-btn",
+      "reset-submit-text",
+      "reset-submit-loader",
+      false
+    );
+  }
+});
+
+document.getElementById("reset-back-btn")?.addEventListener("click", () => {
+  resetEmail = null;
+  try {
+    localStorage.removeItem("colspot_reset_email");
+  } catch (e) {
+    console.error("Could not clear reset email cache:", e);
+  }
+  hideResetPanel();
+  switchMode("signin");
+});
 
 /* ----------------------------
  * Admin login
