@@ -384,6 +384,7 @@
   const LOCAL_USER_KEY = "colspot_local_user";
   const AUTH_ROLE_KEY = "colspot_auth_role";
   const AUTH_INTENT_KEY = "colspot_auth_intent";
+  const OAUTH_CALLBACK_KEY = "colspot_oauth_callback_url";
 
   const STUDENT_VERIFY_URL = "verify_class.html";
   const FACE_CAPTURE_URL = "face-capture.html";
@@ -759,25 +760,59 @@
   async function getSessionFromCallback() {
     await waitForSupabase();
 
-    const href = window.location.href || "";
+    let href = window.location.href || "";
     const search = window.location.search || "";
     const hash = window.location.hash || "";
 
     try {
+      const savedUrl = localStorage.getItem(OAUTH_CALLBACK_KEY);
+      if (savedUrl && savedUrl.startsWith(APP_DEEP_LINK_CALLBACK)) {
+        href = savedUrl;
+      }
+    } catch (e) {
+      console.error("Could not read saved OAuth callback URL:", e);
+    }
+
+    try {
       if (search.includes("code=")) {
-        const code = new URL(href).searchParams.get("code");
+        const code = new URL(window.location.href).searchParams.get("code");
         if (code) {
           const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
           if (error) {
             console.error("exchangeCodeForSession error:", error);
           }
           if (data && data.session) {
+            try {
+              localStorage.removeItem(OAUTH_CALLBACK_KEY);
+            } catch (e) {}
             return data.session;
           }
         }
       }
     } catch (e) {
-      console.error("Failed exchanging auth code:", e);
+      console.error("Failed exchanging auth code from browser URL:", e);
+    }
+
+    try {
+      if (href.startsWith(APP_DEEP_LINK_CALLBACK)) {
+        const parsed = new URL(href.replace(APP_DEEP_LINK_CALLBACK, "https://callback.local"));
+        const code = parsed.searchParams.get("code");
+
+        if (code) {
+          const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error("exchangeCodeForSession deep link error:", error);
+          }
+          if (data && data.session) {
+            try {
+              localStorage.removeItem(OAUTH_CALLBACK_KEY);
+            } catch (e) {}
+            return data.session;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed exchanging auth code from deep link:", e);
     }
 
     try {
@@ -790,6 +825,9 @@
           console.error("getSession after callback error:", error);
         }
         if (data && data.session) {
+          try {
+            localStorage.removeItem(OAUTH_CALLBACK_KEY);
+          } catch (e) {}
           return data.session;
         }
       }
@@ -802,6 +840,10 @@
       console.error("getSession fallback error:", error);
       throw new Error("We couldn’t confirm your session.");
     }
+
+    try {
+      localStorage.removeItem(OAUTH_CALLBACK_KEY);
+    } catch (e) {}
 
     return data?.session || null;
   }
