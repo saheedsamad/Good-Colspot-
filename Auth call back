@@ -810,9 +810,62 @@
             return data.session;
           }
         }
+
+        const deepLinkHash = parsed.hash || "";
+        if (deepLinkHash.includes("access_token=") && deepLinkHash.includes("refresh_token=")) {
+          const hashParams = new URLSearchParams(deepLinkHash.replace(/^#/, ""));
+          const access_token = hashParams.get("access_token");
+          const refresh_token = hashParams.get("refresh_token");
+
+          if (access_token && refresh_token) {
+            const { data, error } = await window.supabase.auth.setSession({
+              access_token,
+              refresh_token
+            });
+
+            if (error) {
+              console.error("setSession from deep link hash error:", error);
+            }
+
+            if (data && data.session) {
+              try {
+                localStorage.removeItem(OAUTH_CALLBACK_KEY);
+              } catch (e) {}
+              return data.session;
+            }
+          }
+        }
       }
     } catch (e) {
       console.error("Failed exchanging auth code from deep link:", e);
+    }
+
+    try {
+      if (hash.includes("access_token=") && hash.includes("refresh_token=")) {
+        const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
+        const access_token = hashParams.get("access_token");
+        const refresh_token = hashParams.get("refresh_token");
+
+        if (access_token && refresh_token) {
+          const { data, error } = await window.supabase.auth.setSession({
+            access_token,
+            refresh_token
+          });
+
+          if (error) {
+            console.error("setSession from browser hash error:", error);
+          }
+
+          if (data && data.session) {
+            try {
+              localStorage.removeItem(OAUTH_CALLBACK_KEY);
+            } catch (e) {}
+            return data.session;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed restoring session from browser hash:", e);
     }
 
     try {
