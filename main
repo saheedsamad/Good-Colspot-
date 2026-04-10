@@ -1594,10 +1594,7 @@
 
   function markMainWarmup() {
     try {
-      localStorage.setItem(
-        MAIN_WARMUP_KEY,
-        new Date().toISOString()
-      );
+      localStorage.setItem(MAIN_WARMUP_KEY, new Date().toISOString());
     } catch (e) {
       console.warn("[main warmup] failed to mark timestamp:", e);
     }
@@ -2028,134 +2025,134 @@
     );
   }
 
-function showScreen(name) {
-  const ids = [
-    "home",
-    "attendance",
-    "nearby",
-    "history",
-    "reports",
-    "account",
-    "scan",
-    "ai",
-    "live-session",
-    "live-class",
-    "view-message",
-    "fill-form",
-    "student_report",
-    "report-details"
-  ];
+  function showScreen(name) {
+    const ids = [
+      "home",
+      "attendance",
+      "nearby",
+      "history",
+      "reports",
+      "account",
+      "scan",
+      "ai",
+      "live-session",
+      "live-class",
+      "view-message",
+      "fill-form",
+      "student_report",
+      "report-details"
+    ];
 
-  ids.forEach((id) => {
-    const el = document.getElementById("screen-" + id);
-    if (!el) return;
+    ids.forEach((id) => {
+      const el = document.getElementById("screen-" + id);
+      if (!el) return;
 
-    if (id === name) {
-      el.classList.add("active");
-    } else {
-      el.classList.remove("active");
+      if (id === name) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach((btn) => btn.classList.remove("active"));
+
+    const navName =
+      name === "scan" ||
+      name === "ai" ||
+      name === "live-session" ||
+      name === "live-class" ||
+      name === "view-message" ||
+      name === "fill-form" ||
+      name === "student_report" ||
+      name === "report-details"
+        ? "home"
+        : name;
+
+    const activeBtn = document.querySelector(
+      '.nav-btn[data-nav="' + navName + '"]'
+    );
+    if (activeBtn) {
+      activeBtn.classList.add("active");
     }
-  });
 
-  const navButtons = document.querySelectorAll(".nav-btn");
-  navButtons.forEach((btn) => btn.classList.remove("active"));
-
-  const navName =
-    name === "scan" ||
-    name === "ai" ||
-    name === "live-session" ||
-    name === "live-class" ||
-    name === "view-message" ||
-    name === "fill-form" ||
-    name === "student_report" ||
-    name === "report-details"
-      ? "home"
-      : name;
-
-  const activeBtn = document.querySelector(
-    '.nav-btn[data-nav="' + navName + '"]'
-  );
-  if (activeBtn) {
-    activeBtn.classList.add("active");
-  }
-
-  if (name === "scan" && typeof initScanQuotaUI === "function") {
-    initScanQuotaUI();
-  }
-
-  if (name === "live-session" && typeof openLiveSessionScreen === "function") {
-    openLiveSessionScreen();
-  }
-
-  if (name === "live-class" && typeof openLiveClassScreen === "function") {
-    openLiveClassScreen();
-  }
-
-  if (name === "view-message" && typeof openViewMessageScreen === "function") {
-    openViewMessageScreen();
-  }
-
-  if (name === "fill-form" && typeof openFillFormScreen === "function") {
-    openFillFormScreen();
-  }
-
-  if (name === "report-details" && typeof openReportDetailsScreen === "function") {
-    openReportDetailsScreen();
-  }
-}
-
-async function loadNearbySchoolLogo() {
-  try {
-    if (typeof supabase === "undefined") return;
-
-    const user = await ensureCurrentUser();
-    if (!user || !user.id) return;
-
-    const { data: profile, error: profileError } = await supabase
-      .from("student_school_profiles")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (profileError || !profile?.school_id) return;
-
-    const { data: school, error: schoolError } = await supabase
-      .from("schools")
-      .select("name, logo_url")
-      .eq("id", profile.school_id)
-      .maybeSingle();
-
-    if (schoolError || !school?.logo_url) return;
-
-    const logoEl = document.getElementById("nearbySchoolLogo");
-    if (logoEl) {
-      logoEl.src = school.logo_url;
-      logoEl.alt = school.name ? `${school.name} logo` : "School logo";
+    if (name === "scan" && typeof initScanQuotaUI === "function") {
+      initScanQuotaUI();
     }
-  } catch (err) {
-    console.error("loadNearbySchoolLogo failed:", err);
+
+    if (name === "live-session" && typeof openLiveSessionScreen === "function") {
+      openLiveSessionScreen();
+    }
+
+    if (name === "live-class" && typeof openLiveClassScreen === "function") {
+      openLiveClassScreen();
+    }
+
+    if (name === "view-message" && typeof openViewMessageScreen === "function") {
+      openViewMessageScreen();
+    }
+
+    if (name === "fill-form" && typeof openFillFormScreen === "function") {
+      openFillFormScreen();
+    }
+
+    if (name === "report-details" && typeof openReportDetailsScreen === "function") {
+      openReportDetailsScreen();
+    }
   }
-}
 
-async function ensureCurrentUser() {
-  if (currentUser) return currentUser;
-  if (typeof supabase === "undefined") return null;
+  async function loadNearbySchoolLogo() {
+    try {
+      if (typeof supabase === "undefined") return;
 
-  try {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data || !data.user) {
+      const user = await ensureCurrentUser();
+      if (!user || !user.id) return;
+
+      const { data: profile, error: profileError } = await supabase
+        .from("student_school_profiles")
+        .select("school_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profileError || !profile?.school_id) return;
+
+      const { data: school, error: schoolError } = await supabase
+        .from("schools")
+        .select("name, logo_url")
+        .eq("id", profile.school_id)
+        .maybeSingle();
+
+      if (schoolError || !school?.logo_url) return;
+
+      const logoEl = document.getElementById("nearbySchoolLogo");
+      if (logoEl) {
+        logoEl.src = school.logo_url;
+        logoEl.alt = school.name ? `${school.name} logo` : "School logo";
+      }
+    } catch (err) {
+      console.error("loadNearbySchoolLogo failed:", err);
+    }
+  }
+
+  async function ensureCurrentUser() {
+    if (currentUser) return currentUser;
+    if (typeof supabase === "undefined") return null;
+
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        scheduleOfflineRetry();
+        return null;
+      }
+      currentUser = data.user;
+      saveLocalUserFromSupabaseUser(currentUser);
+      return currentUser;
+    } catch (e) {
+      console.error("ensureCurrentUser failed:", e);
       scheduleOfflineRetry();
       return null;
     }
-    currentUser = data.user;
-    saveLocalUserFromSupabaseUser(currentUser);
-    return currentUser;
-  } catch (e) {
-    console.error("ensureCurrentUser failed:", e);
-    scheduleOfflineRetry();
-    return null;
   }
-}
 
   async function loadMiniHistory() {
     const listEl = document.getElementById("historyList");
@@ -2436,383 +2433,117 @@ async function ensureCurrentUser() {
     return btoa(binary);
   }
 
-  async function loadAnnouncements() {
-    const section = document.getElementById("announcementSection");
-    const titleEl = document.getElementById("announcementTitle");
-    const msgEl = document.getElementById("announcementMessage");
-    if (!section || !titleEl || !msgEl) return;
-
-    if (typeof supabase === "undefined") {
-      section.style.display = "none";
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("app_announcements")
-        .select("id,title,message,show_until,is_active,created_at")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-      const ann = data && data[0];
-
-      if (!ann) {
-        section.style.display = "none";
-        stopOfflineRetry();
-        return;
-      }
-
-      if (ann.show_until && new Date(ann.show_until) < new Date()) {
-        section.style.display = "none";
-        stopOfflineRetry();
-        return;
-      }
-
-      const dismissKey = "colspot_announcement_dismissed_" + ann.id;
-      if (localStorage.getItem(dismissKey) === "1") {
-        section.style.display = "none";
-        stopOfflineRetry();
-        return;
-      }
-
-      section.dataset.announcementId = ann.id;
-      titleEl.textContent = ann.title || "Update";
-      msgEl.textContent = ann.message || "";
-      section.style.display = "block";
-
-      stopOfflineRetry();
-    } catch (e) {
-      console.error("loadAnnouncements failed:", e);
-      scheduleOfflineRetry();
-    }
-  }
-
-  function dismissAnnouncement() {
-    const section = document.getElementById("announcementSection");
-    if (!section) return;
-    const annId = section.dataset.announcementId;
-    if (annId) {
-      localStorage.setItem("colspot_announcement_dismissed_" + annId, "1");
-    }
-    section.style.display = "none";
-  }
-
-function applyUpdateRuleFromLocal() {
-  const softSection = document.getElementById("updateSoftSection");
-  const softTitle = document.getElementById("updateSoftTitle");
-  const softMessage = document.getElementById("updateSoftMessage");
-  const hardOverlay = document.getElementById("updateHardOverlay");
-  const hardTitle = document.getElementById("updateHardTitle");
-  const hardMessage = document.getElementById("updateHardMessage");
-
-  try {
-    const raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
-    currentUpdateRule = raw ? JSON.parse(raw) : null;
-  } catch {
-    currentUpdateRule = null;
-  }
-
-  if (!currentUpdateRule) {
-    if (softSection) softSection.style.display = "none";
-    if (hardOverlay) hardOverlay.style.display = "none";
-    return;
-  }
-
-  const mode = String(currentUpdateRule.mode || "").toLowerCase();
-  const title =
-    currentUpdateRule.message_title ||
-    currentUpdateRule.title ||
-    "New version available";
-  const message =
-    currentUpdateRule.message_body ||
-    currentUpdateRule.body ||
-    "Please update Colspot.";
-
-  if (mode === "hard") {
-    if (softSection) softSection.style.display = "none";
-    if (hardTitle) hardTitle.textContent = title;
-    if (hardMessage) hardMessage.textContent = message;
-    if (hardOverlay) hardOverlay.style.display = "flex";
-    return;
-  }
-
-  if (mode === "soft") {
-    if (softTitle) softTitle.textContent = title;
-    if (softMessage) softMessage.textContent = message;
-    if (softSection) softSection.style.display = "block";
-    if (hardOverlay) hardOverlay.style.display = "none";
-    return;
-  }
-
-  if (softSection) softSection.style.display = "none";
-  if (hardOverlay) hardOverlay.style.display = "none";
-}
- function openUpdateUrlFromRule() {
-  const updateUrl =
-    currentUpdateRule?.update_url ||
-    currentUpdateRule?.url ||
-    "";
-
-  if (!updateUrl) return;
-  window.open(updateUrl, "_blank");
-}
-  function initNearbyAttendance() {
-    const statusEl = document.getElementById("nearbyStatus");
-    if (!statusEl) return;
-
-    if (!locationEnabled) {
-      statusEl.textContent =
-        "Location is off. Turn it on to see nearby sessions, or use a PIN from your lecturer.";
-      return;
-    }
-
-    if (isBrowserOffline()) {
-      statusEl.textContent =
-        "No internet connection. We’ll refresh nearby sessions when you’re back online.";
-      scheduleOfflineRetry();
-      return;
-    }
-
-    if (!("geolocation" in navigator)) {
-      showLastSessionFallback(statusEl);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        if (typeof supabase === "undefined") {
-          statusEl.textContent =
-            "Location is OK but we can’t reach Colspot servers right now. Please check your internet or close and reopen the app.";
-          return;
-        }
-
-        try {
-          const nowIso = new Date().toISOString();
-
-          const { data, error } = await supabase
-            .from("attendance_sessions")
-            .select(
-              "id, course_code, expires_at, latitude, longitude, created_at"
-            )
-            .gte("expires_at", nowIso);
-
-          if (error) throw error;
-
-          const sessions = (data || []).filter(
-            (s) =>
-              typeof s.latitude === "number" &&
-              typeof s.longitude === "number"
-          );
-
-          let nearby = sessions.filter((s) => {
-            const d = distanceInMeters(lat, lng, s.latitude, s.longitude);
-            return d <= NEARBY_RADIUS_METERS;
-          });
-
-          if (!nearby.length && sessions.length > 0) {
-            sessions.sort((a, b) => {
-              const da = distanceInMeters(lat, lng, a.latitude, a.longitude);
-              const db = distanceInMeters(lat, lng, b.latitude, b.longitude);
-              return da - db;
-            });
-            nearby = [sessions[0]];
-          }
-
-          if (!nearby.length) {
-            await showLastSessionFallback(statusEl);
-            return;
-          }
-
-          const s0 = nearby[0];
-          const end = s0.expires_at ? new Date(s0.expires_at) : null;
-          const timeStr = end
-            ? end.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "--:--";
-
-          const code = s0.course_code || "Attendance session";
-          statusEl.textContent = `Active near you: ${code} (until ${timeStr})`;
-
-          stopOfflineRetry();
-        } catch (e) {
-          console.error(e);
-          statusEl.textContent =
-            "Error loading nearby attendance. We’ll keep trying in the background. You can still create a session.";
-          scheduleOfflineRetry();
-        }
-      },
-      async () => {
-        await showLastSessionFallback(statusEl);
-      },
-      {
-        enableHighAccuracy: false,
-        maximumAge: 60000,
-        timeout: 10000,
-      }
-    );
-  }
-
-  async function showLastSessionFallback(statusEl) {
-    if (typeof supabase === "undefined") {
-      statusEl.textContent =
-        "We couldn’t reach the server yet. Please check your internet connection or try again in a moment.";
-      return;
-    }
-
-    const user = await ensureCurrentUser();
-    if (!user) {
-      if (isBrowserOffline()) {
-        statusEl.textContent =
-          "No internet connection. We’ll try again automatically…";
-      } else {
-        statusEl.textContent =
-          "Trying to reconnect… we’ll update this automatically.";
-      }
-      scheduleOfflineRetry();
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("attendance_sessions")
-        .select("course_code, starts_at, created_at, expires_at")
-        .eq("created_by", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-
-      const s = (data || [])[0];
-      if (!s) {
-        statusEl.textContent =
-          "No attendance sessions yet. Create one to get started.";
-        stopOfflineRetry();
-        return;
-      }
-
-      const baseDateStr = s.starts_at || s.expires_at || s.created_at;
-      const d = baseDateStr ? new Date(baseDateStr) : null;
-      const timeStr = d
-        ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        : "--:--";
-
-      const code = s.course_code || "Attendance session";
-      statusEl.textContent = `Last session you created: ${code} (at ${timeStr})`;
-
-      stopOfflineRetry();
-    } catch (e) {
-      console.error(e);
-      statusEl.textContent =
-        "We couldn't load your recent sessions yet. We’ll keep trying. You can still create a new one.";
-      scheduleOfflineRetry();
-    }
-  }
-
   document.addEventListener("DOMContentLoaded", async () => {
-    await new Promise((r) => setTimeout(r, 50));
-
-    lockBottomNavToScreen();
-
-    let localAuth = null;
     try {
-      if (window.ColspotGuard && typeof ColspotGuard.guardPageAccess === "function") {
-        const localUser = ColspotGuard.guardPageAccess();
-        if (!localUser) {
-          return;
-        }
-        localAuth = {
-          user_id: localUser.id,
-          email: localUser.email || "",
-          full_name: localUser.email || ""
-        };
-      } else {
-        localAuth = getCachedAuthFromLocalUser();
-        if (!localAuth) {
-          window.location.href = "index.html";
-          return;
-        }
+      lockBottomNavToScreen();
+
+      const savedLoc = localStorage.getItem("colspotLocationEnabled");
+      if (savedLoc === "false") {
+        locationEnabled = false;
       }
-    } catch (e) {
-      console.error("guardPageAccess failed on main:", e);
-      window.location.href = "index.html";
-      return;
-    }
+      updateLocationToggleUI();
 
-    if (localAuth) {
-      const localName =
-        (localAuth.full_name && localAuth.full_name.trim()) ||
-        (localAuth.email && localAuth.email.trim()) ||
-        "";
-      if (localName) {
-        setGreetingFromProfile(localName);
-      }
-    }
-
-    const stored = localStorage.getItem("colspotLocationEnabled");
-    if (stored === "false") {
-      locationEnabled = false;
-    }
-    updateLocationToggleUI();
-
-    const fileInput = document.getElementById("scanFileInput");
-    const chosenText = document.getElementById("scanFileChosenText");
-    if (fileInput && chosenText) {
-      fileInput.addEventListener("change", () => {
-        if (fileInput.files && fileInput.files[0]) {
-          chosenText.textContent = "Selected: " + fileInput.files[0].name;
-        } else {
-          chosenText.textContent = "";
-        }
-      });
-    }
-
-    if (window.ColspotGuard && typeof ColspotGuard.verifySupabaseSessionInBackground === "function") {
-      ColspotGuard.verifySupabaseSessionInBackground();
-    } else if (typeof supabase !== "undefined") {
+      let localAuth = null;
       try {
-        const { data, error } = await supabase.auth.getUser();
-        if (!error && data && data.user) {
-          currentUser = data.user;
-          const profileName =
-            (currentUser.user_metadata &&
-              currentUser.user_metadata.full_name) ||
-            currentUser.email ||
-            currentUser.phone ||
-            "";
-          saveLocalUserFromSupabaseUser(currentUser);
-          if (profileName) {
-            setGreetingFromProfile(profileName);
+        if (
+          window.ColspotGuard &&
+          typeof ColspotGuard.guardPageAccess === "function"
+        ) {
+          const localUser = ColspotGuard.guardPageAccess();
+          if (!localUser) return;
+
+          localAuth = {
+            user_id: localUser.id,
+            email: localUser.email || "",
+            full_name: localUser.email || ""
+          };
+        } else {
+          localAuth = getCachedAuthFromLocalUser();
+          if (!localAuth) {
+            window.location.href = "index.html";
+            return;
           }
         }
       } catch (e) {
-        console.error("Fallback getUser on main failed:", e);
+        console.error("guardPageAccess failed on main:", e);
+        window.location.href = "index.html";
+        return;
       }
-    }
 
-    askForLocationOnce();
-    initNearbyAttendance();
-    loadMiniHistory();
-    initScanQuotaUI();
-    loadAnnouncements();
-    applyUpdateRuleFromLocal();
-    loadHistoryUnreadBadge();
-    tryInitPush();
-    runMainWarmupOnce();
+      if (localAuth) {
+        const localName =
+          (localAuth.full_name && localAuth.full_name.trim()) ||
+          (localAuth.email && localAuth.email.trim()) ||
+          "";
+        if (localName) {
+          setGreetingFromProfile(localName);
+        }
+      }
+
+      const fileInput = document.getElementById("scanFileInput");
+      const chosenText = document.getElementById("scanFileChosenText");
+      if (fileInput && chosenText) {
+        fileInput.addEventListener("change", () => {
+          if (fileInput.files && fileInput.files[0]) {
+            chosenText.textContent = "Selected: " + fileInput.files[0].name;
+          } else {
+            chosenText.textContent = "";
+          }
+        });
+      }
+
+      const scanSubmitBtn = document.getElementById("scanSubmitBtn");
+      if (scanSubmitBtn) {
+        scanSubmitBtn.addEventListener("click", submitScanSheet);
+      }
+
+      if (
+        window.ColspotGuard &&
+        typeof ColspotGuard.verifySupabaseSessionInBackground === "function"
+      ) {
+        window.ColspotGuard.verifySupabaseSessionInBackground();
+      } else if (typeof supabase !== "undefined") {
+        try {
+          const { data, error } = await supabase.auth.getUser();
+          if (!error && data && data.user) {
+            currentUser = data.user;
+            const profileName =
+              (currentUser.user_metadata &&
+                currentUser.user_metadata.full_name) ||
+              currentUser.email ||
+              currentUser.phone ||
+              "";
+            saveLocalUserFromSupabaseUser(currentUser);
+            if (profileName) {
+              setGreetingFromProfile(profileName);
+            }
+          }
+        } catch (e) {
+          console.error("Fallback getUser on main failed:", e);
+        }
+      }
+
+      askForLocationOnce();
+      initNearbyAttendance();
+      loadMiniHistory();
+      initScanQuotaUI();
+      loadAnnouncements();
+      applyUpdateRuleFromLocal();
+      loadHistoryUnreadBadge();
+      loadNearbySchoolLogo();
+      tryInitPush();
+      runMainWarmupOnce();
+    } catch (e) {
+      console.error("Initialization failed:", e);
+    }
   });
 
-  function goHome()        { showScreen('home'); }
-  function goToAttendance(){ showScreen('attendance'); }
-  function goToReports()   { showScreen('reports'); }
-  function goToNearby()    { showScreen('nearby'); }
-  function goToHistory()   { showScreen('history'); }
-  function goToAccount()   { showScreen('account'); }
+  function goHome()        { showScreen("home"); }
+  function goToAttendance(){ showScreen("attendance"); }
+  function goToReports()   { showScreen("reports"); }
+  function goToNearby()    { showScreen("nearby"); }
+  function goToHistory()   { showScreen("history"); }
+  function goToAccount()   { showScreen("account"); }
 
   window.showScreen = showScreen;
   window.goHome = goHome;
