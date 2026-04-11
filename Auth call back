@@ -398,6 +398,7 @@
   let activeSession = null;
   let activeRole = "student";
   let limitTimer = null;
+  let callbackFlowStarted = false;
 
   function showPanel(panelId) {
     const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
@@ -498,9 +499,37 @@
     } catch (e) {
       console.error("Signout failed:", e);
     }
+
+    try {
+      const browserPlugin = window.Capacitor?.Plugins?.Browser;
+      if (browserPlugin && typeof browserPlugin.close === "function") {
+        await browserPlugin.close();
+      }
+    } catch (e) {
+      console.error("Browser close during logout failed:", e);
+    }
+
     clearLocalUser();
     clearSavedIntent();
     window.location.href = INDEX_URL;
+  }
+
+  async function closeNativeBrowserIfPossible() {
+    try {
+      const isNativeApp =
+        !!window.Capacitor &&
+        typeof window.Capacitor.isNativePlatform === "function" &&
+        window.Capacitor.isNativePlatform();
+
+      if (!isNativeApp) return;
+
+      const browserPlugin = window.Capacitor?.Plugins?.Browser;
+      if (browserPlugin && typeof browserPlugin.close === "function") {
+        await browserPlugin.close();
+      }
+    } catch (e) {
+      console.error("Browser close failed:", e);
+    }
   }
 
   function startLimitCountdown(seconds = 10) {
@@ -1179,15 +1208,19 @@
     setMessage("welcome-message", "Redirecting…", "success");
     showPanel("welcome-panel");
 
-    setTimeout(() => {
+    setTimeout(async () => {
       saveLocalUserFromSession(activeSession, role);
       saveAuthRole(role);
       clearSavedIntent();
+      await closeNativeBrowserIfPossible();
       window.location.href = nextUrl;
     }, delay);
   }
 
   async function startCallbackFlow() {
+    if (callbackFlowStarted) return;
+    callbackFlowStarted = true;
+
     try {
       showPanel("loading-panel");
 
