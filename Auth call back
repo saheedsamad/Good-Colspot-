@@ -487,33 +487,6 @@
     }
   }
 
-  function goBackToIndex() {
-    window.location.href = INDEX_URL;
-  }
-
-  async function logoutAndReturn() {
-    try {
-      if (window.supabase) {
-        await window.supabase.auth.signOut();
-      }
-    } catch (e) {
-      console.error("Signout failed:", e);
-    }
-
-    try {
-      const browserPlugin = window.Capacitor?.Plugins?.Browser;
-      if (browserPlugin && typeof browserPlugin.close === "function") {
-        await browserPlugin.close();
-      }
-    } catch (e) {
-      console.error("Browser close during logout failed:", e);
-    }
-
-    clearLocalUser();
-    clearSavedIntent();
-    window.location.href = INDEX_URL;
-  }
-
   async function closeNativeBrowserIfPossible() {
     try {
       const isNativeApp =
@@ -530,6 +503,29 @@
     } catch (e) {
       console.error("Browser close failed:", e);
     }
+  }
+
+  function goBackToIndex() {
+    window.location.href = INDEX_URL;
+  }
+
+  async function logoutAndReturn() {
+    try {
+      if (window.supabase) {
+        await window.supabase.auth.signOut();
+      }
+    } catch (e) {
+      console.error("Signout failed:", e);
+    }
+
+    try {
+      localStorage.removeItem(OAUTH_CALLBACK_KEY);
+    } catch (e) {}
+
+    clearLocalUser();
+    clearSavedIntent();
+    await closeNativeBrowserIfPossible();
+    window.location.href = INDEX_URL;
   }
 
   function startLimitCountdown(seconds = 10) {
@@ -807,13 +803,9 @@
         const code = new URL(window.location.href).searchParams.get("code");
         if (code) {
           const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            console.error("exchangeCodeForSession error:", error);
-          }
+          if (error) console.error("exchangeCodeForSession error:", error);
           if (data && data.session) {
-            try {
-              localStorage.removeItem(OAUTH_CALLBACK_KEY);
-            } catch (e) {}
+            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
             return data.session;
           }
         }
@@ -829,13 +821,9 @@
 
         if (code) {
           const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            console.error("exchangeCodeForSession deep link error:", error);
-          }
+          if (error) console.error("exchangeCodeForSession deep link error:", error);
           if (data && data.session) {
-            try {
-              localStorage.removeItem(OAUTH_CALLBACK_KEY);
-            } catch (e) {}
+            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
             return data.session;
           }
         }
@@ -852,14 +840,10 @@
               refresh_token
             });
 
-            if (error) {
-              console.error("setSession from deep link hash error:", error);
-            }
+            if (error) console.error("setSession from deep link hash error:", error);
 
             if (data && data.session) {
-              try {
-                localStorage.removeItem(OAUTH_CALLBACK_KEY);
-              } catch (e) {}
+              try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
               return data.session;
             }
           }
@@ -881,14 +865,10 @@
             refresh_token
           });
 
-          if (error) {
-            console.error("setSession from browser hash error:", error);
-          }
+          if (error) console.error("setSession from browser hash error:", error);
 
           if (data && data.session) {
-            try {
-              localStorage.removeItem(OAUTH_CALLBACK_KEY);
-            } catch (e) {}
+            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
             return data.session;
           }
         }
@@ -898,18 +878,11 @@
     }
 
     try {
-      if (
-        hash.includes("access_token=") ||
-        href.startsWith(APP_DEEP_LINK_CALLBACK)
-      ) {
+      if (hash.includes("access_token=") || href.startsWith(APP_DEEP_LINK_CALLBACK)) {
         const { data, error } = await window.supabase.auth.getSession();
-        if (error) {
-          console.error("getSession after callback error:", error);
-        }
+        if (error) console.error("getSession after callback error:", error);
         if (data && data.session) {
-          try {
-            localStorage.removeItem(OAUTH_CALLBACK_KEY);
-          } catch (e) {}
+          try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
           return data.session;
         }
       }
@@ -923,10 +896,7 @@
       throw new Error("We couldn’t confirm your session.");
     }
 
-    try {
-      localStorage.removeItem(OAUTH_CALLBACK_KEY);
-    } catch (e) {}
-
+    try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
     return data?.session || null;
   }
 
@@ -988,26 +958,10 @@
       studentByEmail,
       lecturerByEmail
     ] = await Promise.all([
-      window.supabase
-        .from("student_accounts")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      window.supabase
-        .from("lecturer_accounts")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      window.supabase
-        .from("student_accounts")
-        .select("*")
-        .eq("email", email)
-        .maybeSingle(),
-      window.supabase
-        .from("lecturer_accounts")
-        .select("*")
-        .eq("email", email)
-        .maybeSingle()
+      window.supabase.from("student_accounts").select("*").eq("user_id", userId).maybeSingle(),
+      window.supabase.from("lecturer_accounts").select("*").eq("user_id", userId).maybeSingle(),
+      window.supabase.from("student_accounts").select("*").eq("email", email).maybeSingle(),
+      window.supabase.from("lecturer_accounts").select("*").eq("email", email).maybeSingle()
     ]);
 
     if (studentByUser.error) {
@@ -1034,59 +988,42 @@
     const savedRole = String(getSavedRole() || "").toLowerCase().trim();
     const metaRole = String(session?.user?.user_metadata?.role || "").toLowerCase().trim();
 
-    if (profiles.lecturerByUser && profiles.lecturerByUser.user_id === userId) {
-      return "lecturer";
-    }
-
-    if (profiles.studentByUser && profiles.studentByUser.user_id === userId) {
-      return "student";
-    }
+    if (profiles.lecturerByUser && profiles.lecturerByUser.user_id === userId) return "lecturer";
+    if (profiles.studentByUser && profiles.studentByUser.user_id === userId) return "student";
 
     if (
       profiles.lecturerByEmail &&
       String(profiles.lecturerByEmail.email || "").toLowerCase() === email &&
       savedRole === "lecturer"
-    ) {
-      return "lecturer";
-    }
+    ) return "lecturer";
 
     if (
       profiles.studentByEmail &&
       String(profiles.studentByEmail.email || "").toLowerCase() === email &&
       savedRole === "student"
-    ) {
-      return "student";
-    }
+    ) return "student";
 
     if (
       profiles.lecturerByEmail &&
       String(profiles.lecturerByEmail.email || "").toLowerCase() === email &&
       metaRole === "lecturer"
-    ) {
-      return "lecturer";
-    }
+    ) return "lecturer";
 
     if (
       profiles.studentByEmail &&
       String(profiles.studentByEmail.email || "").toLowerCase() === email &&
       metaRole === "student"
-    ) {
-      return "student";
-    }
+    ) return "student";
 
     if (
       profiles.lecturerByEmail &&
       String(profiles.lecturerByEmail.email || "").toLowerCase() === email
-    ) {
-      return "lecturer";
-    }
+    ) return "lecturer";
 
     if (
       profiles.studentByEmail &&
       String(profiles.studentByEmail.email || "").toLowerCase() === email
-    ) {
-      return "student";
-    }
+    ) return "student";
 
     if (savedRole === "lecturer" || savedRole === "student") return savedRole;
     if (metaRole === "lecturer" || metaRole === "student") return metaRole;
@@ -1112,18 +1049,10 @@
         : null);
 
     if (resolvedRole === "lecturer") {
-      return {
-        allowed: true,
-        role: "lecturer",
-        profile: lecturerProfile
-      };
+      return { allowed: true, role: "lecturer", profile: lecturerProfile };
     }
 
-    return {
-      allowed: true,
-      role: "student",
-      profile: studentProfile
-    };
+    return { allowed: true, role: "student", profile: studentProfile };
   }
 
   async function getStudentVerificationState(userId) {
@@ -1158,10 +1087,7 @@
       !!faceRow &&
       (faceRow.face_verified === true || faceStatus === "approved" || faceStatus === "verified");
 
-    return {
-      hasVerifiedForm,
-      hasVerifiedFace
-    };
+    return { hasVerifiedForm, hasVerifiedFace };
   }
 
   function fillCompleteForm(session, role, profile) {
@@ -1244,53 +1170,31 @@
 
       const authIntent = getSavedIntent();
 
-      if (
-        authIntent === "signup" &&
-        activeRole === "student" &&
-        roleState.profile
-      ) {
-        try {
-          await window.supabase.auth.signOut();
-        } catch (e) {
+      if (authIntent === "signup" && activeRole === "student" && roleState.profile) {
+        try { await window.supabase.auth.signOut(); } catch (e) {
           console.error("Signout after duplicate student signup failed:", e);
         }
 
         clearLocalUser();
         clearSavedIntent();
-
         showPanel("error-panel");
         document.getElementById("error-box").textContent =
           "You have already created a student account with this email.";
-        setMessage(
-          "error-message",
-          "Please go back and sign in instead of creating another account.",
-          "error"
-        );
+        setMessage("error-message", "Please go back and sign in instead of creating another account.", "error");
         return;
       }
 
-      if (
-        authIntent === "signup" &&
-        activeRole === "lecturer" &&
-        roleState.profile
-      ) {
-        try {
-          await window.supabase.auth.signOut();
-        } catch (e) {
+      if (authIntent === "signup" && activeRole === "lecturer" && roleState.profile) {
+        try { await window.supabase.auth.signOut(); } catch (e) {
           console.error("Signout after duplicate lecturer signup failed:", e);
         }
 
         clearLocalUser();
         clearSavedIntent();
-
         showPanel("error-panel");
         document.getElementById("error-box").textContent =
           "You have already created a lecturer account with this email.";
-        setMessage(
-          "error-message",
-          "Please go back and sign in instead of creating another account.",
-          "error"
-        );
+        setMessage("error-message", "Please go back and sign in instead of creating another account.", "error");
         return;
       }
 
@@ -1298,7 +1202,6 @@
         await linkDeviceForSession(session);
       } catch (deviceErr) {
         console.error(deviceErr);
-
         const deviceMessage = String(deviceErr.message || "").toLowerCase();
 
         if (deviceErr.code === "DEVICE_LIMIT" || deviceMessage.includes("2 phones")) {
