@@ -1,9 +1,10 @@
+<script>
 // Auth.js
 // Assumes window.supabase is created in client_supabase.js
 
 let currentMode = "signin";
-let pendingSignup = null; // { email, password, fullName, role, schoolName, dept, accountId }
-let resetEmail = null;    // for forgot-password flow
+let pendingSignup = null;
+let resetEmail = null;
 
 // ----------------------------
 // App version / platform
@@ -22,6 +23,7 @@ const AUTH_ROLE_KEY = "colspot_auth_role";
 const AUTH_INTENT_KEY = "colspot_auth_intent";
 const LOCAL_USER_KEY = "colspot_local_user";
 const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const OAUTH_IN_PROGRESS_KEY = "colspot_oauth_in_progress";
 
 function saveAuthIntent(intent) {
   try {
@@ -36,6 +38,27 @@ function clearAuthIntent() {
     localStorage.removeItem(AUTH_INTENT_KEY);
   } catch (e) {
     console.error("Could not clear auth intent:", e);
+  }
+}
+
+function setOAuthInProgress(value) {
+  try {
+    if (value) {
+      localStorage.setItem(OAUTH_IN_PROGRESS_KEY, "1");
+    } else {
+      localStorage.removeItem(OAUTH_IN_PROGRESS_KEY);
+    }
+  } catch (e) {
+    console.error("Could not update oauth progress flag:", e);
+  }
+}
+
+function isOAuthInProgress() {
+  try {
+    return localStorage.getItem(OAUTH_IN_PROGRESS_KEY) === "1";
+  } catch (e) {
+    console.error("Could not read oauth progress flag:", e);
+    return false;
   }
 }
 
@@ -1029,11 +1052,29 @@ function hideResetPanel() {
  * ---------------------------- */
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
-  if (cached && cached.id) {
-    goToAuthCallback();
-    return true;
+  if (!cached || !cached.id) return false;
+
+  if (isOAuthInProgress()) return false;
+  if (!window.supabase) return false;
+
+  try {
+    const { data, error } = await window.supabase.auth.getSession();
+
+    if (error) {
+      console.error("redirectIfSignedIn getSession error:", error);
+      return false;
+    }
+
+    if (data && data.session && data.session.user) {
+      goToAuthCallback();
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    console.error("redirectIfSignedIn failed:", e);
+    return false;
   }
-  return false;
 }
 
 /* ----------------------------
@@ -1132,6 +1173,7 @@ async function signInWithGoogle() {
   try {
     saveAuthRole("student");
     saveAuthIntent("signin");
+    setOAuthInProgress(true);
 
     if (msgEl) {
       msgEl.textContent = MSG.GOOGLE_REDIRECTING;
@@ -1160,6 +1202,7 @@ async function signInWithGoogle() {
 
     if (error) {
       console.error("Google sign-in error:", error);
+      setOAuthInProgress(false);
       if (msgEl) {
         msgEl.textContent = MSG.GOOGLE_START_FAIL;
         msgEl.className = "message error";
@@ -1179,6 +1222,7 @@ async function signInWithGoogle() {
     }
   } catch (err) {
     console.error("Google sign-in start failed:", err);
+    setOAuthInProgress(false);
     if (msgEl) {
       msgEl.textContent = MSG.GOOGLE_START_FAIL;
       msgEl.className = "message error";
@@ -2053,3 +2097,4 @@ if (document.readyState === "loading") {
 } else {
   initAuth();
 }
+</script>
