@@ -67,19 +67,31 @@
       display:none !important;
     }
 
+    /* FIXED TOP BLUE SECTION */
     #screen-fill-form .topbar{
       display:flex;
       align-items:flex-start;
       gap:12px;
-      margin-bottom:10px;
-      position:sticky;
-      top:0;
+      margin-bottom:12px;
+      position:relative;
       z-index:4;
-      padding-top:0;
-      padding-bottom:4px;
-      background:linear-gradient(180deg, rgba(244,248,255,.96) 0%, rgba(244,248,255,.88) 72%, rgba(244,248,255,0) 100%);
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
+      padding:16px 14px 18px;
+      border-radius:28px;
+      background:
+        linear-gradient(180deg, rgba(233,243,255,.96) 0%, rgba(219,234,254,.96) 100%);
+      border:1px solid rgba(191,219,254,.95);
+      box-shadow:0 16px 36px rgba(37,99,235,.10);
+      overflow:hidden;
+    }
+
+    #screen-fill-form .topbar::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 34%),
+        linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 100%);
     }
 
     #screen-fill-form .back-btn{
@@ -87,17 +99,17 @@
       height:46px;
       border:none;
       border-radius:16px;
-      background:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.72);
-      box-shadow:var(--ff-shadow-soft);
+      background:#ffffff;
+      border:1px solid rgba(219,234,254,.95);
+      box-shadow:0 10px 24px rgba(15,23,42,.06);
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       color:#1f2937;
       flex-shrink:0;
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
+      position:relative;
+      z-index:1;
     }
 
     #screen-fill-form .back-btn svg{
@@ -108,6 +120,9 @@
     #screen-fill-form .head{
       min-width:0;
       padding-top:2px;
+      position:relative;
+      z-index:1;
+      flex:1;
     }
 
     #screen-fill-form .eyebrow{
@@ -132,8 +147,9 @@
     #screen-fill-form .page-sub{
       font-size:13px;
       line-height:1.5;
-      color:#6b7280;
+      color:#5f6b85;
       margin:0;
+      max-width:96%;
     }
 
     #screen-fill-form .loading-box,
@@ -161,8 +177,8 @@
     #screen-fill-form .panel-back-btn{
       width:100%;
       border-radius:999px;
-      border:1px solid var(--ff-line);
-      background:#fff;
+      border:1px solid #dbeafe;
+      background:#ffffff;
       color:var(--ff-text);
       padding:12px 14px;
       font-size:13px;
@@ -174,8 +190,8 @@
     #screen-fill-form .panel-card{
       border-radius:28px;
       padding:16px;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(226,232,240,.85);
+      background:rgba(255,255,255,.96);
+      border:1px solid rgba(226,232,240,.88);
       box-shadow:var(--ff-shadow);
       overflow:hidden;
     }
@@ -937,6 +953,7 @@
       </section>
     </div>
   </div>
+</div>
   <script type="module">
     import { supabase } from "./client_supabase.js";
 
