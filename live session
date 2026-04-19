@@ -843,634 +843,636 @@
   </nav>
 
   <script>
-    let supabaseReady = false;
-    let currentUser = null;
-    let currentSessionId = null;
-    let currentSession = null;
-    let countdownInterval = null;
-    let attendeesInterval = null;
-    let currentAttendees = [];
+    (() => {
+      let supabaseReady = false;
+      let currentUser = null;
+      let currentSessionId = null;
+      let currentSession = null;
+      let countdownInterval = null;
+      let attendeesInterval = null;
+      let currentAttendees = [];
 
-    function showError(msg) {
-      const box = document.getElementById("errorBox");
-      if (!box) return;
-      if (!msg) {
-        box.textContent = "";
-        box.style.display = "none";
-      } else {
-        box.textContent = msg;
-        box.style.display = "block";
-      }
-    }
-
-    function updateEndButtonState(isEnded) {
-      const endBtn = document.getElementById("endSessionBtn");
-      if (!endBtn) return;
-      const labelSpan = endBtn.querySelector(".end-session-label");
-
-      if (isEnded) {
-        endBtn.disabled = true;
-        endBtn.classList.add("ended");
-        if (labelSpan) labelSpan.textContent = "Session ended";
-      } else {
-        endBtn.disabled = false;
-        endBtn.classList.remove("ended");
-        if (labelSpan) labelSpan.textContent = "End session";
-      }
-    }
-
-    function setSessionHeader(session) {
-      const classEl = document.getElementById("sessionClass");
-      const classSubEl = document.getElementById("sessionClassSub");
-      const pinEl = document.getElementById("pinValue");
-      const statusPill = document.getElementById("statusPill");
-
-      const title = session.course_code || "Attendance session";
-      if (classEl) classEl.textContent = title;
-
-      if (classSubEl) {
-        const started = session.starts_at
-          ? new Date(session.starts_at)
-          : session.created_at
-          ? new Date(session.created_at)
-          : null;
-
-        if (started) {
-          const timeStr = started.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          classSubEl.textContent = `Started at ${timeStr}.`;
+      function showError(msg) {
+        const box = document.getElementById("errorBox");
+        if (!box) return;
+        if (!msg) {
+          box.textContent = "";
+          box.style.display = "none";
         } else {
-          classSubEl.textContent = "Live attendance session.";
+          box.textContent = msg;
+          box.style.display = "block";
         }
       }
 
-      if (pinEl) pinEl.textContent = session.pin_code || "------";
-
-      let isEnded = false;
-      if (statusPill) {
-        const now = new Date();
-        const end = session.expires_at ? new Date(session.expires_at) : null;
-        isEnded = !session.is_active || (end && now > end);
+      function updateEndButtonState(isEnded) {
+        const endBtn = document.getElementById("endSessionBtn");
+        if (!endBtn) return;
+        const labelSpan = endBtn.querySelector(".end-session-label");
 
         if (isEnded) {
-          statusPill.classList.add("expired");
-          statusPill.querySelector("span:last-child").textContent = "Ended";
+          endBtn.disabled = true;
+          endBtn.classList.add("ended");
+          if (labelSpan) labelSpan.textContent = "Session ended";
         } else {
-          statusPill.classList.remove("expired");
-          statusPill.querySelector("span:last-child").textContent = "Active";
+          endBtn.disabled = false;
+          endBtn.classList.remove("ended");
+          if (labelSpan) labelSpan.textContent = "End session";
         }
       }
 
-      updateEndButtonState(isEnded);
-      startOrUpdateTimer(session);
-    }
+      function setSessionHeader(session) {
+        const classEl = document.getElementById("sessionClass");
+        const classSubEl = document.getElementById("sessionClassSub");
+        const pinEl = document.getElementById("pinValue");
+        const statusPill = document.getElementById("statusPill");
 
-    function startOrUpdateTimer(session) {
-      const timerEl = document.getElementById("timerValue");
-      const statusPill = document.getElementById("statusPill");
-      if (!timerEl) return;
+        const title = session.course_code || "Attendance session";
+        if (classEl) classEl.textContent = title;
 
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
+        if (classSubEl) {
+          const started = session.starts_at
+            ? new Date(session.starts_at)
+            : session.created_at
+            ? new Date(session.created_at)
+            : null;
 
-      const endTime = session.expires_at ? new Date(session.expires_at) : null;
-      if (!endTime) {
-        timerEl.textContent = "--:--";
-        return;
-      }
+          if (started) {
+            const timeStr = started.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            classSubEl.textContent = `Started at ${timeStr}.`;
+          } else {
+            classSubEl.textContent = "Live attendance session.";
+          }
+        }
 
-      function update() {
-        const now = new Date();
-        const diffMs = endTime - now;
+        if (pinEl) pinEl.textContent = session.pin_code || "------";
 
-        if (diffMs <= 0 || session.is_active === false) {
-          timerEl.textContent = "00:00";
-          if (statusPill) {
+        let isEnded = false;
+        if (statusPill) {
+          const now = new Date();
+          const end = session.expires_at ? new Date(session.expires_at) : null;
+          isEnded = !session.is_active || (end && now > end);
+
+          if (isEnded) {
             statusPill.classList.add("expired");
             statusPill.querySelector("span:last-child").textContent = "Ended";
+          } else {
+            statusPill.classList.remove("expired");
+            statusPill.querySelector("span:last-child").textContent = "Active";
           }
-          updateEndButtonState(true);
+        }
+
+        updateEndButtonState(isEnded);
+        startOrUpdateTimer(session);
+      }
+
+      function startOrUpdateTimer(session) {
+        const timerEl = document.getElementById("timerValue");
+        const statusPill = document.getElementById("statusPill");
+        if (!timerEl) return;
+
+        if (countdownInterval) {
           clearInterval(countdownInterval);
           countdownInterval = null;
+        }
+
+        const endTime = session.expires_at ? new Date(session.expires_at) : null;
+        if (!endTime) {
+          timerEl.textContent = "--:--";
           return;
         }
 
-        const totalSeconds = Math.floor(diffMs / 1000);
-        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-        const seconds = String(totalSeconds % 60).padStart(2, "0");
+        function update() {
+          const now = new Date();
+          const diffMs = endTime - now;
 
-        timerEl.textContent = `${minutes}:${seconds}`;
-        if (statusPill) {
-          statusPill.classList.remove("expired");
-          statusPill.querySelector("span:last-child").textContent = "Active";
-        }
-        updateEndButtonState(false);
-      }
-
-      update();
-      countdownInterval = setInterval(update, 1000);
-    }
-
-    function setJoinedCount(count) {
-      const el = document.getElementById("joinedCount");
-      if (!el) return;
-      el.innerHTML = `<strong>${count}</strong> joined`;
-    }
-
-    async function loadSessionAndAttendees() {
-      if (!supabaseReady || !currentSessionId) return;
-
-      showError("");
-
-      const attendeeList = document.getElementById("attendeeList");
-      const emptyState = document.getElementById("emptyState");
-      if (attendeeList) attendeeList.innerHTML = "";
-      if (emptyState) emptyState.style.display = "none";
-
-      const { data: session, error: sessionError } = await supabase
-        .from("attendance_sessions")
-        .select(
-          "id, course_code, pin_code, starts_at, expires_at, created_at, is_active"
-        )
-        .eq("id", currentSessionId)
-        .single();
-
-      if (sessionError || !session) {
-        console.error(sessionError || "Session not found");
-        showError("Could not load this session. It may have been removed.");
-        return;
-      }
-
-      currentSession = session;
-      setSessionHeader(session);
-
-      const now = new Date();
-      const end = session.expires_at ? new Date(session.expires_at) : null;
-      const isEnded = !session.is_active || (end && now > end);
-      if (isEnded && attendeesInterval) {
-        clearInterval(attendeesInterval);
-        attendeesInterval = null;
-      }
-
-      const { data: records, error: recError } = await supabase
-        .from("attendance_records")
-        .select(
-          "id, student_name, student_matric, student_department, checked_in_at"
-        )
-        .eq("session_id", currentSessionId)
-        .order("checked_in_at", { ascending: true });
-
-      if (recError) {
-        console.error(recError);
-        showError("Could not load attendees. Please try again.");
-        return;
-      }
-
-      currentAttendees = records || [];
-      setJoinedCount(currentAttendees.length);
-
-      const filterEl = document.getElementById("attendeeFilter");
-      const hasFilter =
-        filterEl && filterEl.value && filterEl.value.trim().length > 0;
-
-      if (hasFilter) {
-        applyAttendeeFilter();
-      } else {
-        renderAttendees(currentAttendees);
-      }
-    }
-
-    function renderAttendees(list) {
-      const attendeeList = document.getElementById("attendeeList");
-      const emptyState = document.getElementById("emptyState");
-      if (!attendeeList || !emptyState) return;
-
-      attendeeList.innerHTML = "";
-
-      if (!list.length) {
-        emptyState.style.display = "block";
-        return;
-      }
-
-      emptyState.style.display = "none";
-
-      list.forEach((rec) => {
-        const card = document.createElement("div");
-        card.className = "attendee-card";
-
-        card.addEventListener("click", () => handleAttendeeClick(rec));
-
-        const nameCell = document.createElement("div");
-        nameCell.className = "attendee-cell";
-        const label =
-          rec.student_name && rec.student_name.trim().length > 0
-            ? rec.student_name.trim()
-            : rec.student_matric && rec.student_matric.trim().length > 0
-            ? rec.student_matric.trim()
-            : "Student";
-        nameCell.textContent = label;
-
-        const matricCell = document.createElement("div");
-        matricCell.className = "attendee-cell";
-        matricCell.textContent =
-          (rec.student_matric && rec.student_matric.trim()) || "—";
-
-        const deptCell = document.createElement("div");
-        deptCell.className = "attendee-cell";
-        deptCell.textContent =
-          (rec.student_department && rec.student_department.trim()) || "—";
-
-        const timeCell = document.createElement("div");
-        timeCell.className = "attendee-cell attendee-cell-small";
-        const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
-        timeCell.textContent = t
-          ? t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "—";
-
-        card.appendChild(nameCell);
-        card.appendChild(matricCell);
-        card.appendChild(deptCell);
-        card.appendChild(timeCell);
-
-        attendeeList.appendChild(card);
-      });
-    }
-
-    function applyAttendeeFilter() {
-      const filterEl = document.getElementById("attendeeFilter");
-      if (!filterEl) return;
-
-      const q = filterEl.value.toLowerCase().trim();
-      if (!q) {
-        renderAttendees(currentAttendees);
-        return;
-      }
-
-      const filtered = currentAttendees.filter((rec) => {
-        const name = (rec.student_name || "").toLowerCase();
-        const matric = (rec.student_matric || "").toLowerCase();
-        const dept = (rec.student_department || "").toLowerCase();
-        return name.includes(q) || matric.includes(q) || dept.includes(q);
-      });
-
-      renderAttendees(filtered);
-    }
-
-    async function handleAttendeeClick(rec) {
-      const label =
-        (rec.student_name && rec.student_name.trim()) ||
-        (rec.student_matric && rec.student_matric.trim()) ||
-        "this student";
-
-      const ok = window.confirm(`Remove ${label} from this session?`);
-      if (!ok) return;
-
-      try {
-        const { error } = await supabase
-          .from("attendance_records")
-          .delete()
-          .eq("id", rec.id);
-
-        if (error) {
-          console.error(error);
-          showError("Could not remove student. Please try again.");
-          return;
-        }
-
-        await loadSessionAndAttendees();
-      } catch (e) {
-        console.error(e);
-        showError("Could not remove student. Please try again.");
-      }
-    }
-
-    function openAddStudentModal() {
-      if (!supabaseReady || !currentSessionId) {
-        showError("Session not ready. Try reloading.");
-        return;
-      }
-      const modal = document.getElementById("addStudentModal");
-      const nameInput = document.getElementById("modalStudentName");
-      const matricInput = document.getElementById("modalStudentMatric");
-      const deptInput = document.getElementById("modalStudentDept");
-      const err = document.getElementById("modalStudentError");
-
-      if (nameInput) nameInput.value = "";
-      if (matricInput) matricInput.value = "";
-      if (deptInput) deptInput.value = "";
-      if (err) {
-        err.textContent = "";
-        err.style.display = "none";
-      }
-
-      if (modal) modal.style.display = "flex";
-
-      setTimeout(() => {
-        if (nameInput) nameInput.focus();
-      }, 50);
-    }
-
-    function closeAddStudentModal() {
-      const modal = document.getElementById("addStudentModal");
-      if (modal) modal.style.display = "none";
-    }
-
-    async function submitAddStudentModal() {
-      const nameInput = document.getElementById("modalStudentName");
-      const matricInput = document.getElementById("modalStudentMatric");
-      const deptInput = document.getElementById("modalStudentDept");
-      const err = document.getElementById("modalStudentError");
-      const btn = document.getElementById("modalAddBtn");
-
-      if (!nameInput || !btn) return;
-
-      const name = (nameInput.value || "").trim();
-      const matric = (matricInput?.value || "").trim();
-      const dept = (deptInput?.value || "").trim();
-
-      if (!name) {
-        if (err) {
-          err.textContent = "Student name is required.";
-          err.style.display = "block";
-        }
-        nameInput.focus();
-        return;
-      }
-
-      if (!supabaseReady || !currentSessionId) {
-        if (err) {
-          err.textContent = "Session not ready. Try reloading.";
-          err.style.display = "block";
-        }
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = "Adding…";
-      if (err) {
-        err.textContent = "";
-        err.style.display = "none";
-      }
-
-      try {
-        const { error } = await supabase.from("attendance_records").insert([
-          {
-            session_id: currentSessionId,
-            user_id: null,
-            student_name: name,
-            student_matric: matric || null,
-            student_department: dept || null,
-            checked_in_at: new Date().toISOString(),
-          },
-        ]);
-
-        if (error) {
-          console.error(error);
-          if (err) {
-            err.textContent = "Could not add student. Please try again.";
-            err.style.display = "block";
+          if (diffMs <= 0 || session.is_active === false) {
+            timerEl.textContent = "00:00";
+            if (statusPill) {
+              statusPill.classList.add("expired");
+              statusPill.querySelector("span:last-child").textContent = "Ended";
+            }
+            updateEndButtonState(true);
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            return;
           }
-          btn.disabled = false;
-          btn.textContent = "Add student";
-          return;
+
+          const totalSeconds = Math.floor(diffMs / 1000);
+          const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+          const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+          timerEl.textContent = `${minutes}:${seconds}`;
+          if (statusPill) {
+            statusPill.classList.remove("expired");
+            statusPill.querySelector("span:last-child").textContent = "Active";
+          }
+          updateEndButtonState(false);
         }
 
-        closeAddStudentModal();
-        await loadSessionAndAttendees();
-      } catch (e) {
-        console.error(e);
-        if (err) {
-          err.textContent = "Could not add student. Please try again.";
-          err.style.display = "block";
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Add student";
-      }
-    }
-
-    function downloadAttendeesCsv() {
-      if (!currentAttendees.length) {
-        alert("No attendees to download yet.");
-        return;
+        update();
+        countdownInterval = setInterval(update, 1000);
       }
 
-      const header = ["Name", "Matric number", "Department", "Joined at"];
-      const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
-
-      const rows = currentAttendees.map((rec) => {
-        const name =
-          (rec.student_name && rec.student_name.trim()) ||
-          (rec.student_matric && rec.student_matric.trim()) ||
-          "Student";
-        const matric = (rec.student_matric || "").trim();
-        const dept = (rec.student_department || "").trim();
-        const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
-        const joined = t ? t.toISOString() : "";
-
-        return [name, matric, dept, joined].map(esc).join(",");
-      });
-
-      const csv = [header.join(","), ...rows].join("\n");
-
-      const sessionTitle = currentSession
-        ? currentSession.course_code || "attendance_session"
-        : "attendance_session";
-      const filename = `${sessionTitle}_attendees.csv`;
-
-      try {
-        if (navigator.share && window.File) {
-          const file = new File([csv], filename, { type: "text/csv" });
-          navigator
-            .share({
-              files: [file],
-              title: "Attendance export",
-              text: "Colspot attendance CSV",
-            })
-            .catch((err) => {
-              console.warn("Share cancelled or failed:", err);
-            });
-          return;
-        }
-      } catch (e) {
-        console.warn("navigator.share path failed:", e);
+      function setJoinedCount(count) {
+        const el = document.getElementById("joinedCount");
+        if (!el) return;
+        el.innerHTML = `<strong>${count}</strong> joined`;
       }
 
-      try {
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.style.display = "none";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        return;
-      } catch (e) {
-        console.warn("Blob download failed, trying data URL:", e);
-      }
+      async function loadSessionAndAttendees() {
+        if (!supabaseReady || !currentSessionId) return;
 
-      const dataUrl =
-        "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-      window.open(dataUrl, "_blank");
-    }
+        showError("");
 
-    function reloadAttendees() {
-      loadSessionAndAttendees();
-    }
+        const attendeeList = document.getElementById("attendeeList");
+        const emptyState = document.getElementById("emptyState");
+        if (attendeeList) attendeeList.innerHTML = "";
+        if (emptyState) emptyState.style.display = "none";
 
-    async function endSession() {
-      if (!supabaseReady || !currentSessionId || !currentUser) return;
-
-      const confirmed = window.confirm(
-        "End this attendance session now? Students will no longer be able to join."
-      );
-      if (!confirmed) return;
-
-      try {
-        const nowIso = new Date().toISOString();
-
-        const { error } = await supabase
+        const { data: session, error: sessionError } = await supabase
           .from("attendance_sessions")
-          .update({
-            is_active: false,
-            expires_at: nowIso,
-          })
+          .select(
+            "id, course_code, pin_code, starts_at, expires_at, created_at, is_active"
+          )
           .eq("id", currentSessionId)
-          .eq("created_by", currentUser.id);
+          .single();
 
-        if (error) {
-          console.error(error);
-          showError("Could not end session. Please try again.");
+        if (sessionError || !session) {
+          console.error(sessionError || "Session not found");
+          showError("Could not load this session. It may have been removed.");
           return;
         }
 
-        if (attendeesInterval) {
+        currentSession = session;
+        setSessionHeader(session);
+
+        const now = new Date();
+        const end = session.expires_at ? new Date(session.expires_at) : null;
+        const isEnded = !session.is_active || (end && now > end);
+        if (isEnded && attendeesInterval) {
           clearInterval(attendeesInterval);
           attendeesInterval = null;
         }
 
-        if (currentSession) {
-          currentSession.is_active = false;
-          currentSession.expires_at = nowIso;
-          setSessionHeader(currentSession);
+        const { data: records, error: recError } = await supabase
+          .from("attendance_records")
+          .select(
+            "id, student_name, student_matric, student_department, checked_in_at"
+          )
+          .eq("session_id", currentSessionId)
+          .order("checked_in_at", { ascending: true });
+
+        if (recError) {
+          console.error(recError);
+          showError("Could not load attendees. Please try again.");
+          return;
+        }
+
+        currentAttendees = records || [];
+        setJoinedCount(currentAttendees.length);
+
+        const filterEl = document.getElementById("attendeeFilter");
+        const hasFilter =
+          filterEl && filterEl.value && filterEl.value.trim().length > 0;
+
+        if (hasFilter) {
+          applyAttendeeFilter();
         } else {
-          updateEndButtonState(true);
+          renderAttendees(currentAttendees);
+        }
+      }
+
+      function renderAttendees(list) {
+        const attendeeList = document.getElementById("attendeeList");
+        const emptyState = document.getElementById("emptyState");
+        if (!attendeeList || !emptyState) return;
+
+        attendeeList.innerHTML = "";
+
+        if (!list.length) {
+          emptyState.style.display = "block";
+          return;
         }
 
-        const backBtn = document.querySelector("#screen-live-session .back-btn");
-        if (backBtn) {
-          backBtn.style.display = "none";
-        }
+        emptyState.style.display = "none";
 
-        alert("Session ended. Students can no longer join.");
-      } catch (e) {
-        console.error(e);
-        showError("Could not end session. Please try again.");
-      }
-    }
+        list.forEach((rec) => {
+          const card = document.createElement("div");
+          card.className = "attendee-card";
 
-    function goBack() {
-      if (typeof showScreen === "function") {
-        showScreen("history");
-        return;
-      }
-      window.location.href = "main.html";
-    }
+          card.addEventListener("click", () => handleAttendeeClick(rec));
 
-    function goHome() {
-      if (typeof showScreen === "function") {
-        showScreen("home");
-        return;
-      }
-      window.location.href = "main.html";
-    }
+          const nameCell = document.createElement("div");
+          nameCell.className = "attendee-cell";
+          const label =
+            rec.student_name && rec.student_name.trim().length > 0
+              ? rec.student_name.trim()
+              : rec.student_matric && rec.student_matric.trim().length > 0
+              ? rec.student_matric.trim()
+              : "Student";
+          nameCell.textContent = label;
 
-    function goToAttendance() {
-      if (typeof showScreen === "function") {
-        showScreen("attendance");
-        return;
-      }
-      window.location.href = "main.html";
-    }
+          const matricCell = document.createElement("div");
+          matricCell.className = "attendee-cell";
+          matricCell.textContent =
+            (rec.student_matric && rec.student_matric.trim()) || "—";
 
-    function goToHistory() {
-      if (typeof showScreen === "function") {
-        showScreen("history");
-        return;
-      }
-      window.location.href = "main.html";
-    }
+          const deptCell = document.createElement("div");
+          deptCell.className = "attendee-cell";
+          deptCell.textContent =
+            (rec.student_department && rec.student_department.trim()) || "—";
 
-    function goToReports() {
-      if (typeof showScreen === "function") {
-        showScreen("reports");
-        return;
-      }
-      window.location.href = "main.html";
-    }
+          const timeCell = document.createElement("div");
+          timeCell.className = "attendee-cell attendee-cell-small";
+          const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
+          timeCell.textContent = t
+            ? t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "—";
 
-    function getSessionIdFromUrlOrStorage() {
-      const selected = window.historyScreenState?.selectedAttendanceSession || null;
-      if (selected?.id) return selected.id;
+          card.appendChild(nameCell);
+          card.appendChild(matricCell);
+          card.appendChild(deptCell);
+          card.appendChild(timeCell);
 
-      const params = new URLSearchParams(window.location.search);
-      const fromUrl = params.get("session_id");
-      if (fromUrl) return fromUrl;
-
-      const fromStorage = localStorage.getItem("colspot_last_session_id");
-      return fromStorage || null;
-    }
-
-    async function openLiveSessionScreen() {
-      await new Promise((r) => setTimeout(r, 50));
-
-      if (typeof supabase === "undefined") {
-        console.error("Supabase client missing on live session screen");
-        return;
-      }
-
-      supabaseReady = true;
-
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) {
-        if (typeof showScreen === "function") {
-          showScreen("home");
-        }
-        return;
-      }
-
-      currentUser = data.user;
-      currentSessionId = getSessionIdFromUrlOrStorage();
-
-      if (!currentSessionId) {
-        showError("No active session found. Start an attendance session first.");
-        return;
-      }
-
-      if (countdownInterval) clearInterval(countdownInterval);
-      if (attendeesInterval) clearInterval(attendeesInterval);
-
-      loadSessionAndAttendees();
-      attendeesInterval = setInterval(loadSessionAndAttendees, 3000);
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("addStudentModal");
-      if (modal) {
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) closeAddStudentModal();
+          attendeeList.appendChild(card);
         });
       }
-    });
 
-    window.openLiveSessionScreen = openLiveSessionScreen;
+      function applyAttendeeFilter() {
+        const filterEl = document.getElementById("attendeeFilter");
+        if (!filterEl) return;
+
+        const q = filterEl.value.toLowerCase().trim();
+        if (!q) {
+          renderAttendees(currentAttendees);
+          return;
+        }
+
+        const filtered = currentAttendees.filter((rec) => {
+          const name = (rec.student_name || "").toLowerCase();
+          const matric = (rec.student_matric || "").toLowerCase();
+          const dept = (rec.student_department || "").toLowerCase();
+          return name.includes(q) || matric.includes(q) || dept.includes(q);
+        });
+
+        renderAttendees(filtered);
+      }
+
+      async function handleAttendeeClick(rec) {
+        const label =
+          (rec.student_name && rec.student_name.trim()) ||
+          (rec.student_matric && rec.student_matric.trim()) ||
+          "this student";
+
+        const ok = window.confirm(`Remove ${label} from this session?`);
+        if (!ok) return;
+
+        try {
+          const { error } = await supabase
+            .from("attendance_records")
+            .delete()
+            .eq("id", rec.id);
+
+          if (error) {
+            console.error(error);
+            showError("Could not remove student. Please try again.");
+            return;
+          }
+
+          await loadSessionAndAttendees();
+        } catch (e) {
+          console.error(e);
+          showError("Could not remove student. Please try again.");
+        }
+      }
+
+      function openAddStudentModal() {
+        if (!supabaseReady || !currentSessionId) {
+          showError("Session not ready. Try reloading.");
+          return;
+        }
+        const modal = document.getElementById("addStudentModal");
+        const nameInput = document.getElementById("modalStudentName");
+        const matricInput = document.getElementById("modalStudentMatric");
+        const deptInput = document.getElementById("modalStudentDept");
+        const err = document.getElementById("modalStudentError");
+
+        if (nameInput) nameInput.value = "";
+        if (matricInput) matricInput.value = "";
+        if (deptInput) deptInput.value = "";
+        if (err) {
+          err.textContent = "";
+          err.style.display = "none";
+        }
+
+        if (modal) modal.style.display = "flex";
+
+        setTimeout(() => {
+          if (nameInput) nameInput.focus();
+        }, 50);
+      }
+
+      function closeAddStudentModal() {
+        const modal = document.getElementById("addStudentModal");
+        if (modal) modal.style.display = "none";
+      }
+
+      async function submitAddStudentModal() {
+        const nameInput = document.getElementById("modalStudentName");
+        const matricInput = document.getElementById("modalStudentMatric");
+        const deptInput = document.getElementById("modalStudentDept");
+        const err = document.getElementById("modalStudentError");
+        const btn = document.getElementById("modalAddBtn");
+
+        if (!nameInput || !btn) return;
+
+        const name = (nameInput.value || "").trim();
+        const matric = (matricInput?.value || "").trim();
+        const dept = (deptInput?.value || "").trim();
+
+        if (!name) {
+          if (err) {
+            err.textContent = "Student name is required.";
+            err.style.display = "block";
+          }
+          nameInput.focus();
+          return;
+        }
+
+        if (!supabaseReady || !currentSessionId) {
+          if (err) {
+            err.textContent = "Session not ready. Try reloading.";
+            err.style.display = "block";
+          }
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Adding…";
+        if (err) {
+          err.textContent = "";
+          err.style.display = "none";
+        }
+
+        try {
+          const { error } = await supabase.from("attendance_records").insert([
+            {
+              session_id: currentSessionId,
+              user_id: null,
+              student_name: name,
+              student_matric: matric || null,
+              student_department: dept || null,
+              checked_in_at: new Date().toISOString(),
+            },
+          ]);
+
+          if (error) {
+            console.error(error);
+            if (err) {
+              err.textContent = "Could not add student. Please try again.";
+              err.style.display = "block";
+            }
+            btn.disabled = false;
+            btn.textContent = "Add student";
+            return;
+          }
+
+          closeAddStudentModal();
+          await loadSessionAndAttendees();
+        } catch (e) {
+          console.error(e);
+          if (err) {
+            err.textContent = "Could not add student. Please try again.";
+            err.style.display = "block";
+          }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Add student";
+        }
+      }
+
+      function downloadAttendeesCsv() {
+        if (!currentAttendees.length) {
+          alert("No attendees to download yet.");
+          return;
+        }
+
+        const header = ["Name", "Matric number", "Department", "Joined at"];
+        const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
+
+        const rows = currentAttendees.map((rec) => {
+          const name =
+            (rec.student_name && rec.student_name.trim()) ||
+            (rec.student_matric && rec.student_matric.trim()) ||
+            "Student";
+          const matric = (rec.student_matric || "").trim();
+          const dept = (rec.student_department || "").trim();
+          const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
+          const joined = t ? t.toISOString() : "";
+
+          return [name, matric, dept, joined].map(esc).join(",");
+        });
+
+        const csv = [header.join(","), ...rows].join("\n");
+
+        const sessionTitle = currentSession
+          ? currentSession.course_code || "attendance_session"
+          : "attendance_session";
+        const filename = `${sessionTitle}_attendees.csv`;
+
+        try {
+          if (navigator.share && window.File) {
+            const file = new File([csv], filename, { type: "text/csv" });
+            navigator
+              .share({
+                files: [file],
+                title: "Attendance export",
+                text: "Colspot attendance CSV",
+              })
+              .catch((err) => {
+                console.warn("Share cancelled or failed:", err);
+              });
+            return;
+          }
+        } catch (e) {
+          console.warn("navigator.share path failed:", e);
+        }
+
+        try {
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          return;
+        } catch (e) {
+          console.warn("Blob download failed, trying data URL:", e);
+        }
+
+        const dataUrl =
+          "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+        window.open(dataUrl, "_blank");
+      }
+
+      function reloadAttendees() {
+        loadSessionAndAttendees();
+      }
+
+      async function endSession() {
+        if (!supabaseReady || !currentSessionId || !currentUser) return;
+
+        const confirmed = window.confirm(
+          "End this attendance session now? Students will no longer be able to join."
+        );
+        if (!confirmed) return;
+
+        try {
+          const nowIso = new Date().toISOString();
+
+          const { error } = await supabase
+            .from("attendance_sessions")
+            .update({
+              is_active: false,
+              expires_at: nowIso,
+            })
+            .eq("id", currentSessionId)
+            .eq("created_by", currentUser.id);
+
+          if (error) {
+            console.error(error);
+            showError("Could not end session. Please try again.");
+            return;
+          }
+
+          if (attendeesInterval) {
+            clearInterval(attendeesInterval);
+            attendeesInterval = null;
+          }
+
+          if (currentSession) {
+            currentSession.is_active = false;
+            currentSession.expires_at = nowIso;
+            setSessionHeader(currentSession);
+          } else {
+            updateEndButtonState(true);
+          }
+
+          const backBtn = document.querySelector("#screen-live-session .back-btn");
+          if (backBtn) {
+            backBtn.style.display = "none";
+          }
+
+          alert("Session ended. Students can no longer join.");
+        } catch (e) {
+          console.error(e);
+          showError("Could not end session. Please try again.");
+        }
+      }
+
+      function goBack() {
+        if (typeof showScreen === "function") {
+          showScreen("history");
+          return;
+        }
+        window.location.href = "main.html";
+      }
+
+      function goHome() {
+        if (typeof showScreen === "function") {
+          showScreen("home");
+          return;
+        }
+        window.location.href = "main.html";
+      }
+
+      function goToAttendance() {
+        if (typeof showScreen === "function") {
+          showScreen("attendance");
+          return;
+        }
+        window.location.href = "main.html";
+      }
+
+      function goToHistory() {
+        if (typeof showScreen === "function") {
+          showScreen("history");
+          return;
+        }
+        window.location.href = "main.html";
+      }
+
+      function goToReports() {
+        if (typeof showScreen === "function") {
+          showScreen("reports");
+          return;
+        }
+        window.location.href = "main.html";
+      }
+
+      function getSessionIdFromUrlOrStorage() {
+        const selected = window.historyScreenState?.selectedAttendanceSession || null;
+        if (selected?.id) return selected.id;
+
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = params.get("session_id");
+        if (fromUrl) return fromUrl;
+
+        const fromStorage = localStorage.getItem("colspot_last_session_id");
+        return fromStorage || null;
+      }
+
+      async function openLiveSessionScreen() {
+        await new Promise((r) => setTimeout(r, 50));
+
+        if (typeof supabase === "undefined") {
+          console.error("Supabase client missing on live session screen");
+          return;
+        }
+
+        supabaseReady = true;
+
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data || !data.user) {
+          if (typeof showScreen === "function") {
+            showScreen("home");
+          }
+          return;
+        }
+
+        currentUser = data.user;
+        currentSessionId = getSessionIdFromUrlOrStorage();
+
+        if (!currentSessionId) {
+          showError("No active session found. Start an attendance session first.");
+          return;
+        }
+
+        if (countdownInterval) clearInterval(countdownInterval);
+        if (attendeesInterval) clearInterval(attendeesInterval);
+
+        loadSessionAndAttendees();
+        attendeesInterval = setInterval(loadSessionAndAttendees, 3000);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("addStudentModal");
+        if (modal) {
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeAddStudentModal();
+          });
+        }
+      });
+
+      window.openLiveSessionScreen = openLiveSessionScreen;
+    })();
   </script>
 </div>
 <!-- 🔹 LIVE SESSION SCREEN END -->
