@@ -2,14 +2,24 @@
 <div id="screen-report-details" class="screen">
   <style>
     #screen-report-details {
-      padding: calc(env(safe-area-inset-top) + 8px) 6px calc(env(safe-area-inset-bottom) + 90px);
+      padding: calc(env(safe-area-inset-top) + 2px) 6px calc(env(safe-area-inset-bottom) + 90px);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       min-height: 100%;
+      background:
+        radial-gradient(900px 500px at 50% -8%, rgba(59,130,246,.14) 0%, rgba(59,130,246,0) 64%),
+        linear-gradient(180deg,#f7fbff 0%, #f9fbff 100%);
+    }
+
+    #screen-report-details * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #screen-report-details .rd-shell {
       width: 100%;
+      max-width: 430px;
+      margin: 0 auto;
     }
 
     #screen-report-details .topbar {
@@ -17,12 +27,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       position: sticky;
       top: 0;
       z-index: 4;
-      padding-top: 2px;
-      background: linear-gradient(180deg, rgba(248,251,255,.96) 0%, rgba(248,251,255,.88) 72%, rgba(248,251,255,0) 100%);
+      padding-top: 0;
+      padding-bottom: 4px;
+      background: linear-gradient(180deg, rgba(248,251,255,.97) 0%, rgba(248,251,255,.90) 72%, rgba(248,251,255,0) 100%);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -32,6 +43,7 @@
       align-items: center;
       gap: 12px;
       min-width: 0;
+      flex: 1;
     }
 
     #screen-report-details .back-btn {
@@ -41,7 +53,7 @@
       border-radius: 14px;
       background: #fff;
       border: 1px solid #e6ebf5;
-      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      box-shadow: 0 14px 30px rgba(15,23,42,.07);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -57,6 +69,7 @@
 
     #screen-report-details .title-wrap {
       min-width: 0;
+      flex: 1;
     }
 
     #screen-report-details .page-title {
@@ -65,6 +78,7 @@
       letter-spacing: -.03em;
       margin-bottom: 2px;
       color: #111827;
+      line-height: 1.1;
     }
 
     #screen-report-details .page-sub {
@@ -85,6 +99,8 @@
       text-transform: uppercase;
       letter-spacing: .06em;
       white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);
     }
 
     #screen-report-details .status-new {
@@ -142,17 +158,36 @@
       background: #ffffff;
       border: 1px solid #e6ebf5;
       border-radius: 22px;
-      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      box-shadow: 0 14px 30px rgba(15,23,42,.07);
       padding: 16px;
       margin-bottom: 14px;
     }
 
+    #screen-report-details .hero-card {
+      padding: 18px 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,251,255,1) 100%);
+    }
+
+    #screen-report-details .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    #screen-report-details .hero-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
     #screen-report-details .hero-title {
       font-size: 22px;
-      line-height: 1.15;
+      line-height: 1.12;
       font-weight: 900;
       letter-spacing: -.04em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #111827;
       word-break: break-word;
     }
@@ -162,6 +197,17 @@
       line-height: 1.5;
       color: #6b7280;
       word-break: break-word;
+    }
+
+    #screen-report-details .hero-status {
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     #screen-report-details .section-title {
@@ -203,13 +249,18 @@
       color: #111827;
     }
 
+    #screen-report-details .highlight-card {
+      background: linear-gradient(180deg,#f8fbff 0%, #ffffff 100%);
+      border-color: #dbeafe;
+    }
+
     #screen-report-details .complaint-box {
-      border: 1px solid #e6ebf5;
+      border: 1px solid #dbeafe;
       border-radius: 18px;
-      background: #f8fbff;
-      padding: 14px;
+      background: linear-gradient(180deg,#f8fbff 0%, #ffffff 100%);
+      padding: 15px;
       font-size: 14px;
-      line-height: 1.65;
+      line-height: 1.7;
       color: #1f2937;
       white-space: pre-wrap;
       word-break: break-word;
@@ -219,7 +270,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 2px;
     }
 
     #screen-report-details .tag {
@@ -241,7 +292,7 @@
       border: 1px solid #e6ebf5;
       border-radius: 16px;
       padding: 12px;
-      background: #fff;
+      background: #fbfdff;
       min-width: 0;
     }
 
@@ -270,7 +321,7 @@
       font-size: 13px;
       color: #6b7280;
       text-align: center;
-      box-shadow: 0 16px 35px rgba(15,23,42,.08);
+      box-shadow: 0 14px 30px rgba(15,23,42,.07);
     }
 
     @media (max-width: 360px) {
@@ -281,6 +332,11 @@
 
       #screen-report-details .page-sub {
         max-width: 170px;
+      }
+
+      #screen-report-details .hero-top {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -307,9 +363,15 @@
 
     <div id="reportDetailsLoading" class="loading-box">Loading report details...</div>
 
-    <section class="card" id="reportDetailsHeroCard" style="display:none;">
-      <div class="hero-title" id="reportDetailsTitle">Report</div>
-      <div class="hero-sub" id="reportDetailsSub">Tracking code</div>
+    <section class="card hero-card" id="reportDetailsHeroCard" style="display:none;">
+      <div class="hero-top">
+        <div class="hero-copy">
+          <div class="hero-title" id="reportDetailsTitle">Report</div>
+          <div class="hero-sub" id="reportDetailsSub">Tracking code</div>
+        </div>
+
+        <div class="hero-status status-new" id="reportDetailsHeroStatus">new</div>
+      </div>
 
       <div class="tag-row">
         <div class="tag" id="reportDetailsTagPrivacy">Anonymous</div>
@@ -322,7 +384,7 @@
       <h2 class="section-title">Report information</h2>
 
       <div class="meta-grid">
-        <div class="meta-box">
+        <div class="meta-box highlight-card">
           <div class="meta-label">Tracking code</div>
           <div class="meta-value" id="reportDetailsTrackingCode">-</div>
         </div>
