@@ -283,7 +283,7 @@
 
     .fc-step-line{
       flex:1;
-      max-width:58px;
+      max-width:44px;
       height:4px;
       border-radius:999px;
       background:#d7dfef;
@@ -306,6 +306,7 @@
       background:#d9e0ee;
       color:#8b96aa;
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);
+      flex-shrink:0;
     }
 
     .fc-step-circle.active{
@@ -456,6 +457,11 @@
       .fc-header-title{
         font-size:16px;
       }
+
+      .fc-step-line{
+        max-width:30px;
+        margin:0 4px;
+      }
     }
   </style>
 </head>
@@ -498,22 +504,22 @@
           </div>
 
           <div class="fc-live-pill" id="cameraBadge">
-            Look straight, turn left, turn right
+            Look straight, turn left, turn right, then face front again
           </div>
         </div>
 
         <div class="fc-step-track-wrap">
           <div class="fc-step-track">
-            <div class="fc-step-line done"></div>
-            <div class="fc-step-circle done">✓</div>
-            <div class="fc-step-line done"></div>
-            <div class="fc-step-circle active">2</div>
+            <div class="fc-step-circle active">1</div>
+            <div class="fc-step-line"></div>
+            <div class="fc-step-circle">2</div>
             <div class="fc-step-line"></div>
             <div class="fc-step-circle">3</div>
             <div class="fc-step-line"></div>
+            <div class="fc-step-circle">4</div>
           </div>
 
-          <div class="fc-step-chip" id="statusTitle">Turn left</div>
+          <div class="fc-step-chip" id="statusTitle">Look straight</div>
         </div>
 
         <p class="fc-status-sub" id="statusSub">
@@ -560,9 +566,11 @@
     </section>
   </div>
 
+  <script src="./guard_session.js"></script>
+
   <script>
     window.SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmZyjfimxcmsnqrnigIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -609,10 +617,11 @@
     let captureLocked = false;
     let finalBase64 = null;
     let finalMimeType = "image/jpeg";
+    let currentLocalUser = null;
 
     let poseHoldFrames = 0;
     let currentStepIndex = 0;
-    const scanSequence = ["center", "left", "right"];
+    const scanSequence = ["center", "left", "right", "center"];
     const POSE_HOLD_TARGET = 8;
 
     function showError(message) {
@@ -660,55 +669,29 @@
     }
 
     function updateSequenceUI() {
-      const step2 = document.getElementById("statusTitle");
       const circles = document.querySelectorAll(".fc-step-circle");
       const lines = document.querySelectorAll(".fc-step-line");
 
       circles.forEach((el, index) => {
         el.classList.remove("active", "done");
         el.textContent = String(index + 1);
+
+        if (index < currentStepIndex) {
+          el.classList.add("done");
+          el.textContent = "✓";
+        } else if (index === currentStepIndex) {
+          el.classList.add("active");
+        }
       });
 
-      lines.forEach((el) => el.classList.remove("done"));
-
-      if (circles[0]) {
-        if (currentStepIndex <= 0) {
-          circles[0].classList.add("active");
-          circles[0].textContent = "1";
-        } else {
-          circles[0].classList.add("done");
-          circles[0].textContent = "✓";
+      lines.forEach((el, index) => {
+        el.classList.remove("done");
+        if (index < currentStepIndex) {
+          el.classList.add("done");
         }
-      }
+      });
 
-      if (circles[1]) {
-        if (currentStepIndex === 1) {
-          circles[1].classList.add("active");
-          circles[1].textContent = "2";
-        } else if (currentStepIndex > 1) {
-          circles[1].classList.add("done");
-          circles[1].textContent = "✓";
-        }
-      }
-
-      if (circles[2]) {
-        if (currentStepIndex === 2) {
-          circles[2].classList.add("active");
-          circles[2].textContent = "3";
-        } else if (currentStepIndex > 2) {
-          circles[2].classList.add("done");
-          circles[2].textContent = "✓";
-        }
-      }
-
-      if (lines[0] && currentStepIndex > 0) lines[0].classList.add("done");
-      if (lines[1] && currentStepIndex > 0) lines[1].classList.add("done");
-      if (lines[2] && currentStepIndex > 1) lines[2].classList.add("done");
-      if (lines[3] && currentStepIndex > 2) lines[3].classList.add("done");
-
-      if (step2) {
-        step2.textContent = currentInstruction();
-      }
+      setStatus(currentInstruction(), statusSub?.textContent || "");
     }
 
     function resetSequenceState() {
@@ -720,10 +703,29 @@
 
     function currentInstruction() {
       const step = scanSequence[currentStepIndex] || "center";
-      if (step === "center") return "Look straight";
+      if (currentStepIndex === 0 && step === "center") return "Look straight";
       if (step === "left") return "Turn left";
       if (step === "right") return "Turn right";
+      if (currentStepIndex === scanSequence.length - 1 && step === "center") return "Face front again";
+      if (step === "center") return "Look straight";
       return "Hold still";
+    }
+
+    function instructionDescription() {
+      const step = scanSequence[currentStepIndex] || "center";
+      if (currentStepIndex === 0 && step === "center") {
+        return "Start by looking straight at the camera.";
+      }
+      if (step === "left") {
+        return "Turn your face slightly to the left and hold still.";
+      }
+      if (step === "right") {
+        return "Turn your face slightly to the right and hold still.";
+      }
+      if (currentStepIndex === scanSequence.length - 1 && step === "center") {
+        return "Now return your face to the center before capture.";
+      }
+      return "Follow the movement guide.";
     }
 
     function clearOverlay() {
@@ -842,8 +844,8 @@
       setButtonsForIdle();
       resetSequenceState();
       clearFlashMessages();
-      setCameraBadge("Look straight, turn left, turn right");
-      setStatus("Turn left", "Start your camera and follow the movement guide.");
+      setCameraBadge("Look straight, turn left, turn right, then face front again");
+      setStatus("Look straight", "Start your camera and follow the movement guide.");
     }
 
     function buildCaptureMeta() {
@@ -853,15 +855,52 @@
         deviceId:
           localStorage.getItem("colspot_device_id") ||
           localStorage.getItem("device_id") ||
-          null
+          null,
+        userId: currentLocalUser?.id || null
       };
     }
 
-    async function ensureSession() {
+    async function getLocalFirstUser() {
+      const guard = window.ColspotGuard;
+
+      if (guard && typeof guard.guardRolePageAccess === "function") {
+        const localUser = await guard.guardRolePageAccess({
+          requiredRole: "student",
+          redirectTo: "index.html",
+          studentHome: "main.html",
+          lecturerHome: "main_lecturer.html"
+        });
+
+        if (localUser && localUser.id) {
+          currentLocalUser = {
+            id: localUser.id,
+            email: localUser.email || null
+          };
+          return currentLocalUser;
+        }
+      }
+
+      try {
+        const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
+        if (cached && (cached.user_id || cached.id)) {
+          currentLocalUser = {
+            id: cached.user_id || cached.id,
+            email: cached.email || null
+          };
+          return currentLocalUser;
+        }
+      } catch {}
+
+      window.location.href = "index.html";
+      return null;
+    }
+
+    async function ensureUploadSession() {
       const { data, error } = await supabaseClient.auth.getSession();
 
       if (error || !data?.session) {
-        window.location.href = "index.html";
+        showError("Your session expired. Please sign in again.");
+        setStatus("Session expired", "Please go back and sign in again.");
         return null;
       }
 
@@ -892,7 +931,7 @@
         if (!faces.length) {
           poseHoldFrames = 0;
           setCameraBadge("No face detected");
-          setStatus("Look straight", "Position your face inside the frame.");
+          setStatus(currentInstruction(), "Position your face inside the frame.");
           return;
         }
 
@@ -918,18 +957,18 @@
           return;
         }
 
-        setCameraBadge(`Expected: ${expectedPose}`);
+        setCameraBadge(`Expected: ${currentInstruction()}`);
 
         if (pose === expectedPose) {
           poseHoldFrames += 1;
           clearFlashMessages();
           setStatus(
             currentInstruction(),
-            `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+            `${currentInstruction()} detected. Hold still...`
           );
         } else {
           poseHoldFrames = 0;
-          setStatus(currentInstruction(), "Follow the movement guide.");
+          setStatus(currentInstruction(), instructionDescription());
         }
 
         if (poseHoldFrames >= POSE_HOLD_TARGET) {
@@ -946,7 +985,7 @@
             return;
           }
 
-          setStatus(currentInstruction(), "Good. Move to the next step.");
+          setStatus(currentInstruction(), instructionDescription());
         }
       });
     }
@@ -978,12 +1017,14 @@
       setButtonsForCaptured();
       setCameraBadge("Capture ready");
       showSuccess("Face captured successfully.");
-      setStatus("Captured", "Review your capture or continue.");
+      setStatus("Captured", "Review your center face capture or continue.");
     }
 
     async function startCamera() {
       clearFlashMessages();
-      await ensureSession();
+
+      const localUser = await getLocalFirstUser();
+      if (!localUser) return;
 
       try {
         stopTracksOnly();
@@ -1021,7 +1062,7 @@
         scanningActive = true;
         hidePlaceholder();
         setButtonsForLiveCamera();
-        setCameraBadge("Expected: center");
+        setCameraBadge("Expected: Look straight");
         setStatus("Look straight", "Start by looking straight at the camera.");
       } catch (err) {
         console.error(err);
@@ -1034,7 +1075,10 @@
     async function uploadToEdge() {
       clearFlashMessages();
 
-      const session = await ensureSession();
+      const localUser = await getLocalFirstUser();
+      if (!localUser) return;
+
+      const session = await ensureUploadSession();
       if (!session) return;
 
       if (!finalBase64) {
@@ -1149,7 +1193,7 @@
       scanningActive = true;
       resetSequenceState();
       setButtonsForLiveCamera();
-      setCameraBadge("Expected: center");
+      setCameraBadge("Expected: Look straight");
       setStatus("Look straight", "Start again by looking straight at the camera.");
     }
 
@@ -1188,8 +1232,8 @@
     });
 
     (async function boot() {
-      const session = await ensureSession();
-      if (!session) return;
+      const localUser = await getLocalFirstUser();
+      if (!localUser) return;
       fullResetToIdle();
     })();
   </script>
