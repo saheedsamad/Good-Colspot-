@@ -12,18 +12,24 @@
       --error: #dc2626;
       --success: #16a34a;
 
-      height: 100%;
       min-height: 100%;
       padding:
         calc(env(safe-area-inset-top) + 2px)
         6px
         calc(env(safe-area-inset-bottom) + 90px);
-      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      background: #ffffff;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-      touch-action: pan-y;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #screen-live-session::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
     }
 
     #screen-live-session * {
@@ -46,63 +52,32 @@
     }
 
     #screen-live-session header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: block;
       padding: 4px 4px 10px;
     }
 
-    #screen-live-session .back-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    #screen-live-session .back-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke: #4b5563;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
     #screen-live-session .header-main {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-    }
-
-    #screen-live-session .logo-img {
-      height: 26px;
-      width: auto;
       display: block;
-      border-radius: 8px;
+      min-width: 0;
     }
 
     #screen-live-session .header-texts {
-      display: flex;
-      flex-direction: column;
+      display: block;
+      min-width: 0;
     }
 
     #screen-live-session .header-title {
       font-size: 16px;
       font-weight: 600;
       color: var(--text-main);
+      line-height: 1.2;
+      margin: 0;
     }
 
-    #screen-live-session .header-sub {
-      font-size: 12px;
-      color: var(--text-muted);
+    #screen-live-session .header-sub,
+    #screen-live-session .back-btn,
+    #screen-live-session .logo-img {
+      display: none !important;
     }
 
     #screen-live-session main {
@@ -614,16 +589,9 @@
 
   <div class="phone-shell">
     <header>
-      <button class="back-btn" type="button" onclick="liveSessionGoBack()">
-        <svg viewBox="0 0 24 24">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
       <div class="header-main">
-        <img src="asset/logo walpaper.jpeg" alt="Colspot logo" class="logo-img" />
         <div class="header-texts">
           <div class="header-title">Live Attendance</div>
-          <div class="header-sub">Monitor your ongoing attendance session.</div>
         </div>
       </div>
     </header>
@@ -1361,11 +1329,6 @@
             setSessionHeader(currentSession);
           } else {
             updateEndButtonState(true);
-          }
-
-          const backBtn = document.querySelector("#screen-live-session .back-btn");
-          if (backBtn) {
-            backBtn.style.display = "none";
           }
 
           alert("Session ended. Students can no longer join.");
