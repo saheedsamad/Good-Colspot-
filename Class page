@@ -2,14 +2,21 @@
 <div id="screen-classes" class="screen">
   <style>
     #screen-classes{
-      padding:8px 6px 90px;
+      padding:22px 6px 110px;
       overflow-y:auto;
       -webkit-overflow-scrolling:touch;
+      min-height:100%;
+      box-sizing:border-box;
     }
 
     #screen-classes .hero{
-      padding:4px 4px 6px;
-      margin-bottom:6px;
+      padding:12px 4px 10px;
+      margin-bottom:10px;
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.92) 72%, rgba(255,255,255,0) 100%);
+      backdrop-filter:blur(8px);
     }
 
     #screen-classes .hero-line-1{
@@ -416,6 +423,9 @@
       padding:14px;
       background:#fff;
       box-shadow:0 6px 16px rgba(15,23,42,.03);
+      position:relative;
+      z-index:1;
+      overflow:visible;
     }
 
     #screen-classes .question-title-row{
@@ -424,6 +434,7 @@
       justify-content:space-between;
       gap:10px;
       margin-bottom:10px;
+      padding-top:2px;
     }
 
     #screen-classes .question-no{
@@ -559,6 +570,185 @@
 
     #screen-classes .hidden{
       display:none !important;
+    }
+
+    #screen-classes .publish-popup-overlay{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      background:rgba(15,23,42,.46);
+      backdrop-filter:blur(5px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    #screen-classes .publish-popup-overlay.hidden{
+      display:none !important;
+    }
+
+    #screen-classes .publish-popup-card{
+      width:100%;
+      max-width:360px;
+      background:#fff;
+      border-radius:28px;
+      padding:24px 22px 20px;
+      box-shadow:0 30px 70px rgba(15,23,42,.22);
+      border:1px solid rgba(37,99,235,.10);
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    #screen-classes .publish-popup-card::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:7px;
+      background:linear-gradient(90deg,var(--blue),var(--blue-dark));
+    }
+
+    #screen-classes .publish-popup-icon-wrap{
+      width:116px;
+      height:116px;
+      margin:6px auto 18px;
+      border-radius:999px;
+      background:radial-gradient(circle at center, rgba(37,99,235,.11) 0%, rgba(37,99,235,.06) 60%, rgba(37,99,235,.03) 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+
+    #screen-classes .publish-popup-icon{
+      width:78px;
+      height:78px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 14px 34px rgba(37,99,235,.30);
+    }
+
+    #screen-classes .publish-popup-icon svg{
+      width:38px;
+      height:38px;
+      stroke:#fff;
+      fill:none;
+      stroke-width:2.6;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    #screen-classes .publish-popup-confetti{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    #screen-classes .publish-popup-confetti span{
+      position:absolute;
+      display:block;
+      background:var(--blue);
+      border-radius:999px;
+      opacity:.96;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(1){
+      width:8px;
+      height:8px;
+      top:24px;
+      left:18px;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(2){
+      width:18px;
+      height:6px;
+      top:18px;
+      left:52px;
+      transform:rotate(36deg);
+      border-radius:4px;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(3){
+      width:14px;
+      height:5px;
+      top:28px;
+      right:56px;
+      transform:rotate(-25deg);
+      border-radius:4px;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(4){
+      width:7px;
+      height:7px;
+      top:46px;
+      right:18px;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(5){
+      width:15px;
+      height:5px;
+      bottom:24px;
+      left:18px;
+      transform:rotate(-42deg);
+      border-radius:4px;
+    }
+
+    #screen-classes .publish-popup-confetti span:nth-child(6){
+      width:16px;
+      height:6px;
+      bottom:20px;
+      right:22px;
+      transform:rotate(28deg);
+      border-radius:4px;
+    }
+
+    #screen-classes .publish-popup-title{
+      font-size:27px;
+      font-weight:800;
+      line-height:1.08;
+      color:var(--blue);
+      letter-spacing:-.02em;
+      margin:0 0 12px;
+    }
+
+    #screen-classes .publish-popup-text{
+      font-size:15px;
+      line-height:1.7;
+      color:#4b5563;
+      margin:0 0 18px;
+    }
+
+    #screen-classes .publish-popup-text strong{
+      color:#111827;
+      font-weight:800;
+    }
+
+    #screen-classes .publish-popup-divider{
+      width:100%;
+      height:1px;
+      background:#e5e7eb;
+      margin:18px 0;
+    }
+
+    #screen-classes .publish-popup-btn{
+      width:100%;
+      border:none;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:17px;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:#fff;
+      box-shadow:0 12px 26px rgba(37,99,235,.28);
+    }
+
+    #screen-classes .publish-popup-btn:active{
+      transform:translateY(1px) scale(.99);
     }
 
     @media (max-width:360px){
@@ -798,66 +988,129 @@
     </div>
   </section>
 
-  <script>
-    window.classesScreenState = window.classesScreenState || {
-      classes: [],
-      selectedClass: null,
-      activityType: "assignment",
-      activityId: "",
-      correctOption: "A",
-      savedQuestions: [],
-      lastQuestionPosition: 0,
-      activitySelectedClassId: "",
-      savingQuestion: false,
-      eventsBound: false
-    };
+  <!-- publish success popup -->
+  <div id="classesPublishPopup" class="publish-popup-overlay hidden">
+    <div class="publish-popup-card">
+      <div class="publish-popup-icon-wrap">
+        <div class="publish-popup-confetti">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="publish-popup-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+      </div>
 
-    function classesEscapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+      <h3 class="publish-popup-title">Published!</h3>
+
+      <p id="classesPublishPopupText" class="publish-popup-text">
+        Your revision has been published successfully and is now available to students.
+      </p>
+
+      <div class="publish-popup-divider"></div>
+
+      <button id="classesPublishPopupBtn" type="button" class="publish-popup-btn">
+        Great!
+      </button>
+    </div>
+  </div>
+</div>
+<!-- 🔹 CLASSES SCREEN END -->
+
+<script>
+  window.classesScreenState = window.classesScreenState || {
+    classes: [],
+    selectedClass: null,
+    activityType: "assignment",
+    activityId: "",
+    correctOption: "A",
+    savedQuestions: [],
+    lastQuestionPosition: 0,
+    activitySelectedClassId: "",
+    savingQuestion: false,
+    eventsBound: false
+  };
+
+  let currentUser = window.currentUser || null;
+
+  function classesEscapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function showClassesMsg(id, text, type = "") {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = "block";
+    el.className = "message " + type;
+    el.textContent = text;
+  }
+
+  function clearClassesMsg(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = "none";
+    el.textContent = "";
+    el.className = "message";
+  }
+
+  function showClassesPublishPopup(activityType = "activity") {
+    const popup = document.getElementById("classesPublishPopup");
+    const text = document.getElementById("classesPublishPopupText");
+    if (!popup || !text) return;
+
+    const cleanType = String(activityType || "activity").trim().toLowerCase();
+    let label = "activity";
+    if (cleanType === "revision") label = "revision";
+    else if (cleanType === "assignment") label = "assignment";
+    else if (cleanType === "test") label = "test";
+
+    text.innerHTML =
+      `Your <strong>${classesEscapeHtml(label)}</strong> has been published successfully and is now available to students.`;
+
+    popup.classList.remove("hidden");
+  }
+
+  function hideClassesPublishPopup() {
+    const popup = document.getElementById("classesPublishPopup");
+    if (!popup) return;
+    popup.classList.add("hidden");
+  }
+
+  function renderClassesList(filterText = "") {
+    const wrap = document.getElementById("classesList");
+    if (!wrap) return;
+
+    const f = String(filterText || "").trim().toLowerCase();
+    let rows = Array.isArray(window.classesScreenState.classes)
+      ? window.classesScreenState.classes
+      : [];
+
+    if (f) {
+      rows = rows.filter((c) =>
+        [c.course_code, c.course_title, c.academic_session]
+          .map((v) => String(v || "").toLowerCase())
+          .some((v) => v.includes(f))
+      );
     }
 
-    function showClassesMsg(id, text, type = "") {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = "block";
-      el.className = "message " + type;
-      el.textContent = text;
+    if (!rows.length) {
+      wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
+      return;
     }
 
-    function clearClassesMsg(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = "none";
-      el.textContent = "";
-      el.className = "message";
-    }
-
-    function renderClassesList(filterText = "") {
-      const wrap = document.getElementById("classesList");
-      if (!wrap) return;
-
-      const f = String(filterText || "").trim().toLowerCase();
-      let rows = Array.isArray(window.classesScreenState.classes) ? window.classesScreenState.classes : [];
-
-      if (f) {
-        rows = rows.filter((c) =>
-          [c.course_code, c.course_title, c.academic_session]
-            .map(v => String(v || "").toLowerCase())
-            .some(v => v.includes(f))
-        );
-      }
-
-      if (!rows.length) {
-        wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
-        return;
-      }
-
-      wrap.innerHTML = rows.map((c) => {
+    wrap.innerHTML = rows
+      .map((c) => {
         const selected =
           window.classesScreenState.selectedClass &&
           String(window.classesScreenState.selectedClass.id) === String(c.id);
@@ -868,31 +1121,36 @@
             <div class="recent-item-sub">${classesEscapeHtml(c.academic_session || "")}${c.course_title ? " • " + classesEscapeHtml(c.course_title) : ""}</div>
           </div>
         `;
-      }).join("");
+      })
+      .join("");
+  }
+
+  function renderActivityClassList(filterText = "") {
+    const wrap = document.getElementById("activityClassList");
+    if (!wrap) return;
+
+    const f = String(filterText || "").trim().toLowerCase();
+    let rows = Array.isArray(window.classesScreenState.classes)
+      ? window.classesScreenState.classes
+      : [];
+
+    if (f) {
+      rows = rows.filter((c) =>
+        [c.course_code, c.course_title, c.academic_session]
+          .map((v) => String(v || "").toLowerCase())
+          .some((v) => v.includes(f))
+      );
     }
 
-    function renderActivityClassList(filterText = "") {
-      const wrap = document.getElementById("activityClassList");
-      if (!wrap) return;
+    if (!rows.length) {
+      wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
+      return;
+    }
 
-      const f = String(filterText || "").trim().toLowerCase();
-      let rows = Array.isArray(window.classesScreenState.classes) ? window.classesScreenState.classes : [];
-
-      if (f) {
-        rows = rows.filter((c) =>
-          [c.course_code, c.course_title, c.academic_session]
-            .map(v => String(v || "").toLowerCase())
-            .some(v => v.includes(f))
-        );
-      }
-
-      if (!rows.length) {
-        wrap.innerHTML = `<div class="section-sub" style="margin:0;">No class found.</div>`;
-        return;
-      }
-
-      wrap.innerHTML = rows.map((c) => {
-        const selected = String(window.classesScreenState.activitySelectedClassId || "") === String(c.id);
+    wrap.innerHTML = rows
+      .map((c) => {
+        const selected =
+          String(window.classesScreenState.activitySelectedClassId || "") === String(c.id);
 
         return `
           <div class="recent-item ${selected ? "selected" : ""}" onclick="selectActivityClassInScreen('${String(c.id)}')">
@@ -900,528 +1158,681 @@
             <div class="recent-item-sub">${classesEscapeHtml(c.academic_session || "")}${c.course_title ? " • " + classesEscapeHtml(c.course_title) : ""}</div>
           </div>
         `;
-      }).join("");
-    }
+      })
+      .join("");
+  }
 
-    function selectClassesScreenClass(classId) {
-      const found = window.classesScreenState.classes.find(c => String(c.id) === String(classId));
-      window.classesScreenState.selectedClass = found || null;
-      renderClassesList(document.getElementById("classesSearchInput")?.value || "");
-    }
+  function selectClassesScreenClass(classId) {
+    const found = window.classesScreenState.classes.find(
+      (c) => String(c.id) === String(classId)
+    );
+    window.classesScreenState.selectedClass = found || null;
+    renderClassesList(document.getElementById("classesSearchInput")?.value || "");
+  }
 
-    function selectActivityClassInScreen(classId) {
-      window.classesScreenState.activitySelectedClassId = classId;
-      renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
-    }
+  function selectActivityClassInScreen(classId) {
+    window.classesScreenState.activitySelectedClassId = classId;
+    renderActivityClassList(
+      document.getElementById("activityClassSearchInput")?.value || ""
+    );
+  }
 
-    function openCreateClassPageFromClasses() {
-      window.location.href = "create_class.html";
-    }
+  function openCreateClassPageFromClasses() {
+    window.location.href = "create_class.html";
+  }
 
-    function openActivityBuilderFromClasses() {
-      document.getElementById("classesMainPanel")?.classList.add("hidden");
-      document.getElementById("activityBuilderPanel")?.classList.remove("hidden");
-      document.getElementById("classesHeroLine").textContent = "Assessment";
-      document.getElementById("classesHeroTitle").innerHTML = 'Create <span>activity</span>';
-      document.getElementById("classesHeroSub").textContent = "Create an assignment, revision, or test and then add multiple-choice questions one by one.";
-      renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
-    }
+  function openActivityBuilderFromClasses() {
+    document.getElementById("classesMainPanel")?.classList.add("hidden");
+    document.getElementById("activityBuilderPanel")?.classList.remove("hidden");
+    document.getElementById("classesHeroLine").textContent = "Assessment";
+    document.getElementById("classesHeroTitle").innerHTML = "Create <span>activity</span>";
+    document.getElementById("classesHeroSub").textContent =
+      "Create an assignment, revision, or test and then add multiple-choice questions one by one.";
+    renderActivityClassList(
+      document.getElementById("activityClassSearchInput")?.value || ""
+    );
+  }
 
-    function closeActivityBuilderFromClasses() {
-      document.getElementById("activityBuilderPanel")?.classList.add("hidden");
-      document.getElementById("classesMainPanel")?.classList.remove("hidden");
-      document.getElementById("classesHeroLine").textContent = "Classes";
-      document.getElementById("classesHeroTitle").innerHTML = 'Manage your <span>classes</span>';
-      document.getElementById("classesHeroSub").textContent = "Create classes, manage them, and build assignments, revision, or tests.";
-    }
+  function closeActivityBuilderFromClasses() {
+    document.getElementById("activityBuilderPanel")?.classList.add("hidden");
+    document.getElementById("classesMainPanel")?.classList.remove("hidden");
+    document.getElementById("classesHeroLine").textContent = "Classes";
+    document.getElementById("classesHeroTitle").innerHTML =
+      "Manage your <span>classes</span>";
+    document.getElementById("classesHeroSub").textContent =
+      "Create classes, manage them, and build assignments, revision, or tests.";
+  }
 
-    function applyActivityTypeUI() {
-      document.querySelectorAll('#screen-classes .type-btn').forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.type === window.classesScreenState.activityType);
-      });
+  function applyActivityTypeUI() {
+    document.querySelectorAll("#screen-classes .type-btn").forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.type === window.classesScreenState.activityType
+      );
+    });
 
-      const label = window.classesScreenState.activityType.charAt(0).toUpperCase() + window.classesScreenState.activityType.slice(1);
-      const badge = document.getElementById("activityTypeBadge");
-      if (badge) badge.textContent = label;
-    }
+    const label =
+      window.classesScreenState.activityType.charAt(0).toUpperCase() +
+      window.classesScreenState.activityType.slice(1);
+    const badge = document.getElementById("activityTypeBadge");
+    if (badge) badge.textContent = label;
+  }
 
-    function applyCorrectOptionUI() {
-      document.querySelectorAll('#screen-classes .correct-btn').forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.correct === window.classesScreenState.correctOption);
-      });
-    }
+  function applyCorrectOptionUI() {
+    document.querySelectorAll("#screen-classes .correct-btn").forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.correct === window.classesScreenState.correctOption
+      );
+    });
+  }
 
-    async function reloadClassesScreenData() {
-      if (typeof supabase === "undefined") return;
+  async function reloadClassesScreenData() {
+    if (typeof supabase === "undefined") return;
 
-      try {
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData?.user) return;
-        currentUser = userData.user;
-
-        const { data, error } = await supabase
-          .from("courses")
-          .select("id, course_code, course_title, academic_session, created_at")
-          .eq("created_by", userData.user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        window.classesScreenState.classes = Array.isArray(data) ? data : [];
-        renderClassesList(document.getElementById("classesSearchInput")?.value || "");
-        renderActivityClassList(document.getElementById("activityClassSearchInput")?.value || "");
-      } catch (err) {
-        console.error("reloadClassesScreenData failed:", err);
-        window.classesScreenState.classes = [];
-        renderClassesList();
-        renderActivityClassList();
-      }
-    }
-
-    function getActivityPayloadFromScreen() {
-      const title = (document.getElementById("activityTitleInput")?.value || "").trim();
-      const instruction = (document.getElementById("activityInstructionInput")?.value || "").trim();
-      const dueInput = (document.getElementById("activityDueInput")?.value || "").trim();
-      const timeLimitInput = (document.getElementById("activityTimeLimitInput")?.value || "").trim();
-      const attemptsInput = (document.getElementById("activityAttemptsInput")?.value || "").trim();
-
-      if (!window.classesScreenState.activityType) {
-        showClassesMsg("activitySetupMsg", "Choose the activity type.", "error");
-        return null;
-      }
-
-      if (!title) {
-        showClassesMsg("activitySetupMsg", "Enter the activity title.", "error");
-        return null;
-      }
-
-      if (!window.classesScreenState.activitySelectedClassId) {
-        showClassesMsg("activitySetupMsg", "Select the class for this activity.", "error");
-        return null;
-      }
-
-      const attemptsAllowed = Number(attemptsInput || 1);
-      if (!Number.isFinite(attemptsAllowed) || attemptsAllowed < 1) {
-        showClassesMsg("activitySetupMsg", "Attempts allowed must be 1 or more.", "error");
-        return null;
-      }
-
-      let timeLimitMinutes = null;
-      if (timeLimitInput) {
-        timeLimitMinutes = Number(timeLimitInput);
-        if (!Number.isFinite(timeLimitMinutes) || timeLimitMinutes <= 0) {
-          showClassesMsg("activitySetupMsg", "Time limit must be greater than 0.", "error");
-          return null;
-        }
-      }
-
-      let dueAt = null;
-      if (dueInput) {
-        const dt = new Date(dueInput);
-        if (Number.isNaN(dt.getTime())) {
-          showClassesMsg("activitySetupMsg", "Due date is not valid.", "error");
-          return null;
-        }
-        dueAt = dt.toISOString();
-      }
-
-      return {
-        class_id: window.classesScreenState.activitySelectedClassId,
-        created_by: currentUser?.id,
-        activity_type: window.classesScreenState.activityType,
-        title,
-        instruction,
-        due_at: dueAt,
-        time_limit_minutes: timeLimitMinutes,
-        attempts_allowed: attemptsAllowed,
-        is_published: false,
-        status: "draft"
-      };
-    }
-
-    async function saveActivityFromClassesScreen() {
-      clearClassesMsg("activitySetupMsg");
-      if (typeof supabase === "undefined") return;
-
-      const btn = document.getElementById("saveActivityBtn");
-      const oldText = btn?.textContent || "Save activity & continue";
-
-      try {
-        if (!currentUser) {
-          const { data: userData, error: userError } = await supabase.auth.getUser();
-          if (userError || !userData?.user) {
-            showClassesMsg("activitySetupMsg", "Please sign in again.", "error");
-            return;
-          }
-          currentUser = userData.user;
-        }
-
-        const payload = getActivityPayloadFromScreen();
-        if (!payload) return;
-
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = window.classesScreenState.activityId ? "Saving..." : "Creating...";
-        }
-
-        if (window.classesScreenState.activityId) {
-          const { error } = await supabase
-            .from("class_activities")
-            .update(payload)
-            .eq("id", window.classesScreenState.activityId)
-            .eq("created_by", currentUser.id);
-
-          if (error) throw error;
-
-          showClassesMsg("activitySetupMsg", "Activity updated. You can now continue adding questions.", "success");
-        } else {
-          const { data, error } = await supabase
-            .from("class_activities")
-            .insert([payload])
-            .select("id")
-            .single();
-
-          if (error) throw error;
-
-          window.classesScreenState.activityId = data.id;
-          showClassesMsg("activitySetupMsg", "Activity saved successfully. Now add your questions.", "success");
-        }
-
-        document.getElementById("activityQuestionsSection")?.classList.remove("hidden");
-        document.getElementById("activityStepCard2")?.classList.add("active");
-
-        setTimeout(() => {
-          document.getElementById("activityQuestionsSection")?.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        }, 180);
-
-        await loadSavedQuestionsFromClassesScreen();
-      } catch (err) {
-        console.error("saveActivityFromClassesScreen failed:", err);
-        showClassesMsg("activitySetupMsg", err.message || "Could not save activity.", "error");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
-      }
-    }
-
-    function getQuestionPayloadFromClassesScreen() {
-      const questionText = (document.getElementById("activityQuestionText")?.value || "").trim();
-      const optionA = (document.getElementById("activityOptionA")?.value || "").trim();
-      const optionB = (document.getElementById("activityOptionB")?.value || "").trim();
-      const optionC = (document.getElementById("activityOptionC")?.value || "").trim();
-      const optionD = (document.getElementById("activityOptionD")?.value || "").trim();
-      const points = Number(document.getElementById("activityQuestionPoints")?.value || 1);
-
-      if (!window.classesScreenState.activityId) {
-        showClassesMsg("activityQuestionMsg", "Save the activity first before adding questions.", "error");
-        return null;
-      }
-
-      if (!questionText) {
-        showClassesMsg("activityQuestionMsg", "Enter the question text.", "error");
-        return null;
-      }
-
-      if (!optionA || !optionB || !optionC || !optionD) {
-        showClassesMsg("activityQuestionMsg", "Fill option A, B, C and D before saving.", "error");
-        return null;
-      }
-
-      if (!["A", "B", "C", "D"].includes(window.classesScreenState.correctOption)) {
-        showClassesMsg("activityQuestionMsg", "Choose the correct answer.", "error");
-        return null;
-      }
-
-      if (!Number.isFinite(points) || points < 1) {
-        showClassesMsg("activityQuestionMsg", "Points must be 1 or more.", "error");
-        return null;
-      }
-
-      return {
-        activity_id: window.classesScreenState.activityId,
-        question_text: questionText,
-        option_a: optionA,
-        option_b: optionB,
-        option_c: optionC,
-        option_d: optionD,
-        correct_option: window.classesScreenState.correctOption,
-        points
-      };
-    }
-
-    async function getNextQuestionPositionFromDb() {
-      if (typeof supabase === "undefined") return 1;
-      if (!window.classesScreenState.activityId) return 1;
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) return;
+      currentUser = userData.user;
+      window.currentUser = currentUser;
 
       const { data, error } = await supabase
-        .from("class_activity_questions")
-        .select("position")
-        .eq("activity_id", window.classesScreenState.activityId)
-        .order("position", { ascending: false })
-        .limit(1);
+        .from("courses")
+        .select("id, course_code, course_title, academic_session, created_at")
+        .eq("created_by", userData.user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const last = Array.isArray(data) && data.length ? Number(data[0].position || 0) : 0;
-      return last + 1;
+      window.classesScreenState.classes = Array.isArray(data) ? data : [];
+      renderClassesList(document.getElementById("classesSearchInput")?.value || "");
+      renderActivityClassList(
+        document.getElementById("activityClassSearchInput")?.value || ""
+      );
+    } catch (err) {
+      console.error("reloadClassesScreenData failed:", err);
+      window.classesScreenState.classes = [];
+      renderClassesList();
+      renderActivityClassList();
+    }
+  }
+
+  function getActivityPayloadFromScreen() {
+    const title = (document.getElementById("activityTitleInput")?.value || "").trim();
+    const instruction = (document.getElementById("activityInstructionInput")?.value || "").trim();
+    const dueInput = (document.getElementById("activityDueInput")?.value || "").trim();
+    const timeLimitInput = (
+      document.getElementById("activityTimeLimitInput")?.value || ""
+    ).trim();
+    const attemptsInput = (
+      document.getElementById("activityAttemptsInput")?.value || ""
+    ).trim();
+
+    if (!window.classesScreenState.activityType) {
+      showClassesMsg("activitySetupMsg", "Choose the activity type.", "error");
+      return null;
     }
 
-    function clearQuestionFormFromClassesScreen() {
-      ["activityQuestionText","activityOptionA","activityOptionB","activityOptionC","activityOptionD"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = "";
-      });
-
-      const points = document.getElementById("activityQuestionPoints");
-      if (points) points.value = "1";
-
-      window.classesScreenState.correctOption = "A";
-      applyCorrectOptionUI();
-
-      const qNo = document.getElementById("activityQuestionNo");
-      if (qNo) qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
+    if (!title) {
+      showClassesMsg("activitySetupMsg", "Enter the activity title.", "error");
+      return null;
     }
 
-    async function saveQuestionFromClassesScreen(goNext = false) {
-      clearClassesMsg("activityQuestionMsg");
-      if (typeof supabase === "undefined") return;
+    if (!window.classesScreenState.activitySelectedClassId) {
+      showClassesMsg("activitySetupMsg", "Select the class for this activity.", "error");
+      return null;
+    }
 
-      if (window.classesScreenState.savingQuestion) return;
+    const attemptsAllowed = Number(attemptsInput || 1);
+    if (!Number.isFinite(attemptsAllowed) || attemptsAllowed < 1) {
+      showClassesMsg("activitySetupMsg", "Attempts allowed must be 1 or more.", "error");
+      return null;
+    }
 
-      const payloadBase = getQuestionPayloadFromClassesScreen();
-      if (!payloadBase) return;
-
-      const saveBtn = document.getElementById("saveQuestionBtn");
-      const nextBtn = document.getElementById("saveQuestionNextBtn");
-
-      const oldSaveText = saveBtn?.textContent || "Save question";
-      const oldNextText = nextBtn?.textContent || "Save & add next";
-
-      try {
-        window.classesScreenState.savingQuestion = true;
-
-        if (saveBtn) {
-          saveBtn.disabled = true;
-          saveBtn.textContent = "Saving...";
-        }
-
-        if (nextBtn) {
-          nextBtn.disabled = true;
-          nextBtn.textContent = "Saving...";
-        }
-
-        const nextPosition = await getNextQuestionPositionFromDb();
-
-        const payload = {
-          ...payloadBase,
-          position: nextPosition
-        };
-
-        const { error } = await supabase
-          .from("class_activity_questions")
-          .insert([payload]);
-
-        if (error) throw error;
-
-        window.classesScreenState.lastQuestionPosition = nextPosition;
-        showClassesMsg("activityQuestionMsg", `Question ${nextPosition} saved successfully.`, "success");
-
-        await loadSavedQuestionsFromClassesScreen();
-
-        if (goNext) {
-          clearQuestionFormFromClassesScreen();
-          document.getElementById("activityQuestionText")?.focus();
-        }
-      } catch (err) {
-        console.error("saveQuestionFromClassesScreen failed:", err);
-        showClassesMsg("activityQuestionMsg", err.message || "Could not save question.", "error");
-      } finally {
-        window.classesScreenState.savingQuestion = false;
-
-        if (saveBtn) {
-          saveBtn.disabled = false;
-          saveBtn.textContent = oldSaveText;
-        }
-
-        if (nextBtn) {
-          nextBtn.disabled = false;
-          nextBtn.textContent = oldNextText;
-        }
+    let timeLimitMinutes = null;
+    if (timeLimitInput) {
+      timeLimitMinutes = Number(timeLimitInput);
+      if (!Number.isFinite(timeLimitMinutes) || timeLimitMinutes <= 0) {
+        showClassesMsg("activitySetupMsg", "Time limit must be greater than 0.", "error");
+        return null;
       }
     }
 
-    async function loadSavedQuestionsFromClassesScreen() {
-      if (typeof supabase === "undefined") return;
-      if (!window.classesScreenState.activityId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("class_activity_questions")
-          .select("*")
-          .eq("activity_id", window.classesScreenState.activityId)
-          .order("position", { ascending: true });
-
-        if (error) throw error;
-
-        window.classesScreenState.savedQuestions = Array.isArray(data) ? data : [];
-        window.classesScreenState.lastQuestionPosition = window.classesScreenState.savedQuestions.length
-          ? Math.max(...window.classesScreenState.savedQuestions.map((q) => Number(q.position || 0)))
-          : 0;
-
-        const qNo = document.getElementById("activityQuestionNo");
-        if (qNo) qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
-
-        renderSavedQuestionsFromClassesScreen();
-      } catch (err) {
-        console.error("loadSavedQuestionsFromClassesScreen failed:", err);
-        renderSavedQuestionsFromClassesScreen();
+    let dueAt = null;
+    if (dueInput) {
+      const dt = new Date(dueInput);
+      if (Number.isNaN(dt.getTime())) {
+        showClassesMsg("activitySetupMsg", "Due date is not valid.", "error");
+        return null;
       }
+      dueAt = dt.toISOString();
     }
 
-    function renderSavedQuestionsFromClassesScreen() {
-      const wrap = document.getElementById("savedQuestionsList");
-      if (!wrap) return;
+    return {
+      class_id: window.classesScreenState.activitySelectedClassId,
+      created_by: currentUser?.id,
+      activity_type: window.classesScreenState.activityType,
+      title,
+      instruction,
+      due_at: dueAt,
+      time_limit_minutes: timeLimitMinutes,
+      attempts_allowed: attemptsAllowed,
+      is_published: false,
+      status: "draft"
+    };
+  }
 
-      const list = Array.isArray(window.classesScreenState.savedQuestions) ? window.classesScreenState.savedQuestions : [];
+  async function saveActivityFromClassesScreen() {
+    clearClassesMsg("activitySetupMsg");
+    if (typeof supabase === "undefined") return;
 
-      if (!list.length) {
-        wrap.innerHTML = `<div class="hint" style="margin-top:4px;">No question saved yet. Add your first question above.</div>`;
-        return;
-      }
+    const btn = document.getElementById("saveActivityBtn");
+    const oldText = btn?.textContent || "Save activity & continue";
 
-      wrap.innerHTML = list
-        .sort((a, b) => Number(a.position || 0) - Number(b.position || 0))
-        .map((q) => {
-          const correct = String(q.correct_option || "A").toUpperCase();
-          const correctMap = {
-            A: q.option_a,
-            B: q.option_b,
-            C: q.option_c,
-            D: q.option_d
-          };
-
-          return `
-            <div class="saved-item">
-              <div class="saved-top">
-                <div>
-                  <div class="saved-q-no">Question ${classesEscapeHtml(q.position)}</div>
-                  <div class="saved-q-text">${classesEscapeHtml(q.question_text)}</div>
-                </div>
-                <div class="saved-points">${classesEscapeHtml(q.points)} pt</div>
-              </div>
-
-              <div class="saved-options">
-                <div class="saved-option ${correct === "A" ? "correct" : ""}">
-                  <strong>A.</strong> ${classesEscapeHtml(q.option_a)}
-                </div>
-                <div class="saved-option ${correct === "B" ? "correct" : ""}">
-                  <strong>B.</strong> ${classesEscapeHtml(q.option_b)}
-                </div>
-                <div class="saved-option ${correct === "C" ? "correct" : ""}">
-                  <strong>C.</strong> ${classesEscapeHtml(q.option_c)}
-                </div>
-                <div class="saved-option ${correct === "D" ? "correct" : ""}">
-                  <strong>D.</strong> ${classesEscapeHtml(q.option_d)}
-                </div>
-              </div>
-
-              <div class="small-note">
-                Correct answer: <strong>${correct}</strong> — ${classesEscapeHtml(correctMap[correct] || "")}
-              </div>
-            </div>
-          `;
-        }).join("");
-    }
-
-    async function publishActivityFromClassesScreen() {
-      clearClassesMsg("activityQuestionMsg");
-      if (typeof supabase === "undefined") return;
-
-      if (!window.classesScreenState.activityId) {
-        showClassesMsg("activityQuestionMsg", "Save the activity first before publishing.", "error");
-        return;
-      }
-
-      if (!window.classesScreenState.savedQuestions.length) {
-        showClassesMsg("activityQuestionMsg", "Add at least one question before publishing.", "error");
-        return;
-      }
-
-      const btn = document.getElementById("publishActivityBtn");
-      const oldText = btn?.textContent || "Publish activity";
-
-      try {
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = "Publishing...";
+    try {
+      if (!currentUser) {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) {
+          showClassesMsg("activitySetupMsg", "Please sign in again.", "error");
+          return;
         }
+        currentUser = userData.user;
+        window.currentUser = currentUser;
+      }
 
+      const payload = getActivityPayloadFromScreen();
+      if (!payload) return;
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = window.classesScreenState.activityId ? "Saving..." : "Creating...";
+      }
+
+      if (window.classesScreenState.activityId) {
         const { error } = await supabase
           .from("class_activities")
-          .update({
-            is_published: true,
-            status: "published"
-          })
+          .update(payload)
           .eq("id", window.classesScreenState.activityId)
           .eq("created_by", currentUser.id);
 
         if (error) throw error;
 
-        showClassesMsg("activityQuestionMsg", "Activity published successfully.", "success");
-      } catch (err) {
-        console.error("publishActivityFromClassesScreen failed:", err);
-        showClassesMsg("activityQuestionMsg", err.message || "Could not publish activity.", "error");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = oldText;
-        }
+        showClassesMsg(
+          "activitySetupMsg",
+          "Activity updated. You can now continue adding questions.",
+          "success"
+        );
+      } else {
+        const { data, error } = await supabase
+          .from("class_activities")
+          .insert([payload])
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        window.classesScreenState.activityId = data.id;
+        showClassesMsg(
+          "activitySetupMsg",
+          "Activity saved successfully. Now add your questions.",
+          "success"
+        );
+      }
+
+      document.getElementById("activityQuestionsSection")?.classList.remove("hidden");
+      document.getElementById("activityStepCard2")?.classList.add("active");
+
+      setTimeout(() => {
+        document.getElementById("activityQuestionsSection")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 180);
+
+      await loadSavedQuestionsFromClassesScreen();
+    } catch (err) {
+      console.error("saveActivityFromClassesScreen failed:", err);
+      showClassesMsg(
+        "activitySetupMsg",
+        err.message || "Could not save activity.",
+        "error"
+      );
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = oldText;
       }
     }
+  }
 
-    function bindClassesScreenEvents() {
-      if (window.classesScreenState.eventsBound) return;
-      window.classesScreenState.eventsBound = true;
+  function getQuestionPayloadFromClassesScreen() {
+    const questionText = (
+      document.getElementById("activityQuestionText")?.value || ""
+    ).trim();
+    const optionA = (document.getElementById("activityOptionA")?.value || "").trim();
+    const optionB = (document.getElementById("activityOptionB")?.value || "").trim();
+    const optionC = (document.getElementById("activityOptionC")?.value || "").trim();
+    const optionD = (document.getElementById("activityOptionD")?.value || "").trim();
+    const points = Number(
+      document.getElementById("activityQuestionPoints")?.value || 1
+    );
 
-      document.getElementById("classesSearchInput")?.addEventListener("input", (e) => {
-        renderClassesList(e.target.value || "");
-      });
+    if (!window.classesScreenState.activityId) {
+      showClassesMsg(
+        "activityQuestionMsg",
+        "Save the activity first before adding questions.",
+        "error"
+      );
+      return null;
+    }
 
-      document.getElementById("activityClassSearchInput")?.addEventListener("input", (e) => {
+    if (!questionText) {
+      showClassesMsg("activityQuestionMsg", "Enter the question text.", "error");
+      return null;
+    }
+
+    if (!optionA || !optionB || !optionC || !optionD) {
+      showClassesMsg(
+        "activityQuestionMsg",
+        "Fill option A, B, C and D before saving.",
+        "error"
+      );
+      return null;
+    }
+
+    if (!["A", "B", "C", "D"].includes(window.classesScreenState.correctOption)) {
+      showClassesMsg("activityQuestionMsg", "Choose the correct answer.", "error");
+      return null;
+    }
+
+    if (!Number.isFinite(points) || points < 1) {
+      showClassesMsg("activityQuestionMsg", "Points must be 1 or more.", "error");
+      return null;
+    }
+
+    return {
+      activity_id: window.classesScreenState.activityId,
+      question_text: questionText,
+      option_a: optionA,
+      option_b: optionB,
+      option_c: optionC,
+      option_d: optionD,
+      correct_option: window.classesScreenState.correctOption,
+      points
+    };
+  }
+
+  async function getNextQuestionPositionFromDb() {
+    if (typeof supabase === "undefined") return 1;
+    if (!window.classesScreenState.activityId) return 1;
+
+    const { data, error } = await supabase
+      .from("class_activity_questions")
+      .select("position")
+      .eq("activity_id", window.classesScreenState.activityId)
+      .order("position", { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    const last =
+      Array.isArray(data) && data.length ? Number(data[0].position || 0) : 0;
+    return last + 1;
+  }
+
+  function clearQuestionFormFromClassesScreen() {
+    [
+      "activityQuestionText",
+      "activityOptionA",
+      "activityOptionB",
+      "activityOptionC",
+      "activityOptionD"
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+
+    const points = document.getElementById("activityQuestionPoints");
+    if (points) points.value = "1";
+
+    window.classesScreenState.correctOption = "A";
+    applyCorrectOptionUI();
+
+    const qNo = document.getElementById("activityQuestionNo");
+    if (qNo) {
+      qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
+    }
+  }
+
+  async function saveQuestionFromClassesScreen(goNext = false) {
+    clearClassesMsg("activityQuestionMsg");
+    if (typeof supabase === "undefined") return;
+
+    if (window.classesScreenState.savingQuestion) return;
+    window.classesScreenState.savingQuestion = true;
+
+    const saveBtn = document.getElementById("saveQuestionBtn");
+    const nextBtn = document.getElementById("saveQuestionNextBtn");
+
+    const oldSaveText = saveBtn?.textContent || "Save question";
+    const oldNextText = nextBtn?.textContent || "Save & add next";
+
+    try {
+      const payloadBase = getQuestionPayloadFromClassesScreen();
+      if (!payloadBase) return;
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+      }
+
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.textContent = "Saving...";
+      }
+
+      const nextPosition = await getNextQuestionPositionFromDb();
+
+      const payload = {
+        ...payloadBase,
+        position: nextPosition
+      };
+
+      const { error } = await supabase
+        .from("class_activity_questions")
+        .insert([payload]);
+
+      if (error) {
+        const msg = String(error.message || "").toLowerCase();
+
+        if (
+          error.code === "23505" ||
+          msg.includes("duplicate key value") ||
+          msg.includes("activity_position_unique")
+        ) {
+          await loadSavedQuestionsFromClassesScreen();
+          showClassesMsg(
+            "activityQuestionMsg",
+            "Question may have already been saved. List refreshed.",
+            "success"
+          );
+
+          if (goNext) {
+            clearQuestionFormFromClassesScreen();
+            document.getElementById("activityQuestionText")?.focus();
+          }
+          return;
+        }
+
+        throw error;
+      }
+
+      window.classesScreenState.lastQuestionPosition = nextPosition;
+      showClassesMsg(
+        "activityQuestionMsg",
+        `Question ${nextPosition} saved successfully.`,
+        "success"
+      );
+
+      await loadSavedQuestionsFromClassesScreen();
+
+      if (goNext) {
+        clearQuestionFormFromClassesScreen();
+        document.getElementById("activityQuestionText")?.focus();
+      }
+    } catch (err) {
+      console.error("saveQuestionFromClassesScreen failed:", err);
+      showClassesMsg(
+        "activityQuestionMsg",
+        err.message || "Could not save question.",
+        "error"
+      );
+    } finally {
+      window.classesScreenState.savingQuestion = false;
+
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = oldSaveText;
+      }
+
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = oldNextText;
+      }
+    }
+  }
+
+  async function loadSavedQuestionsFromClassesScreen() {
+    if (typeof supabase === "undefined") return;
+    if (!window.classesScreenState.activityId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("class_activity_questions")
+        .select("*")
+        .eq("activity_id", window.classesScreenState.activityId)
+        .order("position", { ascending: true });
+
+      if (error) throw error;
+
+      window.classesScreenState.savedQuestions = Array.isArray(data) ? data : [];
+      window.classesScreenState.lastQuestionPosition =
+        window.classesScreenState.savedQuestions.length
+          ? Math.max(
+              ...window.classesScreenState.savedQuestions.map((q) =>
+                Number(q.position || 0)
+              )
+            )
+          : 0;
+
+      const qNo = document.getElementById("activityQuestionNo");
+      if (qNo) {
+        qNo.textContent = `Question ${Number(window.classesScreenState.lastQuestionPosition || 0) + 1}`;
+      }
+
+      renderSavedQuestionsFromClassesScreen();
+    } catch (err) {
+      console.error("loadSavedQuestionsFromClassesScreen failed:", err);
+      renderSavedQuestionsFromClassesScreen();
+    }
+  }
+
+  function renderSavedQuestionsFromClassesScreen() {
+    const wrap = document.getElementById("savedQuestionsList");
+    if (!wrap) return;
+
+    const list = Array.isArray(window.classesScreenState.savedQuestions)
+      ? window.classesScreenState.savedQuestions
+      : [];
+
+    if (!list.length) {
+      wrap.innerHTML =
+        `<div class="hint" style="margin-top:4px;">No question saved yet. Add your first question above.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = list
+      .sort((a, b) => Number(a.position || 0) - Number(b.position || 0))
+      .map((q) => {
+        const correct = String(q.correct_option || "A").toUpperCase();
+        const correctMap = {
+          A: q.option_a,
+          B: q.option_b,
+          C: q.option_c,
+          D: q.option_d
+        };
+
+        return `
+          <div class="saved-item">
+            <div class="saved-top">
+              <div>
+                <div class="saved-q-no">Question ${classesEscapeHtml(q.position)}</div>
+                <div class="saved-q-text">${classesEscapeHtml(q.question_text)}</div>
+              </div>
+              <div class="saved-points">${classesEscapeHtml(q.points)} pt</div>
+            </div>
+
+            <div class="saved-options">
+              <div class="saved-option ${correct === "A" ? "correct" : ""}">
+                <strong>A.</strong> ${classesEscapeHtml(q.option_a)}
+              </div>
+              <div class="saved-option ${correct === "B" ? "correct" : ""}">
+                <strong>B.</strong> ${classesEscapeHtml(q.option_b)}
+              </div>
+              <div class="saved-option ${correct === "C" ? "correct" : ""}">
+                <strong>C.</strong> ${classesEscapeHtml(q.option_c)}
+              </div>
+              <div class="saved-option ${correct === "D" ? "correct" : ""}">
+                <strong>D.</strong> ${classesEscapeHtml(q.option_d)}
+              </div>
+            </div>
+
+            <div class="small-note">
+              Correct answer: <strong>${correct}</strong> — ${classesEscapeHtml(
+          correctMap[correct] || ""
+        )}
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  async function publishActivityFromClassesScreen() {
+    clearClassesMsg("activityQuestionMsg");
+    if (typeof supabase === "undefined") return;
+
+    if (!window.classesScreenState.activityId) {
+      showClassesMsg(
+        "activityQuestionMsg",
+        "Save the activity first before publishing.",
+        "error"
+      );
+      return;
+    }
+
+    if (!window.classesScreenState.savedQuestions.length) {
+      showClassesMsg(
+        "activityQuestionMsg",
+        "Add at least one question before publishing.",
+        "error"
+      );
+      return;
+    }
+
+    const btn = document.getElementById("publishActivityBtn");
+    const oldText = btn?.textContent || "Publish activity";
+
+    try {
+      if (!currentUser) {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) {
+          showClassesMsg("activityQuestionMsg", "Please sign in again.", "error");
+          return;
+        }
+        currentUser = userData.user;
+        window.currentUser = currentUser;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Publishing...";
+      }
+
+      const { error } = await supabase
+        .from("class_activities")
+        .update({
+          is_published: true,
+          status: "published"
+        })
+        .eq("id", window.classesScreenState.activityId)
+        .eq("created_by", currentUser.id);
+
+      if (error) throw error;
+
+      showClassesMsg(
+        "activityQuestionMsg",
+        "Activity published successfully.",
+        "success"
+      );
+
+      showClassesPublishPopup(window.classesScreenState.activityType);
+    } catch (err) {
+      console.error("publishActivityFromClassesScreen failed:", err);
+      showClassesMsg(
+        "activityQuestionMsg",
+        err.message || "Could not publish activity.",
+        "error"
+      );
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+  }
+
+  function bindClassesScreenEvents() {
+    if (window.classesScreenState.eventsBound) return;
+    window.classesScreenState.eventsBound = true;
+
+    document.getElementById("classesSearchInput")?.addEventListener("input", (e) => {
+      renderClassesList(e.target.value || "");
+    });
+
+    document
+      .getElementById("activityClassSearchInput")
+      ?.addEventListener("input", (e) => {
         renderActivityClassList(e.target.value || "");
       });
 
-      document.querySelectorAll('#screen-classes .type-btn').forEach((btn) => {
-        btn.addEventListener("click", () => {
-          window.classesScreenState.activityType = btn.dataset.type || "assignment";
-          applyActivityTypeUI();
-        });
+    document.querySelectorAll("#screen-classes .type-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        window.classesScreenState.activityType = btn.dataset.type || "assignment";
+        applyActivityTypeUI();
       });
-
-      document.querySelectorAll('#screen-classes .correct-btn').forEach((btn) => {
-        btn.addEventListener("click", () => {
-          window.classesScreenState.correctOption = btn.dataset.correct || "A";
-          applyCorrectOptionUI();
-        });
-      });
-
-      document.getElementById("saveActivityBtn")?.addEventListener("click", saveActivityFromClassesScreen);
-      document.getElementById("saveQuestionBtn")?.addEventListener("click", () => saveQuestionFromClassesScreen(false));
-      document.getElementById("saveQuestionNextBtn")?.addEventListener("click", () => saveQuestionFromClassesScreen(true));
-      document.getElementById("publishActivityBtn")?.addEventListener("click", publishActivityFromClassesScreen);
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      bindClassesScreenEvents();
-      applyActivityTypeUI();
-      applyCorrectOptionUI();
-      reloadClassesScreenData();
     });
-  </script>
-</div>
-<!-- 🔹 CLASSES SCREEN END -->
+
+    document.querySelectorAll("#screen-classes .correct-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        window.classesScreenState.correctOption = btn.dataset.correct || "A";
+        applyCorrectOptionUI();
+      });
+    });
+
+    document
+      .getElementById("saveActivityBtn")
+      ?.addEventListener("click", saveActivityFromClassesScreen);
+
+    document
+      .getElementById("saveQuestionBtn")
+      ?.addEventListener("click", () => saveQuestionFromClassesScreen(false));
+
+    document
+      .getElementById("saveQuestionNextBtn")
+      ?.addEventListener("click", () => saveQuestionFromClassesScreen(true));
+
+    document
+      .getElementById("publishActivityBtn")
+      ?.addEventListener("click", publishActivityFromClassesScreen);
+
+    document
+      .getElementById("classesPublishPopupBtn")
+      ?.addEventListener("click", hideClassesPublishPopup);
+
+    document
+      .getElementById("classesPublishPopup")
+      ?.addEventListener("click", (e) => {
+        if (e.target?.id === "classesPublishPopup") {
+          hideClassesPublishPopup();
+        }
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindClassesScreenEvents();
+    applyActivityTypeUI();
+    applyCorrectOptionUI();
+    reloadClassesScreenData();
+  });
+</script>
