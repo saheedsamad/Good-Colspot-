@@ -1,13 +1,20 @@
-const SUPABASE_URL = window.SUPABASE_URL || "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = window.SUPABASE_URL || "https://wtlrfujfimxcmsnqrnig.supabase.co";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY ||"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd0bHJmdWpmaW14Y21zbnFybmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
 const FACE_VERIFY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-verify-attendance`;
+const NEARBY_GUARD_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/Nearby_guard";
+
+const PENDING_NEARBY_JOIN_KEY = "colspot_pending_nearby_join";
+const NEARBY_RESUME_KEY = "colspot_nearby_resume_after_face_verify";
+const STUDENT_HISTORY_KEY = "colspot_student_history";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const pageParams = new URLSearchParams(window.location.search);
-const RETURN_TO = pageParams.get("returnTo") || "near_attendance.html";
+const RETURN_TO = pageParams.get("returnTo") || "main.html";
 const SESSION_ID = pageParams.get("sessionId") || "";
 const COURSE_CODE = pageParams.get("courseCode") || "";
+const COURSE_TITLE = pageParams.get("courseTitle") || "";
+const LECTURER_NAME = pageParams.get("lecturerName") || "";
 const VERIFY_THRESHOLD = Number(pageParams.get("threshold") || 0.7);
 
 const faceVideo = document.getElementById("faceVideo");
@@ -39,6 +46,15 @@ const verifyFaceBtn = document.getElementById("verifyFaceBtn");
 const cancelFaceBtn = document.getElementById("cancelFaceBtn");
 const faceBackBtn = document.getElementById("faceBackBtn");
 
+const faceJoinOverlay = document.getElementById("faceJoinOverlay");
+const faceJoinCard = document.getElementById("faceJoinCard");
+const faceJoinSpinner = document.getElementById("faceJoinSpinner");
+const faceJoinSuccessIcon = document.getElementById("faceJoinSuccessIcon");
+const faceJoinErrorIcon = document.getElementById("faceJoinErrorIcon");
+const faceJoinTitle = document.getElementById("faceJoinTitle");
+const faceJoinMessage = document.getElementById("faceJoinMessage");
+const faceJoinDoneBtn = document.getElementById("faceJoinDoneBtn");
+
 const overlayCtx = faceCanvas.getContext("2d");
 const captureCanvas = document.createElement("canvas");
 const captureCtx = captureCanvas.getContext("2d");
@@ -49,6 +65,7 @@ let scanLoopActive = false;
 let captureLocked = false;
 let capturedDataUrl = "";
 let isVerifying = false;
+let directJoinCompleted = false;
 
 let poseHoldFrames = 0;
 let currentStepIndex = 0;
@@ -102,11 +119,11 @@ function setButtonState() {
   const hasStream = !!mediaStream;
   const hasCapture = !!capturedDataUrl;
 
-  if (startCameraBtn) startCameraBtn.disabled = hasStream || isVerifying;
-  if (captureFaceBtn) captureFaceBtn.disabled = !hasCapture || isVerifying;
-  if (retakeFaceBtn) retakeFaceBtn.disabled = !hasCapture || isVerifying;
-  if (verifyFaceBtn) verifyFaceBtn.disabled = !hasCapture || isVerifying;
-  if (cancelFaceBtn) cancelFaceBtn.disabled = isVerifying;
+  if (startCameraBtn) startCameraBtn.disabled = hasStream || isVerifying || directJoinCompleted;
+  if (captureFaceBtn) captureFaceBtn.disabled = !hasCapture || isVerifying || directJoinCompleted;
+  if (retakeFaceBtn) retakeFaceBtn.disabled = !hasCapture || isVerifying || directJoinCompleted;
+  if (verifyFaceBtn) verifyFaceBtn.disabled = !hasCapture || isVerifying || directJoinCompleted;
+  if (cancelFaceBtn) cancelFaceBtn.disabled = isVerifying || directJoinCompleted;
   if (faceBackBtn) faceBackBtn.disabled = isVerifying;
 }
 
@@ -279,6 +296,10 @@ function buildReturnUrl(extra = {}) {
 }
 
 function goBackCancelled() {
+  if (directJoinCompleted) {
+    window.location.href = RETURN_TO || "main.html";
+    return;
+  }
   window.location.href = buildReturnUrl({ faceVerified: 0 });
 }
 
@@ -289,6 +310,269 @@ async function ensureSession() {
     return null;
   }
   return data.session;
+}
+
+function readPendingNearbyJoinContextFromFace() {
+  try {
+    const raw = localStorage.getItem(PENDING_NEARBY_JOIN_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (_) {
+    return null;
+  }
+}
+
+function clearPendingNearbyJoinContextFromFace() {
+  try {
+    localStorage.removeItem(PENDING_NEARBY_JOIN_KEY);
+    localStorage.removeItem(NEARBY_RESUME_KEY);
+  } catch (_) {}
+}
+
+function addFaceJoinToStudentHistory(entry) {
+  try {
+    const raw = localStorage.getItem(STUDENT_HISTORY_KEY);
+    let list = [];
+
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) list = parsed;
+      } catch (_) {}
+    }
+
+    list = list.filter(
+      (item) =>
+        !(
+          item.session_id === entry.session_id &&
+          item.student_matric === entry.student_matric
+        )
+    );
+
+    list.unshift(entry);
+    list = list.slice(0, 50);
+
+    localStorage.setItem(STUDENT_HISTORY_KEY, JSON.stringify(list));
+  } catch (_) {}
+}
+
+function showFaceJoinPopup(mode, data = {}) {
+  if (!faceJoinOverlay || !faceJoinCard) return;
+
+  const studentName = String(data.studentName || "Student").trim() || "Student";
+  const courseCode = String(data.courseCode || "attendance").trim() || "attendance";
+  const lecturerName = String(data.lecturerName || "your lecturer").trim() || "your lecturer";
+
+  faceJoinOverlay.classList.remove("hidden");
+  faceJoinCard.classList.remove("success", "error");
+
+  if (faceJoinSpinner) faceJoinSpinner.classList.add("hidden");
+  if (faceJoinSuccessIcon) faceJoinSuccessIcon.classList.add("hidden");
+  if (faceJoinErrorIcon) faceJoinErrorIcon.classList.add("hidden");
+  if (faceJoinDoneBtn) faceJoinDoneBtn.classList.add("hidden");
+
+  if (mode === "joining") {
+    if (faceJoinSpinner) faceJoinSpinner.classList.remove("hidden");
+    if (faceJoinTitle) faceJoinTitle.textContent = "Joining attendance";
+    if (faceJoinMessage) {
+      faceJoinMessage.innerHTML =
+        `Face verified. Colspot is submitting <strong>${studentName}</strong> for <strong>${courseCode}</strong>.`;
+    }
+    return;
+  }
+
+  if (mode === "success") {
+    faceJoinCard.classList.add("success");
+    if (faceJoinSuccessIcon) faceJoinSuccessIcon.classList.remove("hidden");
+    if (faceJoinTitle) faceJoinTitle.textContent = "Attendance submitted";
+    if (faceJoinMessage) {
+      faceJoinMessage.innerHTML =
+        `<strong>${studentName}</strong>, your attendance for <strong>${courseCode}</strong> has been submitted successfully. Lecturer: <strong>${lecturerName}</strong>.`;
+    }
+    if (faceJoinDoneBtn) {
+      faceJoinDoneBtn.textContent = "Great!";
+      faceJoinDoneBtn.classList.remove("hidden");
+      faceJoinDoneBtn.disabled = false;
+    }
+    return;
+  }
+
+  if (mode === "error") {
+    faceJoinCard.classList.add("error");
+    if (faceJoinErrorIcon) faceJoinErrorIcon.classList.remove("hidden");
+    if (faceJoinTitle) faceJoinTitle.textContent = "Attendance not submitted";
+    if (faceJoinMessage) {
+      faceJoinMessage.innerHTML =
+        data.message || "Face verified, but Colspot could not submit your attendance. Please go back and try again.";
+    }
+    if (faceJoinDoneBtn) {
+      faceJoinDoneBtn.textContent = "Go back";
+      faceJoinDoneBtn.classList.remove("hidden");
+      faceJoinDoneBtn.disabled = false;
+    }
+  }
+}
+
+function hideFaceJoinPopup() {
+  if (faceJoinOverlay) faceJoinOverlay.classList.add("hidden");
+}
+
+function getCurrentPositionOnceForFace() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(pos),
+      () => resolve(null),
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      }
+    );
+  });
+}
+
+async function getBestLocationForFaceGuard(maxReads = 5, desiredAccuracy = 100) {
+  const readings = [];
+
+  for (let i = 0; i < maxReads; i++) {
+    const pos = await getCurrentPositionOnceForFace();
+
+    if (pos && pos.coords) {
+      const acc =
+        typeof pos.coords.accuracy === "number" &&
+        !Number.isNaN(pos.coords.accuracy)
+          ? pos.coords.accuracy
+          : null;
+
+      readings.push({
+        lat: typeof pos.coords.latitude === "number" ? pos.coords.latitude : null,
+        lng: typeof pos.coords.longitude === "number" ? pos.coords.longitude : null,
+        accuracy: acc,
+      });
+
+      if (acc !== null && acc <= desiredAccuracy) {
+        break;
+      }
+    }
+
+    if (i < maxReads - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+    }
+  }
+
+  if (!readings.length) {
+    return { lat: null, lng: null, accuracy: null };
+  }
+
+  let best = readings[0];
+
+  for (const item of readings) {
+    if (item.accuracy == null) continue;
+    if (best.accuracy == null || item.accuracy < best.accuracy) {
+      best = item;
+    }
+  }
+
+  return best;
+}
+
+async function invokeNearbyGuardFromFace(session, action, payload) {
+  const res = await fetch(NEARBY_GUARD_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      action,
+      payload,
+    }),
+  });
+
+  const result = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(
+      result?.message ||
+        result?.error ||
+        "Face verified, but Colspot could not save your attendance."
+    );
+  }
+
+  return result;
+}
+
+async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
+  const context = readPendingNearbyJoinContextFromFace();
+
+  if (!context || !context.sessionId) {
+    return {
+      joined: false,
+      reason: "NO_PENDING_NEARBY_JOIN",
+    };
+  }
+
+  const sessionRow = context.sessionRow || {};
+  const pinCode = String(context.pinCode || context.pin_code || pageParams.get("pinCode") || pageParams.get("pin") || "").trim();
+  const studentName = String(context.studentName || pageParams.get("studentName") || "").trim();
+  const studentMatric = String(context.studentMatric || "").trim();
+  const studentDepartment = String(context.studentDepartment || "").trim();
+  const courseCode = String(sessionRow.course_code || COURSE_CODE || "attendance").trim();
+  const lecturerName = String(sessionRow.lecturer_name || LECTURER_NAME || "your lecturer").trim();
+
+  if (!pinCode) {
+    throw new Error("PIN code is missing. Please go back and try joining again.");
+  }
+
+  showFaceJoinPopup("joining", {
+    studentName,
+    courseCode,
+    lecturerName,
+  });
+
+  setResultPill("neutral", "Joining");
+  setResultText("Face verified. Colspot is now submitting your attendance...");
+  setLiveChip("Joining attendance");
+  showSuccess("Face verified. Joining attendance now...");
+
+  const bestLoc = await getBestLocationForFaceGuard(5, 100);
+
+  const result = await invokeNearbyGuardFromFace(session, "join_session", {
+    session_id: context.sessionId,
+    pin_code: pinCode,
+    lat: bestLoc.lat,
+    lng: bestLoc.lng,
+    accuracy: bestLoc.accuracy,
+  });
+
+  const historyEntry = {
+    session_id: result?.record?.session_id || context.sessionId,
+    course_code: result?.session?.course_code || sessionRow.course_code || COURSE_CODE || "",
+    course_title: result?.session?.course_title || sessionRow.course_title || COURSE_TITLE || "",
+    lecturer_name: result?.session?.lecturer_name || sessionRow.lecturer_name || LECTURER_NAME || "",
+    attended_at: result?.record?.created_at || new Date().toISOString(),
+    pin_used: pinCode,
+    student_name: result?.student?.full_name || studentName || "",
+    student_matric: result?.student?.matric_number || studentMatric || "",
+    student_department: result?.student?.department || studentDepartment || "",
+    face_match: true,
+    face_similarity: Number(verifyData?.similarity || 0),
+  };
+
+  addFaceJoinToStudentHistory(historyEntry);
+  clearPendingNearbyJoinContextFromFace();
+
+  return {
+    joined: true,
+    result,
+    historyEntry,
+    context,
+  };
 }
 
 async function initFaceMesh() {
@@ -402,10 +686,12 @@ async function processVideoFrame() {
 async function startCamera() {
   try {
     clearFlashMessages();
+    directJoinCompleted = false;
     capturedDataUrl = "";
     hideCapturedPreview();
     resetResultUi();
     resetSequenceState();
+    hideFaceJoinPopup();
 
     await ensureSession();
     await initFaceMesh();
@@ -479,9 +765,11 @@ function captureFrame() {
 
 function retakeFace() {
   clearFlashMessages();
+  directJoinCompleted = false;
   capturedDataUrl = "";
   hideCapturedPreview();
   resetSequenceState();
+  hideFaceJoinPopup();
 
   if (mediaStream && faceVideo.srcObject) {
     scanLoopActive = true;
@@ -542,6 +830,67 @@ async function verifyFaceAndContinue() {
       return;
     }
 
+    const directJoin = await joinAttendanceInsideFaceVerification(session, {
+      similarity: result?.similarity ?? "",
+      threshold: result?.threshold ?? VERIFY_THRESHOLD,
+    });
+
+    if (directJoin.joined) {
+      directJoinCompleted = true;
+      stopTracksOnly();
+
+      const joinedResult = directJoin.result || {};
+      const sessionData = joinedResult.session || {};
+      const studentData = joinedResult.student || {};
+      const historyEntry = directJoin.historyEntry || {};
+      const context = directJoin.context || {};
+      const sessionRow = context.sessionRow || {};
+
+      const studentName =
+        studentData.full_name ||
+        historyEntry.student_name ||
+        context.studentName ||
+        "Student";
+
+      const courseCode =
+        sessionData.course_code ||
+        historyEntry.course_code ||
+        sessionRow.course_code ||
+        COURSE_CODE ||
+        "attendance";
+
+      const lecturerName =
+        sessionData.lecturer_name ||
+        historyEntry.lecturer_name ||
+        sessionRow.lecturer_name ||
+        LECTURER_NAME ||
+        "your lecturer";
+
+      setResultPill("success", "Joined");
+      setResultText(
+        `${studentName}, your attendance for ${courseCode} has been submitted successfully.`
+      );
+      setLiveChip("Attendance joined");
+      showSuccess(joinedResult.message || "Attendance joined successfully.");
+
+      showFaceJoinPopup("success", {
+        studentName,
+        courseCode,
+        lecturerName,
+      });
+
+      if (verifyFaceBtn) {
+        verifyFaceBtn.textContent = "Attendance joined";
+        verifyFaceBtn.disabled = true;
+      }
+
+      if (retakeFaceBtn) {
+        retakeFaceBtn.disabled = true;
+      }
+
+      return;
+    }
+
     setResultPill("success", "Verified");
     setResultText(
       `Verification passed${result?.similarity ? ` • Similarity ${Number(result.similarity).toFixed(2)}` : ""}. Returning to attendance...`
@@ -558,10 +907,15 @@ async function verifyFaceAndContinue() {
     }, 900);
   } catch (err) {
     console.error(err);
+
     setResultPill("error", "Error");
-    setResultText("Something went wrong during face verification.");
+    setResultText("Something went wrong during face verification or attendance submission.");
     setLiveChip("Error");
     showError(err?.message || "Unable to verify face right now.");
+
+    showFaceJoinPopup("error", {
+      message: err?.message || "Face verified, but Colspot could not submit your attendance. Please go back and try again.",
+    });
   } finally {
     isVerifying = false;
     setButtonState();
@@ -577,6 +931,18 @@ function bindEvents() {
     alert("This helps Colspot confirm that a real live student is the one joining attendance.");
   });
   faceBackBtn?.addEventListener("click", goBackCancelled);
+
+  faceJoinDoneBtn?.addEventListener("click", () => {
+    if (directJoinCompleted) {
+      window.location.href = RETURN_TO || "main.html";
+      return;
+    }
+
+    window.location.href = buildReturnUrl({
+      faceVerified: 0,
+    });
+  });
+
   window.addEventListener("beforeunload", stopTracksOnly);
 }
 
