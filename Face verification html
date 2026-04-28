@@ -110,12 +110,105 @@
       color:#20283a;
     }
 
+    .face-mode-pill{
+      margin-left:auto;
+      max-width:150px;
+      padding:8px 11px;
+      border-radius:999px;
+      background:#ffffff;
+      color:#2563eb;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(37,99,235,.12);
+      box-shadow:0 8px 18px rgba(37,99,235,.08);
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
     .main-card{
       background:var(--panel);
       border-radius:34px;
       padding:18px 16px 16px;
       box-shadow:var(--shadow);
       border:1px solid rgba(255,255,255,.55);
+    }
+
+    .assist-context-card{
+      display:none;
+      margin:0 0 14px;
+      padding:13px 14px;
+      border-radius:22px;
+      background:#ffffff;
+      border:1px solid rgba(37,99,235,.12);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .assist-context-card.show{
+      display:block;
+    }
+
+    .assist-context-top{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+
+    .assist-context-icon{
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      background:#eff6ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .assist-context-icon svg{
+      width:21px;
+      height:21px;
+      stroke:#2563eb;
+      stroke-width:2.2;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .assist-context-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .assist-context-title{
+      font-size:14px;
+      font-weight:900;
+      color:#0f172a;
+      margin-bottom:3px;
+      letter-spacing:-.01em;
+    }
+
+    .assist-context-sub{
+      font-size:12px;
+      color:#64748b;
+      line-height:1.45;
+    }
+
+    .assist-context-student{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:16px;
+      background:#f8fbff;
+      border:1px solid #dbeafe;
+      color:#334155;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .assist-context-student strong{
+      color:#0f172a;
+      font-weight:900;
     }
 
     .camera-stage{
@@ -675,6 +768,11 @@
         font-size:16px;
       }
 
+      .face-mode-pill{
+        max-width:120px;
+        font-size:10px;
+      }
+
       .action-grid{
         grid-template-columns:1fr;
       }
@@ -690,6 +788,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="phone-shell">
     <main class="page">
@@ -699,8 +798,37 @@
             <path d="M15 6l-6 6 6 6"></path>
           </svg>
         </button>
-        <div class="page-title">Face verification</div>
+
+        <div class="page-title" id="facePageTitle">Face verification</div>
+
+        <div id="faceModePill" class="face-mode-pill hidden">
+          Assist Join
+        </div>
       </div>
+
+      <section id="assistContextCard" class="assist-context-card">
+        <div class="assist-context-top">
+          <div class="assist-context-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+
+          <div class="assist-context-copy">
+            <div class="assist-context-title">Assist Join verification</div>
+            <div class="assist-context-sub">
+              Verify your friend’s face before Colspot submits attendance for them.
+            </div>
+          </div>
+        </div>
+
+        <div id="assistContextStudent" class="assist-context-student">
+          <strong>Student:</strong> Loading student details...
+        </div>
+      </section>
 
       <section class="main-card">
         <section class="camera-card" style="display:block; margin:0; padding:0; background:transparent; border:none; box-shadow:none;">
@@ -784,7 +912,9 @@
             <span></span>
           </div>
 
-          <a href="javascript:void(0)" class="help-link" id="cancelFaceBtn">Why am I doing this?</a>
+          <a href="javascript:void(0)" class="help-link" id="cancelFaceBtn">
+            Why am I doing this?
+          </a>
         </section>
 
         <section class="verify-result-card result-box" style="display:block;">
@@ -809,9 +939,11 @@
       <div class="face-join-icon-wrap">
         <div id="faceJoinIcon" class="face-join-icon">
           <div class="face-join-spinner" id="faceJoinSpinner"></div>
+
           <svg id="faceJoinSuccessIcon" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M5 13l4 4L19 7"></path>
           </svg>
+
           <svg id="faceJoinErrorIcon" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="7" y1="7" x2="17" y2="17"></line>
             <line x1="17" y1="7" x2="7" y2="17"></line>
