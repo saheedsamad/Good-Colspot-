@@ -127,13 +127,14 @@
 
     #screen-live-session .session-middle {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     #screen-live-session .pin-block {
       flex: 1;
+      min-width: 0;
     }
 
     #screen-live-session .pin-label {
@@ -151,10 +152,45 @@
       color: var(--text-main);
     }
 
+    #screen-live-session .session-code-block {
+      margin-top: 10px;
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      padding: 8px 10px;
+    }
+
+    #screen-live-session .session-code-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #2563eb;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    #screen-live-session .session-code-value {
+      font-size: 16px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    #screen-live-session .session-code-note {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+
     #screen-live-session .timer-block {
       text-align: right;
       font-size: 12px;
       color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     #screen-live-session .timer-value {
@@ -547,6 +583,15 @@
       #screen-live-session .pill-row {
         flex-direction: column;
       }
+
+      #screen-live-session .session-middle {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      #screen-live-session .timer-block {
+        text-align: left;
+      }
     }
   </style>
 
@@ -574,7 +619,16 @@
           <div class="pin-block">
             <div class="pin-label">Session PIN</div>
             <div id="pinValue" class="pin-value">••••••</div>
+
+            <div class="session-code-block">
+              <div class="session-code-label">Session ID</div>
+              <div id="sessionCodeValue" class="session-code-value">Loading...</div>
+              <div class="session-code-note">
+                Students can search this ID on Nearby attendance.
+              </div>
+            </div>
           </div>
+
           <div class="timer-block">
             <div>Time left</div>
             <div id="timerValue" class="timer-value">--:--</div>
@@ -809,6 +863,7 @@
         const classEl = document.getElementById("sessionClass");
         const classSubEl = document.getElementById("sessionClassSub");
         const pinEl = document.getElementById("pinValue");
+        const sessionCodeEl = document.getElementById("sessionCodeValue");
         const statusPill = document.getElementById("statusPill");
 
         const title = session.course_code || "Attendance session";
@@ -833,6 +888,10 @@
         }
 
         if (pinEl) pinEl.textContent = session.pin_code || "------";
+
+        if (sessionCodeEl) {
+          sessionCodeEl.textContent = session.session_code || "Not generated";
+        }
 
         let isEnded = false;
         if (statusPill) {
@@ -920,7 +979,7 @@
         const { data: session, error: sessionError } = await supabase
           .from("attendance_sessions")
           .select(
-            "id, course_code, pin_code, starts_at, expires_at, created_at, is_active"
+            "id, course_code, course_title, pin_code, session_code, starts_at, expires_at, created_at, is_active"
           )
           .eq("id", currentSessionId)
           .single();
@@ -1204,9 +1263,14 @@
         const csv = [header.join(","), ...rows].join("\n");
 
         const sessionTitle = currentSession
-          ? currentSession.course_code || "attendance_session"
+          ? currentSession.session_code || currentSession.course_code || "attendance_session"
           : "attendance_session";
-        const filename = `${sessionTitle}_attendees.csv`;
+
+        const safeTitle = String(sessionTitle)
+          .replace(/[^a-zA-Z0-9_-]/g, "_")
+          .replace(/_+/g, "_");
+
+        const filename = `${safeTitle}_attendees.csv`;
 
         try {
           if (navigator.share && window.File) {
