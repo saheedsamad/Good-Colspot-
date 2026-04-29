@@ -291,6 +291,40 @@
       fill: none;
     }
 
+    #screen-account .academic-update-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1.5px solid #2563eb;
+      background: #ffffff;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #screen-account .academic-update-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    #screen-account .academic-update-help {
+      display: none;
+      margin: 8px 4px 0;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
     #screen-account .device-card {
       margin-top: 4px;
       margin-bottom: 10px;
@@ -613,8 +647,8 @@
       <div class="device-header">
         <div>
           <div class="device-title">Student verification</div>
-          <div class="device-sub">
-            Upload your clearance form to verify your account.
+          <div class="device-sub" id="verifySubText">
+            Complete your course form and face verification to fully verify your account.
           </div>
         </div>
 
@@ -627,10 +661,28 @@
         style="width:100%; justify-content:center; margin-top:8px;"
         onclick="openVerificationPage()"
       >
-        Upload clearance form
+        Upload course form
       </button>
 
       <p id="verifyStatusText" class="status-text"></p>
+
+      <button
+        id="academicUpdateBtn"
+        class="academic-update-btn"
+        type="button"
+        onclick="openAcademicUpdatePage()"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"></path>
+          <path d="M6 10.5v4c0 1.8 2.7 3.5 6 3.5s6-1.7 6-3.5v-4"></path>
+          <path d="M20 8v5"></path>
+        </svg>
+        Update academic details
+      </button>
+
+      <div id="academicUpdateHelp" class="academic-update-help">
+        Change your level, semester, or session. Face verification will be required.
+      </div>
     </div>
 
     <div class="actions-row">
@@ -904,16 +956,27 @@
       window.location.href = "verify_class.html";
     }
 
-    function setVerificationUiVerified(message = "Your clearance form has already been uploaded.") {
+    function openAcademicUpdatePage() {
+      window.location.href = "verify_class.html?mode=academic_update";
+    }
+
+    function setVerificationUiVerified(message = "Your course form and face verification are complete.") {
       const badge = document.getElementById("verifyBadge");
       const text = document.getElementById("verifyStatusText");
       const btn = document.getElementById("verifyUploadBtn");
+      const sub = document.getElementById("verifySubText");
+      const academicBtn = document.getElementById("academicUpdateBtn");
+      const academicHelp = document.getElementById("academicUpdateHelp");
 
       if (badge) {
-        badge.textContent = "Verified";
-        badge.style.background = "#ecfdf5";
-        badge.style.borderColor = "#bbf7d0";
-        badge.style.color = "#15803d";
+        badge.textContent = "Account verified";
+        badge.style.background = "#eff6ff";
+        badge.style.borderColor = "#dbeafe";
+        badge.style.color = "#1d4ed8";
+      }
+
+      if (sub) {
+        sub.textContent = "Complete your course form and face verification to fully verify your account.";
       }
 
       if (text) {
@@ -923,22 +986,40 @@
       }
 
       if (btn) {
-        btn.textContent = "Verified";
+        btn.textContent = "Account verified";
         btn.dataset.locked = "true";
         btn.disabled = true;
+        btn.style.background = "#e8f0ff";
+        btn.style.borderColor = "#dbeafe";
+        btn.style.color = "#5b7fbd";
+      }
+
+      if (academicBtn) {
+        academicBtn.style.display = "inline-flex";
+      }
+
+      if (academicHelp) {
+        academicHelp.style.display = "block";
       }
     }
 
-    function setVerificationUiNotVerified(message = "Upload your clearance form to verify your account.") {
+    function setVerificationUiNotVerified(message = "Complete your course form and face verification to fully verify your account.") {
       const badge = document.getElementById("verifyBadge");
       const text = document.getElementById("verifyStatusText");
       const btn = document.getElementById("verifyUploadBtn");
+      const sub = document.getElementById("verifySubText");
+      const academicBtn = document.getElementById("academicUpdateBtn");
+      const academicHelp = document.getElementById("academicUpdateHelp");
 
       if (badge) {
         badge.textContent = "Not verified";
         badge.style.background = "#eff6ff";
         badge.style.borderColor = "#dbeafe";
         badge.style.color = "#1d4ed8";
+      }
+
+      if (sub) {
+        sub.textContent = "Complete your course form and face verification to fully verify your account.";
       }
 
       if (text) {
@@ -948,9 +1029,20 @@
       }
 
       if (btn) {
-        btn.textContent = "Upload clearance form";
+        btn.textContent = "Start verification";
         btn.dataset.locked = "false";
         btn.disabled = false;
+        btn.style.background = "";
+        btn.style.borderColor = "";
+        btn.style.color = "";
+      }
+
+      if (academicBtn) {
+        academicBtn.style.display = "none";
+      }
+
+      if (academicHelp) {
+        academicHelp.style.display = "none";
       }
     }
 
@@ -958,31 +1050,75 @@
       if (!accountCurrentUser) return;
 
       try {
-        const { data, error } = await supabase
-          .from("verification_clearance")
-          .select("id, status, created_at")
-          .eq("user_id", accountCurrentUser.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
+        const [courseFormRes, faceRes] = await Promise.all([
+          supabase
+            .from("verification_course_forms")
+            .select("id, status, created_at")
+            .eq("user_id", accountCurrentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
 
-        if (error) {
-          console.error("loadAccountVerification error:", error);
-          setVerificationUiNotVerified("Upload your clearance form to verify your account.");
+          supabase
+            .from("face_profiles")
+            .select("user_id, face_verified, capture_status, updated_at")
+            .eq("user_id", accountCurrentUser.id)
+            .limit(1)
+            .maybeSingle()
+        ]);
+
+        if (courseFormRes.error) {
+          console.error("loadAccountVerification course form error:", courseFormRes.error);
+        }
+
+        if (faceRes.error) {
+          console.error("loadAccountVerification face error:", faceRes.error);
+        }
+
+        const courseRow = courseFormRes.data || null;
+        const faceRow = faceRes.data || null;
+
+        const courseStatus = String(courseRow?.status || "").trim().toLowerCase();
+        const faceStatus = String(faceRow?.capture_status || "").trim().toLowerCase();
+
+        const courseOk =
+          !!courseRow &&
+          (
+            courseStatus === "successful" ||
+            courseStatus === "verified" ||
+            courseStatus === "approved" ||
+            courseStatus === "success"
+          );
+
+        const faceOk =
+          !!faceRow &&
+          (
+            faceRow.face_verified === true ||
+            faceStatus === "approved" ||
+            faceStatus === "verified"
+          );
+
+        if (courseOk && faceOk) {
+          setVerificationUiVerified("Your course form and face verification are complete.");
           return;
         }
 
-        const row = Array.isArray(data) && data.length ? data[0] : null;
-        const status = String(row?.status || "").trim().toLowerCase();
-
-        if (row || status === "successful" || status === "verified") {
-          setVerificationUiVerified("Your clearance form has already been uploaded.");
+        if (courseOk && !faceOk) {
+          setVerificationUiNotVerified("Course form is complete. Face verification is still required.");
+          const btn = document.getElementById("verifyUploadBtn");
+          if (btn) {
+            btn.textContent = "Continue face verification";
+            btn.onclick = function () {
+              window.location.href = "face-capture.html";
+            };
+          }
           return;
         }
 
-        setVerificationUiNotVerified("Upload your clearance form to verify your account.");
+        setVerificationUiNotVerified("Complete your course form and face verification to fully verify your account.");
       } catch (e) {
         console.error("loadAccountVerification fatal:", e);
-        setVerificationUiNotVerified("Upload your clearance form to verify your account.");
+        setVerificationUiNotVerified("Complete your course form and face verification to fully verify your account.");
       }
     }
 
@@ -1460,6 +1596,7 @@
     window.accountDeleteAccount = accountDeleteAccount;
     window.switchToLearnEarn = switchToLearnEarn;
     window.openVerificationPage = openVerificationPage;
+    window.openAcademicUpdatePage = openAcademicUpdatePage;
   </script>
 </div>
 <!-- 🔹 ACCOUNT SCREEN END -->
