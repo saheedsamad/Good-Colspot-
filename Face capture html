@@ -751,7 +751,7 @@
 
       pendingAcademicUpdate = readPendingAcademicUpdate();
 
-      if (pageTitle) pageTitle.textContent = "Academic face verification";
+      if (pageTitle) pageTitle.textContent = "Academic face capture";
       if (pageSub) pageSub.textContent = "Retake face to complete academic update";
       if (academicModePill) academicModePill.classList.add("show");
       if (continueBtn) continueBtn.textContent = "Verify and update";
@@ -940,7 +940,7 @@
 
       if (IS_ACADEMIC_UPDATE) {
         setCameraBadge("Retake face to approve academic update");
-        setStatus("Look straight", "Start your camera and complete face verification to apply your academic update.");
+        setStatus("Look straight", "Start your camera and complete face capture to apply your academic update.");
       } else {
         setCameraBadge("Look straight, turn left, turn right, then face front again");
         setStatus("Look straight", "Start your camera and follow the movement guide.");
@@ -971,6 +971,49 @@
 
     async function getLocalFirstUser() {
       const guard = window.ColspotGuard;
+
+      if (IS_ACADEMIC_UPDATE) {
+        try {
+          const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
+
+          if (cached && (cached.user_id || cached.id)) {
+            currentLocalUser = {
+              id: cached.user_id || cached.id,
+              email: cached.email || null
+            };
+
+            return currentLocalUser;
+          }
+        } catch {}
+
+        try {
+          const { data, error } = await supabaseClient.auth.getUser();
+
+          if (!error && data && data.user) {
+            currentLocalUser = {
+              id: data.user.id,
+              email: data.user.email || null
+            };
+
+            try {
+              localStorage.setItem("colspot_local_user", JSON.stringify({
+                id: data.user.id,
+                user_id: data.user.id,
+                email: data.user.email || "",
+                role: "student",
+                last_seen: new Date().toISOString()
+              }));
+
+              localStorage.setItem("colspot_auth_role", "student");
+            } catch {}
+
+            return currentLocalUser;
+          }
+        } catch {}
+
+        window.location.href = "index.html";
+        return null;
+      }
 
       if (guard && typeof guard.guardRolePageAccess === "function") {
         const localUser = await guard.guardRolePageAccess({
