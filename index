@@ -19,6 +19,7 @@
       --border: #e2e8f0;
       --error: #dc2626;
       --success: #16a34a;
+      --soft: #eef4ff;
     }
 
     * {
@@ -115,8 +116,8 @@
     .card {
       width: 100%;
       background: var(--card);
-      border-radius: 24px;
-      padding: 24px 20px 20px;
+      border-radius: 28px;
+      padding: 22px 18px 20px;
       box-shadow: 0 12px 35px rgba(0,0,0,0.08);
       animation: fadeIn 0.35s ease;
     }
@@ -126,13 +127,45 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    .top-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      min-height: 56px;
+    }
+
+    .top-back-btn {
+      position: absolute;
+      left: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      border: 1px solid #dbe7ff;
+      background: #f8fbff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.08);
+      padding: 0;
+    }
+
+    .top-back-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--blue);
+      stroke-width: 2;
+      fill: none;
+    }
+
     .logo {
       text-align: center;
-      margin-bottom: 12px;
     }
 
     .logo img {
-      height: 52px;
+      height: 54px;
       width: auto;
       display: inline-block;
       border-radius: 12px;
@@ -142,7 +175,7 @@
     h1 {
       text-align: center;
       font-size: 22px;
-      margin: 4px 0 4px;
+      margin: 8px 0 4px;
       color: var(--text);
     }
 
@@ -151,6 +184,7 @@
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 18px;
+      line-height: 1.45;
     }
 
     .mode-toggle {
@@ -194,7 +228,7 @@
       width: 100%;
       padding: 12px 13px;
       font-size: 17px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid var(--border);
       margin-bottom: 14px;
       outline: none;
@@ -212,7 +246,7 @@
     button.primary {
       width: 100%;
       padding: 14px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: none;
       font-size: 16px;
       font-weight: 600;
@@ -303,6 +337,7 @@
       color: var(--muted);
       margin-top: -6px;
       margin-bottom: 10px;
+      line-height: 1.45;
     }
 
     .hidden { display: none !important; }
@@ -406,22 +441,219 @@
       font-size: 12px;
       color: var(--muted);
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    .admin-note {
-      margin-top: -6px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.4;
-    }
-
-    .admin-back-row {
-      margin-top: 10px;
+    .auth-footer-links {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
       display: flex;
       justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+
+    .auth-footer-links button {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .auth-footer-links button:hover {
+      text-decoration: underline;
+    }
+
+    .auth-footer-divider {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .role-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .role-card-btn {
+      width: 100%;
+      border: 1px solid #dbe7ff;
+      background: #f8fbff;
+      border-radius: 20px;
+      padding: 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.06s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.06);
+    }
+
+    .role-card-btn:hover {
+      border-color: #bfd3ff;
+      background: #f4f8ff;
+    }
+
+    .role-card-btn:active {
+      transform: scale(0.985);
+    }
+
+    .role-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #dbe7ff;
+      flex-shrink: 0;
+    }
+
+    .role-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: #1d4ed8;
+      stroke-width: 1.9;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .role-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .role-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .role-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .section-head-badge {
+      width: fit-content;
+      margin: 0 auto 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eef4ff;
+      border: 1px solid #dbe7ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .social-login-wrap {
+      margin-top: 10px;
+    }
+
+    .google-btn {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 14px;
+      border: 1px solid #dbe2f0;
+      background: #fff;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.05s;
+      padding: 14px 16px;
+    }
+
+    .google-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .google-btn:active {
+      transform: scale(0.98);
+    }
+
+    .google-g {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #4285F4;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .school-loading-note {
+      margin-top: -8px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .searchable-input-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .searchable-input-wrap input {
+      padding-right: 38px;
+    }
+
+    .searchable-input-icon {
+      position: absolute;
+      right: 13px;
+      top: 14px;
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+      color: #94a3b8;
+    }
+
+    .searchable-input-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .role-backup-box {
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+      padding: 12px 12px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .role-backup-note {
+      margin-top: -6px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
     }
   </style>
 </head>
@@ -438,326 +670,507 @@
   <div class="phone-shell">
     <div id="auth-shell" class="container hidden">
       <div class="card">
-        <div class="logo">
-          <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
-        </div>
 
-        <h1 id="card-title">Welcome back</h1>
-        <p class="subtitle" id="card-subtitle">Sign in to your Colspot account</p>
-
-        <div id="mode-toggle" class="mode-toggle">
-          <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
-            Sign in
-          </button>
-          <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
-            Sign up
-          </button>
-          <button id="tab-admin" class="mode-btn" type="button" onclick="switchMode('admin')">
-            Admin
-          </button>
-        </div>
-
-        <div id="verify-panel" class="hidden">
-          <div class="verify-title">Verify your email</div>
-
-          <div class="verify-box">
-            We sent a 6-digit code to:<br>
-            <b id="verify-email">your@email.com</b><br><br>
-            Enter the code below to finish creating your account.
-          </div>
-
-          <label for="verify-code-input">Verification code</label>
-          <input id="verify-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-
-          <button id="verify-code-btn" type="button" class="primary">
-            <span id="verify-code-text">Verify &amp; continue</span>
-            <span id="verify-code-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <button id="resend-btn" type="button" class="text-link">Resend code</button>
-            <button id="back-to-signin-btn" type="button" class="text-link">Back</button>
-          </div>
-
-          <div id="verify-message" class="message"></div>
-        </div>
-
-        <div id="forgot-panel" class="hidden">
-          <div class="verify-title">Forgot password</div>
-          <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
-            Enter your email and we’ll send you a code to reset your password.
-          </p>
-
-          <div class="stepper">
-            <div class="step active">
-              <div class="step-circle">1</div>
-              <span>Enter Email</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <span>Verify Code</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <span>Reset Password</span>
+        <div id="role-select-panel">
+          <div class="top-row">
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
             </div>
           </div>
 
-          <label for="forgot-email">Email</label>
-          <input id="forgot-email" type="email" placeholder="you@example.com" autocomplete="email" />
+          <h1>Select your role</h1>
+          <p class="subtitle">Choose how you want to continue into Colspot.</p>
 
-          <button id="forgot-send-btn" type="button" class="primary">
-            <span id="forgot-send-text">Send verification code</span>
-            <span id="forgot-send-loader" class="spinner hidden"></span>
-          </button>
+          <div class="role-list">
+            <button type="button" class="role-card-btn" onclick="showAuthSection('student')">
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M3 9l9-4 9 4-9 4-9-4Z"></path>
+                  <path d="M7 11v4c0 1.8 2.2 3 5 3s5-1.2 5-3v-4"></path>
+                  <path d="M21 10v5"></path>
+                </svg>
+              </div>
+              <div class="role-text">
+                <div class="role-title">Student</div>
+                <div class="role-desc">Click here if you are a student</div>
+              </div>
+            </button>
 
-          <div class="bottom-row">
-            <button id="forgot-back-btn" type="button" class="text-link">Back to sign in</button>
-          </div>
+            <button type="button" class="role-card-btn" onclick="showAuthSection('lecturer')">
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+                  <path d="M5 20a7 7 0 0 1 14 0"></path>
+                  <path d="M18 6h3v5h-3"></path>
+                </svg>
+              </div>
+              <div class="role-text">
+                <div class="role-title">Lecturer</div>
+                <div class="role-desc">Click here if you are a lecturer</div>
+              </div>
+            </button>
 
-          <div id="forgot-message" class="message"></div>
-        </div>
-
-        <div id="reset-panel" class="hidden">
-          <div class="verify-title">Reset your password</div>
-
-          <div class="stepper">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <span>Enter Email</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step active">
-              <div class="step-circle">2</div>
-              <span>Verify Code</span>
-            </div>
-            <div class="step-line active"></div>
-            <div class="step active">
-              <div class="step-circle">3</div>
-              <span>Reset Password</span>
-            </div>
-          </div>
-
-          <div class="verify-box">
-            We sent a 6-digit reset code to:<br>
-            <b id="reset-email-label">your@email.com</b><br><br>
-            Enter the code and choose a new password.
-          </div>
-
-          <label for="reset-code">Reset code</label>
-          <input id="reset-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-
-          <label for="reset-password">New password</label>
-          <div class="password-row">
-            <input id="reset-password" type="password" placeholder="At least 6 characters" />
-            <button type="button" class="password-toggle" onclick="togglePassword('reset-password', this)">Show</button>
-          </div>
-          <div class="hint">
-            Use at least 6 characters, with <strong>letters and numbers</strong>.
-          </div>
-
-          <label for="reset-password2">Confirm new password</label>
-          <div class="password-row">
-            <input id="reset-password2" type="password" placeholder="Repeat password" />
-            <button type="button" class="password-toggle" onclick="togglePassword('reset-password2', this)">Show</button>
-          </div>
-
-          <button id="reset-submit-btn" type="button" class="primary">
-            <span id="reset-submit-text">Change password</span>
-            <span id="reset-submit-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <button id="reset-back-btn" type="button" class="text-link">Back to sign in</button>
-          </div>
-
-          <div id="reset-message" class="message"></div>
-        </div>
-
-        <form id="signin-form">
-          <label for="signin-email">Email</label>
-          <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
-
-          <label for="signin-password">Password</label>
-          <div class="password-row">
-            <input id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
-          </div>
-
-          <button id="signin-btn" type="submit" class="primary">
-            <span id="signin-text">Sign in</span>
-            <span id="signin-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="bottom-row">
-            <a href="contactsettings.html" class="text-link">Contact us</a>
-            <button type="button" class="text-link" onclick="openForgotPasswordPage()">
-              Forgot password?
+            <button type="button" class="role-card-btn" onclick="showAuthSection('admin')">
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4Z"></path>
+                  <path d="M12 10v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg>
+              </div>
+              <div class="role-text">
+                <div class="role-title">Admin</div>
+                <div class="role-desc">Click here if you are an admin</div>
+              </div>
             </button>
           </div>
 
-          <div id="signin-message" class="message"></div>
-        </form>
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON.
+          </p>
 
-        <form id="signup-form" class="hidden">
-          <label for="signup-fullname">Full name</label>
-          <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
-
-          <label for="signup-role">Role</label>
-          <select id="signup-role" required>
-            <option value="">Select role</option>
-            <option value="student">Student</option>
-            <option value="lecturer">Lecturer</option>
-          </select>
-
-          <label for="signup-schoolname">School name</label>
-          <select id="signup-schoolname" required>
-            <option value="">Loading schools...</option>
-          </select>
-          <div class="hint" id="school-load-hint">
-            Select your school from the list.
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
           </div>
+        </div>
 
-          <div id="id-field-wrap" class="hidden">
-            <label id="signup-id-label" for="signup-matric">Matric number</label>
-            <input id="signup-matric" type="text" placeholder="e.g. CSC/21/1234" autocomplete="off" />
-            <div id="signup-id-hint" class="hint">
-              Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>
+        <div id="student-auth-panel" class="hidden">
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
             </div>
           </div>
 
-          <label for="signup-dept">Department</label>
-          <input id="signup-dept" type="text" placeholder="Computer Science" autocomplete="organization" required />
+          <div class="section-head-badge">Student access</div>
+          <h1>Continue with Google</h1>
+          <p class="subtitle">Use your current login</p>
 
-          <label for="signup-email">Email</label>
-          <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email" required />
-
-          <div id="lecturer-email-hint" class="hint hidden">
-            Lecturers: please use your official <strong>school email</strong>
-            (for example <em>name@university.edu</em>). Personal emails like Gmail/Yahoo/Outlook are not allowed.
+          <div class="social-login-wrap">
+            <button type="button" class="google-btn" onclick="signInWithGoogle()">
+              <span class="google-g">G</span>
+              <span>Continue with Google</span>
+            </button>
           </div>
 
-          <label for="signup-password">Password</label>
-          <div class="password-row">
-            <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+          <div id="student-google-message" class="message"></div>
+
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON.
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
           </div>
-          <div class="hint">
-            Use at least 6 characters, with <strong>letters and numbers</strong>.
+        </div>
+
+        <div id="lecturer-auth-panel" class="hidden">
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
           </div>
 
-          <label for="signup-password2">Confirm password</label>
-          <div class="password-row">
-            <input id="signup-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
-            <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
+          <div class="section-head-badge">Lecturer access</div>
+          <h1 id="card-title">Welcome back</h1>
+          <p class="subtitle" id="card-subtitle">Sign in to your Colspot lecturer account</p>
+
+          <div id="mode-toggle" class="mode-toggle">
+            <button id="tab-signin" class="mode-btn active" type="button" onclick="switchMode('signin')">
+              Sign in
+            </button>
+            <button id="tab-signup" class="mode-btn" type="button" onclick="switchMode('signup')">
+              Sign up
+            </button>
           </div>
 
-          <button id="signup-btn" type="submit" class="primary">
-            <span id="signup-text">Create account</span>
-            <span id="signup-loader" class="spinner hidden"></span>
-          </button>
+          <div id="verify-panel" class="hidden">
+            <div class="verify-title">Verify your email</div>
 
-          <div class="bottom-row small">
-            <span style="color:var(--muted); font-size:13px; text-align:center;">
-              By signing up you agree to Colspot’s
-              <button type="button" class="link-inline" onclick="openPrivacy()">Privacy &amp; Policy</button>.
+            <div class="verify-box">
+              We sent a 6-digit code to:<br>
+              <b id="verify-email">your@email.com</b><br><br>
+              Enter the code below to finish creating your account.
+            </div>
+
+            <label for="verify-code-input">Verification code</label>
+            <input id="verify-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+            <button id="verify-code-btn" type="button" class="primary">
+              <span id="verify-code-text">Verify &amp; continue</span>
+              <span id="verify-code-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="resend-btn" type="button" class="text-link">Resend code</button>
+              <button id="back-to-signin-btn" type="button" class="text-link">Back</button>
+            </div>
+
+            <div id="verify-message" class="message"></div>
+          </div>
+
+          <div id="forgot-panel" class="hidden">
+            <div class="verify-title">Forgot password</div>
+            <p class="subtitle" style="margin-top:0; margin-bottom:10px;">
+              Enter your email and we’ll send you a code to reset your password.
+            </p>
+
+            <div class="stepper">
+              <div class="step active">
+                <div class="step-circle">1</div>
+                <span>Enter Email</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step">
+                <div class="step-circle">2</div>
+                <span>Verify Code</span>
+              </div>
+              <div class="step-line"></div>
+              <div class="step">
+                <div class="step-circle">3</div>
+                <span>Reset Password</span>
+              </div>
+            </div>
+
+            <label for="forgot-email">Email</label>
+            <input id="forgot-email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+            <button id="forgot-send-btn" type="button" class="primary">
+              <span id="forgot-send-text">Send verification code</span>
+              <span id="forgot-send-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="forgot-back-btn" type="button" class="text-link">Back to sign in</button>
+            </div>
+
+            <div id="forgot-message" class="message"></div>
+          </div>
+
+          <div id="reset-panel" class="hidden">
+            <div class="verify-title">Reset your password</div>
+
+            <div class="stepper">
+              <div class="step">
+                <div class="step-circle">1</div>
+                <span>Enter Email</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step active">
+                <div class="step-circle">2</div>
+                <span>Verify Code</span>
+              </div>
+              <div class="step-line active"></div>
+              <div class="step active">
+                <div class="step-circle">3</div>
+                <span>Reset Password</span>
+              </div>
+            </div>
+
+            <div class="verify-box">
+              We sent a 6-digit reset code to:<br>
+              <b id="reset-email-label">your@email.com</b><br><br>
+              Enter the code and choose a new password.
+            </div>
+
+            <label for="reset-code">Reset code</label>
+            <input id="reset-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+            <label for="reset-password">New password</label>
+            <div class="password-row">
+              <input id="reset-password" type="password" placeholder="At least 6 characters" />
+              <button type="button" class="password-toggle" onclick="togglePassword('reset-password', this)">Show</button>
+            </div>
+            <div class="hint">
+              Use at least 6 characters, with <strong>letters and numbers</strong>.
+            </div>
+
+            <label for="reset-password2">Confirm new password</label>
+            <div class="password-row">
+              <input id="reset-password2" type="password" placeholder="Repeat password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('reset-password2', this)">Show</button>
+            </div>
+
+            <button id="reset-submit-btn" type="button" class="primary">
+              <span id="reset-submit-text">Change password</span>
+              <span id="reset-submit-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="reset-back-btn" type="button" class="text-link">Back to sign in</button>
+            </div>
+
+            <div id="reset-message" class="message"></div>
+          </div>
+
+          <form id="signin-form">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+
+            <label for="signin-password">Password</label>
+            <div class="password-row">
+              <input id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)">Show</button>
+            </div>
+
+            <button id="signin-btn" type="submit" class="primary">
+              <span id="signin-text">Sign in</span>
+              <span id="signin-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <a href="contact.html" class="text-link">Contact us</a>
+              <button type="button" class="text-link" onclick="openForgotPasswordPage()">
+                Forgot password?
+              </button>
+            </div>
+
+            <div id="signin-message" class="message"></div>
+          </form>
+
+          <form id="signup-form" class="hidden">
+            <div class="role-backup-box">
+              <label for="signup-role">Role</label>
+              <select id="signup-role">
+                <option value="lecturer" selected>Lecturer</option>
+                <option value="student">Student</option>
+              </select>
+              <div class="role-backup-note">
+                Lecturer is the default. Change it to Student only if you are using this page as a backup sign-up flow.
+              </div>
+            </div>
+
+            <label for="signup-fullname">Full name</label>
+            <input id="signup-fullname" type="text" placeholder="Saheed Samad" autocomplete="name" required />
+
+            <div id="signup-school-wrap">
+              <label for="signup-schoolname">School name</label>
+              <div class="searchable-input-wrap">
+                <input
+                  id="signup-schoolname"
+                  type="text"
+                  list="schools-list"
+                  placeholder="Search and select school"
+                  autocomplete="off"
+                  required
+                />
+                <span class="searchable-input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="M20 20l-3.5-3.5"></path>
+                  </svg>
+                </span>
+              </div>
+              <datalist id="schools-list"></datalist>
+              <div id="school-loading-note" class="school-loading-note">Loading schools...</div>
+            </div>
+
+            <div id="signup-dept-wrap">
+              <label for="signup-dept">Department</label>
+              <div class="searchable-input-wrap">
+                <input
+                  id="signup-dept"
+                  type="text"
+                  list="departments-list"
+                  placeholder="Search and select department"
+                  autocomplete="organization-title"
+                />
+                <span class="searchable-input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="M20 20l-3.5-3.5"></path>
+                  </svg>
+                </span>
+              </div>
+              <datalist id="departments-list"></datalist>
+              <div id="department-loading-note" class="school-loading-note">Loading departments...</div>
+            </div>
+
+            <div id="lecturer-id-wrap">
+              <label for="signup-staffid">Staff ID</label>
+              <input id="signup-staffid" type="text" placeholder="Enter your staff ID" autocomplete="off" />
+            </div>
+
+            <div id="student-id-wrap" class="hidden">
+              <label for="signup-studentid">Matric number</label>
+              <input id="signup-studentid" type="text" placeholder="Enter your matric number" autocomplete="off" />
+            </div>
+
+            <label for="signup-email" id="signup-email-label">School email</label>
+            <input id="signup-email" type="email" placeholder="you@school.edu" autocomplete="email" required />
+
+            <div id="lecturer-email-hint" class="hint">
+              Use your official school email only.
+            </div>
+
+            <label for="signup-password">Password</label>
+            <div class="password-row">
+              <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+            </div>
+            <div class="hint">
+              Use at least 6 characters, with <strong>letters and numbers</strong>.
+            </div>
+
+            <label for="signup-password2">Confirm password</label>
+            <div class="password-row">
+              <input id="signup-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('signup-password2', this)">Show</button>
+            </div>
+
+            <button id="signup-btn" type="submit" class="primary">
+              <span id="signup-text">Create account</span>
+              <span id="signup-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row small">
+              <span style="color:var(--muted); font-size:13px; text-align:center;">
+                By signing up you agree to Colspot’s
+                <button type="button" class="link-inline" onclick="openPrivacy()">Privacy Policy</button>.
+              </span>
+            </div>
+
+            <div class="bottom-row small">
+              <span style="color:var(--muted); font-size:13px;">Already have an account?</span>
+              <button type="button" class="text-link" onclick="switchMode('signin')">Sign in</button>
+            </div>
+
+            <div id="signup-message" class="message"></div>
+          </form>
+
+          <div id="switch-row" class="bottom-row" style="margin-top:16px;">
+            <span id="switch-text" style="font-size:13px; color:var(--muted);">
+              Don’t have an account?
             </span>
+            <button type="button" class="text-link" onclick="toggleAuthMode()">
+              <span id="switch-link-label">Create one</span>
+            </button>
           </div>
 
-          <div class="bottom-row small">
-            <span style="color:var(--muted); font-size:13px;">Already have an account?</span>
-            <button type="button" class="text-link" onclick="switchMode('signin')">Sign in</button>
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON.
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
           </div>
-
-          <div id="signup-message" class="message"></div>
-        </form>
-
-        <form id="admin-form" class="hidden">
-          <div class="admin-note">
-            Admin accounts are created from above. Enter your admin ID and password.
-          </div>
-
-          <label for="admin-id">ID</label>
-          <input id="admin-id" type="text" placeholder="Enter admin ID" autocomplete="off" />
-
-          <label for="admin-password">Password</label>
-          <div class="password-row">
-            <input id="admin-password" type="password" placeholder="••••••••" autocomplete="current-password" />
-            <button type="button" class="password-toggle" onclick="togglePassword('admin-password', this)">Show</button>
-          </div>
-
-          <button id="admin-btn" type="submit" class="primary">
-            <span id="admin-text">Admin login</span>
-            <span id="admin-loader" class="spinner hidden"></span>
-          </button>
-
-          <div id="admin-message" class="message"></div>
-        </form>
-
-        <div id="admin-link-panel" class="hidden">
-          <div class="verify-title">Link your email</div>
-
-          <div class="verify-box">
-            This is your first admin login.<br>
-            Add your email to link this admin account and continue.
-          </div>
-
-          <label for="admin-link-email">Email</label>
-          <input id="admin-link-email" type="email" placeholder="you@example.com" autocomplete="email" />
-
-          <button id="admin-link-btn" type="button" class="primary">
-            <span id="admin-link-text">Send verification code</span>
-            <span id="admin-link-loader" class="spinner hidden"></span>
-          </button>
-
-          <div class="admin-back-row">
-            <button id="admin-link-back-btn" type="button" class="text-link">Back</button>
-          </div>
-
-          <div id="admin-link-message" class="message"></div>
         </div>
 
-        <div id="admin-verify-panel" class="hidden">
-          <div class="verify-title">Verify admin email</div>
+        <div id="admin-auth-panel" class="hidden">
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
 
-          <div class="verify-box">
-            We sent a 6-digit code to:<br>
-            <b id="admin-verify-email-label">your@email.com</b><br><br>
-            Enter the code below to finish linking this admin account.
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
           </div>
 
-          <label for="admin-verify-code">Verification code</label>
-          <input id="admin-verify-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+          <div class="section-head-badge">Admin access</div>
+          <h1>Admin login</h1>
+          <p class="subtitle">Use your current login</p>
 
-          <button id="admin-verify-btn" type="button" class="primary">
-            <span id="admin-verify-text">Verify email</span>
-            <span id="admin-verify-loader" class="spinner hidden"></span>
-          </button>
+          <form id="admin-form">
+            <label for="admin-identifier">Email or Username</label>
+            <input id="admin-identifier" type="text" placeholder="Enter your email or username" autocomplete="username" />
 
-          <div class="bottom-row">
-            <button id="admin-resend-btn" type="button" class="text-link">Resend code</button>
-            <button id="admin-verify-back-btn" type="button" class="text-link">Back</button>
+            <label for="admin-password">Password</label>
+            <div class="password-row">
+              <input id="admin-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="password-toggle" onclick="togglePassword('admin-password', this)">Show</button>
+            </div>
+
+            <button id="admin-btn" type="submit" class="primary">
+              <span id="admin-text">Admin login</span>
+              <span id="admin-loader" class="spinner hidden"></span>
+            </button>
+
+            <div id="admin-message" class="message"></div>
+          </form>
+
+          <div id="admin-link-panel" class="hidden">
+            <div class="verify-title">Link your email</div>
+
+            <div class="verify-box">
+              This is your first admin login.<br>
+              Add your email to link this admin account and continue.
+            </div>
+
+            <label for="admin-link-email">Email</label>
+            <input id="admin-link-email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+            <button id="admin-link-btn" type="button" class="primary">
+              <span id="admin-link-text">Send verification code</span>
+              <span id="admin-link-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="admin-link-back-btn" type="button" class="text-link">Back</button>
+            </div>
+
+            <div id="admin-link-message" class="message"></div>
           </div>
 
-          <div id="admin-verify-message" class="message"></div>
+          <div id="admin-verify-panel" class="hidden">
+            <div class="verify-title">Verify admin email</div>
+
+            <div class="verify-box">
+              We sent a 6-digit code to:<br>
+              <b id="admin-verify-email-label">your@email.com</b><br><br>
+              Enter the code below to finish linking this admin account.
+            </div>
+
+            <label for="admin-verify-code">Verification code</label>
+            <input id="admin-verify-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
+
+            <button id="admin-verify-btn" type="button" class="primary">
+              <span id="admin-verify-text">Verify email</span>
+              <span id="admin-verify-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row">
+              <button id="admin-resend-btn" type="button" class="text-link">Resend code</button>
+              <button id="admin-verify-back-btn" type="button" class="text-link">Back</button>
+            </div>
+
+            <div id="admin-verify-message" class="message"></div>
+          </div>
+
+          <p class="location-note">
+            <strong>Colspot uses your location to work properly.</strong><br>
+            Please allow location when asked, and make sure Location is turned ON.
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
+          </div>
         </div>
 
-        <div id="switch-row" class="bottom-row" style="margin-top:16px;">
-          <span id="switch-text" style="font-size:13px; color:var(--muted);">
-            Don’t have an account?
-          </span>
-          <button type="button" class="text-link" onclick="toggleAuthMode()">
-            <span id="switch-link-label">Create one</span>
-          </button>
-        </div>
-
-        <p class="location-note">
-          <strong>Colspot uses your location to work properly.</strong><br>
-          Please allow location when asked, and make sure Location is turned ON<br>
-          (Android: Quick Settings • iPhone: Settings → Privacy → Location Services).
-        </p>
       </div>
     </div>
   </div>
@@ -772,15 +1185,166 @@
     }
 
     function openPrivacy() {
-      window.location.href = "privacy.html";
+      window.location.href = "Privacy.html";
     }
 
-    async function loadSchoolsIntoSelect() {
-      const schoolSelect = document.getElementById("signup-schoolname");
-      const hint = document.getElementById("school-load-hint");
-      if (!schoolSelect || !window.supabase) return;
+    function openTerms() {
+      window.location.href = "Term.html";
+    }
 
-      schoolSelect.innerHTML = `<option value="">Loading schools...</option>`;
+    function safeSetRole(role) {
+      try {
+        localStorage.setItem("colspot_auth_role", role);
+      } catch (e) {
+        console.error("Could not save auth role:", e);
+      }
+    }
+
+    function showAuthSection(role) {
+      const rolePanel = document.getElementById("role-select-panel");
+      const studentPanel = document.getElementById("student-auth-panel");
+      const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const adminPanel = document.getElementById("admin-auth-panel");
+
+      if (rolePanel) rolePanel.classList.add("hidden");
+      if (studentPanel) studentPanel.classList.add("hidden");
+      if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (adminPanel) adminPanel.classList.add("hidden");
+
+      if (role === "student" && studentPanel) {
+        safeSetRole("student");
+        studentPanel.classList.remove("hidden");
+      } else if (role === "lecturer" && lecturerPanel) {
+        safeSetRole("lecturer");
+        lecturerPanel.classList.remove("hidden");
+      } else if (role === "admin" && adminPanel) {
+        safeSetRole("admin");
+        adminPanel.classList.remove("hidden");
+      } else if (rolePanel) {
+        rolePanel.classList.remove("hidden");
+      }
+    }
+
+    function backToRoleSelection() {
+      const rolePanel = document.getElementById("role-select-panel");
+      const studentPanel = document.getElementById("student-auth-panel");
+      const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const adminPanel = document.getElementById("admin-auth-panel");
+
+      if (studentPanel) studentPanel.classList.add("hidden");
+      if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (adminPanel) adminPanel.classList.add("hidden");
+      if (rolePanel) rolePanel.classList.remove("hidden");
+    }
+
+    function signInWithGoogle() {
+      if (typeof window.signInWithGoogle === "function") {
+        window.signInWithGoogle();
+        return;
+      }
+
+      const msg = document.getElementById("student-google-message");
+      if (msg) {
+        msg.textContent = "Google login will be connected in auth.js.";
+        msg.className = "message error";
+      }
+    }
+
+    function updateLecturerSignupRoleUI() {
+      const roleSelect = document.getElementById("signup-role");
+      const currentRole = (roleSelect?.value || "lecturer").toLowerCase();
+
+      const schoolWrap = document.getElementById("signup-school-wrap");
+      const deptWrap = document.getElementById("signup-dept-wrap");
+      const lecturerWrap = document.getElementById("lecturer-id-wrap");
+      const studentWrap = document.getElementById("student-id-wrap");
+
+      const schoolSelect = document.getElementById("signup-schoolname");
+      const deptInput = document.getElementById("signup-dept");
+      const lecturerInput = document.getElementById("signup-staffid");
+      const studentInput = document.getElementById("signup-studentid");
+
+      const emailLabel = document.getElementById("signup-email-label");
+      const emailHint = document.getElementById("lecturer-email-hint");
+      const subtitle = document.getElementById("card-subtitle");
+
+      if (currentRole === "student") {
+        if (schoolWrap) schoolWrap.classList.add("hidden");
+        if (deptWrap) deptWrap.classList.add("hidden");
+        if (lecturerWrap) lecturerWrap.classList.add("hidden");
+        if (studentWrap) studentWrap.classList.add("hidden");
+
+        if (schoolSelect) {
+          schoolSelect.value = "";
+          schoolSelect.required = false;
+        }
+
+        if (deptInput) deptInput.value = "";
+        if (lecturerInput) lecturerInput.value = "";
+        if (studentInput) studentInput.value = "";
+
+        if (emailLabel) emailLabel.textContent = "Email";
+        if (emailHint) {
+          emailHint.textContent = "Use the same email you want to use for your student account.";
+        }
+        if (subtitle && document.getElementById("signup-form") && !document.getElementById("signup-form").classList.contains("hidden")) {
+          subtitle.textContent = "Backup sign up flow";
+        }
+      } else {
+        if (schoolWrap) schoolWrap.classList.remove("hidden");
+        if (deptWrap) deptWrap.classList.remove("hidden");
+        if (lecturerWrap) lecturerWrap.classList.remove("hidden");
+        if (studentWrap) studentWrap.classList.add("hidden");
+
+        if (schoolSelect) {
+          schoolSelect.required = true;
+        }
+
+        if (studentInput) studentInput.value = "";
+
+        if (emailLabel) emailLabel.textContent = "School email";
+        if (emailHint) {
+          emailHint.textContent = "Use your official school email only.";
+        }
+        if (subtitle && document.getElementById("signup-form") && !document.getElementById("signup-form").classList.contains("hidden")) {
+          subtitle.textContent = "Sign up as a lecturer";
+        }
+      }
+    }
+
+    async function waitForSupabaseReady() {
+      let tries = 0;
+      while (!window.supabase && tries < 50) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        tries++;
+      }
+
+      return !!window.supabase;
+    }
+
+    function getDisplayNameFromRow(row) {
+      return String(
+        row?.name ||
+        row?.department_name ||
+        row?.title ||
+        row?.school_name ||
+        row?.department ||
+        ""
+      ).trim();
+    }
+
+    async function waitForSupabaseAndLoadSchools() {
+      const schoolInput = document.getElementById("signup-schoolname");
+      const schoolsList = document.getElementById("schools-list");
+      const loadingNote = document.getElementById("school-loading-note");
+      if (!schoolInput || !schoolsList) return;
+
+      const ready = await waitForSupabaseReady();
+
+      if (!ready) {
+        if (loadingNote) loadingNote.textContent = "Could not load schools.";
+        return;
+      }
 
       try {
         const { data, error } = await window.supabase
@@ -790,87 +1354,88 @@
 
         if (error) throw error;
 
-        const rows = Array.isArray(data) ? data : [];
+        schoolsList.innerHTML = "";
 
-        if (!rows.length) {
-          schoolSelect.innerHTML = `<option value="">No school found</option>`;
-          if (hint) hint.textContent = "No school was found in the schools table yet.";
-          return;
+        const seen = new Set();
+
+        (data || []).forEach((school) => {
+          const schoolName = getDisplayNameFromRow(school);
+          const key = schoolName.toLowerCase();
+
+          if (!schoolName || seen.has(key)) return;
+          seen.add(key);
+
+          const option = document.createElement("option");
+          option.value = schoolName;
+          option.label = schoolName;
+          schoolsList.appendChild(option);
+        });
+
+        if (loadingNote) {
+          loadingNote.textContent = seen.size ? "Start typing to search your school." : "No schools found.";
         }
-
-        schoolSelect.innerHTML =
-          `<option value="">Select school</option>` +
-          rows.map((row) => {
-            const name = String(row.name || "").trim();
-            const safeName = name
-              .replaceAll("&", "&amp;")
-              .replaceAll("<", "&lt;")
-              .replaceAll(">", "&gt;")
-              .replaceAll('"', "&quot;")
-              .replaceAll("'", "&#039;");
-            return `<option value="${safeName}">${safeName}</option>`;
-          }).join("");
-
-        if (hint) hint.textContent = "Select your school from the list.";
       } catch (err) {
-        console.error("School load error:", err);
-        schoolSelect.innerHTML = `<option value="">Could not load schools</option>`;
-        if (hint) hint.textContent = "Could not load schools. Please reload the page.";
+        console.error("Failed to load schools:", err);
+        if (loadingNote) loadingNote.textContent = "Could not load schools.";
       }
     }
 
-    (function setupRoleUI() {
-      const roleSelect = document.getElementById("signup-role");
-      const idFieldWrap = document.getElementById("id-field-wrap");
-      const idLabel = document.getElementById("signup-id-label");
-      const idInput = document.getElementById("signup-matric");
-      const idHint = document.getElementById("signup-id-hint");
-      const lecturerHint = document.getElementById("lecturer-email-hint");
+    async function waitForSupabaseAndLoadDepartments() {
+      const deptInput = document.getElementById("signup-dept");
+      const departmentsList = document.getElementById("departments-list");
+      const loadingNote = document.getElementById("department-loading-note");
+      if (!deptInput || !departmentsList) return;
 
-      if (!roleSelect) return;
+      const ready = await waitForSupabaseReady();
 
-      function applyRole(role) {
-        if (!role) {
-          if (idFieldWrap) idFieldWrap.classList.add("hidden");
-          if (lecturerHint) lecturerHint.classList.add("hidden");
-          if (idInput) {
-            idInput.value = "";
-            idInput.required = false;
-            idInput.placeholder = "";
-          }
-          return;
-        }
-
-        if (role === "student") {
-          if (idFieldWrap) idFieldWrap.classList.remove("hidden");
-          if (idLabel) idLabel.textContent = "Matric number";
-          if (idInput) {
-            idInput.required = true;
-            idInput.placeholder = "e.g. CSC/21/1234";
-          }
-          if (idHint) {
-            idHint.innerHTML = "Make sure this matric number is correct. <strong>You won’t be able to change it later.</strong>";
-          }
-          if (lecturerHint) lecturerHint.classList.add("hidden");
-          return;
-        }
-
-        if (role === "lecturer") {
-          if (idFieldWrap) idFieldWrap.classList.add("hidden");
-          if (idInput) {
-            idInput.value = "";
-            idInput.required = false;
-            idInput.placeholder = "";
-          }
-          if (lecturerHint) lecturerHint.classList.remove("hidden");
-        }
+      if (!ready) {
+        if (loadingNote) loadingNote.textContent = "Could not load departments.";
+        return;
       }
 
-      roleSelect.addEventListener("change", function () {
-        applyRole(roleSelect.value);
-      });
+      try {
+        const { data, error } = await window.supabase
+          .from("departments")
+          .select("*")
+          .order("name", { ascending: true });
 
-      applyRole(roleSelect.value);
+        if (error) throw error;
+
+        departmentsList.innerHTML = "";
+
+        const seen = new Set();
+
+        (data || []).forEach((department) => {
+          const departmentName = getDisplayNameFromRow(department);
+          const key = departmentName.toLowerCase();
+
+          if (!departmentName || seen.has(key)) return;
+          seen.add(key);
+
+          const option = document.createElement("option");
+          option.value = departmentName;
+          option.label = departmentName;
+          departmentsList.appendChild(option);
+        });
+
+        if (loadingNote) {
+          loadingNote.textContent = seen.size ? "Start typing to search your department." : "No departments found.";
+        }
+      } catch (err) {
+        console.error("Failed to load departments:", err);
+        if (loadingNote) loadingNote.textContent = "Could not load departments.";
+      }
+    }
+
+    (function restoreSavedRoleView() {
+      try {
+        const savedRole = localStorage.getItem("colspot_auth_role");
+        if (savedRole === "student" || savedRole === "lecturer" || savedRole === "admin") {
+          window.__colspot_saved_role__ = savedRole;
+        }
+      } catch (e) {
+        console.error("Could not restore saved role:", e);
+      }
     })();
 
     (function guardLecturerEmail() {
@@ -879,7 +1444,7 @@
       const roleSelect = document.getElementById("signup-role");
       const messageEl = document.getElementById("signup-message");
 
-      if (!form || !emailInput || !roleSelect) return;
+      if (!form || !emailInput) return;
 
       const blockedDomains = [
         "gmail.com", "gmail.com.ng",
@@ -896,7 +1461,7 @@
       ];
 
       form.addEventListener("submit", function (event) {
-        const role = roleSelect.value;
+        const role = (roleSelect?.value || "lecturer").toLowerCase();
         if (role !== "lecturer") return;
 
         const rawEmail = (emailInput.value || "").trim().toLowerCase();
@@ -913,7 +1478,7 @@
 
           if (messageEl) {
             messageEl.textContent =
-              "Lecturers must sign up with an official school email (e.g. name@university.edu), not a personal email like Gmail/Yahoo/Outlook.";
+              "Lecturers must sign up with an official school email, not a personal email like Gmail/Yahoo/Outlook.";
             messageEl.classList.remove("success");
             messageEl.classList.add("error");
           }
@@ -922,477 +1487,373 @@
         }
       });
     })();
+
+    window.addEventListener("DOMContentLoaded", function () {
+      const roleSelect = document.getElementById("signup-role");
+      if (roleSelect) {
+        roleSelect.value = "lecturer";
+        roleSelect.addEventListener("change", updateLecturerSignupRoleUI);
+      }
+
+      updateLecturerSignupRoleUI();
+
+      if (window.__colspot_saved_role__) {
+        showAuthSection(window.__colspot_saved_role__);
+      }
+
+      waitForSupabaseAndLoadSchools();
+      waitForSupabaseAndLoadDepartments();
+    });
   </script>
 
   <script type="module" src="./client_supabase.js"></script>
   <script src="./auth.js"></script>
 
   <script>
-  (function adminFrontendBridge() {
-    const titleEl = document.getElementById("card-title");
-    const subEl = document.getElementById("card-subtitle");
+    (function adminFrontendBridge() {
+      const adminForm = document.getElementById("admin-form");
+      const adminLinkPanel = document.getElementById("admin-link-panel");
+      const adminVerifyPanel = document.getElementById("admin-verify-panel");
 
-    const tabSignin = document.getElementById("tab-signin");
-    const tabSignup = document.getElementById("tab-signup");
-    const tabAdmin = document.getElementById("tab-admin");
+      const adminMessage = document.getElementById("admin-message");
+      const adminLinkMessage = document.getElementById("admin-link-message");
+      const adminVerifyMessage = document.getElementById("admin-verify-message");
 
-    const modeToggle = document.getElementById("mode-toggle");
-    const switchRow = document.getElementById("switch-row");
+      const adminIdentifierInput = document.getElementById("admin-identifier");
+      const adminPasswordInput = document.getElementById("admin-password");
+      const adminLinkEmailInput = document.getElementById("admin-link-email");
+      const adminVerifyCodeInput = document.getElementById("admin-verify-code");
+      const adminVerifyEmailLabel = document.getElementById("admin-verify-email-label");
 
-    const signinForm = document.getElementById("signin-form");
-    const signupForm = document.getElementById("signup-form");
+      function setButtonLoading(btnId, textId, loaderId, isLoading) {
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+        const loader = document.getElementById(loaderId);
 
-    const verifyPanel = document.getElementById("verify-panel");
-    const forgotPanel = document.getElementById("forgot-panel");
-    const resetPanel = document.getElementById("reset-panel");
+        if (!btn) return;
+        btn.disabled = isLoading;
 
-    const adminForm = document.getElementById("admin-form");
-    const adminLinkPanel = document.getElementById("admin-link-panel");
-    const adminVerifyPanel = document.getElementById("admin-verify-panel");
-
-    const adminMessage = document.getElementById("admin-message");
-    const adminLinkMessage = document.getElementById("admin-link-message");
-    const adminVerifyMessage = document.getElementById("admin-verify-message");
-
-    const adminVerifyEmailLabel = document.getElementById("admin-verify-email-label");
-
-    const adminIdInput = document.getElementById("admin-id");
-    const adminPasswordInput = document.getElementById("admin-password");
-    const adminLinkEmailInput = document.getElementById("admin-link-email");
-    const adminVerifyCodeInput = document.getElementById("admin-verify-code");
-
-    function setButtonLoading(btnId, textId, loaderId, isLoading) {
-      const btn = document.getElementById(btnId);
-      const text = document.getElementById(textId);
-      const loader = document.getElementById(loaderId);
-
-      if (!btn) return;
-      btn.disabled = isLoading;
-
-      if (text && loader) {
-        if (isLoading) {
-          text.classList.add("hidden");
-          loader.classList.remove("hidden");
-        } else {
-          text.classList.remove("hidden");
-          loader.classList.add("hidden");
+        if (text && loader) {
+          if (isLoading) {
+            text.classList.add("hidden");
+            loader.classList.remove("hidden");
+          } else {
+            text.classList.remove("hidden");
+            loader.classList.add("hidden");
+          }
         }
       }
-    }
 
-    function clearAdminMessages() {
-      [adminMessage, adminLinkMessage, adminVerifyMessage].forEach((el) => {
-        if (!el) return;
-        el.textContent = "";
-        el.className = "message";
-      });
-    }
-
-    function setActive(tab) {
-      [tabSignin, tabSignup, tabAdmin].forEach((btn) => btn && btn.classList.remove("active"));
-      if (tab) tab.classList.add("active");
-    }
-
-    function hideAllPanels() {
-      [
-        signinForm,
-        signupForm,
-        verifyPanel,
-        forgotPanel,
-        resetPanel,
-        adminForm,
-        adminLinkPanel,
-        adminVerifyPanel
-      ].forEach((el) => el && el.classList.add("hidden"));
-    }
-
-    function showAdminLogin() {
-      hideAllPanels();
-      clearAdminMessages();
-
-      if (titleEl) titleEl.textContent = "Admin login";
-      if (subEl) subEl.textContent = "Sign in to your Colspot admin account";
-
-      if (modeToggle) modeToggle.classList.remove("hidden");
-      if (switchRow) switchRow.classList.add("hidden");
-
-      if (adminForm) adminForm.classList.remove("hidden");
-      setActive(tabAdmin);
-    }
-
-    function showAdminLinkEmail(prefill = "") {
-      hideAllPanels();
-      clearAdminMessages();
-
-      if (titleEl) titleEl.textContent = "Link your email";
-      if (subEl) subEl.textContent = "Add your email to continue";
-
-      if (modeToggle) modeToggle.classList.add("hidden");
-      if (switchRow) switchRow.classList.add("hidden");
-
-      if (adminLinkPanel) adminLinkPanel.classList.remove("hidden");
-      if (adminLinkEmailInput) adminLinkEmailInput.value = prefill || "";
-    }
-
-    function showAdminVerify(email = "") {
-      hideAllPanels();
-      clearAdminMessages();
-
-      if (titleEl) titleEl.textContent = "Verify admin email";
-      if (subEl) subEl.textContent = "Enter the code sent to your email";
-
-      if (modeToggle) modeToggle.classList.add("hidden");
-      if (switchRow) switchRow.classList.add("hidden");
-
-      if (adminVerifyPanel) adminVerifyPanel.classList.remove("hidden");
-      if (adminVerifyEmailLabel) adminVerifyEmailLabel.textContent = email || "";
-      if (adminVerifyCodeInput) adminVerifyCodeInput.value = "";
-    }
-
-    function restoreNormalMode(mode) {
-      clearAdminMessages();
-      clearPendingAdmin();
-      hideAllPanels();
-
-      if (modeToggle) modeToggle.classList.remove("hidden");
-      if (switchRow) switchRow.classList.remove("hidden");
-
-      if (typeof window.switchMode === "function" && window.switchMode.__wrapped_admin__) {
-        window.switchMode.__original__(mode === "signup" ? "signup" : "signin");
-      } else if (typeof window.switchMode === "function") {
-        window.switchMode(mode === "signup" ? "signup" : "signin");
-      }
-    }
-
-    function getPendingAdmin() {
-      try {
-        return JSON.parse(localStorage.getItem("colspot_pending_admin") || "null");
-      } catch {
-        return null;
-      }
-    }
-
-    function savePendingAdmin(data) {
-      localStorage.setItem("colspot_pending_admin", JSON.stringify(data || null));
-    }
-
-    function clearPendingAdmin() {
-      localStorage.removeItem("colspot_pending_admin");
-    }
-
-    function saveAdminSession(admin) {
-      localStorage.setItem("colspot_admin_session", JSON.stringify(admin));
-    }
-
-    function goToDashboard(role) {
-      const cleanRole = String(role || "").trim().toLowerCase();
-
-      if (cleanRole === "super_admin") {
-        window.location.href = "super_admin.html";
-      } else if (cleanRole === "hos") {
-        window.location.href = "hos.html";
-      } else if (cleanRole === "hod") {
-        window.location.href = "hod.html";
-      } else if (cleanRole === "report_agent") {
-        window.location.href = "report_agent.html";
-      } else if (cleanRole === "assistant_report_agent") {
-        window.location.href = "assistant_report_agent.html";
-      } else {
-        if (adminMessage) {
-          adminMessage.textContent = "Unknown admin role.";
-          adminMessage.className = "message error";
-        }
-      }
-    }
-
-    async function invokeEdge(functionName, body) {
-      if (!window.supabase) {
-        throw new Error("Supabase is not ready yet.");
-      }
-
-      const { data, error } = await window.supabase.functions.invoke(functionName, { body });
-
-      if (error) {
-        throw new Error(
-          (data && data.error) ||
-          error.message ||
-          "Edge Function request failed."
-        );
-      }
-
-      return data;
-    }
-
-    const originalSwitchMode = window.switchMode;
-    const originalToggleAuthMode = window.toggleAuthMode;
-    const originalOpenForgotPasswordPage = window.openForgotPasswordPage;
-
-    window.switchMode = function(mode) {
-      clearAdminMessages();
-      clearPendingAdmin();
-      hideAllPanels();
-
-      if (mode === "admin") {
-        if (modeToggle) modeToggle.classList.remove("hidden");
-        if (switchRow) switchRow.classList.add("hidden");
-        showAdminLogin();
-        return;
-      }
-
-      if (modeToggle) modeToggle.classList.remove("hidden");
-      if (switchRow) switchRow.classList.remove("hidden");
-
-      if (typeof originalSwitchMode === "function") {
-        return originalSwitchMode(mode === "signup" ? "signup" : "signin");
-      }
-    };
-    window.switchMode.__wrapped_admin__ = true;
-    window.switchMode.__original__ = originalSwitchMode;
-
-    window.toggleAuthMode = function() {
-      if (
-        (adminForm && !adminForm.classList.contains("hidden")) ||
-        (adminLinkPanel && !adminLinkPanel.classList.contains("hidden")) ||
-        (adminVerifyPanel && !adminVerifyPanel.classList.contains("hidden"))
-      ) {
-        return restoreNormalMode("signin");
-      }
-
-      if (typeof originalToggleAuthMode === "function") {
-        return originalToggleAuthMode();
-      }
-    };
-
-    window.openForgotPasswordPage = function() {
-      clearAdminMessages();
-      clearPendingAdmin();
-      hideAllPanels();
-
-      if (modeToggle) modeToggle.classList.add("hidden");
-      if (switchRow) switchRow.classList.add("hidden");
-
-      if (typeof originalOpenForgotPasswordPage === "function") {
-        return originalOpenForgotPasswordPage();
-      }
-    };
-
-    adminForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      clearAdminMessages();
-
-      const loginId = (adminIdInput?.value || "").trim();
-      const password = adminPasswordInput?.value || "";
-
-      if (!loginId || !password) {
-        adminMessage.textContent = "Please enter ID and password.";
-        adminMessage.className = "message error";
-        return;
-      }
-
-      try {
-        setButtonLoading("admin-btn", "admin-text", "admin-loader", true);
-
-        const result = await invokeEdge("admin-login", {
-          login_id: loginId,
-          password
+      function clearAdminMessages() {
+        [adminMessage, adminLinkMessage, adminVerifyMessage].forEach((el) => {
+          if (!el) return;
+          el.textContent = "";
+          el.className = "message";
         });
+      }
 
-        if (!result?.ok) {
-          throw new Error(result?.error || "Admin login failed.");
+      function hideAdminPanels() {
+        adminForm?.classList.add("hidden");
+        adminLinkPanel?.classList.add("hidden");
+        adminVerifyPanel?.classList.add("hidden");
+      }
+
+      function showAdminLogin() {
+        hideAdminPanels();
+        adminForm?.classList.remove("hidden");
+        clearAdminMessages();
+      }
+
+      function showAdminLinkEmail(prefill = "") {
+        hideAdminPanels();
+        adminLinkPanel?.classList.remove("hidden");
+        if (adminLinkEmailInput) adminLinkEmailInput.value = prefill || "";
+        clearAdminMessages();
+      }
+
+      function showAdminVerify(email = "") {
+        hideAdminPanels();
+        adminVerifyPanel?.classList.remove("hidden");
+        if (adminVerifyEmailLabel) adminVerifyEmailLabel.textContent = email || "";
+        if (adminVerifyCodeInput) adminVerifyCodeInput.value = "";
+        clearAdminMessages();
+      }
+
+      function getPendingAdmin() {
+        try {
+          return JSON.parse(localStorage.getItem("colspot_pending_admin") || "null");
+        } catch {
+          return null;
+        }
+      }
+
+      function savePendingAdmin(data) {
+        localStorage.setItem("colspot_pending_admin", JSON.stringify(data || null));
+      }
+
+      function clearPendingAdmin() {
+        localStorage.removeItem("colspot_pending_admin");
+      }
+
+      function saveAdminSession(admin) {
+        localStorage.setItem("colspot_admin_session", JSON.stringify(admin));
+      }
+
+      function goToDashboard(role) {
+        const cleanRole = String(role || "").trim().toLowerCase();
+
+        if (cleanRole === "super_admin") {
+          window.location.href = "super_admin.html";
+        } else if (cleanRole === "hos") {
+          window.location.href = "hos.html";
+        } else if (cleanRole === "hod") {
+          window.location.href = "hod.html";
+        } else if (cleanRole === "report_agent") {
+          window.location.href = "report_agent.html";
+        } else if (cleanRole === "assistant_report_agent") {
+          window.location.href = "assistant_report_agent.html";
+        } else if (cleanRole === "form_agent") {
+          window.location.href = "form_agent.html";
+        } else if (cleanRole === "announcement_agent") {
+          window.location.href = "announcement_agent.html";
+        } else {
+          if (adminMessage) {
+            adminMessage.textContent = "Unknown admin role.";
+            adminMessage.className = "message error";
+          }
+        }
+      }
+
+      async function invokeEdge(functionName, body) {
+        if (!window.supabase) {
+          throw new Error("Supabase is not ready yet.");
         }
 
-        const admin = {
-          ...(result.account || {}),
-          role: result.role || ""
-        };
+        const { data, error } = await window.supabase.functions.invoke(functionName, { body });
 
-        saveAdminSession(admin);
+        console.log(functionName + " data:", data);
+        console.log(functionName + " error:", error);
 
-        if (admin.needs_email_link) {
-          savePendingAdmin({
-            id: admin.id,
-            role: admin.role,
-            login_id: admin.login_id,
-            linked_email: admin.linked_email || ""
-          });
-          showAdminLinkEmail(admin.linked_email || "");
+        if (error) {
+          throw new Error(
+            (data && data.error) ||
+            error.message ||
+            "Edge Function request failed."
+          );
+        }
+
+        return data;
+      }
+
+      adminForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearAdminMessages();
+
+        const loginId = (adminIdentifierInput?.value || "").trim();
+        const password = adminPasswordInput?.value || "";
+
+        if (!loginId || !password) {
+          if (adminMessage) {
+            adminMessage.textContent = "Please enter ID and password.";
+            adminMessage.className = "message error";
+          }
           return;
         }
 
-        goToDashboard(admin.role);
-      } catch (err) {
-        console.error(err);
-        adminMessage.textContent = err.message || "Could not connect to admin login.";
-        adminMessage.className = "message error";
-      } finally {
-        setButtonLoading("admin-btn", "admin-text", "admin-loader", false);
-      }
-    });
+        try {
+          setButtonLoading("admin-btn", "admin-text", "admin-loader", true);
 
-    document.getElementById("admin-link-btn")?.addEventListener("click", async () => {
-      clearAdminMessages();
+          const result = await invokeEdge("admin-login", {
+            login_id: loginId,
+            password
+          });
 
-      const pending = getPendingAdmin();
-      const email = (adminLinkEmailInput?.value || "").trim().toLowerCase();
+          if (!result?.ok) {
+            throw new Error(result?.error || "Admin login failed.");
+          }
 
-      if (!pending?.id) {
-        adminLinkMessage.textContent = "Admin session not found. Please login again.";
-        adminLinkMessage.className = "message error";
-        return;
-      }
+          const admin = {
+            ...(result.account || {}),
+            role: result.role || ""
+          };
 
-      if (!email) {
-        adminLinkMessage.textContent = "Please enter your email.";
-        adminLinkMessage.className = "message error";
-        return;
-      }
+          saveAdminSession(admin);
 
-      try {
-        setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", true);
+          if (admin.needs_email_link) {
+            savePendingAdmin({
+              id: admin.id,
+              role: admin.role,
+              login_id: admin.login_id,
+              linked_email: admin.linked_email || ""
+            });
+            showAdminLinkEmail(admin.linked_email || "");
+            return;
+          }
 
-        const result = await invokeEdge("admin-send-link-email", {
-          admin_id: pending.id,
-          email
-        });
+          goToDashboard(admin.role);
+        } catch (err) {
+          console.error(err);
+          if (adminMessage) {
+            adminMessage.textContent = err.message || "Could not connect to admin login.";
+            adminMessage.className = "message error";
+          }
+        } finally {
+          setButtonLoading("admin-btn", "admin-text", "admin-loader", false);
+        }
+      });
 
-        if (!result?.ok) {
-          throw new Error(result?.error || "Could not send verification code.");
+      document.getElementById("admin-link-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        const email = (adminLinkEmailInput?.value || "").trim().toLowerCase();
+
+        if (!pending?.id) {
+          adminLinkMessage.textContent = "Admin session not found. Please login again.";
+          adminLinkMessage.className = "message error";
+          return;
         }
 
-        savePendingAdmin({
-          ...pending,
-          email
-        });
+        if (!email) {
+          adminLinkMessage.textContent = "Please enter your email.";
+          adminLinkMessage.className = "message error";
+          return;
+        }
 
-        showAdminVerify(email);
+        try {
+          setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", true);
 
-        if (adminVerifyMessage) {
+          const result = await invokeEdge("admin-send-link-email", {
+            admin_id: pending.id,
+            email
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Could not send verification code.");
+          }
+
+          savePendingAdmin({
+            ...pending,
+            email
+          });
+
+          showAdminVerify(email);
+
+          if (adminVerifyMessage) {
+            if (result.dev_otp) {
+              adminVerifyMessage.textContent = "Verification code sent. Dev OTP: " + result.dev_otp;
+            } else {
+              adminVerifyMessage.textContent = result.message || "Verification code sent successfully.";
+            }
+            adminVerifyMessage.className = "message success";
+          }
+        } catch (err) {
+          console.error(err);
+          adminLinkMessage.textContent = err.message || "Could not send verification code.";
+          adminLinkMessage.className = "message error";
+        } finally {
+          setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", false);
+        }
+      });
+
+      document.getElementById("admin-verify-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        const code = (adminVerifyCodeInput?.value || "").trim();
+
+        if (!pending?.id || !pending?.email) {
+          adminVerifyMessage.textContent = "Admin session not found. Please login again.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        if (!code) {
+          adminVerifyMessage.textContent = "Please enter the verification code.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        try {
+          setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", true);
+
+          const result = await invokeEdge("admin-verify-link-email", {
+            admin_id: pending.id,
+            email: pending.email,
+            code
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Verification failed.");
+          }
+
+          const admin = {
+            ...(result.admin || result.account || {}),
+            role: result.role || (result.admin && result.admin.role) || ""
+          };
+
+          saveAdminSession(admin);
+          clearPendingAdmin();
+
+          adminVerifyMessage.textContent = "Email verified successfully. Redirecting...";
+          adminVerifyMessage.className = "message success";
+
+          setTimeout(() => {
+            goToDashboard(admin.role);
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          adminVerifyMessage.textContent = err.message || "Verification failed.";
+          adminVerifyMessage.className = "message error";
+        } finally {
+          setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", false);
+        }
+      });
+
+      document.getElementById("admin-resend-btn")?.addEventListener("click", async () => {
+        clearAdminMessages();
+
+        const pending = getPendingAdmin();
+        if (!pending?.id || !pending?.email) {
+          adminVerifyMessage.textContent = "Admin session not found. Please login again.";
+          adminVerifyMessage.className = "message error";
+          return;
+        }
+
+        try {
+          const result = await invokeEdge("admin-send-link-email", {
+            admin_id: pending.id,
+            email: pending.email
+          });
+
+          if (!result?.ok) {
+            throw new Error(result?.error || "Could not resend code.");
+          }
+
           if (result.dev_otp) {
-            adminVerifyMessage.textContent = "Verification code sent. Dev OTP: " + result.dev_otp;
+            adminVerifyMessage.textContent = "New code sent. Dev OTP: " + result.dev_otp;
           } else {
-            adminVerifyMessage.textContent = result.message || "Verification code sent successfully.";
+            adminVerifyMessage.textContent = result.message || "A new verification code has been sent.";
           }
           adminVerifyMessage.className = "message success";
+        } catch (err) {
+          console.error(err);
+          adminVerifyMessage.textContent = err.message || "Could not resend code.";
+          adminVerifyMessage.className = "message error";
         }
-      } catch (err) {
-        console.error(err);
-        adminLinkMessage.textContent = err.message || "Could not send verification code.";
-        adminLinkMessage.className = "message error";
-      } finally {
-        setButtonLoading("admin-link-btn", "admin-link-text", "admin-link-loader", false);
-      }
-    });
+      });
 
-    document.getElementById("admin-verify-btn")?.addEventListener("click", async () => {
-      clearAdminMessages();
+      document.getElementById("admin-link-back-btn")?.addEventListener("click", () => {
+        showAdminLogin();
+      });
 
-      const pending = getPendingAdmin();
-      const code = (adminVerifyCodeInput?.value || "").trim();
+      document.getElementById("admin-verify-back-btn")?.addEventListener("click", () => {
+        const pending = getPendingAdmin();
+        showAdminLinkEmail(pending?.email || "");
+      });
 
-      if (!pending?.id || !pending?.email) {
-        adminVerifyMessage.textContent = "Admin session not found. Please login again.";
-        adminVerifyMessage.className = "message error";
-        return;
-      }
-
-      if (!code) {
-        adminVerifyMessage.textContent = "Please enter the verification code.";
-        adminVerifyMessage.className = "message error";
-        return;
-      }
-
-      try {
-        setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", true);
-
-        const result = await invokeEdge("admin-verify-link-email", {
-          admin_id: pending.id,
-          email: pending.email,
-          code
-        });
-
-        if (!result?.ok) {
-          throw new Error(result?.error || "Verification failed.");
-        }
-
-        const admin = {
-          ...(result.admin || result.account || {}),
-          role: result.role || (result.admin && result.admin.role) || ""
-        };
-
-        saveAdminSession(admin);
-        clearPendingAdmin();
-
-        adminVerifyMessage.textContent = "Email verified successfully. Redirecting...";
-        adminVerifyMessage.className = "message success";
-
-        setTimeout(() => {
-          goToDashboard(admin.role);
-        }, 600);
-      } catch (err) {
-        console.error(err);
-        adminVerifyMessage.textContent = err.message || "Verification failed.";
-        adminVerifyMessage.className = "message error";
-      } finally {
-        setButtonLoading("admin-verify-btn", "admin-verify-text", "admin-verify-loader", false);
-      }
-    });
-
-    document.getElementById("admin-resend-btn")?.addEventListener("click", async () => {
-      clearAdminMessages();
-
-      const pending = getPendingAdmin();
-      if (!pending?.id || !pending?.email) {
-        adminVerifyMessage.textContent = "Admin session not found. Please login again.";
-        adminVerifyMessage.className = "message error";
-        return;
-      }
-
-      try {
-        const result = await invokeEdge("admin-send-link-email", {
-          admin_id: pending.id,
-          email: pending.email
-        });
-
-        if (!result?.ok) {
-          throw new Error(result?.error || "Could not resend code.");
-        }
-
-        if (result.dev_otp) {
-          adminVerifyMessage.textContent = "New code sent. Dev OTP: " + result.dev_otp;
-        } else {
-          adminVerifyMessage.textContent = result.message || "A new verification code has been sent.";
-        }
-        adminVerifyMessage.className = "message success";
-      } catch (err) {
-        console.error(err);
-        adminVerifyMessage.textContent = err.message || "Could not resend code.";
-        adminVerifyMessage.className = "message error";
-      }
-    });
-
-    document.getElementById("admin-link-back-btn")?.addEventListener("click", () => {
       showAdminLogin();
-    });
-
-    document.getElementById("admin-verify-back-btn")?.addEventListener("click", () => {
-      const pending = getPendingAdmin();
-      showAdminLinkEmail(pending?.email || "");
-    });
-  })();
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    const waitForSupabase = async (tries = 40) => {
-      while (!window.supabase && tries > 0) {
-        await new Promise((r) => setTimeout(r, 150));
-        tries -= 1;
-      }
-    };
-
-    await waitForSupabase();
-    if (window.supabase) {
-      await loadSchoolsIntoSelect();
-    }
-  });
+    })();
   </script>
 </body>
 </html>
