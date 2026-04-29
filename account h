@@ -309,6 +309,15 @@
       cursor: pointer;
     }
 
+    #screen-account .academic-update-btn.blocked {
+      border-color: #e5e7eb;
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 0.95;
+    }
+
     #screen-account .academic-update-btn svg {
       width: 18px;
       height: 18px;
@@ -324,6 +333,30 @@
       color: #6b7280;
       font-size: 12px;
       line-height: 1.35;
+    }
+
+    #screen-account .academic-update-help.blocked {
+      color: #b45309;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 14px;
+      padding: 9px 10px;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    #screen-account .academic-update-block-message {
+      display: none;
+      margin: 8px 0 0;
+      padding: 9px 10px;
+      border-radius: 14px;
+      border: 1px solid #fed7aa;
+      background: #fff7ed;
+      color: #b45309;
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: center;
+      font-weight: 600;
     }
 
     #screen-account .verified-check-line {
@@ -746,13 +779,15 @@
           <path d="M6 10.5v4c0 1.8 2.7 3.5 6 3.5s6-1.7 6-3.5v-4"></path>
           <path d="M20 8v5"></path>
         </svg>
-        Update academic details
+        <span id="academicUpdateBtnText">Update academic details</span>
       </button>
 
       <div id="academicUpdateHelp" class="academic-update-help">
         Change your level, semester, or session.<br />
         Face verification will be required.
       </div>
+
+      <div id="academicUpdateBlockMessage" class="academic-update-block-message"></div>
     </div>
 
     <div class="actions-row">
@@ -866,9 +901,13 @@
 
   <script>
     const ACCOUNT_DEVICE_STORAGE_KEY = "colspot_device_id";
+    const ACADEMIC_UPDATE_BLOCK_DAYS = 60;
 
     let accountCurrentUser = null;
     let lecturerProfileLoaded = false;
+    let accountAcademicUpdateBlocked = false;
+    let accountAcademicUpdateDaysLeft = 0;
+    let accountAcademicUpdateNextDateText = "";
 
     function enterAccountEditMode() {
       document.getElementById("accountHeaderView").style.display = "none";
@@ -1087,11 +1126,11 @@
       }
 
       if (lHint) {
-        lHint.textContent = "You can change your level once every 30 days.";
+        lHint.textContent = "Use Update academic details to change your level safely.";
       }
 
       if (sHint) {
-        sHint.textContent = "You can change your semester once every 30 days.";
+        sHint.textContent = "Use Update academic details to change your semester safely.";
       }
 
       const safeName =
@@ -1138,8 +1177,179 @@
       window.location.href = "verify_class.html";
     }
 
-    function openAcademicUpdatePage() {
-      window.location.href = "verify_class.html?mode=academic_update";
+    function getAcademicUpdateBlockInfo(lastUpdatedAt) {
+      if (!lastUpdatedAt) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const lastDate = new Date(lastUpdatedAt);
+
+      if (Number.isNaN(lastDate.getTime())) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const now = new Date();
+      const blockMs = ACADEMIC_UPDATE_BLOCK_DAYS * 24 * 60 * 60 * 1000;
+      const diffMs = now.getTime() - lastDate.getTime();
+
+      if (diffMs >= blockMs) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const daysLeft = Math.max(1, Math.ceil((blockMs - diffMs) / (24 * 60 * 60 * 1000)));
+      const nextDate = new Date(lastDate.getTime() + blockMs);
+      const nextDateText = nextDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+
+      return {
+        blocked: true,
+        daysLeft,
+        nextDateText
+      };
+    }
+
+    function applyAcademicUpdateLockUi(blockInfo) {
+      const academicBtn = document.getElementById("academicUpdateBtn");
+      const academicBtnText = document.getElementById("academicUpdateBtnText");
+      const academicHelp = document.getElementById("academicUpdateHelp");
+      const blockMessage = document.getElementById("academicUpdateBlockMessage");
+
+      const blocked = !!(blockInfo && blockInfo.blocked);
+      const daysLeft = Number(blockInfo?.daysLeft || 0);
+      const nextDateText = String(blockInfo?.nextDateText || "");
+
+      accountAcademicUpdateBlocked = blocked;
+      accountAcademicUpdateDaysLeft = daysLeft;
+      accountAcademicUpdateNextDateText = nextDateText;
+
+      if (!academicBtn) return;
+
+      if (blocked) {
+        academicBtn.disabled = false;
+        academicBtn.dataset.blocked = "true";
+        academicBtn.classList.add("blocked");
+
+        if (academicBtnText) {
+          academicBtnText.textContent = `Locked for ${daysLeft} day${daysLeft > 1 ? "s" : ""}`;
+        }
+
+        if (academicHelp) {
+          academicHelp.classList.add("blocked");
+          academicHelp.style.display = "block";
+          academicHelp.innerHTML =
+            `You recently updated your academic details.<br />You can update again in ${daysLeft} day${daysLeft > 1 ? "s" : ""}.`;
+        }
+
+        if (blockMessage) {
+          blockMessage.style.display = "block";
+          blockMessage.textContent =
+            `Academic update is locked for now. Try again ${nextDateText ? "from " + nextDateText : "after the countdown ends"}.`;
+        }
+
+        return;
+      }
+
+      academicBtn.disabled = false;
+      academicBtn.dataset.blocked = "false";
+      academicBtn.classList.remove("blocked");
+
+      if (academicBtnText) {
+        academicBtnText.textContent = "Update academic details";
+      }
+
+      if (academicHelp) {
+        academicHelp.classList.remove("blocked");
+        academicHelp.style.display = "block";
+        academicHelp.innerHTML =
+          "Change your level, semester, or session.<br />Face verification will be required.";
+      }
+
+      if (blockMessage) {
+        blockMessage.style.display = "none";
+        blockMessage.textContent = "";
+      }
+    }
+
+    async function refreshAcademicUpdateLockUi() {
+      if (!accountCurrentUser || typeof supabase === "undefined") {
+        applyAcademicUpdateLockUi({ blocked: false, daysLeft: 0, nextDateText: "" });
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("student_accounts")
+          .select("academic_details_last_updated_at")
+          .eq("user_id", accountCurrentUser.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const blockInfo = getAcademicUpdateBlockInfo(data?.academic_details_last_updated_at);
+        applyAcademicUpdateLockUi(blockInfo);
+      } catch (err) {
+        console.error("refreshAcademicUpdateLockUi error:", err);
+        applyAcademicUpdateLockUi({ blocked: false, daysLeft: 0, nextDateText: "" });
+      }
+    }
+
+    async function openAcademicUpdatePage() {
+      if (!accountCurrentUser || typeof supabase === "undefined") {
+        alert("Please sign in again.");
+        return;
+      }
+
+      const btn = document.getElementById("academicUpdateBtn");
+
+      if (btn) {
+        btn.disabled = true;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("student_accounts")
+          .select("academic_details_last_updated_at")
+          .eq("user_id", accountCurrentUser.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const blockInfo = getAcademicUpdateBlockInfo(data?.academic_details_last_updated_at);
+        applyAcademicUpdateLockUi(blockInfo);
+
+        if (blockInfo.blocked) {
+          alert(
+            `You can update your academic details again in ${blockInfo.daysLeft} day${blockInfo.daysLeft > 1 ? "s" : ""}.`
+          );
+          return;
+        }
+
+        window.location.href = "verify_class.html?mode=academic_update";
+      } catch (err) {
+        console.error("Academic update block check failed:", err);
+        alert("Could not check your academic update status. Please try again.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+        }
+      }
     }
 
     async function loadSchoolNameFromAccountRow(row) {
@@ -1181,6 +1391,7 @@
     function showAcademicUpdateButton(show) {
       const academicBtn = document.getElementById("academicUpdateBtn");
       const academicHelp = document.getElementById("academicUpdateHelp");
+      const blockMessage = document.getElementById("academicUpdateBlockMessage");
 
       if (academicBtn) {
         academicBtn.style.display = show ? "inline-flex" : "none";
@@ -1188,6 +1399,16 @@
 
       if (academicHelp) {
         academicHelp.style.display = show ? "block" : "none";
+      }
+
+      if (!show && blockMessage) {
+        blockMessage.style.display = "none";
+        blockMessage.textContent = "";
+      }
+
+      if (!show && academicBtn) {
+        academicBtn.classList.remove("blocked");
+        academicBtn.dataset.blocked = "false";
       }
     }
 
@@ -1273,6 +1494,7 @@
         }
 
         showAcademicUpdateButton(true);
+        await refreshAcademicUpdateLockUi();
         return;
       }
 
@@ -1620,26 +1842,13 @@
           }
         }
 
-        if (changedLevel) {
-          const levelRule = canChangeAfter30Days(existingLevelUpdated);
-          if (!levelRule.allowed) {
-            setAccountStatus(
-              `You can only change your level once every 30 days. You can change it again from ${levelRule.nextDateStr} (about ${levelRule.remainingDays} day(s) left).`,
-              "error"
-            );
-            return;
-          }
-        }
-
-        if (changedSemester) {
-          const semesterRule = canChangeAfter30Days(existingSemesterUpdated);
-          if (!semesterRule.allowed) {
-            setAccountStatus(
-              `You can only change your semester once every 30 days. You can change it again from ${semesterRule.nextDateStr} (about ${semesterRule.remainingDays} day(s) left).`,
-              "error"
-            );
-            return;
-          }
+        if (changedLevel || changedSemester) {
+          setAccountStatus(
+            "Please use Update academic details to change your level, semester, or session. Face verification is required.",
+            "error"
+          );
+          exitAccountEditMode(false);
+          return;
         }
 
         const updates = {
@@ -1647,15 +1856,13 @@
           full_name: name,
           programme: programme || null,
           matric_number: matric || null,
-          level: level || null,
-          semester: semester || null,
+          level: existingLevel || level || null,
+          semester: existingSemester || semester || null,
           ...(existingAvatarPath ? { avatar_path: existingAvatarPath } : {}),
           ...(existingAvatarUrl ? { avatar_url: existingAvatarUrl } : {})
         };
 
         if (changedMatric) updates.matric_last_updated_at = new Date().toISOString();
-        if (changedLevel) updates.level_last_updated_at = new Date().toISOString();
-        if (changedSemester) updates.semester_last_updated_at = new Date().toISOString();
 
         const { error: upsertError } = await supabase
           .from("student_accounts")
@@ -1668,16 +1875,16 @@
           programme,
           email,
           matric,
-          level,
-          semester,
+          level: existingLevel || level,
+          semester: existingSemester || semester,
           school: existingSchool,
           avatarUrl: existingAvatarUrl
         });
         applyAccountDataToEdit({
           name,
           matric,
-          level,
-          semester,
+          level: existingLevel || level,
+          semester: existingSemester || semester,
           avatarUrl: existingAvatarUrl
         });
 
