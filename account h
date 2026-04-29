@@ -292,6 +292,60 @@
       fill: none;
     }
 
+    #screen-account .academic-update-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1.5px solid #2563eb;
+      background: #ffffff;
+      color: #1d4ed8;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #screen-account .academic-update-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      fill: none;
+    }
+
+    #screen-account .academic-update-help {
+      display: none;
+      margin: 9px 8px 0;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #screen-account .verified-check-line {
+      display: none;
+      align-items: flex-start;
+      gap: 7px;
+      margin: 10px 4px 0;
+      color: #16a34a;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #screen-account .verified-check-line svg {
+      width: 17px;
+      height: 17px;
+      min-width: 17px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      margin-top: -1px;
+    }
+
     #screen-account .device-card {
       margin-top: 4px;
       margin-bottom: 10px;
@@ -329,6 +383,8 @@
       font-size: 11px;
       color: #1d4ed8;
       font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
     }
 
     #screen-account .device-list {
@@ -661,18 +717,45 @@
       </div>
 
       <button
+        id="verifyMainBtn"
         class="action-btn switch-mode"
         style="width:100%; justify-content:center; margin-top:8px;"
-        onclick="window.location.href='verify_class.html'"
+        onclick="openVerificationPage()"
       >
         Upload course form
       </button>
 
+      <div id="verifiedCheckLine" class="verified-check-line">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M8 12.5l2.5 2.5L16 9"></path>
+        </svg>
+        <span>Your course form and face verification are complete.</span>
+      </div>
+
       <p id="verifyStatusText" class="status-text"></p>
+
+      <button
+        id="academicUpdateBtn"
+        class="academic-update-btn"
+        type="button"
+        onclick="openAcademicUpdatePage()"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"></path>
+          <path d="M6 10.5v4c0 1.8 2.7 3.5 6 3.5s6-1.7 6-3.5v-4"></path>
+          <path d="M20 8v5"></path>
+        </svg>
+        Update academic details
+      </button>
+
+      <div id="academicUpdateHelp" class="academic-update-help">
+        Change your level, semester, or session.<br />
+        Face verification will be required.
+      </div>
     </div>
 
     <div class="actions-row">
-      
       <button class="action-btn" onclick="accountContactUs()">
         <svg viewBox="0 0 24 24">
           <path d="M4 5h16v10H5.5L4 16.5z"></path>
@@ -781,569 +864,804 @@
     </button>
   </section>
 
-<script>
-  const ACCOUNT_DEVICE_STORAGE_KEY = "colspot_device_id";
+  <script>
+    const ACCOUNT_DEVICE_STORAGE_KEY = "colspot_device_id";
 
-  let accountCurrentUser = null;
-  let lecturerProfileLoaded = false;
+    let accountCurrentUser = null;
+    let lecturerProfileLoaded = false;
 
-  function enterAccountEditMode() {
-    document.getElementById("accountHeaderView").style.display = "none";
-    document.getElementById("accountViewScreen").style.display = "none";
-    document.getElementById("accountHeaderEdit").style.display = "flex";
-    document.getElementById("accountEditScreen").style.display = "block";
+    function enterAccountEditMode() {
+      document.getElementById("accountHeaderView").style.display = "none";
+      document.getElementById("accountViewScreen").style.display = "none";
+      document.getElementById("accountHeaderEdit").style.display = "flex";
+      document.getElementById("accountEditScreen").style.display = "block";
 
-    const prof = getAccountCurrentProfile();
-    applyAccountDataToEdit(prof);
-  }
-
-  function exitAccountEditMode(saved) {
-    if (!saved && lecturerProfileLoaded) {
-      applyAccountDataToEdit(getAccountCurrentProfile());
+      const prof = getAccountCurrentProfile();
+      applyAccountDataToEdit(prof);
     }
-    document.getElementById("accountHeaderEdit").style.display = "none";
-    document.getElementById("accountEditScreen").style.display = "none";
-    document.getElementById("accountHeaderView").style.display = "flex";
-    document.getElementById("accountViewScreen").style.display = "block";
-  }
 
-  function setAccountStatus(text, type = "") {
-    const el = document.getElementById("profileStatus");
-    if (!el) return;
-    el.textContent = text || "";
-    el.classList.remove("success", "error");
-    if (type) el.classList.add(type);
-  }
-
-function syncTopRightAvatar(avatarUrl, initial) {
-  const chip = document.getElementById("avatarChip");
-  const chipImg = document.getElementById("avatarChipImg");
-  const chipText = document.getElementById("avatarChipText");
-
-  if (!chip) return;
-
-  if (avatarUrl) {
-    if (chipImg) {
-      chipImg.src = avatarUrl;
-      chipImg.style.display = "block";
+    function exitAccountEditMode(saved) {
+      if (!saved && lecturerProfileLoaded) {
+        applyAccountDataToEdit(getAccountCurrentProfile());
+      }
+      document.getElementById("accountHeaderEdit").style.display = "none";
+      document.getElementById("accountEditScreen").style.display = "none";
+      document.getElementById("accountHeaderView").style.display = "flex";
+      document.getElementById("accountViewScreen").style.display = "block";
     }
-    if (chipText) {
-      chipText.textContent = "";
-      chipText.style.display = "none";
+
+    function setAccountStatus(text, type = "") {
+      const el = document.getElementById("profileStatus");
+      if (!el) return;
+      el.textContent = text || "";
+      el.classList.remove("success", "error");
+      if (type) el.classList.add(type);
     }
-    chip.style.backgroundImage = "";
-  } else {
-    if (chipImg) {
-      chipImg.removeAttribute("src");
-      chipImg.style.display = "none";
-    }
-    if (chipText) {
-      chipText.textContent = initial || "S";
-      chipText.style.display = "flex";
-    }
-    chip.style.backgroundImage = "";
-  }
-}
 
-  function getVerificationActionButton() {
-    const badge = document.getElementById("verifyBadge");
-    if (!badge) return null;
-    const card = badge.closest(".device-card");
-    if (!card) return null;
-    return card.querySelector(".action-btn");
-  }
+    function syncTopRightAvatar(avatarUrl, initial) {
+      const chip = document.getElementById("avatarChip");
+      const chipImg = document.getElementById("avatarChipImg");
+      const chipText = document.getElementById("avatarChipText");
 
-  function getAccountCurrentProfile() {
-    const name =
-      (document.getElementById("viewNameValue") &&
-        document.getElementById("viewNameValue").textContent) ||
-      "";
-    const programme =
-      (document.getElementById("viewProgrammeValue") &&
-        document.getElementById("viewProgrammeValue").textContent) ||
-      "";
-    const email =
-      (document.getElementById("viewEmailValue") &&
-        document.getElementById("viewEmailValue").textContent) ||
-      "";
-    const matric =
-      (document.getElementById("viewMatricValue") &&
-        document.getElementById("viewMatricValue").textContent) ||
-      "";
-    const level =
-      (document.getElementById("viewLevelValue") &&
-        document.getElementById("viewLevelValue").textContent) ||
-      "";
-    const semester =
-      (document.getElementById("viewSemesterValue") &&
-        document.getElementById("viewSemesterValue").textContent) ||
-      "";
-    const school =
-      (document.getElementById("viewSchoolValue") &&
-        document.getElementById("viewSchoolValue").textContent) ||
-      "";
-    const avatarUrl =
-      (document.getElementById("viewAvatarImg") &&
-        document.getElementById("viewAvatarImg").getAttribute("src")) ||
-      "";
+      if (!chip) return;
 
-    return { name, programme, email, matric, level, semester, school, avatarUrl };
-  }
-
-  function applyAvatarToUI(avatarUrl, initial) {
-    const viewAvatarImg = document.getElementById("viewAvatarImg");
-    const editAvatarImg = document.getElementById("editAvatarImg");
-    const avatarInitial = document.getElementById("avatarInitial");
-    const editAvatarInitial = document.getElementById("editAvatarInitial");
-
-    if (avatarUrl) {
-      if (viewAvatarImg) {
-        viewAvatarImg.src = avatarUrl;
-        viewAvatarImg.style.display = "block";
-      }
-      if (editAvatarImg) {
-        editAvatarImg.src = avatarUrl;
-        editAvatarImg.style.display = "block";
-      }
-      if (avatarInitial) {
-        avatarInitial.style.display = "none";
-        avatarInitial.textContent = "";
-      }
-      if (editAvatarInitial) {
-        editAvatarInitial.style.display = "none";
-        editAvatarInitial.textContent = "";
-      }
-    } else {
-      if (viewAvatarImg) {
-        viewAvatarImg.removeAttribute("src");
-        viewAvatarImg.style.display = "none";
-      }
-      if (editAvatarImg) {
-        editAvatarImg.removeAttribute("src");
-        editAvatarImg.style.display = "none";
-      }
-      if (avatarInitial) {
-        avatarInitial.style.display = "flex";
-        avatarInitial.textContent = initial;
-      }
-      if (editAvatarInitial) {
-        editAvatarInitial.style.display = "flex";
-        editAvatarInitial.textContent = initial;
+      if (avatarUrl) {
+        if (chipImg) {
+          chipImg.src = avatarUrl;
+          chipImg.style.display = "block";
+        }
+        if (chipText) {
+          chipText.textContent = "";
+          chipText.style.display = "none";
+        }
+        chip.style.backgroundImage = "";
+      } else {
+        if (chipImg) {
+          chipImg.removeAttribute("src");
+          chipImg.style.display = "none";
+        }
+        if (chipText) {
+          chipText.textContent = initial || "S";
+          chipText.style.display = "flex";
+        }
+        chip.style.backgroundImage = "";
       }
     }
 
-    syncTopRightAvatar(avatarUrl || "", initial || "S");
-  }
-
-  function applyAccountDataToView({ name, programme, email, matric, level, semester, school, avatarUrl }) {
-    const safeName =
-      name ||
-      (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
-      "Student";
-    const safeProgramme = programme || "Programme";
-    const safeEmail =
-      email || (accountCurrentUser && accountCurrentUser.email) || "";
-    const safeMatric = matric || "";
-    const safeLevel = level || "";
-    const safeSemester = semester || "";
-    const safeSchool = school || "School";
-
-    const initial = safeName.trim()[0]
-      ? safeName.trim()[0].toUpperCase()
-      : "C";
-
-    applyAvatarToUI(avatarUrl || "", initial);
-
-    const vNameValue = document.getElementById("viewNameValue");
-    const vProgrammeValue = document.getElementById("viewProgrammeValue");
-    const vEmailValue = document.getElementById("viewEmailValue");
-    const vSchoolValue = document.getElementById("viewSchoolValue");
-    const vSchoolRow = document.getElementById("viewSchoolRow");
-    const eNameHeading = document.getElementById("editNameHeading");
-    const vMatricRow = document.getElementById("viewMatricRow");
-    const vMatricValue = document.getElementById("viewMatricValue");
-    const vLevelRow = document.getElementById("viewLevelRow");
-    const vLevelValue = document.getElementById("viewLevelValue");
-    const vSemesterRow = document.getElementById("viewSemesterRow");
-    const vSemesterValue = document.getElementById("viewSemesterValue");
-    const rolePill = document.getElementById("rolePill");
-
-    if (vNameValue) vNameValue.textContent = safeName;
-    if (vProgrammeValue) vProgrammeValue.textContent = safeProgramme;
-    if (vEmailValue) vEmailValue.textContent = safeEmail;
-
-    if (vSchoolValue) vSchoolValue.textContent = safeSchool;
-    if (vSchoolRow) vSchoolRow.style.display = school ? "flex" : "none";
-
-    if (eNameHeading) eNameHeading.textContent = safeName;
-
-    if (vMatricValue) vMatricValue.textContent = safeMatric;
-    if (vMatricRow) vMatricRow.style.display = safeMatric ? "flex" : "none";
-
-    if (vLevelValue) vLevelValue.textContent = safeLevel;
-    if (vLevelRow) vLevelRow.style.display = safeLevel ? "flex" : "none";
-
-    if (vSemesterValue) vSemesterValue.textContent = safeSemester;
-    if (vSemesterRow) vSemesterRow.style.display = safeSemester ? "flex" : "none";
-
-    if (rolePill) {
-      rolePill.textContent = "Account";
-    }
-  }
-
-  function applyAccountDataToEdit({ name, matric, level, semester, avatarUrl }) {
-    const mInput = document.getElementById("editMatricNumber");
-    const lInput = document.getElementById("editLevel");
-    const sInput = document.getElementById("editSemester");
-    const mHint = document.getElementById("matricHint");
-    const lHint = document.getElementById("levelHint");
-    const sHint = document.getElementById("semesterHint");
-
-    if (mInput) mInput.value = matric || "";
-    if (lInput) lInput.value = level || "";
-    if (sInput) sInput.value = semester || "";
-
-    if (mHint) {
-      mHint.textContent = "You can change your matric ID once every 30 days.";
+    function getVerificationActionButton() {
+      return document.getElementById("verifyMainBtn");
     }
 
-    if (lHint) {
-      lHint.textContent = "You can change your level once every 30 days.";
+    function getAccountCurrentProfile() {
+      const name =
+        (document.getElementById("viewNameValue") &&
+          document.getElementById("viewNameValue").textContent) ||
+        "";
+      const programme =
+        (document.getElementById("viewProgrammeValue") &&
+          document.getElementById("viewProgrammeValue").textContent) ||
+        "";
+      const email =
+        (document.getElementById("viewEmailValue") &&
+          document.getElementById("viewEmailValue").textContent) ||
+        "";
+      const matric =
+        (document.getElementById("viewMatricValue") &&
+          document.getElementById("viewMatricValue").textContent) ||
+        "";
+      const level =
+        (document.getElementById("viewLevelValue") &&
+          document.getElementById("viewLevelValue").textContent) ||
+        "";
+      const semester =
+        (document.getElementById("viewSemesterValue") &&
+          document.getElementById("viewSemesterValue").textContent) ||
+        "";
+      const school =
+        (document.getElementById("viewSchoolValue") &&
+          document.getElementById("viewSchoolValue").textContent) ||
+        "";
+      const avatarUrl =
+        (document.getElementById("viewAvatarImg") &&
+          document.getElementById("viewAvatarImg").getAttribute("src")) ||
+        "";
+
+      return { name, programme, email, matric, level, semester, school, avatarUrl };
     }
 
-    if (sHint) {
-      sHint.textContent = "You can change your semester once every 30 days.";
-    }
+    function applyAvatarToUI(avatarUrl, initial) {
+      const viewAvatarImg = document.getElementById("viewAvatarImg");
+      const editAvatarImg = document.getElementById("editAvatarImg");
+      const avatarInitial = document.getElementById("avatarInitial");
+      const editAvatarInitial = document.getElementById("editAvatarInitial");
 
-    const safeName =
-      name ||
-      (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
-      "Student";
-    const initial = safeName.trim()[0]
-      ? safeName.trim()[0].toUpperCase()
-      : "C";
-
-    applyAvatarToUI(avatarUrl || "", initial);
-  }
-
-  function getAccountStoredDeviceId() {
-    try {
-      let raw = localStorage.getItem(ACCOUNT_DEVICE_STORAGE_KEY) || "";
-      raw = String(raw || "").trim();
-      if (!raw) return null;
-
-      if (/^[ABI]-/i.test(raw)) {
-        return raw;
+      if (avatarUrl) {
+        if (viewAvatarImg) {
+          viewAvatarImg.src = avatarUrl;
+          viewAvatarImg.style.display = "block";
+        }
+        if (editAvatarImg) {
+          editAvatarImg.src = avatarUrl;
+          editAvatarImg.style.display = "block";
+        }
+        if (avatarInitial) {
+          avatarInitial.style.display = "none";
+          avatarInitial.textContent = "";
+        }
+        if (editAvatarInitial) {
+          editAvatarInitial.style.display = "none";
+          editAvatarInitial.textContent = "";
+        }
+      } else {
+        if (viewAvatarImg) {
+          viewAvatarImg.removeAttribute("src");
+          viewAvatarImg.style.display = "none";
+        }
+        if (editAvatarImg) {
+          editAvatarImg.removeAttribute("src");
+          editAvatarImg.style.display = "none";
+        }
+        if (avatarInitial) {
+          avatarInitial.style.display = "flex";
+          avatarInitial.textContent = initial;
+        }
+        if (editAvatarInitial) {
+          editAvatarInitial.style.display = "flex";
+          editAvatarInitial.textContent = initial;
+        }
       }
 
-      const ua = navigator.userAgent || "";
-      let prefix = "B";
-      if (/android/i.test(ua)) prefix = "A";
-      else if (/iphone|ipad|ipod/i.test(ua)) prefix = "I";
-
-      const finalId = `${prefix}-${raw}`;
-      localStorage.setItem(ACCOUNT_DEVICE_STORAGE_KEY, finalId);
-      return finalId;
-    } catch {
-      return null;
-    }
-  }
-
-  function switchToLearnEarn() {
-    window.location.href = "learn_auth.html";
-  }
-
-  async function loadSchoolNameFromAccountRow(row) {
-    if (!row) return "";
-
-    if (row.school_name && String(row.school_name).trim()) {
-      return String(row.school_name).trim();
+      syncTopRightAvatar(avatarUrl || "", initial || "S");
     }
 
-    if (row.school && typeof row.school === "string" && row.school.trim()) {
-      return row.school.trim();
-    }
+    function applyAccountDataToView({ name, programme, email, matric, level, semester, school, avatarUrl }) {
+      const safeName =
+        name ||
+        (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
+        "Student";
+      const safeProgramme = programme || "Programme";
+      const safeEmail =
+        email || (accountCurrentUser && accountCurrentUser.email) || "";
+      const safeMatric = matric || "";
+      const safeLevel = level || "";
+      const safeSemester = semester || "";
+      const safeSchool = school || "School";
 
-    const schoolId =
-      row.school_id ||
-      row.school_account_id ||
-      row.school_ref ||
-      null;
+      const initial = safeName.trim()[0]
+        ? safeName.trim()[0].toUpperCase()
+        : "C";
 
-    if (!schoolId || typeof supabase === "undefined") return "";
+      applyAvatarToUI(avatarUrl || "", initial);
 
-    try {
-      const { data, error } = await supabase
-        .from("schools")
-        .select("name")
-        .eq("id", schoolId)
-        .maybeSingle();
+      const vNameValue = document.getElementById("viewNameValue");
+      const vProgrammeValue = document.getElementById("viewProgrammeValue");
+      const vEmailValue = document.getElementById("viewEmailValue");
+      const vSchoolValue = document.getElementById("viewSchoolValue");
+      const vSchoolRow = document.getElementById("viewSchoolRow");
+      const eNameHeading = document.getElementById("editNameHeading");
+      const vMatricRow = document.getElementById("viewMatricRow");
+      const vMatricValue = document.getElementById("viewMatricValue");
+      const vLevelRow = document.getElementById("viewLevelRow");
+      const vLevelValue = document.getElementById("viewLevelValue");
+      const vSemesterRow = document.getElementById("viewSemesterRow");
+      const vSemesterValue = document.getElementById("viewSemesterValue");
+      const rolePill = document.getElementById("rolePill");
 
-      if (!error && data && data.name) {
-        return String(data.name).trim();
+      if (vNameValue) vNameValue.textContent = safeName;
+      if (vProgrammeValue) vProgrammeValue.textContent = safeProgramme;
+      if (vEmailValue) vEmailValue.textContent = safeEmail;
+
+      if (vSchoolValue) vSchoolValue.textContent = safeSchool;
+      if (vSchoolRow) vSchoolRow.style.display = school ? "flex" : "none";
+
+      if (eNameHeading) eNameHeading.textContent = safeName;
+
+      if (vMatricValue) vMatricValue.textContent = safeMatric;
+      if (vMatricRow) vMatricRow.style.display = safeMatric ? "flex" : "none";
+
+      if (vLevelValue) vLevelValue.textContent = safeLevel;
+      if (vLevelRow) vLevelRow.style.display = safeLevel ? "flex" : "none";
+
+      if (vSemesterValue) vSemesterValue.textContent = safeSemester;
+      if (vSemesterRow) vSemesterRow.style.display = safeSemester ? "flex" : "none";
+
+      if (rolePill) {
+        rolePill.textContent = "Account";
       }
-    } catch (e) {
-      console.warn("Could not load school name:", e);
     }
 
-    return "";
-  }
+    function applyAccountDataToEdit({ name, matric, level, semester, avatarUrl }) {
+      const mInput = document.getElementById("editMatricNumber");
+      const lInput = document.getElementById("editLevel");
+      const sInput = document.getElementById("editSemester");
+      const mHint = document.getElementById("matricHint");
+      const lHint = document.getElementById("levelHint");
+      const sHint = document.getElementById("semesterHint");
 
-  async function loadAccountVerificationStatus() {
-    if (!accountCurrentUser || typeof supabase === "undefined") return;
+      if (mInput) mInput.value = matric || "";
+      if (lInput) lInput.value = level || "";
+      if (sInput) sInput.value = semester || "";
 
-    const verifyBadge = document.getElementById("verifyBadge");
-    const verifyStatusText = document.getElementById("verifyStatusText");
-    const verifyBtn = getVerificationActionButton();
+      if (mHint) {
+        mHint.textContent = "You can change your matric ID once every 30 days.";
+      }
 
-    let courseFormOk = false;
-    let faceOk = false;
+      if (lHint) {
+        lHint.textContent = "You can change your level once every 30 days.";
+      }
 
-    try {
-      const [courseFormRes, faceRes] = await Promise.all([
-        supabase
-          .from("verification_course_forms")
-          .select("id, user_id, created_at")
-          .eq("user_id", accountCurrentUser.id)
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("face_profiles")
-          .select("id, face_verified")
-          .eq("user_id", accountCurrentUser.id)
-          .limit(1)
-          .maybeSingle(),
-      ]);
+      if (sHint) {
+        sHint.textContent = "You can change your semester once every 30 days.";
+      }
 
-      if (!courseFormRes.error && courseFormRes.data) courseFormOk = true;
-      if (!faceRes.error && faceRes.data && faceRes.data.face_verified === true) faceOk = true;
-    } catch (e) {
-      console.error("loadAccountVerificationStatus error:", e);
+      const safeName =
+        name ||
+        (accountCurrentUser && accountCurrentUser.user_metadata?.full_name) ||
+        "Student";
+      const initial = safeName.trim()[0]
+        ? safeName.trim()[0].toUpperCase()
+        : "C";
+
+      applyAvatarToUI(avatarUrl || "", initial);
     }
 
-    if (courseFormOk && faceOk) {
-      if (verifyBadge) verifyBadge.textContent = "Account verified";
+    function getAccountStoredDeviceId() {
+      try {
+        let raw = localStorage.getItem(ACCOUNT_DEVICE_STORAGE_KEY) || "";
+        raw = String(raw || "").trim();
+        if (!raw) return null;
+
+        if (/^[ABI]-/i.test(raw)) {
+          return raw;
+        }
+
+        const ua = navigator.userAgent || "";
+        let prefix = "B";
+        if (/android/i.test(ua)) prefix = "A";
+        else if (/iphone|ipad|ipod/i.test(ua)) prefix = "I";
+
+        const finalId = `${prefix}-${raw}`;
+        localStorage.setItem(ACCOUNT_DEVICE_STORAGE_KEY, finalId);
+        return finalId;
+      } catch {
+        return null;
+      }
+    }
+
+    function switchToLearnEarn() {
+      window.location.href = "learn_auth.html";
+    }
+
+    function openVerificationPage() {
+      const btn = document.getElementById("verifyMainBtn");
+      if (btn && btn.dataset.locked === "true") return;
+      window.location.href = "verify_class.html";
+    }
+
+    function openAcademicUpdatePage() {
+      window.location.href = "verify_class.html?mode=academic_update";
+    }
+
+    async function loadSchoolNameFromAccountRow(row) {
+      if (!row) return "";
+
+      if (row.school_name && String(row.school_name).trim()) {
+        return String(row.school_name).trim();
+      }
+
+      if (row.school && typeof row.school === "string" && row.school.trim()) {
+        return row.school.trim();
+      }
+
+      const schoolId =
+        row.school_id ||
+        row.school_account_id ||
+        row.school_ref ||
+        null;
+
+      if (!schoolId || typeof supabase === "undefined") return "";
+
+      try {
+        const { data, error } = await supabase
+          .from("schools")
+          .select("name")
+          .eq("id", schoolId)
+          .maybeSingle();
+
+        if (!error && data && data.name) {
+          return String(data.name).trim();
+        }
+      } catch (e) {
+        console.warn("Could not load school name:", e);
+      }
+
+      return "";
+    }
+
+    function showAcademicUpdateButton(show) {
+      const academicBtn = document.getElementById("academicUpdateBtn");
+      const academicHelp = document.getElementById("academicUpdateHelp");
+
+      if (academicBtn) {
+        academicBtn.style.display = show ? "inline-flex" : "none";
+      }
+
+      if (academicHelp) {
+        academicHelp.style.display = show ? "block" : "none";
+      }
+    }
+
+    async function loadAccountVerificationStatus() {
+      if (!accountCurrentUser || typeof supabase === "undefined") return;
+
+      const verifyBadge = document.getElementById("verifyBadge");
+      const verifyStatusText = document.getElementById("verifyStatusText");
+      const verifyBtn = getVerificationActionButton();
+      const verifiedCheckLine = document.getElementById("verifiedCheckLine");
+
+      let courseFormOk = false;
+      let faceOk = false;
+
+      try {
+        const [courseFormRes, faceRes] = await Promise.all([
+          supabase
+            .from("verification_course_forms")
+            .select("id, user_id, status, created_at")
+            .eq("user_id", accountCurrentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from("face_profiles")
+            .select("id, face_verified, capture_status")
+            .eq("user_id", accountCurrentUser.id)
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        const courseStatus = String(courseFormRes.data?.status || "").trim().toLowerCase();
+        const faceStatus = String(faceRes.data?.capture_status || "").trim().toLowerCase();
+
+        if (!courseFormRes.error && courseFormRes.data) {
+          courseFormOk =
+            courseStatus === "" ||
+            courseStatus === "successful" ||
+            courseStatus === "success" ||
+            courseStatus === "approved" ||
+            courseStatus === "verified" ||
+            courseStatus === "pending" ||
+            !!courseFormRes.data.id;
+        }
+
+        if (!faceRes.error && faceRes.data) {
+          faceOk =
+            faceRes.data.face_verified === true ||
+            faceStatus === "approved" ||
+            faceStatus === "verified";
+        }
+      } catch (e) {
+        console.error("loadAccountVerificationStatus error:", e);
+      }
+
+      if (courseFormOk && faceOk) {
+        if (verifyBadge) {
+          verifyBadge.textContent = "Account verified";
+          verifyBadge.style.background = "#eff6ff";
+          verifyBadge.style.borderColor = "#dbeafe";
+          verifyBadge.style.color = "#1d4ed8";
+        }
+
+        if (verifyStatusText) {
+          verifyStatusText.textContent = "";
+          verifyStatusText.classList.remove("error");
+          verifyStatusText.classList.add("success");
+        }
+
+        if (verifiedCheckLine) {
+          verifiedCheckLine.style.display = "flex";
+        }
+
+        if (verifyBtn) {
+          verifyBtn.textContent = "Account verified";
+          verifyBtn.disabled = true;
+          verifyBtn.dataset.locked = "true";
+          verifyBtn.style.opacity = "0.75";
+          verifyBtn.style.cursor = "not-allowed";
+          verifyBtn.style.background = "#e8f0ff";
+          verifyBtn.style.borderColor = "#dbeafe";
+          verifyBtn.style.color = "#5b7fbd";
+        }
+
+        showAcademicUpdateButton(true);
+        return;
+      }
+
+      showAcademicUpdateButton(false);
+
+      if (verifiedCheckLine) {
+        verifiedCheckLine.style.display = "none";
+      }
+
+      if (courseFormOk && !faceOk) {
+        if (verifyBadge) verifyBadge.textContent = "Face required";
+        if (verifyStatusText) {
+          verifyStatusText.textContent =
+            "Your course form has been submitted. Complete face verification to finish verifying your account.";
+          verifyStatusText.classList.remove("success");
+          verifyStatusText.classList.add("error");
+        }
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.dataset.locked = "false";
+          verifyBtn.style.opacity = "";
+          verifyBtn.style.cursor = "";
+          verifyBtn.style.background = "";
+          verifyBtn.style.borderColor = "";
+          verifyBtn.style.color = "";
+          verifyBtn.textContent = "Complete face verification";
+          verifyBtn.onclick = () => {
+            window.location.href = "face-capture.html";
+          };
+        }
+        return;
+      }
+
+      if (!courseFormOk && faceOk) {
+        if (verifyBadge) verifyBadge.textContent = "Course form required";
+        if (verifyStatusText) {
+          verifyStatusText.textContent =
+            "Your face is verified. Upload your course form to finish verifying your account.";
+          verifyStatusText.classList.remove("success");
+          verifyStatusText.classList.add("error");
+        }
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.dataset.locked = "false";
+          verifyBtn.style.opacity = "";
+          verifyBtn.style.cursor = "";
+          verifyBtn.style.background = "";
+          verifyBtn.style.borderColor = "";
+          verifyBtn.style.color = "";
+          verifyBtn.textContent = "Upload course form";
+          verifyBtn.onclick = () => {
+            window.location.href = "verify_class.html";
+          };
+        }
+        return;
+      }
+
+      if (verifyBadge) {
+        verifyBadge.textContent = "Not verified";
+        verifyBadge.style.background = "#eff6ff";
+        verifyBadge.style.borderColor = "#dbeafe";
+        verifyBadge.style.color = "#1d4ed8";
+      }
+
       if (verifyStatusText) {
         verifyStatusText.textContent =
-          "Your course form and face verification are complete.";
-        verifyStatusText.classList.remove("error");
-        verifyStatusText.classList.add("success");
-      }
-      if (verifyBtn) {
-        verifyBtn.textContent = "Account verified";
-        verifyBtn.disabled = true;
-        verifyBtn.style.opacity = "0.7";
-        verifyBtn.style.cursor = "not-allowed";
-      }
-      return;
-    }
-
-    if (courseFormOk && !faceOk) {
-      if (verifyBadge) verifyBadge.textContent = "Face verification required";
-      if (verifyStatusText) {
-        verifyStatusText.textContent =
-          "Your course form has been submitted. Complete face verification to finish verifying your account.";
+          "Upload your course form first, then complete face verification.";
         verifyStatusText.classList.remove("success");
         verifyStatusText.classList.add("error");
       }
-      if (verifyBtn) {
-        verifyBtn.disabled = false;
-        verifyBtn.style.opacity = "";
-        verifyBtn.style.cursor = "";
-        verifyBtn.textContent = "Complete face verification";
-        verifyBtn.onclick = () => {
-          window.location.href = "face_capture.html";
-        };
-      }
-      return;
-    }
 
-    if (!courseFormOk && faceOk) {
-      if (verifyBadge) verifyBadge.textContent = "Course form required";
-      if (verifyStatusText) {
-        verifyStatusText.textContent =
-          "Your face is verified. Upload your course form to finish verifying your account.";
-        verifyStatusText.classList.remove("success");
-        verifyStatusText.classList.add("error");
-      }
       if (verifyBtn) {
         verifyBtn.disabled = false;
+        verifyBtn.dataset.locked = "false";
         verifyBtn.style.opacity = "";
         verifyBtn.style.cursor = "";
+        verifyBtn.style.background = "";
+        verifyBtn.style.borderColor = "";
+        verifyBtn.style.color = "";
         verifyBtn.textContent = "Upload course form";
         verifyBtn.onclick = () => {
           window.location.href = "verify_class.html";
         };
       }
-      return;
     }
 
-    if (verifyBadge) verifyBadge.textContent = "Not verified";
-    if (verifyStatusText) {
-      verifyStatusText.textContent =
-        "Upload your course form first, then complete face verification.";
-      verifyStatusText.classList.remove("success");
-      verifyStatusText.classList.add("error");
-    }
-    if (verifyBtn) {
-      verifyBtn.disabled = false;
-      verifyBtn.style.opacity = "";
-      verifyBtn.style.cursor = "";
-      verifyBtn.textContent = "Upload course form";
-      verifyBtn.onclick = () => {
-        window.location.href = "verify_class.html";
-      };
-    }
-  }
+    function canChangeAfter30Days(lastUpdated) {
+      if (!lastUpdated) return { allowed: true, remainingDays: 0, nextDateStr: "" };
 
-  function canChangeAfter30Days(lastUpdated) {
-    if (!lastUpdated) return { allowed: true, remainingDays: 0, nextDateStr: "" };
+      const last = new Date(lastUpdated);
+      const now = new Date();
+      const diffMs = now.getTime() - last.getTime();
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-    const last = new Date(lastUpdated);
-    const now = new Date();
-    const diffMs = now.getTime() - last.getTime();
-    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      if (diffDays >= 30) {
+        return { allowed: true, remainingDays: 0, nextDateStr: "" };
+      }
 
-    if (diffDays >= 30) {
-      return { allowed: true, remainingDays: 0, nextDateStr: "" };
-    }
-
-    const remainingDays = Math.ceil(30 - diffDays);
-    const nextDate = new Date(last.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const nextDateStr = nextDate.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
-    });
-
-    return { allowed: false, remainingDays, nextDateStr };
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    await new Promise((r) => setTimeout(r, 50));
-
-    if (typeof supabase === "undefined") {
-      console.error("Supabase not available on account screen");
-      setAccountStatus("Backend not available. Please reload.", "error");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data || !data.user) return;
-
-    accountCurrentUser = data.user;
-
-    applyAccountDataToView({
-      name: accountCurrentUser.user_metadata?.full_name || "",
-      programme: "",
-      email: accountCurrentUser.email || "",
-      matric: "",
-      level: "",
-      semester: "",
-      school: "",
-      avatarUrl: ""
-    });
-    applyAccountDataToEdit(getAccountCurrentProfile());
-
-    const changeAvatarBtn = document.getElementById("changeAvatarBtn");
-    const avatarFileInput = document.getElementById("avatarFileInput");
-
-    if (changeAvatarBtn && avatarFileInput) {
-      changeAvatarBtn.addEventListener("click", () => {
-        avatarFileInput.click();
+      const remainingDays = Math.ceil(30 - diffDays);
+      const nextDate = new Date(last.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const nextDateStr = nextDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
       });
 
-      avatarFileInput.addEventListener("change", async () => {
-        const file = avatarFileInput.files && avatarFileInput.files[0];
-        if (!file || !accountCurrentUser) return;
+      return { allowed: false, remainingDays, nextDateStr };
+    }
 
-        try {
-          setAccountStatus("Uploading profile picture...", "success");
+    document.addEventListener("DOMContentLoaded", async () => {
+      await new Promise((r) => setTimeout(r, 50));
 
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-          const filePath = `${accountCurrentUser.id}/avatar_${Date.now()}.${ext}`;
+      if (typeof supabase === "undefined") {
+        console.error("Supabase not available on account screen");
+        setAccountStatus("Backend not available. Please reload.", "error");
+        return;
+      }
 
-          const { error: uploadError } = await supabase.storage
-            .from("profile_pictures")
-            .upload(filePath, file, {
-              cacheControl: "3600",
-              upsert: true
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) return;
+
+      accountCurrentUser = data.user;
+
+      applyAccountDataToView({
+        name: accountCurrentUser.user_metadata?.full_name || "",
+        programme: "",
+        email: accountCurrentUser.email || "",
+        matric: "",
+        level: "",
+        semester: "",
+        school: "",
+        avatarUrl: ""
+      });
+      applyAccountDataToEdit(getAccountCurrentProfile());
+
+      const changeAvatarBtn = document.getElementById("changeAvatarBtn");
+      const avatarFileInput = document.getElementById("avatarFileInput");
+
+      if (changeAvatarBtn && avatarFileInput) {
+        changeAvatarBtn.addEventListener("click", () => {
+          avatarFileInput.click();
+        });
+
+        avatarFileInput.addEventListener("change", async () => {
+          const file = avatarFileInput.files && avatarFileInput.files[0];
+          if (!file || !accountCurrentUser) return;
+
+          try {
+            setAccountStatus("Uploading profile picture...", "success");
+
+            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const filePath = `${accountCurrentUser.id}/avatar_${Date.now()}.${ext}`;
+
+            const { error: uploadError } = await supabase.storage
+              .from("profile_pictures")
+              .upload(filePath, file, {
+                cacheControl: "3600",
+                upsert: true
+              });
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicData } = supabase.storage
+              .from("profile_pictures")
+              .getPublicUrl(filePath);
+
+            const avatarUrl = publicData?.publicUrl || "";
+            const current = getAccountCurrentProfile();
+
+            const { error: upsertError } = await supabase
+              .from("student_accounts")
+              .upsert({
+                user_id: accountCurrentUser.id,
+                full_name: current.name || accountCurrentUser.user_metadata?.full_name || null,
+                programme: current.programme || null,
+                matric_number: current.matric || null,
+                level: current.level || null,
+                semester: current.semester || null,
+                avatar_path: filePath,
+                avatar_url: avatarUrl
+              }, { onConflict: "user_id" });
+
+            if (upsertError) throw upsertError;
+
+            applyAccountDataToView({
+              ...current,
+              avatarUrl
+            });
+            applyAccountDataToEdit({
+              ...current,
+              avatarUrl
             });
 
-          if (uploadError) throw uploadError;
+            setAccountStatus("Profile picture updated.", "success");
+          } catch (err) {
+            console.error("avatar upload error:", err);
+            setAccountStatus("Could not upload profile picture.", "error");
+          }
+        });
+      }
 
-          const { data: publicData } = supabase.storage
-            .from("profile_pictures")
-            .getPublicUrl(filePath);
+      await loadAccountProfile();
+      await loadAccountVerificationStatus();
+      await loadAccountDevices();
+    });
 
-          const avatarUrl = publicData?.publicUrl || "";
-          const current = getAccountCurrentProfile();
+    async function loadAccountProfile() {
+      if (!accountCurrentUser) return;
 
-          const { error: upsertError } = await supabase
-            .from("student_accounts")
-            .upsert({
-              user_id: accountCurrentUser.id,
-              full_name: current.name || accountCurrentUser.user_metadata?.full_name || null,
-              programme: current.programme || null,
-              matric_number: current.matric || null,
-              level: current.level || null,
-              semester: current.semester || null,
-              avatar_path: filePath,
-              avatar_url: avatarUrl
-            }, { onConflict: "user_id" });
+      try {
+        const { data: rows, error } = await supabase
+          .from("student_accounts")
+          .select("*")
+          .eq("user_id", accountCurrentUser.id)
+          .limit(1);
 
-          if (upsertError) throw upsertError;
+        if (!error && rows && rows[0]) {
+          const row = rows[0];
+
+          const name =
+            row.full_name ||
+            accountCurrentUser.user_metadata?.full_name ||
+            "";
+          const programme = row.programme || "";
+          const matric =
+            row.matric_number ||
+            row.staff_id ||
+            row.matric_or_staff_id ||
+            "";
+          const level = row.level || "";
+          const semester = row.semester || "";
+          const email = accountCurrentUser.email || "";
+          const avatarUrl = row.avatar_url || "";
+          const school = await loadSchoolNameFromAccountRow(row);
 
           applyAccountDataToView({
-            ...current,
+            name,
+            programme,
+            email,
+            matric,
+            level,
+            semester,
+            school,
             avatarUrl
           });
           applyAccountDataToEdit({
-            ...current,
+            name,
+            programme,
+            email,
+            matric,
+            level,
+            semester,
+            school,
             avatarUrl
           });
-
-          setAccountStatus("Profile picture updated.", "success");
-        } catch (err) {
-          console.error("avatar upload error:", err);
-          setAccountStatus("Could not upload profile picture.", "error");
+          lecturerProfileLoaded = true;
+          return;
         }
-      });
+
+        const name = accountCurrentUser.user_metadata?.full_name || "Student";
+
+        applyAccountDataToView({
+          name,
+          programme: "",
+          email: accountCurrentUser.email || "",
+          matric: "",
+          level: "",
+          semester: "",
+          school: "",
+          avatarUrl: ""
+        });
+        applyAccountDataToEdit({
+          name,
+          programme: "",
+          email: accountCurrentUser.email || "",
+          matric: "",
+          level: "",
+          semester: "",
+          school: "",
+          avatarUrl: ""
+        });
+        lecturerProfileLoaded = true;
+      } catch (e) {
+        console.error("Error loading account profile:", e);
+      }
     }
 
-    await loadAccountProfile();
-    await loadAccountVerificationStatus();
-    await loadAccountDevices();
-  });
+    async function saveAccountProfile() {
+      if (!accountCurrentUser) return;
+      setAccountStatus("Saving...", "success");
 
-  async function loadAccountProfile() {
-    if (!accountCurrentUser) return;
+      const fm = document.getElementById("editMatricNumber");
+      const fl = document.getElementById("editLevel");
+      const fs = document.getElementById("editSemester");
 
-    try {
-      const { data: rows, error } = await supabase
-        .from("student_accounts")
-        .select("*")
-        .eq("user_id", accountCurrentUser.id)
-        .limit(1);
+      const profile = getAccountCurrentProfile();
+      const name = profile.name || accountCurrentUser.user_metadata?.full_name || "Student";
+      const programme = profile.programme || "";
+      const matric = fm ? fm.value.trim() : "";
+      const level = fl ? fl.value.trim() : "";
+      const semester = fs ? fs.value.trim() : "";
+      const email = accountCurrentUser.email || "";
 
-      if (!error && rows && rows[0]) {
-        const row = rows[0];
+      try {
+        let existingMatric = "";
+        let existingLevel = "";
+        let existingSemester = "";
+        let existingMatricUpdated = null;
+        let existingLevelUpdated = null;
+        let existingSemesterUpdated = null;
+        let existingAvatarPath = "";
+        let existingAvatarUrl = "";
+        let existingSchool = "";
 
-        const name =
-          row.full_name ||
-          accountCurrentUser.user_metadata?.full_name ||
-          "";
-        const programme = row.programme || "";
-        const matric =
-          row.matric_number ||
-          row.staff_id ||
-          row.matric_or_staff_id ||
-          "";
-        const level = row.level || "";
-        const semester = row.semester || "";
-        const email = accountCurrentUser.email || "";
-        const avatarUrl = row.avatar_url || "";
-        const school = await loadSchoolNameFromAccountRow(row);
+        const { data: existingRows, error: existingError } = await supabase
+          .from("student_accounts")
+          .select("*")
+          .eq("user_id", accountCurrentUser.id)
+          .limit(1);
+
+        if (!existingError && existingRows && existingRows[0]) {
+          existingMatric = existingRows[0].matric_number || existingRows[0].staff_id || "";
+          existingLevel = existingRows[0].level || "";
+          existingSemester = existingRows[0].semester || "";
+          existingMatricUpdated = existingRows[0].matric_last_updated_at || null;
+          existingLevelUpdated = existingRows[0].level_last_updated_at || null;
+          existingSemesterUpdated = existingRows[0].semester_last_updated_at || null;
+          existingAvatarPath = existingRows[0].avatar_path || "";
+          existingAvatarUrl = existingRows[0].avatar_url || "";
+          existingSchool = await loadSchoolNameFromAccountRow(existingRows[0]);
+        }
+
+        const changedMatric = (existingMatric || "") !== (matric || "");
+        const changedLevel = (existingLevel || "") !== (level || "");
+        const changedSemester = (existingSemester || "") !== (semester || "");
+
+        if (changedMatric) {
+          const matricRule = canChangeAfter30Days(existingMatricUpdated);
+          if (!matricRule.allowed) {
+            setAccountStatus(
+              `You can only change your matric ID once every 30 days. You can change it again from ${matricRule.nextDateStr} (about ${matricRule.remainingDays} day(s) left).`,
+              "error"
+            );
+            return;
+          }
+        }
+
+        if (changedLevel) {
+          const levelRule = canChangeAfter30Days(existingLevelUpdated);
+          if (!levelRule.allowed) {
+            setAccountStatus(
+              `You can only change your level once every 30 days. You can change it again from ${levelRule.nextDateStr} (about ${levelRule.remainingDays} day(s) left).`,
+              "error"
+            );
+            return;
+          }
+        }
+
+        if (changedSemester) {
+          const semesterRule = canChangeAfter30Days(existingSemesterUpdated);
+          if (!semesterRule.allowed) {
+            setAccountStatus(
+              `You can only change your semester once every 30 days. You can change it again from ${semesterRule.nextDateStr} (about ${semesterRule.remainingDays} day(s) left).`,
+              "error"
+            );
+            return;
+          }
+        }
+
+        const updates = {
+          user_id: accountCurrentUser.id,
+          full_name: name,
+          programme: programme || null,
+          matric_number: matric || null,
+          level: level || null,
+          semester: semester || null,
+          ...(existingAvatarPath ? { avatar_path: existingAvatarPath } : {}),
+          ...(existingAvatarUrl ? { avatar_url: existingAvatarUrl } : {})
+        };
+
+        if (changedMatric) updates.matric_last_updated_at = new Date().toISOString();
+        if (changedLevel) updates.level_last_updated_at = new Date().toISOString();
+        if (changedSemester) updates.semester_last_updated_at = new Date().toISOString();
+
+        const { error: upsertError } = await supabase
+          .from("student_accounts")
+          .upsert(updates, { onConflict: "user_id" });
+
+        if (upsertError) throw upsertError;
 
         applyAccountDataToView({
           name,
@@ -1352,426 +1670,275 @@ function syncTopRightAvatar(avatarUrl, initial) {
           matric,
           level,
           semester,
-          school,
-          avatarUrl
+          school: existingSchool,
+          avatarUrl: existingAvatarUrl
         });
         applyAccountDataToEdit({
           name,
-          programme,
-          email,
           matric,
           level,
           semester,
-          school,
-          avatarUrl
+          avatarUrl: existingAvatarUrl
         });
+
+        await loadAccountVerificationStatus();
+
+        setAccountStatus("Profile saved.", "success");
         lecturerProfileLoaded = true;
-        return;
+        exitAccountEditMode(true);
+      } catch (e) {
+        console.error("saveAccountProfile error:", e);
+        setAccountStatus("Could not save your profile. Please try again.", "error");
       }
-
-      const name = accountCurrentUser.user_metadata?.full_name || "Student";
-
-      applyAccountDataToView({
-        name,
-        programme: "",
-        email: accountCurrentUser.email || "",
-        matric: "",
-        level: "",
-        semester: "",
-        school: "",
-        avatarUrl: ""
-      });
-      applyAccountDataToEdit({
-        name,
-        programme: "",
-        email: accountCurrentUser.email || "",
-        matric: "",
-        level: "",
-        semester: "",
-        school: "",
-        avatarUrl: ""
-      });
-      lecturerProfileLoaded = true;
-    } catch (e) {
-      console.error("Error loading account profile:", e);
     }
-  }
 
-  async function saveAccountProfile() {
-    if (!accountCurrentUser) return;
-    setAccountStatus("Saving...", "success");
+    async function loadAccountDevices() {
+      const list = document.getElementById("devicesList");
+      const statusEl = document.getElementById("devicesStatus");
+      const badge = document.getElementById("devicesCountBadge");
 
-    const fm = document.getElementById("editMatricNumber");
-    const fl = document.getElementById("editLevel");
-    const fs = document.getElementById("editSemester");
+      if (!accountCurrentUser || !list || !statusEl || !badge) return;
 
-    const profile = getAccountCurrentProfile();
-    const name = profile.name || accountCurrentUser.user_metadata?.full_name || "Student";
-    const programme = profile.programme || "";
-    const matric = fm ? fm.value.trim() : "";
-    const level = fl ? fl.value.trim() : "";
-    const semester = fs ? fs.value.trim() : "";
-    const email = accountCurrentUser.email || "";
+      list.innerHTML = "";
+      statusEl.textContent = "Loading devices...";
 
-    try {
-      let existingMatric = "";
-      let existingLevel = "";
-      let existingSemester = "";
-      let existingMatricUpdated = null;
-      let existingLevelUpdated = null;
-      let existingSemesterUpdated = null;
-      let existingAvatarPath = "";
-      let existingAvatarUrl = "";
-      let existingSchool = "";
+      const currentDeviceId = getAccountStoredDeviceId();
 
-      const { data: existingRows, error: existingError } = await supabase
-        .from("student_accounts")
-        .select("*")
-        .eq("user_id", accountCurrentUser.id)
-        .limit(1);
+      try {
+        const { data, error } = await supabase
+          .from("user_devices")
+          .select("id, device_id, created_at")
+          .eq("user_id", accountCurrentUser.id)
+          .order("created_at", { ascending: true });
 
-      if (!existingError && existingRows && existingRows[0]) {
-        existingMatric = existingRows[0].matric_number || existingRows[0].staff_id || "";
-        existingLevel = existingRows[0].level || "";
-        existingSemester = existingRows[0].semester || "";
-        existingMatricUpdated = existingRows[0].matric_last_updated_at || null;
-        existingLevelUpdated = existingRows[0].level_last_updated_at || null;
-        existingSemesterUpdated = existingRows[0].semester_last_updated_at || null;
-        existingAvatarPath = existingRows[0].avatar_path || "";
-        existingAvatarUrl = existingRows[0].avatar_url || "";
-        existingSchool = await loadSchoolNameFromAccountRow(existingRows[0]);
-      }
-
-      const changedMatric = (existingMatric || "") !== (matric || "");
-      const changedLevel = (existingLevel || "") !== (level || "");
-      const changedSemester = (existingSemester || "") !== (semester || "");
-
-      if (changedMatric) {
-        const matricRule = canChangeAfter30Days(existingMatricUpdated);
-        if (!matricRule.allowed) {
-          setAccountStatus(
-            `You can only change your matric ID once every 30 days. You can change it again from ${matricRule.nextDateStr} (about ${matricRule.remainingDays} day(s) left).`,
-            "error"
-          );
+        if (error) {
+          console.error("loadDevices error:", error);
+          statusEl.textContent = "Could not load your devices. Please pull to refresh later.";
           return;
         }
-      }
 
-      if (changedLevel) {
-        const levelRule = canChangeAfter30Days(existingLevelUpdated);
-        if (!levelRule.allowed) {
-          setAccountStatus(
-            `You can only change your level once every 30 days. You can change it again from ${levelRule.nextDateStr} (about ${levelRule.remainingDays} day(s) left).`,
-            "error"
-          );
+        const devices = data || [];
+        badge.textContent = `${devices.length} / 2`;
+
+        if (devices.length === 0) {
+          statusEl.textContent =
+            "No devices linked yet. When you sign in on a phone, it will appear here.";
           return;
         }
-      }
 
-      if (changedSemester) {
-        const semesterRule = canChangeAfter30Days(existingSemesterUpdated);
-        if (!semesterRule.allowed) {
-          setAccountStatus(
-            `You can only change your semester once every 30 days. You can change it again from ${semesterRule.nextDateStr} (about ${semesterRule.remainingDays} day(s) left).`,
-            "error"
-          );
+        statusEl.textContent = "";
+
+        devices.forEach((row) => {
+          const rowDeviceId = String(row.device_id || "").trim();
+          const localDeviceId = String(currentDeviceId || "").trim();
+          const isThis = !!localDeviceId && rowDeviceId === localDeviceId;
+
+          const deviceRow = document.createElement("div");
+          deviceRow.className = "device-row";
+
+          const main = document.createElement("div");
+          main.className = "device-main";
+
+          const icon = document.createElement("div");
+          icon.className = "device-icon";
+          icon.innerHTML = `
+            <svg viewBox="0 0 24 24">
+              <rect x="7" y="3" width="10" height="18" rx="2"></rect>
+              <circle cx="12" cy="17" r="1"></circle>
+            </svg>
+          `;
+
+          const text = document.createElement("div");
+          text.className = "device-text";
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "device-name";
+          nameEl.textContent = isThis ? "This phone" : "Other device";
+
+          const metaEl = document.createElement("div");
+          metaEl.className = "device-meta";
+          const created = row.created_at
+            ? new Date(row.created_at).toLocaleString()
+            : "";
+          metaEl.textContent = created ? `Linked on ${created}` : "Linked device";
+
+          const tags = document.createElement("div");
+          tags.className = "device-tags";
+
+          const primaryPill = document.createElement("span");
+          primaryPill.className = "device-pill primary";
+          primaryPill.textContent = isThis ? "Active here" : "Signed in";
+          tags.appendChild(primaryPill);
+
+          if (!isThis) {
+            const warnPill = document.createElement("span");
+            warnPill.className = "device-pill";
+            warnPill.textContent = "You can remove this";
+            tags.appendChild(warnPill);
+          }
+
+          text.appendChild(nameEl);
+          text.appendChild(metaEl);
+          text.appendChild(tags);
+
+          main.appendChild(icon);
+          main.appendChild(text);
+          deviceRow.appendChild(main);
+
+          if (!isThis) {
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "device-remove-btn";
+            removeBtn.textContent = "Remove";
+            removeBtn.onclick = () => removeAccountDevice(row.id);
+            deviceRow.appendChild(removeBtn);
+          }
+
+          list.appendChild(deviceRow);
+        });
+      } catch (e) {
+        console.error("loadDevices error:", e);
+        statusEl.textContent = "Could not load your devices. Please try again later.";
+      }
+    }
+
+    async function removeAccountDevice(id) {
+      if (!id) return;
+      const confirmed = window.confirm("Remove this device? It will be signed out from Colspot.");
+      if (!confirmed) return;
+
+      try {
+        const { error } = await supabase
+          .from("user_devices")
+          .delete()
+          .eq("id", id);
+
+        if (error) {
+          console.error("removeDevice error:", error);
+          alert("Could not remove this device. Please try again.");
           return;
         }
-      }
 
-      const updates = {
-        user_id: accountCurrentUser.id,
-        full_name: name,
-        programme: programme || null,
-        matric_number: matric || null,
-        level: level || null,
-        semester: semester || null,
-        ...(existingAvatarPath ? { avatar_path: existingAvatarPath } : {}),
-        ...(existingAvatarUrl ? { avatar_url: existingAvatarUrl } : {})
-      };
-
-      if (changedMatric) updates.matric_last_updated_at = new Date().toISOString();
-      if (changedLevel) updates.level_last_updated_at = new Date().toISOString();
-      if (changedSemester) updates.semester_last_updated_at = new Date().toISOString();
-
-      const { error: upsertError } = await supabase
-        .from("student_accounts")
-        .upsert(updates, { onConflict: "user_id" });
-
-      if (upsertError) throw upsertError;
-
-      applyAccountDataToView({
-        name,
-        programme,
-        email,
-        matric,
-        level,
-        semester,
-        school: existingSchool,
-        avatarUrl: existingAvatarUrl
-      });
-      applyAccountDataToEdit({
-        name,
-        matric,
-        level,
-        semester,
-        avatarUrl: existingAvatarUrl
-      });
-
-      await loadAccountVerificationStatus();
-
-      setAccountStatus("Profile saved.", "success");
-      lecturerProfileLoaded = true;
-      exitAccountEditMode(true);
-    } catch (e) {
-      console.error("saveAccountProfile error:", e);
-      setAccountStatus("Could not save your profile. Please try again.", "error");
-    }
-  }
-
-  async function loadAccountDevices() {
-    const list = document.getElementById("devicesList");
-    const statusEl = document.getElementById("devicesStatus");
-    const badge = document.getElementById("devicesCountBadge");
-
-    if (!accountCurrentUser || !list || !statusEl || !badge) return;
-
-    list.innerHTML = "";
-    statusEl.textContent = "Loading devices...";
-
-    const currentDeviceId = getAccountStoredDeviceId();
-
-    try {
-      const { data, error } = await supabase
-        .from("user_devices")
-        .select("id, device_id, created_at")
-        .eq("user_id", accountCurrentUser.id)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("loadDevices error:", error);
-        statusEl.textContent = "Could not load your devices. Please pull to refresh later.";
-        return;
-      }
-
-      const devices = data || [];
-      badge.textContent = `${devices.length} / 2`;
-
-      if (devices.length === 0) {
-        statusEl.textContent =
-          "No devices linked yet. When you sign in on a phone, it will appear here.";
-        return;
-      }
-
-      statusEl.textContent = "";
-
-      devices.forEach((row) => {
-        const rowDeviceId = String(row.device_id || "").trim();
-        const localDeviceId = String(currentDeviceId || "").trim();
-        const isThis = !!localDeviceId && rowDeviceId === localDeviceId;
-
-        const deviceRow = document.createElement("div");
-        deviceRow.className = "device-row";
-
-        const main = document.createElement("div");
-        main.className = "device-main";
-
-        const icon = document.createElement("div");
-        icon.className = "device-icon";
-        icon.innerHTML = `
-          <svg viewBox="0 0 24 24">
-            <rect x="7" y="3" width="10" height="18" rx="2"></rect>
-            <circle cx="12" cy="17" r="1"></circle>
-          </svg>
-        `;
-
-        const text = document.createElement("div");
-        text.className = "device-text";
-
-        const nameEl = document.createElement("div");
-        nameEl.className = "device-name";
-        nameEl.textContent = isThis ? "This phone" : "Other device";
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "device-meta";
-        const created = row.created_at
-          ? new Date(row.created_at).toLocaleString()
-          : "";
-        metaEl.textContent = created ? `Linked on ${created}` : "Linked device";
-
-        const tags = document.createElement("div");
-        tags.className = "device-tags";
-
-        const primaryPill = document.createElement("span");
-        primaryPill.className = "device-pill primary";
-        primaryPill.textContent = isThis ? "Active here" : "Signed in";
-        tags.appendChild(primaryPill);
-
-        if (!isThis) {
-          const warnPill = document.createElement("span");
-          warnPill.className = "device-pill";
-          warnPill.textContent = "You can remove this";
-          tags.appendChild(warnPill);
-        }
-
-        text.appendChild(nameEl);
-        text.appendChild(metaEl);
-        text.appendChild(tags);
-
-        main.appendChild(icon);
-        main.appendChild(text);
-        deviceRow.appendChild(main);
-
-        if (!isThis) {
-          const removeBtn = document.createElement("button");
-          removeBtn.className = "device-remove-btn";
-          removeBtn.textContent = "Remove";
-          removeBtn.onclick = () => removeAccountDevice(row.id);
-          deviceRow.appendChild(removeBtn);
-        }
-
-        list.appendChild(deviceRow);
-      });
-    } catch (e) {
-      console.error("loadDevices error:", e);
-      statusEl.textContent = "Could not load your devices. Please try again later.";
-    }
-  }
-
-  async function removeAccountDevice(id) {
-    if (!id) return;
-    const confirmed = window.confirm("Remove this device? It will be signed out from Colspot.");
-    if (!confirmed) return;
-
-    try {
-      const { error } = await supabase
-        .from("user_devices")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        console.error("removeDevice error:", error);
+        await loadAccountDevices();
+      } catch (e) {
+        console.error("removeDevice error:", e);
         alert("Could not remove this device. Please try again.");
+      }
+    }
+
+    async function accountSignOut() {
+      try {
+        if (typeof supabase !== "undefined") {
+          await supabase.auth.signOut();
+        }
+      } catch (e) {
+        console.error("Sign out error:", e);
+      } finally {
+        try {
+          localStorage.removeItem("colspot_local_user");
+        } catch (e) {
+          console.error("Failed to clear local user cache on logout:", e);
+        }
+
+        window.location.href = "index.html";
+      }
+    }
+
+    function accountContactUs() {
+      window.location.href = "contact.html";
+    }
+
+    async function accountDeleteAccount() {
+      if (!accountCurrentUser) {
+        alert("We could not find your account. Please sign in again.");
         return;
       }
 
-      await loadAccountDevices();
-    } catch (e) {
-      console.error("removeDevice error:", e);
-      alert("Could not remove this device. Please try again.");
-    }
-  }
+      const confirmed = window.confirm(
+        "This will permanently delete your Colspot data for this account, including classes, attendance sessions, attendees, warmup locations, scans and linked devices. You won’t be able to undo this. Continue?"
+      );
+      if (!confirmed) return;
 
-  async function accountSignOut() {
-    try {
-      if (typeof supabase !== "undefined") {
-        await supabase.auth.signOut();
-      }
-    } catch (e) {
-      console.error("Sign out error:", e);
-    } finally {
-      try {
-        localStorage.removeItem("colspot_local_user");
-      } catch (e) {
-        console.error("Failed to clear local user cache on logout:", e);
+      const typed = window.prompt("To confirm, type DELETE in capital letters and tap OK.");
+      if (!typed || typed.trim().toUpperCase() !== "DELETE") {
+        alert("Account deletion cancelled. You did not type DELETE.");
+        return;
       }
 
-      window.location.href = "index.html";
-    }
-  }
-
-  function accountContactUs() {
-    window.location.href = "contact.html";
-  }
-
-  async function accountDeleteAccount() {
-    if (!accountCurrentUser) {
-      alert("We could not find your account. Please sign in again.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "This will permanently delete your Colspot data for this account, including classes, attendance sessions, attendees, warmup locations, scans and linked devices. You won’t be able to undo this. Continue?"
-    );
-    if (!confirmed) return;
-
-    const typed = window.prompt("To confirm, type DELETE in capital letters and tap OK.");
-    if (!typed || typed.trim().toUpperCase() !== "DELETE") {
-      alert("Account deletion cancelled. You did not type DELETE.");
-      return;
-    }
-
-    const userId = accountCurrentUser.id;
-
-    try {
-      if (typeof supabase !== "undefined") {
-        let sessionIds = [];
-        try {
-          const { data: sessions, error: sessionsError } = await supabase
-            .from("attendance_sessions")
-            .select("id")
-            .eq("created_by", userId);
-
-          if (!sessionsError && sessions && sessions.length > 0) {
-            sessionIds = sessions.map((s) => s.id);
-          }
-        } catch (e) {
-          console.warn("Could not load lecturer sessions for delete:", e);
-        }
-
-        const deletions = [];
-
-        if (sessionIds.length > 0) {
-          deletions.push(
-            supabase.from("attendance_records").delete().in("session_id", sessionIds)
-          );
-        }
-
-        deletions.push(supabase.from("user_devices").delete().eq("user_id", userId));
-        deletions.push(supabase.from("attendance_warmup_main").delete().eq("lecturer_id", userId));
-        deletions.push(supabase.from("attendance_warmup_attendance").delete().eq("lecturer_id", userId));
-        deletions.push(supabase.from("attendance_sessions").delete().eq("created_by", userId));
-        deletions.push(supabase.from("scan_sheets").delete().eq("user_id", userId));
-        deletions.push(supabase.from("lecturers").delete().eq("id", userId));
-
-        await Promise.allSettled(deletions);
-
-        try {
-          if (supabase.functions && supabase.functions.invoke) {
-            await supabase.functions.invoke("delete_my_account", { body: {} });
-          }
-        } catch (e) {
-          console.warn("delete_my_account function failed:", e);
-        }
-
-        try {
-          await supabase.auth.signOut();
-        } catch (e) {
-          console.warn("signOut after delete failed:", e);
-        }
-      }
+      const userId = accountCurrentUser.id;
 
       try {
-        localStorage.removeItem("colspot_local_user");
-        localStorage.removeItem("colspot_history_cache");
-        localStorage.removeItem("colspot_scan_cache");
-        localStorage.removeItem(ACCOUNT_DEVICE_STORAGE_KEY);
+        if (typeof supabase !== "undefined") {
+          let sessionIds = [];
+          try {
+            const { data: sessions, error: sessionsError } = await supabase
+              .from("attendance_sessions")
+              .select("id")
+              .eq("created_by", userId);
+
+            if (!sessionsError && sessions && sessions.length > 0) {
+              sessionIds = sessions.map((s) => s.id);
+            }
+          } catch (e) {
+            console.warn("Could not load lecturer sessions for delete:", e);
+          }
+
+          const deletions = [];
+
+          if (sessionIds.length > 0) {
+            deletions.push(
+              supabase.from("attendance_records").delete().in("session_id", sessionIds)
+            );
+          }
+
+          deletions.push(supabase.from("user_devices").delete().eq("user_id", userId));
+          deletions.push(supabase.from("attendance_warmup_main").delete().eq("lecturer_id", userId));
+          deletions.push(supabase.from("attendance_warmup_attendance").delete().eq("lecturer_id", userId));
+          deletions.push(supabase.from("attendance_sessions").delete().eq("created_by", userId));
+          deletions.push(supabase.from("scan_sheets").delete().eq("user_id", userId));
+          deletions.push(supabase.from("lecturers").delete().eq("id", userId));
+
+          await Promise.allSettled(deletions);
+
+          try {
+            if (supabase.functions && supabase.functions.invoke) {
+              await supabase.functions.invoke("delete_my_account", { body: {} });
+            }
+          } catch (e) {
+            console.warn("delete_my_account function failed:", e);
+          }
+
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {
+            console.warn("signOut after delete failed:", e);
+          }
+        }
+
+        try {
+          localStorage.removeItem("colspot_local_user");
+          localStorage.removeItem("colspot_history_cache");
+          localStorage.removeItem("colspot_scan_cache");
+          localStorage.removeItem(ACCOUNT_DEVICE_STORAGE_KEY);
+        } catch (e) {
+          console.warn("Failed to clear local cache on delete:", e);
+        }
+
+        alert("Your Colspot data for this account has been deleted.");
+        window.location.href = "index.html";
       } catch (e) {
-        console.warn("Failed to clear local cache on delete:", e);
+        console.error("accountDeleteAccount error:", e);
+        alert("We could not delete your data. Please check your internet connection and try again.");
       }
-
-      alert("Your Colspot data for this account has been deleted.");
-      window.location.href = "index.html";
-    } catch (e) {
-      console.error("accountDeleteAccount error:", e);
-      alert("We could not delete your data. Please check your internet connection and try again.");
     }
-  }
 
-  window.enterAccountEditMode = enterAccountEditMode;
-  window.saveAccountProfile = saveAccountProfile;
-  window.accountSignOut = accountSignOut;
-  window.accountContactUs = accountContactUs;
-  window.accountDeleteAccount = accountDeleteAccount;
-  window.switchToLearnEarn = switchToLearnEarn;
-</script>
+    window.enterAccountEditMode = enterAccountEditMode;
+    window.saveAccountProfile = saveAccountProfile;
+    window.accountSignOut = accountSignOut;
+    window.accountContactUs = accountContactUs;
+    window.accountDeleteAccount = accountDeleteAccount;
+    window.switchToLearnEarn = switchToLearnEarn;
+    window.openVerificationPage = openVerificationPage;
+    window.openAcademicUpdatePage = openAcademicUpdatePage;
+  </script>
+</div>
+<!-- 🔹 ACCOUNT SCREEN END -->
