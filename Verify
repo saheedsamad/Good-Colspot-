@@ -457,6 +457,12 @@
       color:#92400e;
     }
 
+    .status-card.blocked{
+      border-color:rgba(239,68,68,.20);
+      background:rgba(239,68,68,.08);
+      color:#991b1b;
+    }
+
     .grid{
       display:grid;
       grid-template-columns:1fr;
@@ -502,6 +508,11 @@
       font-size:16px;
       padding:0;
       min-height:28px;
+    }
+
+    .select-field:disabled{
+      color:#94a3b8;
+      cursor:not-allowed;
     }
 
     .input-help{
@@ -653,7 +664,7 @@
       </div>
 
       <div class="card-body">
-        <div class="status-card warn">
+        <div id="academicIntroCard" class="status-card warn">
           After you continue, Colspot will take you to face capture. The academic update will only complete after face capture is approved.
         </div>
 
@@ -734,7 +745,7 @@
         </div>
 
         <button id="btnAcademicContinue" class="btn btn-primary" type="button">
-          Continue to face verification
+          Continue to face capture
         </button>
 
         <button id="btnAcademicCancel" class="btn btn-ghost" type="button">
@@ -768,6 +779,7 @@
     const INDEX_URL = "index.html";
 
     const ACADEMIC_UPDATE_PENDING_KEY = "colspot_pending_academic_update";
+    const ACADEMIC_UPDATE_BLOCK_DAYS = 60;
 
     const el = (id) => document.getElementById(id);
 
@@ -781,6 +793,8 @@
     let currentUser = null;
     let verificationLocked = false;
     let currentStudentAccount = null;
+    let academicUpdateBlocked = false;
+    let academicUpdateBlockInfo = null;
 
     function saveLocalUser(user) {
       if (!user || !user.id) return;
@@ -873,11 +887,14 @@
 
     function setAcademicLoading(on) {
       if (el("academicLoading")) el("academicLoading").style.display = on ? "block" : "none";
-      if (el("btnAcademicContinue")) el("btnAcademicContinue").disabled = on;
+
+      const shouldDisable = on || academicUpdateBlocked;
+
+      if (el("btnAcademicContinue")) el("btnAcademicContinue").disabled = shouldDisable;
       if (el("btnAcademicCancel")) el("btnAcademicCancel").disabled = on;
-      if (el("aLevel")) el("aLevel").disabled = on;
-      if (el("aSession")) el("aSession").disabled = on;
-      if (el("aSemester")) el("aSemester").disabled = on;
+      if (el("aLevel")) el("aLevel").disabled = shouldDisable;
+      if (el("aSession")) el("aSession").disabled = shouldDisable;
+      if (el("aSemester")) el("aSemester").disabled = shouldDisable;
     }
 
     function bytesToSize(bytes) {
@@ -920,6 +937,96 @@
         account?.school_session ||
         ""
       );
+    }
+
+    function getAcademicUpdateBlockInfo(lastUpdatedAt) {
+      if (!lastUpdatedAt) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const lastDate = new Date(lastUpdatedAt);
+
+      if (Number.isNaN(lastDate.getTime())) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const now = new Date();
+      const blockMs = ACADEMIC_UPDATE_BLOCK_DAYS * 24 * 60 * 60 * 1000;
+      const diffMs = now.getTime() - lastDate.getTime();
+
+      if (diffMs >= blockMs) {
+        return {
+          blocked: false,
+          daysLeft: 0,
+          nextDateText: ""
+        };
+      }
+
+      const daysLeft = Math.max(1, Math.ceil((blockMs - diffMs) / (24 * 60 * 60 * 1000)));
+      const nextDate = new Date(lastDate.getTime() + blockMs);
+      const nextDateText = nextDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+
+      return {
+        blocked: true,
+        daysLeft,
+        nextDateText
+      };
+    }
+
+    function applyAcademicUpdateBlock(blockInfo) {
+      academicUpdateBlockInfo = blockInfo || { blocked: false, daysLeft: 0, nextDateText: "" };
+      academicUpdateBlocked = !!academicUpdateBlockInfo.blocked;
+
+      const introCard = el("academicIntroCard");
+      const continueBtn = el("btnAcademicContinue");
+
+      if (academicUpdateBlocked) {
+        if (introCard) {
+          introCard.classList.add("blocked");
+          introCard.classList.remove("warn");
+          introCard.textContent =
+            `Academic update is locked. You can update your academic details again in ${academicUpdateBlockInfo.daysLeft} day${academicUpdateBlockInfo.daysLeft > 1 ? "s" : ""}${academicUpdateBlockInfo.nextDateText ? " from " + academicUpdateBlockInfo.nextDateText : ""}.`;
+        }
+
+        if (continueBtn) {
+          continueBtn.textContent =
+            `Locked for ${academicUpdateBlockInfo.daysLeft} day${academicUpdateBlockInfo.daysLeft > 1 ? "s" : ""}`;
+          continueBtn.disabled = true;
+        }
+
+        showAcademicErr(
+          `You recently updated your academic details. You can update again in ${academicUpdateBlockInfo.daysLeft} day${academicUpdateBlockInfo.daysLeft > 1 ? "s" : ""}.`
+        );
+
+        setAcademicLoading(false);
+        return;
+      }
+
+      if (introCard) {
+        introCard.classList.remove("blocked");
+        introCard.classList.add("warn");
+        introCard.textContent =
+          "After you continue, Colspot will take you to face capture. The academic update will only complete after face capture is approved.";
+      }
+
+      if (continueBtn) {
+        continueBtn.textContent = "Continue to face capture";
+        continueBtn.disabled = false;
+      }
+
+      setAcademicLoading(false);
     }
 
     async function getUser() {
@@ -1447,6 +1554,13 @@
       if (el("aSession")) el("aSession").value = session || "";
       if (el("aSemester")) el("aSemester").value = semester || "";
 
+      const blockInfo = getAcademicUpdateBlockInfo(data.academic_details_last_updated_at);
+      applyAcademicUpdateBlock(blockInfo);
+
+      if (blockInfo.blocked) {
+        return;
+      }
+
       if (!fullName || !matric || !school) {
         showAcademicWarn("Some locked profile details are missing. Please complete normal verification first if this page does not work.");
       }
@@ -1460,6 +1574,15 @@
 
       if (!currentStudentAccount) {
         throw new Error("Student account not loaded. Please refresh and try again.");
+      }
+
+      const freshBlockInfo = getAcademicUpdateBlockInfo(currentStudentAccount.academic_details_last_updated_at);
+
+      if (freshBlockInfo.blocked) {
+        applyAcademicUpdateBlock(freshBlockInfo);
+        throw new Error(
+          `You can update your academic details again in ${freshBlockInfo.daysLeft} day${freshBlockInfo.daysLeft > 1 ? "s" : ""}.`
+        );
       }
 
       const newLevel = normalizeLevel(el("aLevel")?.value);
@@ -1530,12 +1653,21 @@
 
     async function handleAcademicContinue() {
       clearAcademicMsgs();
+
+      if (academicUpdateBlocked) {
+        const info = academicUpdateBlockInfo || { daysLeft: 0 };
+        showAcademicErr(
+          `You can update your academic details again in ${info.daysLeft || 60} day${Number(info.daysLeft || 60) > 1 ? "s" : ""}.`
+        );
+        return;
+      }
+
       setAcademicLoading(true);
 
       try {
         const pending = await createPendingAcademicUpdate();
 
-        showAcademicOk("Academic update saved as pending. Continue to face verification to complete it.");
+        showAcademicOk("Academic update saved as pending. Continue to face capture to complete it.");
 
         setTimeout(() => {
           window.location.href =
@@ -1560,7 +1692,7 @@
       if (el("heroTitle")) el("heroTitle").textContent = "Update academic details";
       if (el("heroSub")) {
         el("heroSub").textContent =
-          "Your identity details remain locked. Select only your new level, academic session and semester, then retake face verification.";
+          "Your identity details remain locked. Select only your new level, academic session and semester, then retake face capture.";
       }
       if (el("modePill")) el("modePill").classList.remove("hidden");
 
