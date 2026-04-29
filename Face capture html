@@ -22,6 +22,8 @@
       --green-soft:#dcfce7;
       --red:#dc2626;
       --red-soft:#fee2e2;
+      --warn:#d97706;
+      --warn-soft:#fff7ed;
       --shadow:0 18px 40px rgba(76,131,246,.12);
       --shadow-soft:0 10px 24px rgba(15,23,42,.08);
       --safe-top:env(safe-area-inset-top, 0px);
@@ -94,11 +96,50 @@
       color:#3b455c;
     }
 
+    .fc-header-copy{
+      min-width:0;
+      flex:1;
+    }
+
     .fc-header-title{
       font-size:17px;
       font-weight:800;
       letter-spacing:-.02em;
       color:#20283a;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .fc-header-sub{
+      margin-top:2px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .fc-mode-pill{
+      display:none;
+      margin:0 0 12px;
+      padding:12px 13px;
+      border-radius:18px;
+      background:var(--warn-soft);
+      color:#92400e;
+      border:1px solid rgba(217,119,6,.18);
+      font-size:13px;
+      font-weight:800;
+      line-height:1.45;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .fc-mode-pill.show{
+      display:block;
+    }
+
+    .fc-mode-pill strong{
+      color:#78350f;
     }
 
     .fc-main-card{
@@ -474,8 +515,15 @@
         </svg>
       </button>
 
-      <div class="fc-header-title">Face capture</div>
+      <div class="fc-header-copy">
+        <div class="fc-header-title" id="pageTitle">Face capture</div>
+        <div class="fc-header-sub" id="pageSub">Complete live face verification</div>
+      </div>
     </header>
+
+    <div id="academicModePill" class="fc-mode-pill">
+      <strong>Academic update:</strong> Your level, session and semester will only update after this face capture is approved.
+    </div>
 
     <section class="fc-main-card">
       <section class="fc-camera-card">
@@ -570,7 +618,7 @@
 
   <script>
     window.SUPABASE_URL = "https://wtlrfujfimxcmsnqrnig.supabase.co";
-    window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmZyjfimxcmsnqrnigIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MzUzMTIsImV4cCI6MjA4NDExMTMxMn0.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+    window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -581,6 +629,13 @@
   <script>
     const FACE_ENROLL_FUNCTION_URL = `${window.SUPABASE_URL}/functions/v1/face-enroll`;
     const SUCCESS_REDIRECT_URL = "main.html";
+
+    const ACADEMIC_UPDATE_PENDING_KEY = "colspot_pending_academic_update";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const PAGE_MODE = String(urlParams.get("mode") || "").trim().toLowerCase();
+    const REQUEST_ID = String(urlParams.get("requestId") || "").trim();
+    const IS_ACADEMIC_UPDATE = PAGE_MODE === "academic_update";
 
     const supabaseClient = window.supabase.createClient(
       window.SUPABASE_URL,
@@ -610,6 +665,10 @@
     const whyBtn = document.getElementById("whyBtn");
     const captureActions = document.getElementById("captureActions");
 
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSub = document.getElementById("pageSub");
+    const academicModePill = document.getElementById("academicModePill");
+
     let mediaStream = null;
     let mpCamera = null;
     let faceMesh = null;
@@ -618,6 +677,7 @@
     let finalBase64 = null;
     let finalMimeType = "image/jpeg";
     let currentLocalUser = null;
+    let pendingAcademicUpdate = null;
 
     let poseHoldFrames = 0;
     let currentStepIndex = 0;
@@ -666,6 +726,39 @@
       if (startCameraBtn) startCameraBtn.classList.add("hidden");
       if (stopCameraBtn) stopCameraBtn.classList.add("hidden");
       if (captureActions) captureActions.classList.remove("hidden");
+    }
+
+    function readPendingAcademicUpdate() {
+      try {
+        const raw = localStorage.getItem(ACADEMIC_UPDATE_PENDING_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return null;
+        return parsed;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function clearPendingAcademicUpdate() {
+      try {
+        localStorage.removeItem(ACADEMIC_UPDATE_PENDING_KEY);
+      } catch (_) {}
+    }
+
+    function setupModeUi() {
+      if (!IS_ACADEMIC_UPDATE) return;
+
+      pendingAcademicUpdate = readPendingAcademicUpdate();
+
+      if (pageTitle) pageTitle.textContent = "Academic face verification";
+      if (pageSub) pageSub.textContent = "Retake face to complete academic update";
+      if (academicModePill) academicModePill.classList.add("show");
+      if (continueBtn) continueBtn.textContent = "Verify and update";
+
+      if (!pendingAcademicUpdate || !pendingAcademicUpdate.request_id) {
+        showError("No pending academic update found. Please start again from Account.");
+      }
     }
 
     function updateSequenceUI() {
@@ -844,12 +937,18 @@
       setButtonsForIdle();
       resetSequenceState();
       clearFlashMessages();
-      setCameraBadge("Look straight, turn left, turn right, then face front again");
-      setStatus("Look straight", "Start your camera and follow the movement guide.");
+
+      if (IS_ACADEMIC_UPDATE) {
+        setCameraBadge("Retake face to approve academic update");
+        setStatus("Look straight", "Start your camera and complete face verification to apply your academic update.");
+      } else {
+        setCameraBadge("Look straight, turn left, turn right, then face front again");
+        setStatus("Look straight", "Start your camera and follow the movement guide.");
+      }
     }
 
     function buildCaptureMeta() {
-      return {
+      const meta = {
         source: "camera",
         stepSequence: scanSequence,
         deviceId:
@@ -858,6 +957,16 @@
           null,
         userId: currentLocalUser?.id || null
       };
+
+      if (IS_ACADEMIC_UPDATE) {
+        meta.mode = "academic_update";
+        meta.academic_update_request_id =
+          REQUEST_ID ||
+          pendingAcademicUpdate?.request_id ||
+          null;
+      }
+
+      return meta;
     }
 
     async function getLocalFirstUser() {
@@ -932,6 +1041,13 @@
           poseHoldFrames = 0;
           setCameraBadge("No face detected");
           setStatus(currentInstruction(), "Position your face inside the frame.");
+          return;
+        }
+
+        if (faces.length > 1) {
+          poseHoldFrames = 0;
+          setCameraBadge("One face only");
+          setStatus("Only one face", "Keep only your face visible in the camera.");
           return;
         }
 
@@ -1017,7 +1133,12 @@
       setButtonsForCaptured();
       setCameraBadge("Capture ready");
       showSuccess("Face captured successfully.");
-      setStatus("Captured", "Review your center face capture or continue.");
+
+      if (IS_ACADEMIC_UPDATE) {
+        setStatus("Captured", "Review your face capture, then continue to approve your academic update.");
+      } else {
+        setStatus("Captured", "Review your center face capture or continue.");
+      }
     }
 
     async function startCamera() {
@@ -1025,6 +1146,22 @@
 
       const localUser = await getLocalFirstUser();
       if (!localUser) return;
+
+      if (IS_ACADEMIC_UPDATE) {
+        pendingAcademicUpdate = readPendingAcademicUpdate();
+
+        if (!pendingAcademicUpdate || !pendingAcademicUpdate.request_id) {
+          showError("No pending academic update found. Please go back to Account and start again.");
+          setStatus("Pending update missing", "Start the academic update again from your Account screen.");
+          return;
+        }
+
+        if (REQUEST_ID && pendingAcademicUpdate.request_id !== REQUEST_ID) {
+          showError("This academic update request does not match this page. Please start again.");
+          setStatus("Request mismatch", "Start the academic update again from your Account screen.");
+          return;
+        }
+      }
 
       try {
         stopTracksOnly();
@@ -1063,7 +1200,12 @@
         hidePlaceholder();
         setButtonsForLiveCamera();
         setCameraBadge("Expected: Look straight");
-        setStatus("Look straight", "Start by looking straight at the camera.");
+
+        if (IS_ACADEMIC_UPDATE) {
+          setStatus("Look straight", "Retake your face to approve your academic update.");
+        } else {
+          setStatus("Look straight", "Start by looking straight at the camera.");
+        }
       } catch (err) {
         console.error(err);
         showError("Camera access failed. Please allow camera permission and try again.");
@@ -1086,23 +1228,53 @@
         return;
       }
 
+      if (IS_ACADEMIC_UPDATE) {
+        pendingAcademicUpdate = readPendingAcademicUpdate();
+
+        if (!pendingAcademicUpdate || !pendingAcademicUpdate.request_id) {
+          showError("No pending academic update found. Please start again from Account.");
+          setStatus("Pending update missing", "Start again from Account before taking face capture.");
+          return;
+        }
+      }
+
       continueBtn.disabled = true;
       retakeBtn.disabled = true;
-      setStatus("Saving your face...", "Please wait while we upload and verify your face image.");
-      setCameraBadge("Uploading...");
+
+      if (IS_ACADEMIC_UPDATE) {
+        setStatus("Approving update...", "Please wait while Colspot verifies your face and applies your academic update.");
+        setCameraBadge("Approving update...");
+      } else {
+        setStatus("Saving your face...", "Please wait while we upload and verify your face image.");
+        setCameraBadge("Uploading...");
+      }
 
       try {
+        const payload = {
+          imageBase64: finalBase64,
+          mimeType: finalMimeType,
+          captureMeta: buildCaptureMeta()
+        };
+
+        if (IS_ACADEMIC_UPDATE) {
+          payload.mode = "academic_update";
+          payload.academic_update_request_id =
+            REQUEST_ID ||
+            pendingAcademicUpdate?.request_id ||
+            null;
+          payload.academicUpdateRequestId =
+            REQUEST_ID ||
+            pendingAcademicUpdate?.request_id ||
+            null;
+        }
+
         const res = await fetch(FACE_ENROLL_FUNCTION_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({
-            imageBase64: finalBase64,
-            mimeType: finalMimeType,
-            captureMeta: buildCaptureMeta()
-          })
+          body: JSON.stringify(payload)
         });
 
         const result = await res.json().catch(() => ({}));
@@ -1111,6 +1283,20 @@
         if (res.ok && status === "approved") {
           localStorage.setItem("colspot_face_enrolled", "true");
           localStorage.removeItem("colspot_face_step_ready");
+
+          if (IS_ACADEMIC_UPDATE) {
+            clearPendingAcademicUpdate();
+
+            showSuccess(result.message || "Face verified. Academic details updated successfully.");
+            setStatus("Academic update complete", "Your level, session and semester have been updated.");
+            setCameraBadge("Updated");
+
+            setTimeout(() => {
+              window.location.href = SUCCESS_REDIRECT_URL;
+            }, 1200);
+
+            return;
+          }
 
           showSuccess(result.message || "Face verified successfully.");
           setStatus("Verification successful", "Your face has been verified successfully.");
@@ -1124,9 +1310,16 @@
 
         if (res.ok && status === "pending") {
           localStorage.removeItem("colspot_face_enrolled");
-          showSuccess(result.message || "Face submitted and pending review.");
-          setStatus("Pending review", "Your face was submitted successfully and is under review.");
-          setCameraBadge("Pending");
+
+          if (IS_ACADEMIC_UPDATE) {
+            showSuccess(result.message || "Face submitted and pending review. Academic update is still pending.");
+            setStatus("Pending review", "Your academic update will only apply after face approval.");
+            setCameraBadge("Pending");
+          } else {
+            showSuccess(result.message || "Face submitted and pending review.");
+            setStatus("Pending review", "Your face was submitted successfully and is under review.");
+            setCameraBadge("Pending");
+          }
 
           continueBtn.disabled = false;
           retakeBtn.disabled = false;
@@ -1154,6 +1347,20 @@
         if (status === "already_enrolled") {
           localStorage.setItem("colspot_face_enrolled", "true");
           localStorage.removeItem("colspot_face_step_ready");
+
+          if (IS_ACADEMIC_UPDATE) {
+            clearPendingAcademicUpdate();
+
+            showSuccess(result.message || "Face already verified. Academic update completed.");
+            setStatus("Academic update complete", "Your academic details have been updated.");
+            setCameraBadge("Updated");
+
+            setTimeout(() => {
+              window.location.href = SUCCESS_REDIRECT_URL;
+            }, 1200);
+
+            return;
+          }
 
           showSuccess(result.message || "This account already has an approved face.");
           setStatus("Already verified", "This account already has an approved face.");
@@ -1194,17 +1401,32 @@
       resetSequenceState();
       setButtonsForLiveCamera();
       setCameraBadge("Expected: Look straight");
-      setStatus("Look straight", "Start again by looking straight at the camera.");
+
+      if (IS_ACADEMIC_UPDATE) {
+        setStatus("Look straight", "Start again to approve your academic update.");
+      } else {
+        setStatus("Look straight", "Start again by looking straight at the camera.");
+      }
     }
 
     if (backBtn) {
       backBtn.addEventListener("click", () => {
+        if (IS_ACADEMIC_UPDATE) {
+          window.location.href = "verify_class.html?mode=academic_update";
+          return;
+        }
+
         window.history.back();
       });
     }
 
     if (whyBtn) {
       whyBtn.addEventListener("click", () => {
+        if (IS_ACADEMIC_UPDATE) {
+          alert("This confirms that the real account owner is approving the academic update before Colspot changes level, session or semester.");
+          return;
+        }
+
         alert("This helps Colspot confirm that a real live student is completing verification.");
       });
     }
@@ -1232,8 +1454,20 @@
     });
 
     (async function boot() {
+      setupModeUi();
+
       const localUser = await getLocalFirstUser();
       if (!localUser) return;
+
+      if (IS_ACADEMIC_UPDATE) {
+        pendingAcademicUpdate = readPendingAcademicUpdate();
+
+        if (!pendingAcademicUpdate || !pendingAcademicUpdate.request_id) {
+          showError("No pending academic update found. Please start again from Account.");
+          setStatus("Pending update missing", "Go back to Account and start academic update again.");
+        }
+      }
+
       fullResetToIdle();
     })();
   </script>
