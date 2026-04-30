@@ -826,6 +826,7 @@
   let currentStudentAccount = null;
   let academicUpdateBlocked = false;
   let academicUpdateBlockInfo = null;
+  let redirectingToIndex = false;
 
   let dropdownOptions = {
     level: [],
@@ -835,6 +836,39 @@
 
   function safeEl(id) {
     return document.getElementById(id);
+  }
+
+  function redirectToIndex(message, delay = 800) {
+    if (redirectingToIndex) return;
+    redirectingToIndex = true;
+
+    if (message) {
+      showErr(message);
+    }
+
+    try {
+      localStorage.removeItem("colspot_face_step_ready");
+      localStorage.removeItem("colspot_verification_done");
+    } catch (e) {}
+
+    setTimeout(() => {
+      window.location.href = INDEX_URL;
+    }, delay);
+  }
+
+  function isSessionMissingError(e) {
+    const msg = String(e?.message || e || "").toLowerCase();
+
+    return (
+      msg.includes("not signed in") ||
+      msg.includes("auth session missing") ||
+      msg.includes("missing authorization") ||
+      msg.includes("please sign in") ||
+      msg.includes("no active session") ||
+      msg.includes("session expired") ||
+      msg.includes("jwt") ||
+      msg.includes("invalid session")
+    );
   }
 
   function saveLocalUser(user) {
@@ -1101,29 +1135,48 @@
     setAcademicLoading(false);
   }
 
-  async function getUser() {
-    const sb = window.supabase;
-    if (!sb) throw new Error("Supabase not loaded. Check client_supabase.js");
+  async function waitForSupabase(maxMs = 8000) {
+    const started = Date.now();
 
-    const { data, error } = await sb.auth.getUser();
-    if (error) throw error;
+    while (!window.supabase) {
+      if (Date.now() - started > maxMs) {
+        throw new Error("Supabase not ready.");
+      }
 
-    if (data && data.user) {
-      saveLocalUser(data.user);
-      return data.user;
+      await new Promise((resolve) => setTimeout(resolve, 120));
     }
 
-    try {
-      const cached = JSON.parse(localStorage.getItem("colspot_local_user") || "null");
-      if (cached && (cached.user_id || cached.id)) {
-        return {
-          id: cached.user_id || cached.id,
-          email: cached.email || null
-        };
-      }
-    } catch {}
+    return window.supabase;
+  }
 
-    throw new Error("Not signed in.");
+  async function getActiveSessionOrRedirect() {
+    const sb = await waitForSupabase();
+
+    const { data, error } = await sb.auth.getSession();
+
+    if (error) {
+      redirectToIndex("Your session has expired. Redirecting to sign in...");
+      throw new Error("Auth session missing!");
+    }
+
+    if (!data?.session?.user) {
+      redirectToIndex("You need to be signed in to continue. Redirecting...");
+      throw new Error("Auth session missing!");
+    }
+
+    return data.session;
+  }
+
+  async function getUser() {
+    const session = await getActiveSessionOrRedirect();
+
+    if (session && session.user) {
+      saveLocalUser(session.user);
+      return session.user;
+    }
+
+    redirectToIndex("You need to be signed in to continue. Redirecting...");
+    throw new Error("Auth session missing!");
   }
 
   async function ensureCurrentUser() {
@@ -1132,7 +1185,8 @@
     }
 
     if (!currentUser || !currentUser.id) {
-      throw new Error("Could not find your account. Please sign in again.");
+      redirectToIndex("You need to be signed in to continue. Redirecting...");
+      throw new Error("Auth session missing!");
     }
 
     saveLocalUser(currentUser);
@@ -1392,10 +1446,18 @@
     if (!sb) throw new Error("Supabase not ready.");
 
     const { data: sessData, error: sessErr } = await sb.auth.getSession();
-    if (sessErr) throw sessErr;
+
+    if (sessErr) {
+      redirectToIndex("Your session has expired. Redirecting to sign in...");
+      throw new Error("Auth session missing!");
+    }
 
     const accessToken = sessData?.session?.access_token || "";
-    if (!accessToken) throw new Error("Missing authorization header. Please sign in again.");
+
+    if (!accessToken) {
+      redirectToIndex("Your session has expired. Redirecting to sign in...");
+      throw new Error("Auth session missing!");
+    }
 
     const payload = {
       bucket: BUCKET,
@@ -1854,6 +1916,12 @@
       }, 700);
     } catch (e) {
       console.error(e);
+
+      if (isSessionMissingError(e)) {
+        redirectToIndex("Your session has expired. Redirecting to sign in...");
+        return;
+      }
+
       showAcademicErr(e?.message || "Could not start academic update. Please try again.");
     } finally {
       setAcademicLoading(false);
@@ -1888,12 +1956,19 @@
       saveLocalUser(currentUser);
 
       if (!currentUser || !currentUser.id) {
-        throw new Error("Not signed in.");
+        throw new Error("Auth session missing!");
       }
 
       await loadStudentAccountForAcademicUpdate();
     } catch (e) {
       console.error("academic update init failed:", e);
+
+      if (isSessionMissingError(e)) {
+        showAcademicErr("Your session has expired. Redirecting to sign in...");
+        redirectToIndex("Your session has expired. Redirecting to sign in...");
+        return;
+      }
+
       showAcademicErr(e?.message || "Could not load academic update page.");
     } finally {
       setAcademicLoading(false);
@@ -1921,7 +1996,7 @@
       currentUser = await getUser();
 
       if (!currentUser || !currentUser.id) {
-        throw new Error("Not signed in.");
+        throw new Error("Auth session missing!");
       }
 
       saveLocalUser(currentUser);
@@ -1934,9 +2009,18 @@
       await checkExistingSuccessfulVerification();
     } catch (e) {
       console.error("verify_class init failed:", e);
-      showErr(e?.message || "You need to be signed in to continue.");
 
       if (safeEl("btnExtract")) safeEl("btnExtract").disabled = true;
+
+      if (isSessionMissingError(e)) {
+        redirectToIndex("You need to be signed in to continue. Redirecting...");
+        return;
+      }
+
+      showErr(e?.message || "Something went wrong. Redirecting...");
+      setTimeout(() => {
+        window.location.href = INDEX_URL;
+      }, 1000);
     }
   }
 
@@ -2065,6 +2149,12 @@
         showOk("Verification details are ready. Please review them and continue.");
       } catch (e) {
         console.error(e);
+
+        if (isSessionMissingError(e)) {
+          redirectToIndex("Your session has expired. Redirecting to sign in...");
+          return;
+        }
+
         showErr(e?.message || "Something went wrong.");
       } finally {
         setLoading(false);
@@ -2118,6 +2208,12 @@
         }, 700);
       } catch (e) {
         console.error(e);
+
+        if (isSessionMissingError(e)) {
+          redirectToIndex("Your session has expired. Redirecting to sign in...");
+          return;
+        }
+
         showErr(e?.message || "Failed to save.");
       } finally {
         setLoading(false);
