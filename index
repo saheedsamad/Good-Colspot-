@@ -655,6 +655,24 @@
       color: var(--muted);
       line-height: 1.45;
     }
+
+    .sponsor-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sponsor-divider::before,
+    .sponsor-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
   </style>
 </head>
 
@@ -707,6 +725,22 @@
               <div class="role-text">
                 <div class="role-title">Lecturer</div>
                 <div class="role-desc">Click here if you are a lecturer</div>
+              </div>
+            </button>
+
+            <button type="button" class="role-card-btn" onclick="showAuthSection('sponsor')">
+              <div class="role-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14"></path>
+                  <path d="M3 19h18"></path>
+                  <path d="M8 7h8"></path>
+                  <path d="M8 11h8"></path>
+                  <path d="M8 15h5"></path>
+                </svg>
+              </div>
+              <div class="role-text">
+                <div class="role-title">Sponsor</div>
+                <div class="role-desc">Create surveys, run ads, and reach students</div>
               </div>
             </button>
 
@@ -1076,6 +1110,143 @@
           </div>
         </div>
 
+        <div id="sponsor-auth-panel" class="hidden">
+          <div class="top-row">
+            <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+
+            <div class="logo">
+              <img src="asset/logo walpaper.jpeg" alt="Colspot logo">
+            </div>
+          </div>
+
+          <div class="section-head-badge">Sponsor access</div>
+          <h1 id="sponsor-card-title">Welcome sponsor</h1>
+          <p class="subtitle" id="sponsor-card-subtitle">Sign in or create a sponsor account</p>
+
+          <div id="sponsor-mode-toggle" class="mode-toggle">
+            <button id="sponsor-tab-signin" class="mode-btn active" type="button" onclick="switchSponsorMode('signin')">
+              Sign in
+            </button>
+            <button id="sponsor-tab-signup" class="mode-btn" type="button" onclick="switchSponsorMode('signup')">
+              Sign up
+            </button>
+          </div>
+
+          <div class="social-login-wrap">
+            <button type="button" class="google-btn" onclick="signInWithGoogleSponsor()">
+              <span class="google-g">G</span>
+              <span>Continue with Google</span>
+            </button>
+          </div>
+
+          <div class="sponsor-divider">or continue manually</div>
+
+          <form id="sponsor-signin-form">
+            <label for="sponsor-signin-email">Email address</label>
+            <input id="sponsor-signin-email" type="email" placeholder="business@example.com" autocomplete="email" required />
+
+            <label for="sponsor-signin-password">Password</label>
+            <div class="password-row">
+              <input id="sponsor-signin-password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('sponsor-signin-password', this)">Show</button>
+            </div>
+
+            <button id="sponsor-signin-btn" type="submit" class="primary">
+              <span id="sponsor-signin-text">Sign in</span>
+              <span id="sponsor-signin-loader" class="spinner hidden"></span>
+            </button>
+
+            <div id="sponsor-signin-message" class="message"></div>
+          </form>
+
+          <form id="sponsor-signup-form" class="hidden">
+            <label for="sponsor-business-name">Business / Brand Name</label>
+            <input id="sponsor-business-name" type="text" placeholder="Example: XYZ Foods" autocomplete="organization" required />
+
+            <label for="sponsor-contact-name">Contact Person Name</label>
+            <input id="sponsor-contact-name" type="text" placeholder="Full name" autocomplete="name" required />
+
+            <label for="sponsor-email">Email Address</label>
+            <input id="sponsor-email" type="email" placeholder="business@example.com" autocomplete="email" required />
+
+            <label for="sponsor-phone">WhatsApp Number</label>
+            <input id="sponsor-phone" type="tel" placeholder="08012345678" autocomplete="tel" required />
+
+            <label for="sponsor-type">Sponsor Type</label>
+            <select id="sponsor-type" required>
+              <option value="">Select sponsor type</option>
+              <option value="business_brand">Business / Brand</option>
+              <option value="startup_founder">Startup Founder</option>
+              <option value="researcher">Researcher</option>
+              <option value="school_vendor">School Vendor</option>
+              <option value="event_organizer">Event Organizer</option>
+              <option value="tutorial_center">Tutorial Center</option>
+              <option value="ngo_organization">NGO / Organization</option>
+              <option value="other">Other</option>
+            </select>
+
+            <label for="sponsor-interest">Main Interest</label>
+            <select id="sponsor-interest" required>
+              <option value="">Select main interest</option>
+              <option value="student_surveys">Create student surveys</option>
+              <option value="message_ads">Run in-app message ads</option>
+              <option value="friday_quiz">Sponsor Friday quiz</option>
+              <option value="app_website_testing">Request app / website testing</option>
+              <option value="student_offers">Promote student offers</option>
+            </select>
+
+            <label for="sponsor-password">Password</label>
+            <div class="password-row">
+              <input id="sponsor-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('sponsor-password', this)">Show</button>
+            </div>
+            <div class="hint">
+              Use at least 6 characters, with <strong>letters and numbers</strong>.
+            </div>
+
+            <label for="sponsor-password2">Confirm Password</label>
+            <div class="password-row">
+              <input id="sponsor-password2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" onclick="togglePassword('sponsor-password2', this)">Show</button>
+            </div>
+
+            <button id="sponsor-signup-btn" type="submit" class="primary">
+              <span id="sponsor-signup-text">Create Account</span>
+              <span id="sponsor-signup-loader" class="spinner hidden"></span>
+            </button>
+
+            <div class="bottom-row small">
+              <span style="color:var(--muted); font-size:13px; text-align:center;">
+                By signing up you agree to Colspot’s
+                <button type="button" class="link-inline" onclick="openPrivacy()">Privacy Policy</button>.
+              </span>
+            </div>
+
+            <div id="sponsor-signup-message" class="message"></div>
+          </form>
+
+          <div class="bottom-row small">
+            <span id="sponsor-switch-text" style="color:var(--muted); font-size:13px;">Don’t have a sponsor account?</span>
+            <button type="button" class="text-link" onclick="toggleSponsorAuthMode()">
+              <span id="sponsor-switch-link-label">Create one</span>
+            </button>
+          </div>
+
+          <p class="location-note">
+            Sponsor campaigns are reviewed by Colspot before students can see them.
+          </p>
+
+          <div class="auth-footer-links">
+            <button type="button" onclick="openPrivacy()">Privacy Policy</button>
+            <span class="auth-footer-divider">•</span>
+            <button type="button" onclick="openTerms()">Terms of Service</button>
+          </div>
+        </div>
+
         <div id="admin-auth-panel" class="hidden">
           <div class="top-row">
             <button type="button" class="top-back-btn" onclick="backToRoleSelection()" aria-label="Back">
@@ -1176,6 +1347,8 @@
   </div>
 
   <script>
+    let sponsorMode = "signin";
+
     function togglePassword(inputId, btn) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -1204,11 +1377,13 @@
       const rolePanel = document.getElementById("role-select-panel");
       const studentPanel = document.getElementById("student-auth-panel");
       const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const sponsorPanel = document.getElementById("sponsor-auth-panel");
       const adminPanel = document.getElementById("admin-auth-panel");
 
       if (rolePanel) rolePanel.classList.add("hidden");
       if (studentPanel) studentPanel.classList.add("hidden");
       if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (sponsorPanel) sponsorPanel.classList.add("hidden");
       if (adminPanel) adminPanel.classList.add("hidden");
 
       if (role === "student" && studentPanel) {
@@ -1217,6 +1392,10 @@
       } else if (role === "lecturer" && lecturerPanel) {
         safeSetRole("lecturer");
         lecturerPanel.classList.remove("hidden");
+      } else if (role === "sponsor" && sponsorPanel) {
+        safeSetRole("sponsor");
+        sponsorPanel.classList.remove("hidden");
+        switchSponsorMode("signin");
       } else if (role === "admin" && adminPanel) {
         safeSetRole("admin");
         adminPanel.classList.remove("hidden");
@@ -1229,10 +1408,12 @@
       const rolePanel = document.getElementById("role-select-panel");
       const studentPanel = document.getElementById("student-auth-panel");
       const lecturerPanel = document.getElementById("lecturer-auth-panel");
+      const sponsorPanel = document.getElementById("sponsor-auth-panel");
       const adminPanel = document.getElementById("admin-auth-panel");
 
       if (studentPanel) studentPanel.classList.add("hidden");
       if (lecturerPanel) lecturerPanel.classList.add("hidden");
+      if (sponsorPanel) sponsorPanel.classList.add("hidden");
       if (adminPanel) adminPanel.classList.add("hidden");
       if (rolePanel) rolePanel.classList.remove("hidden");
     }
@@ -1248,6 +1429,77 @@
         msg.textContent = "Google login will be connected in auth.js.";
         msg.className = "message error";
       }
+    }
+
+    function signInWithGoogleSponsor() {
+      safeSetRole("sponsor");
+
+      if (typeof window.signInWithGoogleSponsorAuth === "function") {
+        window.signInWithGoogleSponsorAuth();
+        return;
+      }
+
+      const msg = document.getElementById("sponsor-signin-message") || document.getElementById("sponsor-signup-message");
+      if (msg) {
+        msg.textContent = "Sponsor Google login will be connected in auth.js.";
+        msg.className = "message error";
+      }
+    }
+
+    function switchSponsorMode(mode) {
+      sponsorMode = mode;
+
+      const signinForm = document.getElementById("sponsor-signin-form");
+      const signupForm = document.getElementById("sponsor-signup-form");
+      const tabSignin = document.getElementById("sponsor-tab-signin");
+      const tabSignup = document.getElementById("sponsor-tab-signup");
+      const title = document.getElementById("sponsor-card-title");
+      const subtitle = document.getElementById("sponsor-card-subtitle");
+      const switchText = document.getElementById("sponsor-switch-text");
+      const switchLabel = document.getElementById("sponsor-switch-link-label");
+
+      const signinMsg = document.getElementById("sponsor-signin-message");
+      const signupMsg = document.getElementById("sponsor-signup-message");
+
+      if (signinMsg) {
+        signinMsg.textContent = "";
+        signinMsg.className = "message";
+      }
+
+      if (signupMsg) {
+        signupMsg.textContent = "";
+        signupMsg.className = "message";
+      }
+
+      if (mode === "signin") {
+        if (signinForm) signinForm.classList.remove("hidden");
+        if (signupForm) signupForm.classList.add("hidden");
+
+        if (tabSignin) tabSignin.classList.add("active");
+        if (tabSignup) tabSignup.classList.remove("active");
+
+        if (title) title.textContent = "Welcome sponsor";
+        if (subtitle) subtitle.textContent = "Sign in to your sponsor account";
+
+        if (switchText) switchText.textContent = "Don’t have a sponsor account?";
+        if (switchLabel) switchLabel.textContent = "Create one";
+      } else {
+        if (signinForm) signinForm.classList.add("hidden");
+        if (signupForm) signupForm.classList.remove("hidden");
+
+        if (tabSignin) tabSignin.classList.remove("active");
+        if (tabSignup) tabSignup.classList.add("active");
+
+        if (title) title.textContent = "Create Sponsor Account";
+        if (subtitle) subtitle.textContent = "Create surveys, ads, and campaigns for students";
+
+        if (switchText) switchText.textContent = "Already have a sponsor account?";
+        if (switchLabel) switchLabel.textContent = "Sign in";
+      }
+    }
+
+    function toggleSponsorAuthMode() {
+      switchSponsorMode(sponsorMode === "signin" ? "signup" : "signin");
     }
 
     function updateLecturerSignupRoleUI() {
@@ -1430,7 +1682,7 @@
     (function restoreSavedRoleView() {
       try {
         const savedRole = localStorage.getItem("colspot_auth_role");
-        if (savedRole === "student" || savedRole === "lecturer" || savedRole === "admin") {
+        if (savedRole === "student" || savedRole === "lecturer" || savedRole === "sponsor" || savedRole === "admin") {
           window.__colspot_saved_role__ = savedRole;
         }
       } catch (e) {
@@ -1510,6 +1762,48 @@
   <script src="./auth.js"></script>
 
   <script>
+    (function sponsorFrontendBridge() {
+      const sponsorSigninForm = document.getElementById("sponsor-signin-form");
+      const sponsorSignupForm = document.getElementById("sponsor-signup-form");
+
+      function showSponsorMessage(id, message, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = message || "";
+        el.className = "message " + (type || "");
+      }
+
+      sponsorSigninForm?.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (typeof window.signInSponsorManually === "function") {
+          window.signInSponsorManually();
+          return;
+        }
+
+        showSponsorMessage(
+          "sponsor-signin-message",
+          "Sponsor manual sign in will be connected in auth.js.",
+          "error"
+        );
+      });
+
+      sponsorSignupForm?.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (typeof window.createSponsorAccountManually === "function") {
+          window.createSponsorAccountManually();
+          return;
+        }
+
+        showSponsorMessage(
+          "sponsor-signup-message",
+          "Sponsor account creation will be connected in auth.js.",
+          "error"
+        );
+      });
+    })();
+
     (function adminFrontendBridge() {
       const adminForm = document.getElementById("admin-form");
       const adminLinkPanel = document.getElementById("admin-link-panel");
