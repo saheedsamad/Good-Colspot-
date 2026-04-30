@@ -1433,51 +1433,37 @@
     return data;
   }
 
-  function getExtractedDetailsFromResponse(data) {
+  function extractDetailsLikeVerify32(data) {
     if (!data || data.ok !== true) {
-      throw new Error("Verification failed. Please try again.");
+      throw new Error("AI extraction failed. Please try again.");
     }
 
-    const parsedResult =
-      data?.extracted_result ||
-      data?.details ||
-      data?.data ||
-      data?.extracted ||
-      data?.result ||
-      data;
+    const result = data.extracted_result || null;
 
-    if (!parsedResult) {
+    if (!result) {
       throw new Error("No details found. Upload a clearer file.");
     }
 
-    if (parsedResult && parsedResult.is_clearance_form === false) {
-      throw new Error(parsedResult.reason || "This does not look like a valid course form.");
-    }
-
-    const details =
-      parsedResult?.extracted ||
-      parsedResult?.details ||
-      parsedResult?.data?.extracted ||
-      parsedResult?.data?.details ||
-      parsedResult;
-
-    if (!details || typeof details !== "object") {
-      throw new Error("We could not read the details from this course form.");
-    }
+    const details = result.extracted || null;
 
     const hasUsefulDetails =
-      details.full_name ||
-      details.matric_no ||
-      details.matric ||
-      details.school_name ||
-      details.department ||
-      details.programme ||
-      details.level ||
-      details.session ||
-      details.semester;
+      details &&
+      (
+        details.full_name ||
+        details.matric_no ||
+        details.matric ||
+        details.school_name ||
+        details.department ||
+        details.programme ||
+        details.faculty ||
+        details.level ||
+        details.session ||
+        details.semester
+      );
 
     if (!hasUsefulDetails) {
-      throw new Error("No details found. Upload a clearer PDF.");
+      clearExtractedDetails();
+      throw new Error(result.reason || "No details found. Upload a clearer PDF.");
     }
 
     return details;
@@ -2054,7 +2040,7 @@
         uploadedPath = await uploadToStorage(pickedFile);
         const data = await callExtractFunction(uploadedPath, pickedFile);
 
-        extracted = getExtractedDetailsFromResponse(data);
+        extracted = extractDetailsLikeVerify32(data);
 
         if (extracted.school_name) {
           extracted.school_name = normalizeUpper(extracted.school_name);
