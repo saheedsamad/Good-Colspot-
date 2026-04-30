@@ -1,9 +1,8 @@
-<script>
 // Auth.js
 // Assumes window.supabase is created in client_supabase.js
 
 let currentMode = "signin";
-let pendingSignup = null;
+let pendingSignup = null; // { email, password, fullName, role, schoolName, dept, accountId }
 let resetEmail = null;
 
 // ----------------------------
@@ -23,44 +22,13 @@ const AUTH_ROLE_KEY = "colspot_auth_role";
 const AUTH_INTENT_KEY = "colspot_auth_intent";
 const LOCAL_USER_KEY = "colspot_local_user";
 const LOCAL_USER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const OAUTH_IN_PROGRESS_KEY = "colspot_oauth_in_progress";
 
-function saveAuthIntent(intent) {
-  try {
-    localStorage.setItem(AUTH_INTENT_KEY, intent || "");
-  } catch (e) {
-    console.error("Could not save auth intent:", e);
-  }
-}
-
-function clearAuthIntent() {
-  try {
-    localStorage.removeItem(AUTH_INTENT_KEY);
-  } catch (e) {
-    console.error("Could not clear auth intent:", e);
-  }
-}
-
-function setOAuthInProgress(value) {
-  try {
-    if (value) {
-      localStorage.setItem(OAUTH_IN_PROGRESS_KEY, "1");
-    } else {
-      localStorage.removeItem(OAUTH_IN_PROGRESS_KEY);
-    }
-  } catch (e) {
-    console.error("Could not update oauth progress flag:", e);
-  }
-}
-
-function isOAuthInProgress() {
-  try {
-    return localStorage.getItem(OAUTH_IN_PROGRESS_KEY) === "1";
-  } catch (e) {
-    console.error("Could not read oauth progress flag:", e);
-    return false;
-  }
-}
+// student stage keys
+const VERIFY_DONE_KEY = "colspot_verification_done";
+const FACE_SUBMITTED_KEY = "colspot_face_submitted";
+const FACE_STATUS_KEY = "colspot_face_status";
+const FACE_REASON_KEY = "colspot_face_reason";
+const FACE_ENROLLED_KEY = "colspot_face_enrolled";
 
 // ----------------------------
 // Paths
@@ -68,6 +36,12 @@ function isOAuthInProgress() {
 const AUTH_CALLBACK_PATH = "auth-callback.html";
 const INDEX_PATH = "index.html";
 const ADMIN_MAIN_PATH = "main.html";
+const STUDENT_MAIN_PATH = "main.html";
+const LECTURER_MAIN_PATH = "main_lecturer.html";
+const SPONSOR_MAIN_PATH = "main_sponsor.html";
+
+const STUDENT_VERIFY_PATH = "verify_class.html";
+const STUDENT_FACE_PATH = "face-capture.html";
 
 // ----------------------------
 // Message strings
@@ -86,7 +60,7 @@ const MSG = {
   SIGNUP_WEAK_PASSWORD: "Password must be at least 6 characters and include both letters and numbers.",
   SIGNUP_PASSWORD_MISMATCH: "Passwords do not match.",
   SIGNUP_SEND_CODE_FAIL: "We couldn’t send the verification code. Please try again.",
-  SIGNUP_SEND_CODE_OK: "We’ve sent a code to your email. Please check your inbox (and spam folder).",
+  SIGNUP_SEND_CODE_OK: "We’ve sent a code to your email. Please check your inbox and spam folder.",
   SIGNUP_SAVE_PROFILE_FAIL: "Your email was verified, but we couldn’t finish saving your account details. Please contact support.",
   SIGNUP_ALREADY_EXISTS: "You have already created an account with this email. Please go back and sign in.",
 
@@ -124,12 +98,20 @@ const MSG = {
   ADMIN_GENERIC: "We couldn’t sign you in as admin. Please try again.",
   ADMIN_USERNAME_NOT_SUPPORTED: "Username login will work after admin username lookup is connected. For now, use admin email.",
 
+  SPONSOR_MISSING_FIELDS: "Fill in all sponsor account fields.",
+  SPONSOR_SIGNUP_OK: "Sponsor account created. Redirecting…",
+  SPONSOR_SIGNUP_EMAIL_CONFIRM: "Account created. Please check your email to confirm your account, then sign in.",
+  SPONSOR_SIGNUP_FAIL: "We couldn’t create your sponsor account. Please try again.",
+  SPONSOR_SIGNIN_FAIL: "We couldn’t sign you in as sponsor. Please check your email and password.",
+  SPONSOR_PROFILE_FAIL: "We couldn’t save your sponsor profile. Please try again.",
+  SPONSOR_GOOGLE_FAIL: "We couldn’t start sponsor Google sign in. Please try again.",
+
   VERSION_HARD_BLOCK: "Your Colspot app is out of date. Please update from the store to continue."
 };
 
-/* ----------------------------
- * Role helpers
- * ---------------------------- */
+// ----------------------------
+// Auth role helpers
+// ----------------------------
 function saveAuthRole(role) {
   try {
     localStorage.setItem(AUTH_ROLE_KEY, role || "");
@@ -147,6 +129,25 @@ function getAuthRole() {
   }
 }
 
+function saveAuthIntent(intent) {
+  try {
+    localStorage.setItem(AUTH_INTENT_KEY, intent || "");
+  } catch (e) {
+    console.error("Could not save auth intent:", e);
+  }
+}
+
+function clearAuthIntent() {
+  try {
+    localStorage.removeItem(AUTH_INTENT_KEY);
+  } catch (e) {
+    console.error("Could not clear auth intent:", e);
+  }
+}
+
+// ----------------------------
+// Signup helpers
+// ----------------------------
 function getSignupRole() {
   const roleSelect =
     document.getElementById("signup-role") ||
@@ -180,17 +181,278 @@ function getSignupAccountId(role) {
   );
 }
 
-/* ----------------------------
- * Redirect helpers
- * ---------------------------- */
+function getSponsorSignupData() {
+  return {
+    businessName: document.getElementById("sponsor-business-name")?.value?.trim() || "",
+    contactName: document.getElementById("sponsor-contact-name")?.value?.trim() || "",
+    email: document.getElementById("sponsor-email")?.value?.trim()?.toLowerCase() || "",
+    phone: document.getElementById("sponsor-phone")?.value?.trim() || "",
+    businessType: document.getElementById("sponsor-type")?.value?.trim() || "",
+    taskInterest: document.getElementById("sponsor-interest")?.value?.trim() || "",
+    password: document.getElementById("sponsor-password")?.value || "",
+    password2: document.getElementById("sponsor-password2")?.value || ""
+  };
+}
+
+// ----------------------------
+// Student stage helpers
+// ----------------------------
+function isStudentVerificationDone() {
+  try {
+    return localStorage.getItem(VERIFY_DONE_KEY) === "true";
+  } catch (e) {
+    console.error("Could not read verification stage:", e);
+    return false;
+  }
+}
+
+function getStudentFaceState() {
+  try {
+    const submitted = localStorage.getItem(FACE_SUBMITTED_KEY) === "true";
+    let status = (localStorage.getItem(FACE_STATUS_KEY) || "").toLowerCase().trim();
+    const reason = localStorage.getItem(FACE_REASON_KEY) || "";
+
+    if (!status && localStorage.getItem(FACE_ENROLLED_KEY) === "true") {
+      status = "approved";
+    }
+
+    return { submitted, status, reason };
+  } catch (e) {
+    console.error("Could not read face state:", e);
+    return { submitted: false, status: "", reason: "" };
+  }
+}
+
+function setStudentVerificationDone(done) {
+  try {
+    if (done) {
+      localStorage.setItem(VERIFY_DONE_KEY, "true");
+    } else {
+      localStorage.removeItem(VERIFY_DONE_KEY);
+    }
+  } catch (e) {
+    console.error("Could not save verification stage:", e);
+  }
+}
+
+function saveStudentFaceState({ submitted, status, reason }) {
+  try {
+    if (submitted) {
+      localStorage.setItem(FACE_SUBMITTED_KEY, "true");
+    } else {
+      localStorage.removeItem(FACE_SUBMITTED_KEY);
+    }
+
+    if (status) {
+      localStorage.setItem(FACE_STATUS_KEY, String(status).toLowerCase());
+    } else {
+      localStorage.removeItem(FACE_STATUS_KEY);
+    }
+
+    if (reason) {
+      localStorage.setItem(FACE_REASON_KEY, reason);
+    } else {
+      localStorage.removeItem(FACE_REASON_KEY);
+    }
+
+    if (String(status).toLowerCase() === "approved") {
+      localStorage.setItem(FACE_ENROLLED_KEY, "true");
+    } else {
+      localStorage.removeItem(FACE_ENROLLED_KEY);
+    }
+  } catch (e) {
+    console.error("Could not save face state:", e);
+  }
+}
+
+function getLocalStudentStageState() {
+  return {
+    verifyDone: isStudentVerificationDone(),
+    face: getStudentFaceState()
+  };
+}
+
+function hasCompleteFastMainCache(state) {
+  return !!(
+    state &&
+    state.verifyDone === true &&
+    state.face &&
+    state.face.submitted === true &&
+    (state.face.status === "approved" || state.face.status === "pending")
+  );
+}
+
+function isCacheMissingOrPartial(state) {
+  if (!state) return true;
+
+  const verifyDone = !!state.verifyDone;
+  const face = state.face || { submitted: false, status: "", reason: "" };
+
+  if (!verifyDone && !face.submitted && !face.status) return true;
+  if (verifyDone && (!face.submitted || !face.status)) return true;
+  if (!verifyDone && (face.submitted || face.status)) return true;
+
+  return false;
+}
+
+async function refreshStudentStageCacheFromSupabase(userId) {
+  if (!window.supabase || !userId) {
+    return getLocalStudentStageState();
+  }
+
+  try {
+    const [verifyRes, faceRes] = await Promise.all([
+      supabase
+        .from("verification_course_forms")
+        .select("id,status")
+        .eq("user_id", userId)
+        .eq("status", "successful")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      supabase
+        .from("face_profiles")
+        .select("user_id,capture_status,face_verified,review_reason")
+        .eq("user_id", userId)
+        .maybeSingle()
+    ]);
+
+    const verifyDone = !!verifyRes.data;
+    setStudentVerificationDone(verifyDone);
+
+    const faceRow = faceRes.data || null;
+    let faceSubmitted = false;
+    let faceStatus = "";
+    let faceReason = "";
+
+    if (faceRow) {
+      faceSubmitted = true;
+      faceReason = faceRow.review_reason || "";
+
+      if (faceRow.face_verified === true) {
+        faceStatus = "approved";
+      } else {
+        faceStatus = String(faceRow.capture_status || "").toLowerCase().trim();
+      }
+    }
+
+    saveStudentFaceState({
+      submitted: faceSubmitted,
+      status: faceStatus,
+      reason: faceReason
+    });
+
+    return {
+      verifyDone,
+      face: {
+        submitted: faceSubmitted,
+        status: faceStatus,
+        reason: faceReason
+      }
+    };
+  } catch (e) {
+    console.error("refreshStudentStageCacheFromSupabase failed:", e);
+    return getLocalStudentStageState();
+  }
+}
+
+async function getSmartStudentStageState(userId) {
+  const localState = getLocalStudentStageState();
+
+  if (hasCompleteFastMainCache(localState)) {
+    return localState;
+  }
+
+  if (isCacheMissingOrPartial(localState)) {
+    return await refreshStudentStageCacheFromSupabase(userId);
+  }
+
+  if (
+    localState.verifyDone === true &&
+    localState.face &&
+    localState.face.submitted === true
+  ) {
+    return localState;
+  }
+
+  return await refreshStudentStageCacheFromSupabase(userId);
+}
+
+function getStudentStageRedirectPathFromState(state) {
+  const verifyDone = !!state?.verifyDone;
+  const face = state?.face || { submitted: false, status: "", reason: "" };
+
+  if (!verifyDone) {
+    return STUDENT_VERIFY_PATH;
+  }
+
+  if (!face.submitted) {
+    return STUDENT_FACE_PATH;
+  }
+
+  if (face.status === "pending" || face.status === "approved") {
+    return STUDENT_MAIN_PATH;
+  }
+
+  if (face.status === "duplicate" || face.status === "rejected") {
+    return STUDENT_FACE_PATH;
+  }
+
+  return STUDENT_FACE_PATH;
+}
+
+async function getStudentStageRedirectPath(userId) {
+  const state = await getSmartStudentStageState(userId);
+  return getStudentStageRedirectPathFromState(state);
+}
+
+// ----------------------------
+// Redirect helpers
+// ----------------------------
 function goToAuthCallback() {
   window.location.href = AUTH_CALLBACK_PATH;
+}
+
+async function goToRoleHome(role, userId = "") {
+  const cleanRole = String(role || "").toLowerCase().trim();
+
+  if (cleanRole === "lecturer") {
+    window.location.href = LECTURER_MAIN_PATH;
+    return;
+  }
+
+  if (cleanRole === "admin") {
+    window.location.href = ADMIN_MAIN_PATH;
+    return;
+  }
+
+  if (cleanRole === "sponsor") {
+    window.location.href = SPONSOR_MAIN_PATH;
+    return;
+  }
+
+  const target = await getStudentStageRedirectPath(userId);
+  window.location.href = target;
 }
 
 async function resolveUserRole(userId, userEmail = "") {
   if (!userId || !window.supabase) return getAuthRole() || "";
 
+  const savedRole = String(getAuthRole() || "").toLowerCase().trim();
+
   try {
+    const { data: sponsorByUser } = await supabase
+      .from("sponsor_accounts")
+      .select("user_id,email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (sponsorByUser?.user_id) {
+      saveAuthRole("sponsor");
+      return "sponsor";
+    }
+
     const { data: studentByUser } = await supabase
       .from("student_accounts")
       .select("user_id,email")
@@ -216,6 +478,17 @@ async function resolveUserRole(userId, userEmail = "") {
     const email = String(userEmail || "").trim().toLowerCase();
 
     if (email) {
+      const { data: sponsorByEmail } = await supabase
+        .from("sponsor_accounts")
+        .select("user_id,email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (sponsorByEmail?.user_id) {
+        saveAuthRole("sponsor");
+        return "sponsor";
+      }
+
       const { data: studentByEmail } = await supabase
         .from("student_accounts")
         .select("user_id,email")
@@ -239,44 +512,54 @@ async function resolveUserRole(userId, userEmail = "") {
       }
     }
 
-    return getAuthRole() || "";
+    if (savedRole === "sponsor") {
+      saveAuthRole("sponsor");
+      return "sponsor";
+    }
+
+    return savedRole || "";
   } catch (e) {
     console.error("resolveUserRole failed:", e);
     return getAuthRole() || "";
   }
 }
 
-/* ----------------------------
- * Existing account checks
- * ---------------------------- */
+// ----------------------------
+// Existing account checks
+// ----------------------------
 async function checkExistingAccountForSignup(email, role) {
   if (!window.supabase || !email) return { exists: false, message: "" };
 
   const cleanEmail = String(email).trim().toLowerCase();
 
   try {
-    const [studentRes, lecturerRes] = await Promise.all([
+    const [studentRes, lecturerRes, sponsorRes] = await Promise.all([
       supabase
         .from("student_accounts")
         .select("user_id,email,full_name")
         .eq("email", cleanEmail)
         .maybeSingle(),
+
       supabase
         .from("lecturer_accounts")
         .select("user_id,email,full_name")
+        .eq("email", cleanEmail)
+        .maybeSingle(),
+
+      supabase
+        .from("sponsor_accounts")
+        .select("user_id,email,business_name")
         .eq("email", cleanEmail)
         .maybeSingle()
     ]);
 
     const studentRow = studentRes.data || null;
     const lecturerRow = lecturerRes.data || null;
+    const sponsorRow = sponsorRes.data || null;
 
     if (role === "student") {
       if (studentRow) {
-        return {
-          exists: true,
-          message: MSG.SIGNUP_ALREADY_EXISTS
-        };
+        return { exists: true, message: MSG.SIGNUP_ALREADY_EXISTS };
       }
 
       if (lecturerRow) {
@@ -285,20 +568,51 @@ async function checkExistingAccountForSignup(email, role) {
           message: "This email already belongs to a lecturer account. Please go back and sign in through the Lecturer flow."
         };
       }
+
+      if (sponsorRow) {
+        return {
+          exists: true,
+          message: "This email already belongs to a sponsor account. Please use another email or sign in as Sponsor."
+        };
+      }
     }
 
     if (role === "lecturer") {
       if (lecturerRow) {
-        return {
-          exists: true,
-          message: MSG.SIGNUP_ALREADY_EXISTS
-        };
+        return { exists: true, message: MSG.SIGNUP_ALREADY_EXISTS };
       }
 
       if (studentRow) {
         return {
           exists: true,
           message: "You have already created a student account with this email. Please go back and sign in."
+        };
+      }
+
+      if (sponsorRow) {
+        return {
+          exists: true,
+          message: "This email already belongs to a sponsor account. Please use another email or sign in as Sponsor."
+        };
+      }
+    }
+
+    if (role === "sponsor") {
+      if (sponsorRow) {
+        return { exists: true, message: MSG.SIGNUP_ALREADY_EXISTS };
+      }
+
+      if (studentRow) {
+        return {
+          exists: true,
+          message: "This email already belongs to a student account. Please use another email for sponsor."
+        };
+      }
+
+      if (lecturerRow) {
+        return {
+          exists: true,
+          message: "This email already belongs to a lecturer account. Please use another email for sponsor."
         };
       }
     }
@@ -310,9 +624,9 @@ async function checkExistingAccountForSignup(email, role) {
   }
 }
 
-/* ----------------------------
- * Small UI helpers
- * ---------------------------- */
+// ----------------------------
+// UI helpers
+// ----------------------------
 function setButtonLoading(btnId, textId, loaderId, isLoading) {
   const btn = document.getElementById(btnId);
   const text = document.getElementById(textId);
@@ -321,6 +635,7 @@ function setButtonLoading(btnId, textId, loaderId, isLoading) {
   if (!btn) return;
 
   btn.disabled = isLoading;
+
   if (text && loader) {
     if (isLoading) {
       text.classList.add("hidden");
@@ -332,6 +647,14 @@ function setButtonLoading(btnId, textId, loaderId, isLoading) {
   }
 }
 
+function setMessage(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent = text || "";
+  el.className = "message " + (type || "");
+}
+
 function clearMessages() {
   const ids = [
     "signin-message",
@@ -340,8 +663,11 @@ function clearMessages() {
     "reset-message",
     "forgot-message",
     "student-google-message",
-    "admin-message"
+    "admin-message",
+    "sponsor-signin-message",
+    "sponsor-signup-message"
   ];
+
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -351,9 +677,9 @@ function clearMessages() {
   });
 }
 
-/* ----------------------------
- * Offline detection helpers
- * ---------------------------- */
+// ----------------------------
+// Offline detection helpers
+// ----------------------------
 function isBrowserOffline() {
   try {
     if (typeof navigator === "undefined" || navigator === null) return false;
@@ -368,6 +694,7 @@ function isLikelyOfflineError(error) {
   if (!error) return false;
 
   const msg = (error.message || "").toLowerCase();
+
   if (msg.includes("failed to fetch")) return true;
   if (msg.includes("network")) return true;
   if (typeof error.status === "number" && error.status === 0) return true;
@@ -411,27 +738,31 @@ if (typeof window !== "undefined") {
   window.addEventListener("offline", updateOfflineUI);
 }
 
-/* ----------------------------
- * Semver helper
- * ---------------------------- */
+// ----------------------------
+// Semver helper
+// ----------------------------
 function parseSemver(v) {
   if (!v) return [0, 0, 0];
+
   const parts = String(v).split(".").map((x) => parseInt(x, 10) || 0);
+
   return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
 }
 
 function compareSemver(a, b) {
   const [a1, a2, a3] = parseSemver(a);
   const [b1, b2, b3] = parseSemver(b);
+
   if (a1 !== b1) return a1 < b1 ? -1 : 1;
   if (a2 !== b2) return a2 < b2 ? -1 : 1;
   if (a3 !== b3) return a3 < b3 ? -1 : 1;
+
   return 0;
 }
 
-/* ----------------------------
- * Version rule helpers
- * ---------------------------- */
+// ----------------------------
+// Version rule helpers
+// ----------------------------
 function saveVersionRuleCache(rule) {
   try {
     localStorage.setItem(
@@ -450,6 +781,7 @@ function getVersionRuleCache() {
   try {
     const raw = localStorage.getItem(VERSION_RULE_KEY);
     if (!raw) return null;
+
     return JSON.parse(raw);
   } catch (e) {
     console.error("Could not read version rule cache:", e);
@@ -465,6 +797,7 @@ async function fetchVersionRuleFrom(tableName) {
     .maybeSingle();
 
   if (error) throw error;
+
   return data;
 }
 
@@ -481,11 +814,12 @@ async function checkAndCacheVersionRules() {
     let data = null;
 
     try {
-      data = await fetchVersionRuleFrom("app_version_rule");
+      data = await fetchVersionRuleFrom("app_version_rules");
     } catch (e1) {
-      console.warn("app_version_rule fetch failed, trying app_version_rules:", e1);
+      console.warn("app_version_rules fetch failed:", e1);
+
       try {
-        data = await fetchVersionRuleFrom("app_version_rules");
+        data = await fetchVersionRuleFrom("app_version_rule");
       } catch (e2) {
         console.error("Version rule fetch failed:", e2);
         return getVersionRuleCache();
@@ -514,12 +848,21 @@ async function checkAndCacheVersionRules() {
     if (deadline) {
       const now = new Date();
       const d = new Date(deadline);
-      if (now > d && minHardVersion && compareSemver(APP_VERSION, minHardVersion) < 0) {
+
+      if (
+        now > d &&
+        minHardVersion &&
+        compareSemver(APP_VERSION, minHardVersion) < 0
+      ) {
         mode = "hard";
       }
     }
 
-    if (mode !== "hard" && minSoftVersion && compareSemver(APP_VERSION, minSoftVersion) < 0) {
+    if (
+      mode !== "hard" &&
+      minSoftVersion &&
+      compareSemver(APP_VERSION, minSoftVersion) < 0
+    ) {
       mode = "soft";
     }
 
@@ -538,18 +881,20 @@ async function checkAndCacheVersionRules() {
   }
 }
 
-/* ----------------------------
- * Local state
- * ---------------------------- */
+// ----------------------------
+// Local user state
+// ----------------------------
 function saveLocalUserFromSession(session) {
   if (!session || !session.user) return;
+
   try {
     const payload = {
       id: session.user.id,
       email: session.user.email || "",
       role: getAuthRole() || "",
-      last_seen: new Date().toISOString(),
+      last_seen: new Date().toISOString()
     };
+
     localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
   } catch (e) {
     console.error("Could not write local user cache:", e);
@@ -560,13 +905,16 @@ function getLocalUser() {
   try {
     const raw = localStorage.getItem(LOCAL_USER_KEY);
     if (!raw) return null;
+
     const parsed = JSON.parse(raw);
     if (!parsed || !parsed.id) return null;
 
     if (parsed.last_seen) {
       const t = new Date(parsed.last_seen).getTime();
+
       if (!Number.isNaN(t)) {
         const age = Date.now() - t;
+
         if (age > LOCAL_USER_TTL_MS) {
           localStorage.removeItem(LOCAL_USER_KEY);
           return null;
@@ -589,19 +937,21 @@ function clearLocalUser() {
   }
 }
 
-/* ----------------------------
- * Password strength helper
- * ---------------------------- */
+// ----------------------------
+// Password strength helper
+// ----------------------------
 function isStrongPassword(pw) {
   if (!pw) return false;
+
   const hasLetter = /[A-Za-z]/.test(pw);
   const hasNumber = /[0-9]/.test(pw);
+
   return pw.length >= 6 && hasLetter && hasNumber;
 }
 
-/* ----------------------------
- * Device ID + device rules
- * ---------------------------- */
+// ----------------------------
+// Device ID + device rules
+// ----------------------------
 function generateRandomId() {
   try {
     if (
@@ -624,6 +974,7 @@ async function getOrCreateDeviceId() {
   try {
     if (typeof window !== "undefined" && window.localStorage) {
       const existing = window.localStorage.getItem(storageKey);
+
       if (existing && typeof existing === "string" && existing.trim() !== "") {
         return existing;
       }
@@ -644,6 +995,7 @@ async function getOrCreateDeviceId() {
           : "web");
 
   let nativePlugin = null;
+
   if (
     typeof window !== "undefined" &&
     window.Capacitor &&
@@ -654,6 +1006,7 @@ async function getOrCreateDeviceId() {
       window.Capacitor.Plugins.ColspotNativePlugin ||
       null;
   }
+
   if (!nativePlugin && typeof window !== "undefined" && window.Plugins) {
     nativePlugin =
       window.Plugins.ColspotNative ||
@@ -668,6 +1021,7 @@ async function getOrCreateDeviceId() {
   ) {
     try {
       const result = await nativePlugin.getDeviceId();
+
       if (result && typeof result.value === "string" && result.value.trim() !== "") {
         newId = result.value.trim();
       }
@@ -704,6 +1058,7 @@ async function getOrCreateDeviceId() {
       try {
         const result = await window.Capacitor.Plugins.Device.getId();
         const raw = (result && (result.identifier || result.uuid || result.id)) || "";
+
         if (raw && typeof raw === "string" && raw.trim() !== "") {
           newId = "I-" + raw.trim();
         }
@@ -745,9 +1100,11 @@ async function getDeviceName() {
       }
 
       let name = (info.model || info.name || "").trim();
+
       if (!name) {
         name = "Android device";
       }
+
       return name;
     }
   } catch (err) {
@@ -756,6 +1113,7 @@ async function getDeviceName() {
 
   if (APP_PLATFORM === "ios") return "iPhone";
   if (APP_PLATFORM === "android") return "Android device";
+
   return "Browser";
 }
 
@@ -782,11 +1140,12 @@ async function linkDeviceForSession(session) {
 
   if (byDevice && byDevice.length > 0) {
     const row = byDevice[0];
+
     if (row.user_id !== userId) {
       throw new Error(MSG.DEVICE_CONFLICT);
-    } else {
-      return;
     }
+
+    return;
   }
 
   const { data: byUser, error: errB } = await supabase
@@ -806,19 +1165,22 @@ async function linkDeviceForSession(session) {
   const { error: insertErr } = await supabase.from("user_devices").insert({
     user_id: userId,
     device_id: deviceId,
-    device_name: deviceName,
+    device_name: deviceName
   });
 
   if (insertErr) {
     console.error("user_devices insert error:", insertErr);
+
     const msg = (insertErr.message || "").toLowerCase();
 
     if (msg.includes("user_devices_device_id_key")) {
       throw new Error(MSG.DEVICE_CONFLICT);
     }
+
     if (msg.includes("user_devices_user_id_key")) {
       throw new Error(MSG.DEVICE_LIMIT);
     }
+
     if (msg.includes("already linked 2 phones")) {
       throw new Error(MSG.DEVICE_LIMIT);
     }
@@ -827,23 +1189,25 @@ async function linkDeviceForSession(session) {
   }
 }
 
-/* ----------------------------
- * Login analytics helper
- * ---------------------------- */
+// ----------------------------
+// Login analytics helper
+// ----------------------------
 async function recordLoginEvent(session) {
   if (!session || !session.user || !window.supabase) return;
 
   const userId = session.user.id;
   const deviceId = await getOrCreateDeviceId();
   const deviceName = await getDeviceName();
+
   if (!deviceId) return;
 
   try {
     const { error } = await supabase.from("user_login_events").insert({
       user_id: userId,
       device_id: deviceId,
-      device_name: deviceName,
+      device_name: deviceName
     });
+
     if (error) {
       console.error("recordLoginEvent insert error:", error);
     }
@@ -852,9 +1216,81 @@ async function recordLoginEvent(session) {
   }
 }
 
-/* ----------------------------
- * Mode switching
- * ---------------------------- */
+// ----------------------------
+// Sponsor account helpers
+// ----------------------------
+async function ensureSponsorAccountRow(userId, profile = {}) {
+  if (!userId || !window.supabase) {
+    throw new Error("Missing sponsor user.");
+  }
+
+  const email = String(profile.email || "").trim().toLowerCase();
+  const businessName =
+    String(profile.businessName || profile.business_name || "").trim() ||
+    String(profile.fullName || profile.full_name || "").trim() ||
+    "Sponsor Account";
+
+  const contactName =
+    String(profile.contactName || profile.contact_name || "").trim() ||
+    String(profile.fullName || profile.full_name || "").trim() ||
+    "Sponsor";
+
+  const phone = String(profile.phone || "").trim();
+  const businessType = String(profile.businessType || profile.business_type || "other").trim();
+  const taskInterest = String(profile.taskInterest || profile.task_interest || "student_surveys").trim();
+
+  const payload = {
+    user_id: userId,
+    business_name: businessName,
+    contact_name: contactName,
+    email,
+    phone,
+    business_type: businessType,
+    task_interest: taskInterest,
+    status: "pending",
+    wallet_balance: 0,
+    total_spent: 0
+  };
+
+  const { error } = await supabase
+    .from("sponsor_accounts")
+    .upsert(payload, { onConflict: "user_id" });
+
+  if (error) {
+    console.error("ensureSponsorAccountRow error:", error);
+    throw error;
+  }
+
+  return payload;
+}
+
+function getSponsorProfileFromUser(user) {
+  const metadata = user?.user_metadata || {};
+
+  return {
+    businessName:
+      metadata.business_name ||
+      metadata.businessName ||
+      metadata.full_name ||
+      metadata.name ||
+      "Sponsor Account",
+    contactName:
+      metadata.contact_name ||
+      metadata.contactName ||
+      metadata.full_name ||
+      metadata.name ||
+      user?.email ||
+      "Sponsor",
+    email: user?.email || metadata.email || "",
+    phone: metadata.phone || "",
+    businessType: metadata.business_type || metadata.businessType || "other",
+    taskInterest: metadata.task_interest || metadata.taskInterest || "student_surveys"
+  };
+}
+
+// ----------------------------
+// Mode switching
+// ----------------------------
 function switchMode(mode) {
   currentMode = mode;
 
@@ -902,6 +1338,7 @@ function switchMode(mode) {
     if (switchLabel) switchLabel.textContent = "Sign in";
 
     const roleSelect = document.getElementById("signup-role");
+
     if (roleSelect) {
       roleSelect.value = "lecturer";
       roleSelect.dispatchEvent(new Event("change"));
@@ -913,9 +1350,9 @@ function toggleAuthMode() {
   switchMode(currentMode === "signin" ? "signup" : "signin");
 }
 
-/* ----------------------------
- * Panels
- * ---------------------------- */
+// ----------------------------
+// Panels
+// ----------------------------
 function hideMainForms() {
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
@@ -966,6 +1403,7 @@ function showVerifyPanel(email) {
 
   const title = document.getElementById("card-title");
   const subtitle = document.getElementById("card-subtitle");
+
   if (title) title.textContent = "Verify your email";
   if (subtitle) subtitle.textContent = "Enter the 6-digit code to continue";
 }
@@ -988,6 +1426,7 @@ function showForgotPanel() {
     const signinEmail = document.getElementById("signin-email");
     emailInput.value = signinEmail ? signinEmail.value.trim() : "";
   }
+
   if (msgEl) {
     msgEl.textContent = "";
     msgEl.className = "message";
@@ -997,6 +1436,7 @@ function showForgotPanel() {
 
   const title = document.getElementById("card-title");
   const subtitle = document.getElementById("card-subtitle");
+
   if (title) title.textContent = "Forgot password";
   if (subtitle) subtitle.textContent = "We will send a reset code to your email";
 }
@@ -1026,12 +1466,14 @@ function showResetPanel(email) {
 
   const title = document.getElementById("card-title");
   const subtitle = document.getElementById("card-subtitle");
+
   if (title) title.textContent = "Reset password";
   if (subtitle) subtitle.textContent = "Enter the code and choose a new password";
 }
 
 function hideResetPanel() {
   const panel = document.getElementById("reset-panel");
+
   if (panel) panel.classList.add("hidden");
 
   const title = document.getElementById("card-title");
@@ -1044,54 +1486,56 @@ function hideResetPanel() {
     if (title) title.textContent = "Create your account";
     if (subtitle) subtitle.textContent = "Sign up as a lecturer";
   }
+
   showMainForms();
 }
 
-/* ----------------------------
- * Redirect if already signed in
- * ---------------------------- */
+// ----------------------------
+// Redirect if already signed in
+// ----------------------------
 async function redirectIfSignedIn() {
   const cached = getLocalUser();
+
   if (!cached || !cached.id) return false;
 
-  if (isOAuthInProgress()) return false;
-  if (!window.supabase) return false;
+  const role = String(cached.role || getAuthRole() || "").toLowerCase().trim();
 
-  try {
-    const { data, error } = await window.supabase.auth.getSession();
-
-    if (error) {
-      console.error("redirectIfSignedIn getSession error:", error);
-      return false;
-    }
-
-    if (data && data.session && data.session.user) {
-      goToAuthCallback();
-      return true;
-    }
-
-    return false;
-  } catch (e) {
-    console.error("redirectIfSignedIn failed:", e);
-    return false;
+  if (role === "lecturer") {
+    window.location.href = LECTURER_MAIN_PATH;
+    return true;
   }
+
+  if (role === "admin") {
+    window.location.href = ADMIN_MAIN_PATH;
+    return true;
+  }
+
+  if (role === "sponsor") {
+    window.location.href = SPONSOR_MAIN_PATH;
+    return true;
+  }
+
+  if (role === "student") {
+    const target = await getStudentStageRedirectPath(cached.id);
+    window.location.href = target;
+    return true;
+  }
+
+  const target = await getStudentStageRedirectPath(cached.id);
+  window.location.href = target;
+
+  return true;
 }
 
-/* ----------------------------
- * Save role profile into tables
- * ---------------------------- */
+// ----------------------------
+// Save role profile into tables
+// ----------------------------
 async function saveSignupAccountRow(userId, signupData, userEmail) {
   if (!userId || !signupData || !window.supabase) {
     throw new Error("Missing signup data");
   }
 
-  const {
-    fullName,
-    role,
-    schoolName,
-    dept,
-    accountId
-  } = signupData;
+  const { fullName, role, schoolName, dept, accountId } = signupData;
 
   const emailToSave = (userEmail || signupData.email || "").trim().toLowerCase();
 
@@ -1110,6 +1554,7 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       .upsert(payload, { onConflict: "user_id" });
 
     if (error) throw error;
+
     return;
   }
 
@@ -1128,23 +1573,39 @@ async function saveSignupAccountRow(userId, signupData, userEmail) {
       .upsert(payload, { onConflict: "user_id" });
 
     if (error) throw error;
+
+    return;
+  }
+
+  if (role === "sponsor") {
+    await ensureSponsorAccountRow(userId, {
+      businessName: signupData.businessName,
+      contactName: signupData.contactName,
+      email: emailToSave,
+      phone: signupData.phone,
+      businessType: signupData.businessType,
+      taskInterest: signupData.taskInterest
+    });
+
     return;
   }
 
   throw new Error("Invalid role selected");
 }
 
-/* ----------------------------
- * Student Google only
- * ---------------------------- */
+// ----------------------------
+// Student Google only
+// ----------------------------
 async function signInWithGoogle() {
   const msgEl = document.getElementById("student-google-message");
+
   if (msgEl) {
     msgEl.textContent = "";
     msgEl.className = "message";
   }
 
   const rule = getVersionRuleCache();
+
   if (rule && rule.mode === "hard") {
     if (msgEl) {
       msgEl.textContent = MSG.VERSION_HARD_BLOCK;
@@ -1155,10 +1616,12 @@ async function signInWithGoogle() {
 
   if (isBrowserOffline()) {
     updateOfflineUI();
+
     if (msgEl) {
       msgEl.textContent = MSG.OFFLINE_SIGNIN;
       msgEl.className = "message error";
     }
+
     return;
   }
 
@@ -1167,13 +1630,13 @@ async function signInWithGoogle() {
       msgEl.textContent = MSG.AUTH_NOT_READY;
       msgEl.className = "message error";
     }
+
     return;
   }
 
   try {
     saveAuthRole("student");
     saveAuthIntent("signin");
-    setOAuthInProgress(true);
 
     if (msgEl) {
       msgEl.textContent = MSG.GOOGLE_REDIRECTING;
@@ -1202,11 +1665,12 @@ async function signInWithGoogle() {
 
     if (error) {
       console.error("Google sign-in error:", error);
-      setOAuthInProgress(false);
+
       if (msgEl) {
         msgEl.textContent = MSG.GOOGLE_START_FAIL;
         msgEl.className = "message error";
       }
+
       return;
     }
 
@@ -1218,11 +1682,12 @@ async function signInWithGoogle() {
       } else {
         window.location.href = data.url;
       }
+
       return;
     }
   } catch (err) {
     console.error("Google sign-in start failed:", err);
-    setOAuthInProgress(false);
+
     if (msgEl) {
       msgEl.textContent = MSG.GOOGLE_START_FAIL;
       msgEl.className = "message error";
@@ -1230,23 +1695,131 @@ async function signInWithGoogle() {
   }
 }
 
-/* ----------------------------
- * Lecturer sign in
- * ---------------------------- */
+// ----------------------------
+// Sponsor Google
+// ----------------------------
+async function signInWithGoogleSponsorAuth() {
+  const msgEl =
+    document.getElementById("sponsor-signin-message") ||
+    document.getElementById("sponsor-signup-message");
+
+  if (msgEl) {
+    msgEl.textContent = "";
+    msgEl.className = "message";
+  }
+
+  const rule = getVersionRuleCache();
+
+  if (rule && rule.mode === "hard") {
+    if (msgEl) {
+      msgEl.textContent = MSG.VERSION_HARD_BLOCK;
+      msgEl.className = "message error";
+    }
+    return;
+  }
+
+  if (isBrowserOffline()) {
+    updateOfflineUI();
+
+    if (msgEl) {
+      msgEl.textContent = MSG.OFFLINE_SIGNIN;
+      msgEl.className = "message error";
+    }
+
+    return;
+  }
+
+  if (!window.supabase) {
+    if (msgEl) {
+      msgEl.textContent = MSG.AUTH_NOT_READY;
+      msgEl.className = "message error";
+    }
+
+    return;
+  }
+
+  try {
+    saveAuthRole("sponsor");
+    saveAuthIntent("sponsor_google");
+
+    if (msgEl) {
+      msgEl.textContent = MSG.GOOGLE_REDIRECTING;
+      msgEl.className = "message success";
+    }
+
+    const isNativeApp =
+      !!window.Capacitor &&
+      typeof window.Capacitor.isNativePlatform === "function" &&
+      window.Capacitor.isNativePlatform();
+
+    const redirectTo = isNativeApp
+      ? "com.colspot.app://auth-callback"
+      : `${window.location.origin}/auth-callback.html`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        skipBrowserRedirect: isNativeApp,
+        queryParams: {
+          prompt: "select_account"
+        }
+      }
+    });
+
+    if (error) {
+      console.error("Sponsor Google sign-in error:", error);
+
+      if (msgEl) {
+        msgEl.textContent = MSG.SPONSOR_GOOGLE_FAIL;
+        msgEl.className = "message error";
+      }
+
+      return;
+    }
+
+    if (isNativeApp && data?.url) {
+      const browserPlugin = window.Capacitor?.Plugins?.Browser;
+
+      if (browserPlugin && typeof browserPlugin.open === "function") {
+        await browserPlugin.open({ url: data.url });
+      } else {
+        window.location.href = data.url;
+      }
+
+      return;
+    }
+  } catch (err) {
+    console.error("Sponsor Google sign-in start failed:", err);
+
+    if (msgEl) {
+      msgEl.textContent = MSG.SPONSOR_GOOGLE_FAIL;
+      msgEl.className = "message error";
+    }
+  }
+}
+
+// ----------------------------
+// Lecturer sign in
+// ----------------------------
 const signinFormEl = document.getElementById("signin-form");
+
 if (signinFormEl) {
   signinFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     saveAuthRole("lecturer");
     saveAuthIntent("signin");
 
     const email = document.getElementById("signin-email")?.value?.trim() || "";
     const password = document.getElementById("signin-password")?.value || "";
     const msgEl = document.getElementById("signin-message");
+
     msgEl.textContent = "";
     msgEl.className = "message";
 
     const rule = getVersionRuleCache();
+
     if (rule && rule.mode === "hard") {
       msgEl.textContent = MSG.VERSION_HARD_BLOCK;
       msgEl.className = "message error";
@@ -1277,7 +1850,7 @@ if (signinFormEl) {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
 
       if (error) {
@@ -1286,12 +1859,14 @@ if (signinFormEl) {
           msgEl.textContent = MSG.OFFLINE_SIGNIN;
         } else {
           const lower = (error.message || "").toLowerCase();
+
           if (lower.includes("invalid login credentials")) {
             msgEl.textContent = MSG.SIGNIN_INVALID_CREDENTIALS;
           } else {
             msgEl.textContent = MSG.SIGNIN_GENERIC;
           }
         }
+
         msgEl.className = "message error";
         return;
       }
@@ -1311,7 +1886,7 @@ if (signinFormEl) {
           "colspot_last_user",
           JSON.stringify({
             id: data.session.user.id,
-            email: data.session.user.email,
+            email: data.session.user.email
           })
         );
 
@@ -1323,12 +1898,14 @@ if (signinFormEl) {
       goToAuthCallback();
     } catch (err) {
       console.error(err);
+
       if (isLikelyOfflineError(err)) {
         updateOfflineUI();
         msgEl.textContent = MSG.OFFLINE_SIGNIN;
       } else {
         msgEl.textContent = MSG.SIGNIN_GENERIC;
       }
+
       msgEl.className = "message error";
     } finally {
       setButtonLoading("signin-btn", "signin-text", "signin-loader", false);
@@ -1336,15 +1913,17 @@ if (signinFormEl) {
   });
 }
 
-/* ----------------------------
- * Lecturer/backup sign up
- * ---------------------------- */
+// ----------------------------
+// Lecturer / backup sign up
+// ----------------------------
 const signupFormEl = document.getElementById("signup-form");
+
 if (signupFormEl) {
   signupFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const role = getSignupRole();
+
     saveAuthRole(role);
     saveAuthIntent("signup");
 
@@ -1357,10 +1936,12 @@ if (signupFormEl) {
     const password2 = document.getElementById("signup-password2")?.value || "";
 
     const msgEl = document.getElementById("signup-message");
+
     msgEl.textContent = "";
     msgEl.className = "message";
 
     const rule = getVersionRuleCache();
+
     if (rule && rule.mode === "hard") {
       msgEl.textContent = MSG.VERSION_HARD_BLOCK;
       msgEl.className = "message error";
@@ -1395,6 +1976,7 @@ if (signupFormEl) {
       setButtonLoading("signup-btn", "signup-text", "signup-loader", true);
 
       const existing = await checkExistingAccountForSignup(email, role);
+
       if (existing.exists) {
         msgEl.textContent = existing.message || MSG.SIGNUP_ALREADY_EXISTS;
         msgEl.className = "message error";
@@ -1428,18 +2010,20 @@ if (signupFormEl) {
         email,
         options: {
           shouldCreateUser: true,
-          data: metadata,
-        },
+          data: metadata
+        }
       });
 
       if (error) {
         console.error(error);
+
         if (isLikelyOfflineError(error)) {
           updateOfflineUI();
           msgEl.textContent = MSG.OFFLINE_SIGNIN;
         } else {
           msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
         }
+
         msgEl.className = "message error";
         pendingSignup = null;
         return;
@@ -1448,18 +2032,21 @@ if (signupFormEl) {
       showVerifyPanel(email);
 
       const vMsg = document.getElementById("verify-message");
+
       if (vMsg) {
         vMsg.textContent = MSG.SIGNUP_SEND_CODE_OK;
         vMsg.className = "message success";
       }
     } catch (err) {
       console.error(err);
+
       if (isLikelyOfflineError(err)) {
         updateOfflineUI();
         msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
       } else {
         msgEl.textContent = MSG.SIGNUP_SEND_CODE_FAIL;
       }
+
       msgEl.className = "message error";
       pendingSignup = null;
     } finally {
@@ -1468,12 +2055,239 @@ if (signupFormEl) {
   });
 }
 
-/* ----------------------------
- * Verify code
- * ---------------------------- */
+// ----------------------------
+// Sponsor manual sign up
+// ----------------------------
+async function createSponsorAccountManually() {
+  const msgId = "sponsor-signup-message";
+
+  setMessage(msgId, "", "");
+
+  const rule = getVersionRuleCache();
+
+  if (rule && rule.mode === "hard") {
+    setMessage(msgId, MSG.VERSION_HARD_BLOCK, "error");
+    return;
+  }
+
+  if (isBrowserOffline()) {
+    updateOfflineUI();
+    setMessage(msgId, MSG.OFFLINE_SIGNIN, "error");
+    return;
+  }
+
+  if (!window.supabase) {
+    setMessage(msgId, MSG.AUTH_NOT_READY, "error");
+    return;
+  }
+
+  const sponsor = getSponsorSignupData();
+
+  if (
+    !sponsor.businessName ||
+    !sponsor.contactName ||
+    !sponsor.email ||
+    !sponsor.phone ||
+    !sponsor.businessType ||
+    !sponsor.taskInterest ||
+    !sponsor.password ||
+    !sponsor.password2
+  ) {
+    setMessage(msgId, MSG.SPONSOR_MISSING_FIELDS, "error");
+    return;
+  }
+
+  if (!isStrongPassword(sponsor.password)) {
+    setMessage(msgId, MSG.SIGNUP_WEAK_PASSWORD, "error");
+    return;
+  }
+
+  if (sponsor.password !== sponsor.password2) {
+    setMessage(msgId, MSG.SIGNUP_PASSWORD_MISMATCH, "error");
+    return;
+  }
+
+  try {
+    setButtonLoading("sponsor-signup-btn", "sponsor-signup-text", "sponsor-signup-loader", true);
+
+    const existing = await checkExistingAccountForSignup(sponsor.email, "sponsor");
+
+    if (existing.exists) {
+      setMessage(msgId, existing.message || MSG.SIGNUP_ALREADY_EXISTS, "error");
+      return;
+    }
+
+    saveAuthRole("sponsor");
+    saveAuthIntent("sponsor_signup");
+
+    const metadata = {
+      role: "sponsor",
+      business_name: sponsor.businessName,
+      contact_name: sponsor.contactName,
+      full_name: sponsor.contactName,
+      phone: sponsor.phone,
+      business_type: sponsor.businessType,
+      task_interest: sponsor.taskInterest
+    };
+
+    const { data, error } = await supabase.auth.signUp({
+      email: sponsor.email,
+      password: sponsor.password,
+      options: {
+        data: metadata
+      }
+    });
+
+    if (error) {
+      console.error("Sponsor signup error:", error);
+
+      const lower = (error.message || "").toLowerCase();
+
+      if (lower.includes("already") || lower.includes("registered")) {
+        setMessage(msgId, MSG.SIGNUP_ALREADY_EXISTS, "error");
+      } else {
+        setMessage(msgId, MSG.SPONSOR_SIGNUP_FAIL, "error");
+      }
+
+      return;
+    }
+
+    if (data && data.session && data.session.user) {
+      currentMode = "signin";
+      saveAuthRole("sponsor");
+
+      await ensureSponsorAccountRow(data.session.user.id, sponsor);
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
+
+      localStorage.setItem(
+        "colspot_last_user",
+        JSON.stringify({
+          id: data.session.user.id,
+          email: data.session.user.email
+        })
+      );
+
+      setMessage(msgId, MSG.SPONSOR_SIGNUP_OK, "success");
+
+      setTimeout(() => {
+        window.location.href = SPONSOR_MAIN_PATH;
+      }, 700);
+
+      return;
+    }
+
+    setMessage(msgId, MSG.SPONSOR_SIGNUP_EMAIL_CONFIRM, "success");
+  } catch (err) {
+    console.error("Sponsor signup failed:", err);
+
+    if (isLikelyOfflineError(err)) {
+      updateOfflineUI();
+      setMessage(msgId, MSG.OFFLINE_SIGNIN, "error");
+    } else {
+      setMessage(msgId, err.message || MSG.SPONSOR_SIGNUP_FAIL, "error");
+    }
+  } finally {
+    setButtonLoading("sponsor-signup-btn", "sponsor-signup-text", "sponsor-signup-loader", false);
+  }
+}
+
+// ----------------------------
+// Sponsor manual sign in
+// ----------------------------
+async function signInSponsorManually() {
+  const msgId = "sponsor-signin-message";
+
+  setMessage(msgId, "", "");
+
+  const rule = getVersionRuleCache();
+
+  if (rule && rule.mode === "hard") {
+    setMessage(msgId, MSG.VERSION_HARD_BLOCK, "error");
+    return;
+  }
+
+  if (isBrowserOffline()) {
+    updateOfflineUI();
+    setMessage(msgId, MSG.OFFLINE_SIGNIN, "error");
+    return;
+  }
+
+  if (!window.supabase) {
+    setMessage(msgId, MSG.AUTH_NOT_READY, "error");
+    return;
+  }
+
+  const email = document.getElementById("sponsor-signin-email")?.value?.trim()?.toLowerCase() || "";
+  const password = document.getElementById("sponsor-signin-password")?.value || "";
+
+  if (!email || !password) {
+    setMessage(msgId, MSG.SIGNIN_MISSING_FIELDS, "error");
+    return;
+  }
+
+  try {
+    setButtonLoading("sponsor-signin-btn", "sponsor-signin-text", "sponsor-signin-loader", true);
+
+    saveAuthRole("sponsor");
+    saveAuthIntent("sponsor_signin");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      console.error("Sponsor sign in error:", error);
+      setMessage(msgId, MSG.SPONSOR_SIGNIN_FAIL, "error");
+      return;
+    }
+
+    if (data && data.session && data.session.user) {
+      const profile = getSponsorProfileFromUser(data.session.user);
+      profile.email = data.session.user.email || email;
+
+      await ensureSponsorAccountRow(data.session.user.id, profile);
+      await recordLoginEvent(data.session);
+      saveLocalUserFromSession(data.session);
+
+      localStorage.setItem(
+        "colspot_last_user",
+        JSON.stringify({
+          id: data.session.user.id,
+          email: data.session.user.email
+        })
+      );
+
+      saveAuthRole("sponsor");
+
+      setMessage(msgId, "Signed in. Redirecting…", "success");
+
+      setTimeout(() => {
+        window.location.href = SPONSOR_MAIN_PATH;
+      }, 500);
+    }
+  } catch (err) {
+    console.error("Sponsor sign in failed:", err);
+
+    if (isLikelyOfflineError(err)) {
+      updateOfflineUI();
+      setMessage(msgId, MSG.OFFLINE_SIGNIN, "error");
+    } else {
+      setMessage(msgId, err.message || MSG.SPONSOR_SIGNIN_FAIL, "error");
+    }
+  } finally {
+    setButtonLoading("sponsor-signin-btn", "sponsor-signin-text", "sponsor-signin-loader", false);
+  }
+}
+
+// ----------------------------
+// Verify code
+// ----------------------------
 document.getElementById("verify-code-btn")?.addEventListener("click", async () => {
   const codeInput = document.getElementById("verify-code-input");
   const msgEl = document.getElementById("verify-message");
+
   msgEl.textContent = "";
   msgEl.className = "message";
 
@@ -1512,7 +2326,7 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: code,
-      type: "email",
+      type: "email"
     });
 
     if (error) {
@@ -1523,14 +2337,7 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
     }
 
     if (pendingSignup && pendingSignup.password) {
-      const {
-        password,
-        fullName,
-        role,
-        schoolName,
-        dept,
-        accountId
-      } = pendingSignup;
+      const { password, fullName, role, schoolName, dept, accountId } = pendingSignup;
 
       const metadata = {
         full_name: fullName,
@@ -1544,7 +2351,7 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
 
       const { error: updateError } = await supabase.auth.updateUser({
         password,
-        data: metadata,
+        data: metadata
       });
 
       if (updateError) {
@@ -1556,21 +2363,25 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
     }
 
     if (data && data.session) {
-      try {
-        await linkDeviceForSession(data.session);
-      } catch (deviceErr) {
-        await supabase.auth.signOut();
-        clearLocalUser();
-        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-        msgEl.className = "message error";
-        return;
+      const role = pendingSignup?.role || getAuthRole();
+
+      if (role !== "sponsor") {
+        try {
+          await linkDeviceForSession(data.session);
+        } catch (deviceErr) {
+          await supabase.auth.signOut();
+          clearLocalUser();
+          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
+          msgEl.className = "message error";
+          return;
+        }
       }
 
       localStorage.setItem(
         "colspot_last_user",
         JSON.stringify({
           id: data.session.user.id,
-          email: data.session.user.email,
+          email: data.session.user.email
         })
       );
 
@@ -1592,10 +2403,7 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
         return;
       }
 
-      await resolveUserRole(
-        data.session.user.id,
-        data.session.user.email || email
-      );
+      await resolveUserRole(data.session.user.id, data.session.user.email || email);
     }
 
     msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
@@ -1618,11 +2426,12 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
   }
 });
 
-/* ----------------------------
- * Resend sign-up code
- * ---------------------------- */
+// ----------------------------
+// Resend sign-up code
+// ----------------------------
 document.getElementById("resend-btn")?.addEventListener("click", async () => {
   const msgEl = document.getElementById("verify-message");
+
   msgEl.textContent = "";
   msgEl.className = "message";
 
@@ -1647,8 +2456,8 @@ document.getElementById("resend-btn")?.addEventListener("click", async () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: true,
-      },
+        shouldCreateUser: true
+      }
     });
 
     if (error) {
@@ -1667,9 +2476,9 @@ document.getElementById("resend-btn")?.addEventListener("click", async () => {
   }
 });
 
-/* ----------------------------
- * Back to sign in (from verify panel)
- * ---------------------------- */
+// ----------------------------
+// Back to sign in from verify panel
+// ----------------------------
 document.getElementById("back-to-signin-btn")?.addEventListener("click", () => {
   pendingSignup = null;
   hideVerifyPanel();
@@ -1677,16 +2486,18 @@ document.getElementById("back-to-signin-btn")?.addEventListener("click", () => {
   switchMode("signin");
 });
 
-/* ----------------------------
- * Forgot password
- * ---------------------------- */
+// ----------------------------
+// Forgot password
+// ----------------------------
 function openForgotPasswordPage() {
   resetEmail = null;
+
   try {
     localStorage.removeItem("colspot_reset_email");
   } catch (e) {
     console.error("Could not clear reset email cache:", e);
   }
+
   showForgotPanel();
 }
 
@@ -1730,8 +2541,8 @@ async function handleForgotPassword() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: false,
-      },
+        shouldCreateUser: false
+      }
     });
 
     if (error) {
@@ -1740,6 +2551,7 @@ async function handleForgotPassword() {
 
       if (isLikelyOfflineError(error)) {
         updateOfflineUI();
+
         if (msgEl) {
           msgEl.textContent = MSG.OFFLINE_SIGNIN;
           msgEl.className = "message error";
@@ -1755,18 +2567,19 @@ async function handleForgotPassword() {
         }
       } else if (lower.includes("user") && lower.includes("not")) {
         if (msgEl) {
-          msgEl.textContent =
-            "We couldn’t find any Colspot account with that email.";
+          msgEl.textContent = "We couldn’t find any Colspot account with that email.";
           msgEl.className = "message error";
         }
       } else if (msgEl) {
         msgEl.textContent = MSG.FORGOT_SEND_FAIL;
         msgEl.className = "message error";
       }
+
       return;
     }
 
     resetEmail = email;
+
     try {
       localStorage.setItem("colspot_reset_email", email);
     } catch (e) {
@@ -1776,14 +2589,17 @@ async function handleForgotPassword() {
     showResetPanel(email);
 
     const rMsg = document.getElementById("reset-message");
+
     if (rMsg) {
       rMsg.textContent = MSG.FORGOT_SEND_OK;
       rMsg.className = "message success";
     }
   } catch (err) {
     console.error("forgot password failed:", err);
+
     if (isLikelyOfflineError(err)) {
       updateOfflineUI();
+
       if (msgEl) {
         msgEl.textContent = MSG.OFFLINE_SIGNIN;
         msgEl.className = "message error";
@@ -1815,6 +2631,7 @@ document.getElementById("reset-submit-btn")?.addEventListener("click", async () 
   const newPw = document.getElementById("reset-password")?.value || "";
   const newPw2 = document.getElementById("reset-password2")?.value || "";
   const msgEl = document.getElementById("reset-message");
+
   msgEl.textContent = "";
   msgEl.className = "message";
 
@@ -1862,7 +2679,7 @@ document.getElementById("reset-submit-btn")?.addEventListener("click", async () 
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: code,
-      type: "email",
+      type: "email"
     });
 
     if (error) {
@@ -1873,7 +2690,7 @@ document.getElementById("reset-submit-btn")?.addEventListener("click", async () 
     }
 
     const { error: updateError } = await supabase.auth.updateUser({
-      password: newPw,
+      password: newPw
     });
 
     if (updateError) {
@@ -1881,14 +2698,18 @@ document.getElementById("reset-submit-btn")?.addEventListener("click", async () 
     }
 
     if (data && data.session) {
-      try {
-        await linkDeviceForSession(data.session);
-      } catch (deviceErr) {
-        await supabase.auth.signOut();
-        clearLocalUser();
-        msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
-        msgEl.className = "message error";
-        return;
+      const role = getAuthRole();
+
+      if (role !== "sponsor") {
+        try {
+          await linkDeviceForSession(data.session);
+        } catch (deviceErr) {
+          await supabase.auth.signOut();
+          clearLocalUser();
+          msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
+          msgEl.className = "message error";
+          return;
+        }
       }
 
       await recordLoginEvent(data.session);
@@ -1918,22 +2739,26 @@ document.getElementById("reset-submit-btn")?.addEventListener("click", async () 
 
 document.getElementById("reset-back-btn")?.addEventListener("click", () => {
   resetEmail = null;
+
   try {
     localStorage.removeItem("colspot_reset_email");
   } catch (e) {
     console.error("Could not clear reset email cache:", e);
   }
+
   hideResetPanel();
   switchMode("signin");
 });
 
-/* ----------------------------
- * Admin login
- * ---------------------------- */
+// ----------------------------
+// Admin login
+// ----------------------------
 const adminFormEl = document.getElementById("admin-form");
+
 if (adminFormEl) {
   adminFormEl.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     saveAuthRole("admin");
 
     const identifier = (document.getElementById("admin-identifier")?.value || "").trim();
@@ -1946,6 +2771,7 @@ if (adminFormEl) {
     }
 
     const rule = getVersionRuleCache();
+
     if (rule && rule.mode === "hard") {
       if (msgEl) {
         msgEl.textContent = MSG.VERSION_HARD_BLOCK;
@@ -1964,6 +2790,7 @@ if (adminFormEl) {
 
     if (isBrowserOffline()) {
       updateOfflineUI();
+
       if (msgEl) {
         msgEl.textContent = MSG.OFFLINE_SIGNIN;
         msgEl.className = "message error";
@@ -1992,15 +2819,17 @@ if (adminFormEl) {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: identifier.toLowerCase(),
-        password,
+        password
       });
 
       if (error) {
         console.error("Admin login error:", error);
+
         if (msgEl) {
           msgEl.textContent = MSG.ADMIN_GENERIC;
           msgEl.className = "message error";
         }
+
         return;
       }
 
@@ -2010,10 +2839,12 @@ if (adminFormEl) {
         } catch (deviceErr) {
           await supabase.auth.signOut();
           clearLocalUser();
+
           if (msgEl) {
             msgEl.textContent = deviceErr.message || MSG.DEVICE_REGISTER_FAIL;
             msgEl.className = "message error";
           }
+
           return;
         }
 
@@ -2021,7 +2852,7 @@ if (adminFormEl) {
           "colspot_last_user",
           JSON.stringify({
             id: data.session.user.id,
-            email: data.session.user.email,
+            email: data.session.user.email
           })
         );
 
@@ -2032,6 +2863,7 @@ if (adminFormEl) {
       window.location.href = ADMIN_MAIN_PATH;
     } catch (err) {
       console.error("Admin login failed:", err);
+
       if (msgEl) {
         msgEl.textContent = MSG.ADMIN_GENERIC;
         msgEl.className = "message error";
@@ -2042,9 +2874,26 @@ if (adminFormEl) {
   });
 }
 
-/* ----------------------------
- * Init
- * ---------------------------- */
+// ----------------------------
+// Handle signed-in sponsor from Google callback when this script loads
+// ----------------------------
+async function ensureSponsorProfileIfNeeded(session) {
+  if (!session || !session.user || !window.supabase) return;
+
+  const role = String(getAuthRole() || "").toLowerCase().trim();
+  const intent = String(localStorage.getItem(AUTH_INTENT_KEY) || "").toLowerCase().trim();
+
+  if (role !== "sponsor" && !intent.includes("sponsor")) return;
+
+  const profile = getSponsorProfileFromUser(session.user);
+
+  await ensureSponsorAccountRow(session.user.id, profile);
+  saveAuthRole("sponsor");
+}
+
+// ----------------------------
+// Init
+// ----------------------------
 async function initAuth() {
   const splash = document.getElementById("splash-screen");
   const authShell = document.getElementById("auth-shell");
@@ -2053,6 +2902,26 @@ async function initAuth() {
     await checkAndCacheVersionRules();
   } catch (e) {
     console.error("Version check failed during init:", e);
+  }
+
+  if (window.supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      const session = data?.session || null;
+
+      if (session && session.user) {
+        const role = String(getAuthRole() || "").toLowerCase().trim();
+
+        if (role === "sponsor") {
+          await ensureSponsorProfileIfNeeded(session);
+          saveLocalUserFromSession(session);
+          window.location.href = SPONSOR_MAIN_PATH;
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Sponsor session init check failed:", e);
+    }
   }
 
   const redirected = await redirectIfSignedIn();
@@ -2072,6 +2941,10 @@ async function initAuth() {
     if (typeof window.showAuthSection === "function") {
       window.showAuthSection("student");
     }
+  } else if (savedRole === "sponsor") {
+    if (typeof window.showAuthSection === "function") {
+      window.showAuthSection("sponsor");
+    }
   } else if (savedRole === "admin") {
     if (typeof window.showAuthSection === "function") {
       window.showAuthSection("admin");
@@ -2083,18 +2956,21 @@ async function initAuth() {
   updateOfflineUI();
 }
 
-/* ----------------------------
- * Expose for HTML onclick
- * ---------------------------- */
+// ----------------------------
+// Expose for HTML onclick
+// ----------------------------
 window.openForgotPasswordPage = openForgotPasswordPage;
 window.handleForgotPassword = handleForgotPassword;
 window.switchMode = switchMode;
 window.toggleAuthMode = toggleAuthMode;
 window.signInWithGoogle = signInWithGoogle;
 
+window.signInWithGoogleSponsorAuth = signInWithGoogleSponsorAuth;
+window.signInSponsorManually = signInSponsorManually;
+window.createSponsorAccountManually = createSponsorAccountManually;
+
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initAuth);
 } else {
   initAuth();
 }
-</script>
