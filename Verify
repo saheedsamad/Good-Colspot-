@@ -1226,6 +1226,33 @@
     return data;
   }
 
+  function getExtractedDetailsFromResponse(result) {
+    const parsedResult =
+      result?.extracted_result ||
+      result?.details ||
+      result?.data ||
+      result?.extracted ||
+      result?.result ||
+      result;
+
+    if (parsedResult && parsedResult.is_clearance_form === false) {
+      throw new Error(parsedResult.reason || "This does not look like a valid course form.");
+    }
+
+    const details =
+      parsedResult?.extracted ||
+      parsedResult?.details ||
+      parsedResult?.data?.extracted ||
+      parsedResult?.data?.details ||
+      parsedResult;
+
+    if (!details || typeof details !== "object") {
+      throw new Error("We could not read the details from this course form.");
+    }
+
+    return details;
+  }
+
   function buildNormalizedExtracted() {
     return {
       full_name: normalizeText(extracted?.full_name),
@@ -1852,16 +1879,7 @@
         uploadedPath = await uploadToStorage(pickedFile);
         const result = await callExtractFunction(uploadedPath, pickedFile);
 
-        extracted =
-          result?.details ||
-          result?.data ||
-          result?.extracted ||
-          result?.result ||
-          result;
-
-        if (!extracted || typeof extracted !== "object") {
-          throw new Error("We could not read the details from this course form.");
-        }
+        extracted = getExtractedDetailsFromResponse(result);
 
         if (extracted.school_name) {
           extracted.school_name = normalizeUpper(extracted.school_name);
