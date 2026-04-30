@@ -2,7 +2,7 @@
 // Assumes window.supabase is created in client_supabase.js
 
 let currentMode = "signin";
-let pendingSignup = null; // { email, password, fullName, role, schoolName, dept, accountId }
+let pendingSignup = null; // lecturer/student: { email, password, fullName, role, schoolName, dept, accountId } | sponsor: { email, password, role, businessName, contactName, phone, businessType, taskInterest }
 let resetEmail = null;
 
 // ----------------------------
@@ -1383,10 +1383,120 @@ function showMainForms() {
   }
 }
 
+function moveVerifyPanelForRole(role) {
+  const verifyPanel = document.getElementById("verify-panel");
+  if (!verifyPanel) return;
+
+  const cleanRole = String(role || "").toLowerCase().trim();
+
+  if (cleanRole === "sponsor") {
+    const sponsorPanel = document.getElementById("sponsor-auth-panel");
+    if (sponsorPanel && verifyPanel.parentElement !== sponsorPanel) {
+      sponsorPanel.appendChild(verifyPanel);
+    }
+    return;
+  }
+
+  const lecturerPanel = document.getElementById("lecturer-auth-panel");
+  const forgotPanel = document.getElementById("forgot-panel");
+
+  if (lecturerPanel && forgotPanel && verifyPanel.parentElement !== lecturerPanel) {
+    lecturerPanel.insertBefore(verifyPanel, forgotPanel);
+  }
+}
+
+function hideSponsorAuthFormsForVerify() {
+  const ids = [
+    "sponsor-mode-toggle",
+    "sponsor-signin-form",
+    "sponsor-signup-form"
+  ];
+
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+
+  const sponsorPanel = document.getElementById("sponsor-auth-panel");
+
+  if (sponsorPanel) {
+    const socialWrap = sponsorPanel.querySelector(".social-login-wrap");
+    const divider = sponsorPanel.querySelector(".sponsor-divider");
+    const switchRow = document.getElementById("sponsor-switch-text")?.closest(".bottom-row");
+
+    if (socialWrap) socialWrap.classList.add("hidden");
+    if (divider) divider.classList.add("hidden");
+    if (switchRow) switchRow.classList.add("hidden");
+  }
+}
+
+function showSponsorAuthFormsAfterVerify() {
+  const sponsorPanel = document.getElementById("sponsor-auth-panel");
+  const modeToggle = document.getElementById("sponsor-mode-toggle");
+
+  if (modeToggle) modeToggle.classList.remove("hidden");
+
+  if (sponsorPanel) {
+    const socialWrap = sponsorPanel.querySelector(".social-login-wrap");
+    const divider = sponsorPanel.querySelector(".sponsor-divider");
+    const switchRow = document.getElementById("sponsor-switch-text")?.closest(".bottom-row");
+
+    if (socialWrap) socialWrap.classList.remove("hidden");
+    if (divider) divider.classList.remove("hidden");
+    if (switchRow) switchRow.classList.remove("hidden");
+  }
+
+  if (typeof window.switchSponsorMode === "function") {
+    window.switchSponsorMode("signin");
+  } else {
+    const signinForm = document.getElementById("sponsor-signin-form");
+    const signupForm = document.getElementById("sponsor-signup-form");
+
+    if (signinForm) signinForm.classList.remove("hidden");
+    if (signupForm) signupForm.classList.add("hidden");
+  }
+}
+
 function showVerifyPanel(email) {
+  const role = String(pendingSignup?.role || getAuthRole() || "").toLowerCase().trim();
+
+  moveVerifyPanelForRole(role);
+
   hideResetPanel();
   hideForgotPanel();
-  hideMainForms();
+
+  if (role === "sponsor") {
+    const rolePanel = document.getElementById("role-select-panel");
+    const studentPanel = document.getElementById("student-auth-panel");
+    const lecturerPanel = document.getElementById("lecturer-auth-panel");
+    const sponsorPanel = document.getElementById("sponsor-auth-panel");
+    const adminPanel = document.getElementById("admin-auth-panel");
+
+    if (rolePanel) rolePanel.classList.add("hidden");
+    if (studentPanel) studentPanel.classList.add("hidden");
+    if (lecturerPanel) lecturerPanel.classList.add("hidden");
+    if (adminPanel) adminPanel.classList.add("hidden");
+    if (sponsorPanel) sponsorPanel.classList.remove("hidden");
+
+    hideSponsorAuthFormsForVerify();
+
+    const title = document.getElementById("sponsor-card-title");
+    const subtitle = document.getElementById("sponsor-card-subtitle");
+
+    if (title) title.textContent = "Verify your email";
+    if (subtitle) subtitle.textContent = "Enter the 6-digit code sent to your sponsor email";
+  } else {
+    hideMainForms();
+
+    const lecturerPanel = document.getElementById("lecturer-auth-panel");
+    if (lecturerPanel) lecturerPanel.classList.remove("hidden");
+
+    const title = document.getElementById("card-title");
+    const subtitle = document.getElementById("card-subtitle");
+
+    if (title) title.textContent = "Verify your email";
+    if (subtitle) subtitle.textContent = "Enter the 6-digit code to continue";
+  }
 
   const verifyPanel = document.getElementById("verify-panel");
   const emailEl = document.getElementById("verify-email");
@@ -1400,12 +1510,6 @@ function showVerifyPanel(email) {
   }
 
   if (verifyPanel) verifyPanel.classList.remove("hidden");
-
-  const title = document.getElementById("card-title");
-  const subtitle = document.getElementById("card-subtitle");
-
-  if (title) title.textContent = "Verify your email";
-  if (subtitle) subtitle.textContent = "Enter the 6-digit code to continue";
 }
 
 function hideVerifyPanel() {
@@ -2120,6 +2224,19 @@ async function createSponsorAccountManually() {
     saveAuthRole("sponsor");
     saveAuthIntent("sponsor_signup");
 
+    pendingSignup = {
+      role: "sponsor",
+      email: sponsor.email,
+      password: sponsor.password,
+      businessName: sponsor.businessName,
+      contactName: sponsor.contactName,
+      phone: sponsor.phone,
+      businessType: sponsor.businessType,
+      taskInterest: sponsor.taskInterest
+    };
+
+    localStorage.setItem("colspot_pending_email", sponsor.email);
+
     const metadata = {
       role: "sponsor",
       business_name: sponsor.businessName,
@@ -2130,54 +2247,40 @@ async function createSponsorAccountManually() {
       task_interest: sponsor.taskInterest
     };
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithOtp({
       email: sponsor.email,
-      password: sponsor.password,
       options: {
+        shouldCreateUser: true,
         data: metadata
       }
     });
 
     if (error) {
-      console.error("Sponsor signup error:", error);
+      console.error("Sponsor OTP signup error:", error);
 
       const lower = (error.message || "").toLowerCase();
 
-      if (lower.includes("already") || lower.includes("registered")) {
+      if (isLikelyOfflineError(error)) {
+        updateOfflineUI();
+        setMessage(msgId, MSG.OFFLINE_SIGNIN, "error");
+      } else if (lower.includes("already") || lower.includes("registered")) {
         setMessage(msgId, MSG.SIGNUP_ALREADY_EXISTS, "error");
       } else {
-        setMessage(msgId, MSG.SPONSOR_SIGNUP_FAIL, "error");
+        setMessage(msgId, MSG.SIGNUP_SEND_CODE_FAIL, "error");
       }
 
+      pendingSignup = null;
       return;
     }
 
-    if (data && data.session && data.session.user) {
-      currentMode = "signin";
-      saveAuthRole("sponsor");
+    showVerifyPanel(sponsor.email);
 
-      await ensureSponsorAccountRow(data.session.user.id, sponsor);
-      await recordLoginEvent(data.session);
-      saveLocalUserFromSession(data.session);
+    const vMsg = document.getElementById("verify-message");
 
-      localStorage.setItem(
-        "colspot_last_user",
-        JSON.stringify({
-          id: data.session.user.id,
-          email: data.session.user.email
-        })
-      );
-
-      setMessage(msgId, MSG.SPONSOR_SIGNUP_OK, "success");
-
-      setTimeout(() => {
-        window.location.href = SPONSOR_MAIN_PATH;
-      }, 700);
-
-      return;
+    if (vMsg) {
+      vMsg.textContent = MSG.SIGNUP_SEND_CODE_OK;
+      vMsg.className = "message success";
     }
-
-    setMessage(msgId, MSG.SPONSOR_SIGNUP_EMAIL_CONFIRM, "success");
   } catch (err) {
     console.error("Sponsor signup failed:", err);
 
@@ -2187,6 +2290,8 @@ async function createSponsorAccountManually() {
     } else {
       setMessage(msgId, err.message || MSG.SPONSOR_SIGNUP_FAIL, "error");
     }
+
+    pendingSignup = null;
   } finally {
     setButtonLoading("sponsor-signup-btn", "sponsor-signup-text", "sponsor-signup-loader", false);
   }
@@ -2337,17 +2442,39 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
     }
 
     if (pendingSignup && pendingSignup.password) {
-      const { password, fullName, role, schoolName, dept, accountId } = pendingSignup;
-
-      const metadata = {
-        full_name: fullName,
+      const {
+        password,
+        fullName,
         role,
-        school_name: schoolName,
-        department: dept || "",
-        ...(role === "student"
-          ? { matric_number: accountId }
-          : { staff_id: accountId })
-      };
+        schoolName,
+        dept,
+        accountId,
+        businessName,
+        contactName,
+        phone,
+        businessType,
+        taskInterest
+      } = pendingSignup;
+
+      const metadata = role === "sponsor"
+        ? {
+            role: "sponsor",
+            business_name: businessName,
+            contact_name: contactName,
+            full_name: contactName,
+            phone,
+            business_type: businessType,
+            task_interest: taskInterest
+          }
+        : {
+            full_name: fullName,
+            role,
+            school_name: schoolName,
+            department: dept || "",
+            ...(role === "student"
+              ? { matric_number: accountId }
+              : { staff_id: accountId })
+          };
 
       const { error: updateError } = await supabase.auth.updateUser({
         password,
@@ -2406,8 +2533,26 @@ document.getElementById("verify-code-btn")?.addEventListener("click", async () =
       await resolveUserRole(data.session.user.id, data.session.user.email || email);
     }
 
+    const verifiedRole = pendingSignup?.role || getAuthRole();
+
+    if (verifiedRole === "sponsor") {
+      saveAuthRole("sponsor");
+      msgEl.textContent = MSG.SPONSOR_SIGNUP_OK;
+      msgEl.className = "message success";
+
+      pendingSignup = null;
+
+      setTimeout(() => {
+        window.location.href = SPONSOR_MAIN_PATH;
+      }, 800);
+
+      return;
+    }
+
     msgEl.textContent = MSG.VERIFY_OK_REDIRECT;
     msgEl.className = "message success";
+
+    pendingSignup = null;
 
     setTimeout(() => {
       goToAuthCallback();
@@ -2453,10 +2598,24 @@ document.getElementById("resend-btn")?.addEventListener("click", async () => {
   }
 
   try {
+    const role = String(pendingSignup?.role || getAuthRole() || "").toLowerCase().trim();
+    const metadata = role === "sponsor" && pendingSignup
+      ? {
+          role: "sponsor",
+          business_name: pendingSignup.businessName,
+          contact_name: pendingSignup.contactName,
+          full_name: pendingSignup.contactName,
+          phone: pendingSignup.phone,
+          business_type: pendingSignup.businessType,
+          task_interest: pendingSignup.taskInterest
+        }
+      : undefined;
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: true
+        shouldCreateUser: true,
+        ...(metadata ? { data: metadata } : {})
       }
     });
 
@@ -2480,8 +2639,16 @@ document.getElementById("resend-btn")?.addEventListener("click", async () => {
 // Back to sign in from verify panel
 // ----------------------------
 document.getElementById("back-to-signin-btn")?.addEventListener("click", () => {
+  const role = String(pendingSignup?.role || getAuthRole() || "").toLowerCase().trim();
+
   pendingSignup = null;
   hideVerifyPanel();
+
+  if (role === "sponsor") {
+    showSponsorAuthFormsAfterVerify();
+    return;
+  }
+
   showMainForms();
   switchMode("signin");
 });
