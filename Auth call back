@@ -385,20 +385,30 @@
   const AUTH_ROLE_KEY = "colspot_auth_role";
   const AUTH_INTENT_KEY = "colspot_auth_intent";
   const OAUTH_CALLBACK_KEY = "colspot_oauth_callback_url";
+  const CALLBACK_DEBUG_KEY = "colspot_callback_debug_log";
+
+  const OAUTH_CALLBACK_LOCK_KEY = "colspot_oauth_callback_lock_v1";
+  const OAUTH_LAST_URL_KEY = "colspot_oauth_last_callback_url_v1";
+  const OAUTH_LAST_TS_KEY = "colspot_oauth_last_callback_ts_v1";
+  const OAUTH_REDIRECTING_KEY = "colspot_oauth_redirecting_to_callback_v1";
+
+  const VERIFY_DONE_KEY = "colspot_verification_done";
+  const FACE_SUBMITTED_KEY = "colspot_face_submitted";
+  const FACE_STATUS_KEY = "colspot_face_status";
+  const FACE_REASON_KEY = "colspot_face_reason";
+  const FACE_ENROLLED_KEY = "colspot_face_enrolled";
 
   const STUDENT_VERIFY_URL = "verify_class.html";
   const FACE_CAPTURE_URL = "face-capture.html";
   const STUDENT_MAIN_URL = "main.html";
   const LECTURER_MAIN_URL = "main_lecturer.html";
+  const SPONSOR_MAIN_URL = "main_sponsor.html";
   const INDEX_URL = "index.html";
 
-  const STUDENT_VERIFICATION_TABLE = "verification_course_forms";
   const APP_DEEP_LINK_CALLBACK = "com.colspot.app://auth-callback";
 
   let activeSession = null;
   let activeRole = "student";
-  let limitTimer = null;
-  let callbackFlowStarted = false;
 
   function showPanel(panelId) {
     const ids = ["loading-panel", "welcome-panel", "complete-panel", "limit-panel", "error-panel"];
@@ -430,19 +440,31 @@
     }
   }
 
-  function saveLocalUserFromSession(session, role) {
-    if (!session || !session.user) return;
+  function callbackDebug(label, extra = {}) {
+    const entry = {
+      time: new Date().toISOString(),
+      label,
+      extra
+    };
+
+    console.log("[AUTH_CALLBACK]", entry);
+
     try {
-      const payload = {
-        id: session.user.id,
-        email: session.user.email || "",
-        role: role || "",
-        last_seen: new Date().toISOString(),
-      };
-      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
+      const current = JSON.parse(localStorage.getItem(CALLBACK_DEBUG_KEY) || "[]");
+      current.push(entry);
+      localStorage.setItem(CALLBACK_DEBUG_KEY, JSON.stringify(current.slice(-120)));
     } catch (e) {
-      console.error("Could not write local user cache:", e);
+      console.error("Could not save callback debug:", e);
     }
+  }
+
+  function clearCallbackProtectionState() {
+    try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+    try { localStorage.removeItem(OAUTH_CALLBACK_LOCK_KEY); } catch (e) {}
+    try { localStorage.removeItem(OAUTH_LAST_URL_KEY); } catch (e) {}
+    try { localStorage.removeItem(OAUTH_LAST_TS_KEY); } catch (e) {}
+    try { localStorage.removeItem(OAUTH_REDIRECTING_KEY); } catch (e) {}
+    callbackDebug("clearCallbackProtectionState");
   }
 
   function clearLocalUser() {
@@ -487,18 +509,285 @@
     }
   }
 
+  function saveLocalUserFromSession(session, role) {
+    if (!session || !session.user) return;
+
+    try {
+      const payload = {
+        id: session.user.id,
+        email: session.user.email || "",
+        role: role || "",
+        last_seen: new Date().toISOString()
+      };
+
+      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(payload));
+
+      callbackDebug("saveLocalUserFromSession", {
+        userId: session?.user?.id || null,
+        email: session?.user?.email || null,
+        role: role || null
+      });
+    } catch (e) {
+      console.error("Could not write local user cache:", e);
+    }
+  }
+
+  function getStudentFaceState() {
+    try {
+      const submitted = localStorage.getItem(FACE_SUBMITTED_KEY) === "true";
+      let status = (localStorage.getItem(FACE_STATUS_KEY) || "").toLowerCase().trim();
+      const reason = localStorage.getItem(FACE_REASON_KEY) || "";
+
+      if (!status && localStorage.getItem(FACE_ENROLLED_KEY) === "true") {
+        status = "approved";
+      }
+
+      return { submitted, status, reason };
+    } catch (e) {
+      console.error("Could not read face cache:", e);
+      return { submitted: false, status: "", reason: "" };
+    }
+  }
+
+  function getLocalStudentStageState() {
+    return {
+      verifyDone: localStorage.getItem(VERIFY_DONE_KEY) === "true",
+      face: getStudentFaceState()
+    };
+  }
+
+  function hasCompleteFastMainCache(state) {
+    return !!(
+      state &&
+      state.verifyDone === true &&
+      state.face &&
+      state.face.submitted === true &&
+      (state.face.status === "approved" || state.face.status === "pending")
+    );
+  }
+
+  function isCacheMissingOrPartial(state) {
+    if (!state) return true;
+
+    const verifyDone = !!state.verifyDone;
+    const face = state.face || { submitted: false, status: "", reason: "" };
+
+    if (!verifyDone && !face.submitted && !face.status) return true;
+    if (verifyDone && (!face.submitted || !face.status)) return true;
+    if (!verifyDone && (face.submitted || face.status)) return true;
+
+    return false;
+  }
+
+  function saveStudentVerificationDone(done) {
+    try {
+      if (done) {
+        localStorage.setItem(VERIFY_DONE_KEY, "true");
+      } else {
+        localStorage.removeItem(VERIFY_DONE_KEY);
+      }
+    } catch (e) {
+      console.error("Could not save verification state:", e);
+    }
+  }
+
+  function saveStudentFaceState({ submitted, status, reason }) {
+    try {
+      if (submitted) {
+        localStorage.setItem(FACE_SUBMITTED_KEY, "true");
+      } else {
+        localStorage.removeItem(FACE_SUBMITTED_KEY);
+      }
+
+      if (status) {
+        localStorage.setItem(FACE_STATUS_KEY, String(status).toLowerCase());
+      } else {
+        localStorage.removeItem(FACE_STATUS_KEY);
+      }
+
+      if (reason) {
+        localStorage.setItem(FACE_REASON_KEY, reason);
+      } else {
+        localStorage.removeItem(FACE_REASON_KEY);
+      }
+
+      if (String(status).toLowerCase() === "approved") {
+        localStorage.setItem(FACE_ENROLLED_KEY, "true");
+      } else {
+        localStorage.removeItem(FACE_ENROLLED_KEY);
+      }
+    } catch (e) {
+      console.error("Could not save face state:", e);
+    }
+  }
+
+  async function refreshStudentStageCacheFromSupabase(userId) {
+    if (!window.supabase || !userId) {
+      return getLocalStudentStageState();
+    }
+
+    try {
+      const [verifyRes, faceRes] = await Promise.all([
+        window.supabase
+          .from("verification_course_forms")
+          .select("id,status")
+          .eq("user_id", userId)
+          .eq("status", "successful")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        window.supabase
+          .from("face_profiles")
+          .select("user_id,capture_status,face_verified,review_reason")
+          .eq("user_id", userId)
+          .maybeSingle()
+      ]);
+
+      const verifyDone = !!verifyRes.data;
+      saveStudentVerificationDone(verifyDone);
+
+      const faceRow = faceRes.data || null;
+      let faceSubmitted = false;
+      let faceStatus = "";
+      let faceReason = "";
+
+      if (faceRow) {
+        faceSubmitted = true;
+        faceReason = faceRow.review_reason || "";
+
+        if (faceRow.face_verified === true) {
+          faceStatus = "approved";
+        } else {
+          faceStatus = String(faceRow.capture_status || "").toLowerCase().trim();
+        }
+      }
+
+      saveStudentFaceState({
+        submitted: faceSubmitted,
+        status: faceStatus,
+        reason: faceReason
+      });
+
+      callbackDebug("refreshStudentStageCacheFromSupabase", {
+        userId,
+        verifyDone,
+        faceSubmitted,
+        faceStatus,
+        faceReason
+      });
+
+      return {
+        verifyDone,
+        face: {
+          submitted: faceSubmitted,
+          status: faceStatus,
+          reason: faceReason
+        }
+      };
+    } catch (e) {
+      console.error("refreshStudentStageCacheFromSupabase failed:", e);
+      return getLocalStudentStageState();
+    }
+  }
+
+  async function getSmartStudentStageState(userId) {
+    const localState = getLocalStudentStageState();
+
+    callbackDebug("getSmartStudentStageState:local", {
+      userId,
+      localState
+    });
+
+    if (hasCompleteFastMainCache(localState)) {
+      callbackDebug("getSmartStudentStageState:usingFastCache", {
+        userId,
+        localState
+      });
+      return localState;
+    }
+
+    if (isCacheMissingOrPartial(localState)) {
+      callbackDebug("getSmartStudentStageState:refreshingFromSupabase", {
+        userId,
+        localState
+      });
+      return await refreshStudentStageCacheFromSupabase(userId);
+    }
+
+    if (localState.verifyDone === true && localState.face && localState.face.submitted === true) {
+      callbackDebug("getSmartStudentStageState:usingCompleteCache", {
+        userId,
+        localState
+      });
+      return localState;
+    }
+
+    return await refreshStudentStageCacheFromSupabase(userId);
+  }
+
+  function getStudentStageRedirectFromState(state) {
+    const verifyDone = !!state?.verifyDone;
+    const face = state?.face || { submitted: false, status: "", reason: "" };
+
+    if (!verifyDone) {
+      return {
+        nextUrl: STUDENT_VERIFY_URL,
+        message: "Welcome back. Please continue with course form verification."
+      };
+    }
+
+    if (!face.submitted) {
+      return {
+        nextUrl: FACE_CAPTURE_URL,
+        message: "Your course form is already verified. Next, complete face capture."
+      };
+    }
+
+    if (face.status === "pending") {
+      return {
+        nextUrl: STUDENT_MAIN_URL,
+        message: face.reason || "Your face is under review. You can continue for now."
+      };
+    }
+
+    if (face.status === "approved") {
+      return {
+        nextUrl: STUDENT_MAIN_URL,
+        message: face.reason || "Your student account, verification, and face capture are ready."
+      };
+    }
+
+    if (face.status === "duplicate") {
+      return {
+        nextUrl: FACE_CAPTURE_URL,
+        message: face.reason || "Your previous face submission matched another account. Please recapture."
+      };
+    }
+
+    if (face.status === "rejected") {
+      return {
+        nextUrl: FACE_CAPTURE_URL,
+        message: face.reason || "Your previous face submission was rejected. Please recapture."
+      };
+    }
+
+    return {
+      nextUrl: FACE_CAPTURE_URL,
+      message: "Please complete face capture to continue."
+    };
+  }
+
+  async function getSmartStudentStageRedirect(userId) {
+    const state = await getSmartStudentStageState(userId);
+    return getStudentStageRedirectFromState(state);
+  }
+
   async function closeNativeBrowserIfPossible() {
     try {
-      const isNativeApp =
-        !!window.Capacitor &&
-        typeof window.Capacitor.isNativePlatform === "function" &&
-        window.Capacitor.isNativePlatform();
-
-      if (!isNativeApp) return;
-
       const browserPlugin = window.Capacitor?.Plugins?.Browser;
       if (browserPlugin && typeof browserPlugin.close === "function") {
         await browserPlugin.close();
+        callbackDebug("closeNativeBrowserIfPossible:closed");
       }
     } catch (e) {
       console.error("Browser close failed:", e);
@@ -506,10 +795,13 @@
   }
 
   function goBackToIndex() {
+    clearCallbackProtectionState();
     window.location.href = INDEX_URL;
   }
 
   async function logoutAndReturn() {
+    callbackDebug("logoutAndReturn:start");
+
     try {
       if (window.supabase) {
         await window.supabase.auth.signOut();
@@ -518,33 +810,11 @@
       console.error("Signout failed:", e);
     }
 
-    try {
-      localStorage.removeItem(OAUTH_CALLBACK_KEY);
-    } catch (e) {}
-
+    clearCallbackProtectionState();
     clearLocalUser();
     clearSavedIntent();
     await closeNativeBrowserIfPossible();
     window.location.href = INDEX_URL;
-  }
-
-  function startLimitCountdown(seconds = 10) {
-    const countdownEl = document.getElementById("limit-countdown");
-    let remaining = seconds;
-
-    if (countdownEl) countdownEl.textContent = String(remaining);
-
-    if (limitTimer) clearInterval(limitTimer);
-
-    limitTimer = setInterval(() => {
-      remaining -= 1;
-      if (countdownEl) countdownEl.textContent = String(remaining);
-
-      if (remaining <= 0) {
-        clearInterval(limitTimer);
-        logoutAndReturn();
-      }
-    }, 1000);
   }
 
   function generateRandomId() {
@@ -553,7 +823,49 @@
         return window.crypto.randomUUID();
       }
     } catch (e) {}
+
     return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+  }
+
+  async function goWithWelcome(message, nextUrl, role) {
+    const stableSession = await waitForStableSession(12000, 300);
+
+    callbackDebug("goWithWelcome:start", {
+      message,
+      nextUrl,
+      role,
+      stableSessionUser: stableSession?.user?.id || null,
+      cacheVerifyDone: localStorage.getItem(VERIFY_DONE_KEY),
+      cacheFaceSubmitted: localStorage.getItem(FACE_SUBMITTED_KEY),
+      cacheFaceStatus: localStorage.getItem(FACE_STATUS_KEY)
+    });
+
+    if (!stableSession || !stableSession.user) {
+      throw new Error("Your sign-in session is still settling. Please try again.");
+    }
+
+    activeSession = stableSession;
+
+    const welcomeName = document.getElementById("welcome-name");
+    if (welcomeName) {
+      welcomeName.textContent = getDisplayName(activeSession) || roleLabel(role);
+    }
+
+    const welcomeBox = document.getElementById("welcome-box");
+    if (welcomeBox) {
+      welcomeBox.textContent = message;
+    }
+
+    updateRoleUI(role);
+    setMessage("welcome-message", "Redirecting…", "success");
+    showPanel("welcome-panel");
+
+    saveLocalUserFromSession(activeSession, role);
+    saveAuthRole(role);
+    clearSavedIntent();
+    clearCallbackProtectionState();
+    await closeNativeBrowserIfPossible();
+    window.location.href = nextUrl;
   }
 
   async function getOrCreateDeviceId() {
@@ -664,9 +976,18 @@
   async function linkDeviceForSession(session) {
     if (!session || !session.user || !window.supabase) return;
 
+    const MAX_ACCOUNTS_PER_DEVICE = 2;
+    const MAX_DEVICES_PER_ACCOUNT = 2;
+
     const userId = session.user.id;
     const deviceId = await getOrCreateDeviceId();
     const deviceName = await getDeviceName();
+
+    callbackDebug("linkDeviceForSession:start", {
+      userId,
+      deviceId,
+      deviceName
+    });
 
     if (!deviceId) {
       throw new Error("We couldn’t get a device ID. Please try again.");
@@ -678,19 +999,33 @@
       .eq("device_id", deviceId);
 
     if (errA) {
-      console.error("user_devices by device error:", errA);
       throw new Error("We couldn’t link this device right now.");
     }
 
-    if (byDevice && byDevice.length > 0) {
-      const row = byDevice[0];
-      if (row.user_id !== userId) {
-        const conflictError = new Error("This phone is already linked to another Colspot account.");
-        conflictError.code = "DEVICE_CONFLICT";
-        throw conflictError;
-      } else {
-        return;
-      }
+    const deviceRows = Array.isArray(byDevice) ? byDevice : [];
+
+    const alreadyLinkedThisUser = deviceRows.some((row) => row.user_id === userId);
+
+    if (alreadyLinkedThisUser) {
+      callbackDebug("linkDeviceForSession:alreadyLinkedSameUser", {
+        deviceId,
+        userId
+      });
+      return;
+    }
+
+    const uniqueUsersOnThisDevice = [
+      ...new Set(
+        deviceRows
+          .map((row) => row.user_id)
+          .filter(Boolean)
+      )
+    ];
+
+    if (uniqueUsersOnThisDevice.length >= MAX_ACCOUNTS_PER_DEVICE) {
+      const conflictError = new Error("This phone already has 2 Colspot accounts linked.");
+      conflictError.code = "DEVICE_CONFLICT";
+      throw conflictError;
     }
 
     const { data: byUser, error: errB } = await window.supabase
@@ -699,11 +1034,22 @@
       .eq("user_id", userId);
 
     if (errB) {
-      console.error("user_devices by user error:", errB);
       throw new Error("We couldn’t link this device right now.");
     }
 
-    if (byUser && byUser.length >= 2) {
+    const userRows = Array.isArray(byUser) ? byUser : [];
+
+    const alreadyHasThisDevice = userRows.some((row) => row.device_id === deviceId);
+
+    if (alreadyHasThisDevice) {
+      callbackDebug("linkDeviceForSession:alreadyHasThisDevice", {
+        deviceId,
+        userId
+      });
+      return;
+    }
+
+    if (userRows.length >= MAX_DEVICES_PER_ACCOUNT) {
       const limitError = new Error("You’ve already linked Colspot to 2 phones.");
       limitError.code = "DEVICE_LIMIT";
       throw limitError;
@@ -712,33 +1058,31 @@
     const { error: insertErr } = await window.supabase.from("user_devices").insert({
       user_id: userId,
       device_id: deviceId,
-      device_name: deviceName,
+      device_name: deviceName
     });
 
     if (insertErr) {
-      console.error("user_devices insert error:", insertErr);
-
       const msg = String(insertErr.message || "").toLowerCase();
       const details = String(insertErr.details || "").toLowerCase();
       const code = String(insertErr.code || "").toLowerCase();
 
       if (
-        msg.includes("user_devices_device_id_key") ||
-        details.includes("user_devices_device_id_key") ||
-        (msg.includes("duplicate key") && msg.includes("device_id")) ||
-        (details.includes("duplicate key") && details.includes("device_id")) ||
+        msg.includes("duplicate key") ||
+        details.includes("duplicate key") ||
         code === "23505"
       ) {
-        const conflictError = new Error("This phone is already linked to another Colspot account.");
-        conflictError.code = "DEVICE_CONFLICT";
-        throw conflictError;
+        callbackDebug("linkDeviceForSession:duplicateIgnored", {
+          userId,
+          deviceId
+        });
+        return;
       }
 
       if (
-        msg.includes("user_devices_user_id_key") ||
-        details.includes("user_devices_user_id_key") ||
         msg.includes("already linked 2 phones") ||
-        details.includes("already linked 2 phones")
+        details.includes("already linked 2 phones") ||
+        msg.includes("user_devices_user_id_key") ||
+        details.includes("user_devices_user_id_key")
       ) {
         const limitError = new Error("You’ve already linked Colspot to 2 phones.");
         limitError.code = "DEVICE_LIMIT";
@@ -747,6 +1091,12 @@
 
       throw new Error("We couldn’t finish linking your device.");
     }
+
+    callbackDebug("linkDeviceForSession:success", {
+      userId,
+      deviceId,
+      deviceName
+    });
   }
 
   async function recordLoginEvent(session) {
@@ -761,10 +1111,15 @@
       const { error } = await window.supabase.from("user_login_events").insert({
         user_id: userId,
         device_id: deviceId,
-        device_name: deviceName,
+        device_name: deviceName
       });
-      if (error) {
-        console.error("recordLoginEvent insert error:", error);
+
+      if (!error) {
+        callbackDebug("recordLoginEvent:success", {
+          userId,
+          deviceId,
+          deviceName
+        });
       }
     } catch (err) {
       console.error("recordLoginEvent failed:", err);
@@ -773,13 +1128,43 @@
 
   async function waitForSupabase(maxMs = 12000) {
     const started = Date.now();
+
     while (!window.supabase) {
       if (Date.now() - started > maxMs) {
         throw new Error("Supabase is not ready yet.");
       }
+
       await new Promise((resolve) => setTimeout(resolve, 120));
     }
+
     return window.supabase;
+  }
+
+  async function waitForStableSession(maxMs = 12000, intervalMs = 300) {
+    const started = Date.now();
+    let lastError = null;
+
+    while (Date.now() - started < maxMs) {
+      try {
+        const { data, error } = await window.supabase.auth.getSession();
+
+        if (error) {
+          lastError = error;
+        } else if (data && data.session && data.session.user) {
+          return data.session;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+
+    if (lastError) {
+      console.error("waitForStableSession last error:", lastError);
+    }
+
+    return null;
   }
 
   async function getSessionFromCallback() {
@@ -789,29 +1174,41 @@
     const search = window.location.search || "";
     const hash = window.location.hash || "";
 
+    callbackDebug("getSessionFromCallback:start", {
+      href,
+      search,
+      hash,
+      savedRole: localStorage.getItem(AUTH_ROLE_KEY),
+      savedIntent: localStorage.getItem(AUTH_INTENT_KEY),
+      savedCallbackUrl: localStorage.getItem(OAUTH_CALLBACK_KEY),
+      localUserRaw: localStorage.getItem(LOCAL_USER_KEY)
+    });
+
     try {
       const savedUrl = localStorage.getItem(OAUTH_CALLBACK_KEY);
       if (savedUrl && savedUrl.startsWith(APP_DEEP_LINK_CALLBACK)) {
         href = savedUrl;
+        callbackDebug("getSessionFromCallback:usingSavedCallbackUrl", { href });
       }
-    } catch (e) {
-      console.error("Could not read saved OAuth callback URL:", e);
-    }
+    } catch (e) {}
 
     try {
       if (search.includes("code=")) {
         const code = new URL(window.location.href).searchParams.get("code");
+
         if (code) {
           const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
-          if (error) console.error("exchangeCodeForSession error:", error);
+
           if (data && data.session) {
-            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+            clearCallbackProtectionState();
             return data.session;
           }
+
+          if (error) console.error(error);
         }
       }
     } catch (e) {
-      console.error("Failed exchanging auth code from browser URL:", e);
+      console.error(e);
     }
 
     try {
@@ -821,11 +1218,13 @@
 
         if (code) {
           const { data, error } = await window.supabase.auth.exchangeCodeForSession(code);
-          if (error) console.error("exchangeCodeForSession deep link error:", error);
+
           if (data && data.session) {
-            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+            clearCallbackProtectionState();
             return data.session;
           }
+
+          if (error) console.error(error);
         }
 
         const deepLinkHash = parsed.hash || "";
@@ -840,17 +1239,17 @@
               refresh_token
             });
 
-            if (error) console.error("setSession from deep link hash error:", error);
-
             if (data && data.session) {
-              try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+              clearCallbackProtectionState();
               return data.session;
             }
+
+            if (error) console.error(error);
           }
         }
       }
     } catch (e) {
-      console.error("Failed exchanging auth code from deep link:", e);
+      console.error(e);
     }
 
     try {
@@ -865,56 +1264,72 @@
             refresh_token
           });
 
-          if (error) console.error("setSession from browser hash error:", error);
-
           if (data && data.session) {
-            try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+            clearCallbackProtectionState();
             return data.session;
           }
+
+          if (error) console.error(error);
         }
       }
     } catch (e) {
-      console.error("Failed restoring session from browser hash:", e);
+      console.error(e);
     }
 
     try {
-      if (hash.includes("access_token=") || href.startsWith(APP_DEEP_LINK_CALLBACK)) {
-        const { data, error } = await window.supabase.auth.getSession();
-        if (error) console.error("getSession after callback error:", error);
-        if (data && data.session) {
-          try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
-          return data.session;
+      if (
+        hash.includes("access_token=") ||
+        href.startsWith(APP_DEEP_LINK_CALLBACK)
+      ) {
+        const stableSession = await waitForStableSession(8000, 300);
+
+        if (stableSession) {
+          clearCallbackProtectionState();
+          return stableSession;
         }
       }
     } catch (e) {
-      console.error("Failed restoring session from callback URL:", e);
+      console.error(e);
+    }
+
+    const stableSession = await waitForStableSession(12000, 300);
+
+    if (stableSession) {
+      clearCallbackProtectionState();
+      return stableSession;
     }
 
     const { data, error } = await window.supabase.auth.getSession();
+
     if (error) {
-      console.error("getSession fallback error:", error);
       throw new Error("We couldn’t confirm your session.");
     }
 
-    try { localStorage.removeItem(OAUTH_CALLBACK_KEY); } catch (e) {}
+    clearCallbackProtectionState();
     return data?.session || null;
   }
 
   function getDisplayName(session) {
     if (!session || !session.user) return "";
+
     const meta = session.user.user_metadata || {};
+
     return (
       meta.full_name ||
       meta.name ||
       meta.user_name ||
       meta.display_name ||
+      meta.contact_name ||
+      meta.business_name ||
       session.user.email?.split("@")[0] ||
       ""
     );
   }
 
   function roleLabel(role) {
-    return role === "lecturer" ? "Lecturer" : "Student";
+    if (role === "lecturer") return "Lecturer";
+    if (role === "sponsor") return "Sponsor";
+    return "Student";
   }
 
   function updateRoleUI(role) {
@@ -933,19 +1348,112 @@
     if (completeBadge) completeBadge.textContent = `Complete ${label.toLowerCase()} account`;
 
     if (completeTitle) {
-      completeTitle.textContent =
-        role === "lecturer" ? "Finish lecturer setup" : "Finish student setup";
+      if (role === "lecturer") completeTitle.textContent = "Finish lecturer setup";
+      else if (role === "sponsor") completeTitle.textContent = "Finish sponsor setup";
+      else completeTitle.textContent = "Finish student setup";
     }
 
     if (completeSubtitle) {
-      completeSubtitle.textContent =
-        role === "lecturer"
-          ? "We got your account. Now complete your lecturer details."
-          : "We got your account. Now complete your student details.";
+      if (role === "lecturer") {
+        completeSubtitle.textContent = "We got your account. Now complete your lecturer details.";
+      } else if (role === "sponsor") {
+        completeSubtitle.textContent = "We got your account. Now completing your sponsor access.";
+      } else {
+        completeSubtitle.textContent = "We got your account. Now complete your student details.";
+      }
     }
 
     if (studentWrap) studentWrap.classList.toggle("hidden", role !== "student");
     if (lecturerWrap) lecturerWrap.classList.toggle("hidden", role !== "lecturer");
+  }
+
+  async function ensureSponsorAccountRow(session) {
+    if (!session || !session.user || !window.supabase) {
+      throw new Error("Sponsor session is not ready.");
+    }
+
+    const user = session.user;
+    const meta = user.user_metadata || {};
+    const email = String(user.email || meta.email || "").trim().toLowerCase();
+
+    const businessName =
+      String(meta.business_name || meta.businessName || meta.full_name || meta.name || "").trim() ||
+      "Sponsor Account";
+
+    const contactName =
+      String(meta.contact_name || meta.contactName || meta.full_name || meta.name || "").trim() ||
+      businessName ||
+      "Sponsor";
+
+    const payload = {
+      user_id: user.id,
+      business_name: businessName,
+      contact_name: contactName,
+      email,
+      phone: String(meta.phone || "").trim(),
+      business_type: String(meta.business_type || meta.businessType || "other").trim(),
+      task_interest: String(meta.task_interest || meta.taskInterest || "student_surveys").trim(),
+      status: "pending",
+      wallet_balance: 0,
+      total_spent: 0
+    };
+
+    const { data: existingByUser, error: checkUserErr } = await window.supabase
+      .from("sponsor_accounts")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (checkUserErr) {
+      throw new Error("We couldn’t check your sponsor account.");
+    }
+
+    if (existingByUser) {
+      return existingByUser;
+    }
+
+    if (email) {
+      const { data: existingByEmail, error: checkEmailErr } = await window.supabase
+        .from("sponsor_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (checkEmailErr) {
+        throw new Error("We couldn’t check your sponsor email.");
+      }
+
+      if (existingByEmail && !existingByEmail.user_id) {
+        const { data: updated, error: updateErr } = await window.supabase
+          .from("sponsor_accounts")
+          .update({ user_id: user.id })
+          .eq("id", existingByEmail.id)
+          .select("*")
+          .maybeSingle();
+
+        if (updateErr) {
+          throw new Error("We couldn’t link your sponsor account.");
+        }
+
+        return updated || existingByEmail;
+      }
+
+      if (existingByEmail && existingByEmail.user_id === user.id) {
+        return existingByEmail;
+      }
+    }
+
+    const { data, error } = await window.supabase
+      .from("sponsor_accounts")
+      .insert(payload)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("We couldn’t create your sponsor account.");
+    }
+
+    return data || payload;
   }
 
   async function getProfilesForSession(session) {
@@ -953,30 +1461,65 @@
     const email = (session.user.email || "").trim().toLowerCase();
 
     const [
+      sponsorByUser,
       studentByUser,
       lecturerByUser,
+      sponsorByEmail,
       studentByEmail,
       lecturerByEmail
     ] = await Promise.all([
-      window.supabase.from("student_accounts").select("*").eq("user_id", userId).maybeSingle(),
-      window.supabase.from("lecturer_accounts").select("*").eq("user_id", userId).maybeSingle(),
-      window.supabase.from("student_accounts").select("*").eq("email", email).maybeSingle(),
-      window.supabase.from("lecturer_accounts").select("*").eq("email", email).maybeSingle()
+      window.supabase
+        .from("sponsor_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      window.supabase
+        .from("student_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      window.supabase
+        .from("lecturer_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      window.supabase
+        .from("sponsor_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle(),
+      window.supabase
+        .from("student_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle(),
+      window.supabase
+        .from("lecturer_accounts")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle()
     ]);
 
-    if (studentByUser.error) {
-      console.error("student_accounts by user error:", studentByUser.error);
-      throw new Error("We couldn’t check the student account.");
-    }
+    if (sponsorByUser.error) throw new Error("We couldn’t check the sponsor account.");
+    if (studentByUser.error) throw new Error("We couldn’t check the student account.");
+    if (lecturerByUser.error) throw new Error("We couldn’t check the lecturer account.");
 
-    if (lecturerByUser.error) {
-      console.error("lecturer_accounts by user error:", lecturerByUser.error);
-      throw new Error("We couldn’t check the lecturer account.");
-    }
+    callbackDebug("getProfilesForSession:result", {
+      userId,
+      email,
+      hasSponsorByUser: !!sponsorByUser.data,
+      hasStudentByUser: !!studentByUser.data,
+      hasLecturerByUser: !!lecturerByUser.data,
+      hasSponsorByEmail: !!sponsorByEmail.data,
+      hasStudentByEmail: !!studentByEmail.data,
+      hasLecturerByEmail: !!lecturerByEmail.data
+    });
 
     return {
+      sponsorByUser: sponsorByUser.data || null,
       studentByUser: studentByUser.data || null,
       lecturerByUser: lecturerByUser.data || null,
+      sponsorByEmail: sponsorByEmail.data || null,
       studentByEmail: studentByEmail.data || null,
       lecturerByEmail: lecturerByEmail.data || null
     };
@@ -987,9 +1530,17 @@
     const email = (session.user.email || "").trim().toLowerCase();
     const savedRole = String(getSavedRole() || "").toLowerCase().trim();
     const metaRole = String(session?.user?.user_metadata?.role || "").toLowerCase().trim();
+    const savedIntent = String(getSavedIntent() || "").toLowerCase().trim();
 
+    if (profiles.sponsorByUser && profiles.sponsorByUser.user_id === userId) return "sponsor";
     if (profiles.lecturerByUser && profiles.lecturerByUser.user_id === userId) return "lecturer";
     if (profiles.studentByUser && profiles.studentByUser.user_id === userId) return "student";
+
+    if (
+      profiles.sponsorByEmail &&
+      String(profiles.sponsorByEmail.email || "").toLowerCase() === email &&
+      (savedRole === "sponsor" || metaRole === "sponsor" || savedIntent.includes("sponsor"))
+    ) return "sponsor";
 
     if (
       profiles.lecturerByEmail &&
@@ -1016,6 +1567,11 @@
     ) return "student";
 
     if (
+      profiles.sponsorByEmail &&
+      String(profiles.sponsorByEmail.email || "").toLowerCase() === email
+    ) return "sponsor";
+
+    if (
       profiles.lecturerByEmail &&
       String(profiles.lecturerByEmail.email || "").toLowerCase() === email
     ) return "lecturer";
@@ -1025,6 +1581,7 @@
       String(profiles.studentByEmail.email || "").toLowerCase() === email
     ) return "student";
 
+    if (savedRole === "sponsor" || savedIntent.includes("sponsor") || metaRole === "sponsor") return "sponsor";
     if (savedRole === "lecturer" || savedRole === "student") return savedRole;
     if (metaRole === "lecturer" || metaRole === "student") return metaRole;
 
@@ -1033,6 +1590,13 @@
 
   function analyzeRoleState(profiles, resolvedRole, email) {
     const emailLower = (email || "").trim().toLowerCase();
+
+    const sponsorProfile =
+      profiles.sponsorByUser ||
+      (profiles.sponsorByEmail &&
+      String(profiles.sponsorByEmail.email || "").toLowerCase() === emailLower
+        ? profiles.sponsorByEmail
+        : null);
 
     const studentProfile =
       profiles.studentByUser ||
@@ -1048,46 +1612,15 @@
         ? profiles.lecturerByEmail
         : null);
 
+    if (resolvedRole === "sponsor") {
+      return { allowed: true, role: "sponsor", profile: sponsorProfile };
+    }
+
     if (resolvedRole === "lecturer") {
       return { allowed: true, role: "lecturer", profile: lecturerProfile };
     }
 
     return { allowed: true, role: "student", profile: studentProfile };
-  }
-
-  async function getStudentVerificationState(userId) {
-    const { data: verificationRow, error: verificationErr } = await window.supabase
-      .from(STUDENT_VERIFICATION_TABLE)
-      .select("id,status")
-      .eq("user_id", userId)
-      .eq("status", "successful")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (verificationErr) {
-      console.error("verification fetch error:", verificationErr);
-      throw new Error("We couldn’t check your verification state.");
-    }
-
-    const { data: faceRow, error: faceErr } = await window.supabase
-      .from("face_profiles")
-      .select("user_id, face_verified, capture_status")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (faceErr) {
-      console.error("face fetch error:", faceErr);
-      throw new Error("We couldn’t check your face verification state.");
-    }
-
-    const hasVerifiedForm = !!verificationRow;
-    const faceStatus = String(faceRow?.capture_status || "").toLowerCase().trim();
-    const hasVerifiedFace =
-      !!faceRow &&
-      (faceRow.face_verified === true || faceStatus === "approved" || faceStatus === "verified");
-
-    return { hasVerifiedForm, hasVerifiedFace };
   }
 
   function fillCompleteForm(session, role, profile) {
@@ -1119,119 +1652,166 @@
     }
   }
 
-  async function goWithWelcome(message, nextUrl, role, delay = 1200) {
-    const welcomeName = document.getElementById("welcome-name");
-    if (welcomeName) {
-      welcomeName.textContent = getDisplayName(activeSession) || roleLabel(role);
-    }
-
-    const welcomeBox = document.getElementById("welcome-box");
-    if (welcomeBox) {
-      welcomeBox.textContent = message;
-    }
-
-    updateRoleUI(role);
-    setMessage("welcome-message", "Redirecting…", "success");
-    showPanel("welcome-panel");
-
-    setTimeout(async () => {
-      saveLocalUserFromSession(activeSession, role);
-      saveAuthRole(role);
-      clearSavedIntent();
-      await closeNativeBrowserIfPossible();
-      window.location.href = nextUrl;
-    }, delay);
-  }
-
   async function startCallbackFlow() {
-    if (callbackFlowStarted) return;
-    callbackFlowStarted = true;
-
     try {
       showPanel("loading-panel");
+
+      callbackDebug("startCallbackFlow:begin", {
+        href: window.location.href,
+        savedRole: localStorage.getItem(AUTH_ROLE_KEY),
+        savedIntent: localStorage.getItem(AUTH_INTENT_KEY),
+        savedCallbackUrl: localStorage.getItem(OAUTH_CALLBACK_KEY),
+        localUserRaw: localStorage.getItem(LOCAL_USER_KEY),
+        cacheVerifyDone: localStorage.getItem(VERIFY_DONE_KEY),
+        cacheFaceSubmitted: localStorage.getItem(FACE_SUBMITTED_KEY),
+        cacheFaceStatus: localStorage.getItem(FACE_STATUS_KEY),
+        cacheFaceReason: localStorage.getItem(FACE_REASON_KEY)
+      });
 
       const session = await getSessionFromCallback();
       if (!session || !session.user) {
         throw new Error("No active session was found. Please try again.");
       }
 
-      activeSession = session;
+      const stableSession = await waitForStableSession(12000, 300);
+      if (!stableSession || !stableSession.user) {
+        throw new Error("Your sign-in session is still loading. Please try again.");
+      }
 
-      const profiles = await getProfilesForSession(session);
-      activeRole = resolveRoleFromProfiles(session, profiles);
+      activeSession = stableSession;
+
+      let profiles = await getProfilesForSession(activeSession);
+      activeRole = resolveRoleFromProfiles(activeSession, profiles);
       saveAuthRole(activeRole);
       updateRoleUI(activeRole);
 
-      const roleState = analyzeRoleState(
+      let roleState = analyzeRoleState(
         profiles,
         activeRole,
-        session.user.email || ""
+        activeSession.user.email || ""
       );
 
       const authIntent = getSavedIntent();
 
-      if (authIntent === "signup" && activeRole === "student" && roleState.profile) {
-        try { await window.supabase.auth.signOut(); } catch (e) {
-          console.error("Signout after duplicate student signup failed:", e);
-        }
+      callbackDebug("startCallbackFlow:postRoleAnalysis", {
+        activeRole,
+        authIntent,
+        hasRoleProfile: !!roleState.profile
+      });
+
+      if (
+        authIntent === "signup" &&
+        activeRole === "student" &&
+        roleState.profile
+      ) {
+        try {
+          await window.supabase.auth.signOut();
+        } catch (e) {}
 
         clearLocalUser();
         clearSavedIntent();
+        clearCallbackProtectionState();
+
         showPanel("error-panel");
         document.getElementById("error-box").textContent =
           "You have already created a student account with this email.";
-        setMessage("error-message", "Please go back and sign in instead of creating another account.", "error");
+        setMessage(
+          "error-message",
+          "Please go back and sign in instead of creating another account.",
+          "error"
+        );
         return;
       }
 
-      if (authIntent === "signup" && activeRole === "lecturer" && roleState.profile) {
-        try { await window.supabase.auth.signOut(); } catch (e) {
-          console.error("Signout after duplicate lecturer signup failed:", e);
-        }
+      if (
+        authIntent === "signup" &&
+        activeRole === "lecturer" &&
+        roleState.profile
+      ) {
+        try {
+          await window.supabase.auth.signOut();
+        } catch (e) {}
 
         clearLocalUser();
         clearSavedIntent();
+        clearCallbackProtectionState();
+
         showPanel("error-panel");
         document.getElementById("error-box").textContent =
           "You have already created a lecturer account with this email.";
-        setMessage("error-message", "Please go back and sign in instead of creating another account.", "error");
+        setMessage(
+          "error-message",
+          "Please go back and sign in instead of creating another account.",
+          "error"
+        );
+        return;
+      }
+
+      if (activeRole === "sponsor") {
+        const sponsorProfile = roleState.profile || await ensureSponsorAccountRow(activeSession);
+
+        await window.supabase.auth.updateUser({
+          data: {
+            role: "sponsor",
+            business_name: sponsorProfile.business_name || "Sponsor Account",
+            contact_name: sponsorProfile.contact_name || "Sponsor"
+          }
+        }).catch(() => {});
+
+        saveAuthRole("sponsor");
+        saveLocalUserFromSession(activeSession, "sponsor");
+
+        try {
+          await recordLoginEvent(activeSession);
+        } catch (e) {}
+
+        await goWithWelcome(
+          "Welcome back. Taking you to your sponsor dashboard.",
+          SPONSOR_MAIN_URL,
+          "sponsor"
+        );
         return;
       }
 
       try {
-        await linkDeviceForSession(session);
+        await linkDeviceForSession(activeSession);
       } catch (deviceErr) {
-        console.error(deviceErr);
         const deviceMessage = String(deviceErr.message || "").toLowerCase();
 
         if (deviceErr.code === "DEVICE_LIMIT" || deviceMessage.includes("2 phones")) {
           clearLocalUser();
           clearSavedIntent();
+          clearCallbackProtectionState();
           showPanel("limit-panel");
-          startLimitCountdown(10);
           return;
         }
 
-        if (deviceErr.code === "DEVICE_CONFLICT" || deviceMessage.includes("another colspot account")) {
+        if (
+          deviceErr.code === "DEVICE_CONFLICT" ||
+          deviceMessage.includes("2 colspot accounts")
+        ) {
           clearLocalUser();
           clearSavedIntent();
+          clearCallbackProtectionState();
           showPanel("error-panel");
           document.getElementById("error-box").textContent =
-            "This device is already linked to another Colspot account.";
-          setMessage("error-message", "Use the correct phone for this account or contact support.", "error");
+            "This phone already has 2 Colspot accounts linked.";
+          setMessage(
+            "error-message",
+            "Please use one of the existing accounts on this phone or contact support.",
+            "error"
+          );
           return;
         }
 
         throw deviceErr;
       }
 
-      saveLocalUserFromSession(session, activeRole);
+      saveLocalUserFromSession(activeSession, activeRole);
 
       try {
-        await recordLoginEvent(session);
-      } catch (e) {
-        console.error(e);
-      }
+        await recordLoginEvent(activeSession);
+      } catch (e) {}
 
       if (activeRole === "lecturer") {
         if (roleState.profile) {
@@ -1243,64 +1823,46 @@
           return;
         }
 
-        fillCompleteForm(session, activeRole, null);
+        fillCompleteForm(activeSession, activeRole, null);
         showPanel("complete-panel");
         return;
       }
 
-      const verificationState = await getStudentVerificationState(session.user.id);
+      if (activeRole === "student") {
+        if (roleState.profile) {
+          const route = await getSmartStudentStageRedirect(activeSession.user.id);
 
-      if (roleState.profile) {
-        if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-          await goWithWelcome(
-            "Your student account, verification, and face capture are ready.",
-            STUDENT_MAIN_URL,
-            activeRole
-          );
+          callbackDebug("startCallbackFlow:studentSmartRoute", {
+            nextUrl: route.nextUrl,
+            message: route.message,
+            verifyDone: localStorage.getItem(VERIFY_DONE_KEY),
+            faceSubmitted: localStorage.getItem(FACE_SUBMITTED_KEY),
+            faceStatus: localStorage.getItem(FACE_STATUS_KEY)
+          });
+
+          await goWithWelcome(route.message, route.nextUrl, activeRole);
           return;
         }
 
-        if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-          await goWithWelcome(
-            "Your course form is already verified. Next, complete face capture.",
-            FACE_CAPTURE_URL,
-            activeRole
-          );
-          return;
-        }
-
-        await goWithWelcome(
-          "Welcome back. Please continue with course form verification.",
-          STUDENT_VERIFY_URL,
-          activeRole
-        );
+        fillCompleteForm(activeSession, activeRole, null);
+        showPanel("complete-panel");
         return;
       }
 
-      if (verificationState.hasVerifiedForm && verificationState.hasVerifiedFace) {
-        await goWithWelcome(
-          "Your verification is complete. Taking you into Colspot.",
-          STUDENT_MAIN_URL,
-          activeRole
-        );
-        return;
-      }
-
-      if (verificationState.hasVerifiedForm && !verificationState.hasVerifiedFace) {
-        await goWithWelcome(
-          "Your course form is verified. Next, complete face capture.",
-          FACE_CAPTURE_URL,
-          activeRole
-        );
-        return;
-      }
-
-      fillCompleteForm(session, activeRole, null);
+      fillCompleteForm(activeSession, activeRole, null);
       showPanel("complete-panel");
     } catch (err) {
       console.error("Callback flow failed:", err);
+      callbackDebug("startCallbackFlow:error", {
+        message: err?.message || String(err),
+        localUserRaw: localStorage.getItem(LOCAL_USER_KEY),
+        savedRole: localStorage.getItem(AUTH_ROLE_KEY),
+        savedIntent: localStorage.getItem(AUTH_INTENT_KEY)
+      });
+
       clearLocalUser();
       clearSavedIntent();
+      clearCallbackProtectionState();
       showPanel("error-panel");
       document.getElementById("error-box").textContent =
         err.message || "We couldn’t finish checking your account.";
@@ -1323,6 +1885,16 @@
     const dept = (document.getElementById("account-dept")?.value || "").trim();
     const studentId = (document.getElementById("account-student-id")?.value || "").trim();
     const lecturerId = (document.getElementById("account-lecturer-id")?.value || "").trim();
+
+    callbackDebug("handleCompleteAccount:start", {
+      activeRole,
+      fullName,
+      email,
+      schoolName,
+      dept,
+      studentId,
+      lecturerId
+    });
 
     if (!fullName || !email || !schoolName || !dept) {
       setMessage("complete-message", "Fill in all fields to complete your account.", "error");
@@ -1357,11 +1929,10 @@
           .upsert(payload, { onConflict: "user_id" });
 
         if (error) {
-          console.error("student_accounts upsert error:", error);
           throw new Error("We couldn’t save your student details. Please try again.");
         }
 
-        const { error: authMetaErr } = await window.supabase.auth.updateUser({
+        await window.supabase.auth.updateUser({
           data: {
             full_name: fullName,
             role: "student",
@@ -1369,20 +1940,21 @@
             department: dept,
             matric_number: studentId
           }
-        });
+        }).catch(() => {});
 
-        if (authMetaErr) {
-          console.error("auth.updateUser metadata error:", authMetaErr);
+        const stableSession = await waitForStableSession(12000, 300);
+        if (!stableSession || !stableSession.user) {
+          throw new Error("Your session is still loading. Please try again.");
         }
 
+        activeSession = stableSession;
         saveLocalUserFromSession(activeSession, activeRole);
         saveAuthRole(activeRole);
 
         await goWithWelcome(
           "Your student account has been completed. Next, continue your verification.",
           STUDENT_VERIFY_URL,
-          activeRole,
-          1000
+          activeRole
         );
         return;
       }
@@ -1401,11 +1973,10 @@
         .upsert(payload, { onConflict: "user_id" });
 
       if (error) {
-        console.error("lecturer_accounts upsert error:", error);
         throw new Error("We couldn’t save your lecturer details. Please try again.");
       }
 
-      const { error: authMetaErr } = await window.supabase.auth.updateUser({
+      await window.supabase.auth.updateUser({
         data: {
           full_name: fullName,
           role: "lecturer",
@@ -1413,20 +1984,21 @@
           department: dept,
           staff_id: lecturerId
         }
-      });
+      }).catch(() => {});
 
-      if (authMetaErr) {
-        console.error("auth.updateUser metadata error:", authMetaErr);
+      const stableSession = await waitForStableSession(12000, 300);
+      if (!stableSession || !stableSession.user) {
+        throw new Error("Your session is still loading. Please try again.");
       }
 
+      activeSession = stableSession;
       saveLocalUserFromSession(activeSession, activeRole);
       saveAuthRole(activeRole);
 
       await goWithWelcome(
         "Your lecturer account has been completed. Taking you to your dashboard.",
         LECTURER_MAIN_URL,
-        activeRole,
-        1000
+        activeRole
       );
     } catch (err) {
       console.error("Complete account failed:", err);
