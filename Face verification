@@ -1,5 +1,6 @@
 const SUPABASE_URL = window.SUPABASE_URL || "https://wtlrfujfimxcmsnqrnig.supabase.co";
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY_HERE";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY ||   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhcGJhc2UiLCJyZWYiOiJ3dGxyZnVqZmlteGNtc25xcm5pZyIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY4NTM1MzEyLCJleHAiOjIwODQxMTEzMTJ9.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+
 
 const FACE_VERIFY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-verify-attendance`;
 const NEARBY_GUARD_URL = "https://wtlrfujfimxcmsnqrnig.functions.supabase.co/Nearby_guard";
@@ -38,8 +39,11 @@ const faceLiveChip = document.getElementById("faceLiveChip");
 const stepCircle1 = document.getElementById("stepCircle1");
 const stepCircle2 = document.getElementById("stepCircle2");
 const stepCircle3 = document.getElementById("stepCircle3");
+const stepCircle4 = document.getElementById("stepCircle4");
+
 const stepLine1 = document.getElementById("stepLine1");
 const stepLine2 = document.getElementById("stepLine2");
+const stepLine3 = document.getElementById("stepLine3");
 
 const faceErrorBox = document.getElementById("faceErrorBox");
 const faceSuccessBox = document.getElementById("faceSuccessBox");
@@ -80,7 +84,7 @@ let directJoinCompleted = false;
 let poseHoldFrames = 0;
 let currentStepIndex = 0;
 
-const scanSequence = ["center", "left", "right"];
+const scanSequence = ["center", "left", "right", "center"];
 const POSE_HOLD_TARGET = 8;
 
 function isAssistJoinMode() {
@@ -173,12 +177,12 @@ function resetResultUi() {
 }
 
 function updateSequenceUI() {
-  [stepCircle1, stepCircle2, stepCircle3].forEach((el) => {
+  [stepCircle1, stepCircle2, stepCircle3, stepCircle4].forEach((el) => {
     if (!el) return;
     el.classList.remove("active", "done");
   });
 
-  [stepLine1, stepLine2].forEach((el) => {
+  [stepLine1, stepLine2, stepLine3].forEach((el) => {
     if (!el) return;
     el.classList.remove("done");
   });
@@ -192,8 +196,12 @@ function updateSequenceUI() {
   if (currentStepIndex === 2 && stepCircle3) stepCircle3.classList.add("active");
   if (currentStepIndex > 2 && stepCircle3) stepCircle3.classList.add("done");
 
+  if (currentStepIndex === 3 && stepCircle4) stepCircle4.classList.add("active");
+  if (currentStepIndex > 3 && stepCircle4) stepCircle4.classList.add("done");
+
   if (currentStepIndex > 0 && stepLine1) stepLine1.classList.add("done");
   if (currentStepIndex > 1 && stepLine2) stepLine2.classList.add("done");
+  if (currentStepIndex > 2 && stepLine3) stepLine3.classList.add("done");
 }
 
 function resetSequenceState() {
@@ -206,6 +214,7 @@ function resetSequenceState() {
 function currentInstruction() {
   const step = scanSequence[currentStepIndex] || "center";
 
+  if (step === "center" && currentStepIndex === scanSequence.length - 1) return "Face front again";
   if (step === "center") return "Look straight";
   if (step === "left") return "Turn left";
   if (step === "right") return "Turn right";
@@ -319,7 +328,7 @@ function fullResetToIdle() {
   resetSequenceState();
   clearFlashMessages();
   setChallengeText("Start the camera, then look straight first.");
-  setLiveChip("Look straight, turn left, turn right");
+  setLiveChip("Look straight, turn left, turn right, face front again");
   resetResultUi();
   setButtonState();
 
@@ -788,12 +797,12 @@ async function initFaceMesh() {
       return;
     }
 
-    setLiveChip(`Expected: ${expectedPose}`);
+    setLiveChip(`Expected: ${currentInstruction()}`);
 
     if (pose === expectedPose) {
       poseHoldFrames += 1;
       setChallengeText(
-        `${expectedPose.charAt(0).toUpperCase() + expectedPose.slice(1)} detected. Hold still...`
+        `${currentInstruction()} detected. Hold still...`
       );
     } else {
       poseHoldFrames = 0;
@@ -938,7 +947,7 @@ function retakeFace() {
     requestAnimationFrame(processVideoFrame);
   } else {
     setChallengeText("Start the camera, then look straight first.");
-    setLiveChip("Look straight, turn left, turn right");
+    setLiveChip("Look straight, turn left, turn right, face front again");
   }
 
   resetResultUi();
@@ -1168,7 +1177,7 @@ async function init() {
     setLiveChip(
       isAssistJoinMode()
         ? "Verify friend’s face"
-        : "Look straight, turn left, turn right"
+        : "Look straight, turn left, turn right, face front again"
     );
 
     resetSequenceState();
