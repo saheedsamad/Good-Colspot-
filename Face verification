@@ -359,7 +359,69 @@ function readPendingNearbyJoinContextFromFace() {
   try {
     const raw = localStorage.getItem(PENDING_NEARBY_JOIN_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+
+    const original = JSON.parse(raw);
+    if (!original || typeof original !== "object") return null;
+
+    const sessionRow = original.sessionRow || original.session || {};
+    const studentRow = original.student || {};
+
+    const normalized = {
+      ...original,
+
+      sessionId:
+        original.sessionId ||
+        original.session_id ||
+        original.sessionID ||
+        sessionRow.id ||
+        "",
+
+      pinCode:
+        original.pinCode ||
+        original.pin_code ||
+        original.pin ||
+        "",
+
+      sessionRow,
+
+      studentName:
+        original.studentName ||
+        studentRow.full_name ||
+        studentRow.name ||
+        "",
+
+      studentMatric:
+        original.studentMatric ||
+        original.matric_number ||
+        original.matricNumber ||
+        studentRow.matric_number ||
+        studentRow.matric_no ||
+        "",
+
+      studentDepartment:
+        original.studentDepartment ||
+        studentRow.department ||
+        "",
+
+      helpedUserId:
+        original.helpedUserId ||
+        original.helped_user_id ||
+        studentRow.user_id ||
+        "",
+
+      matricNumber:
+        original.matricNumber ||
+        original.matric_number ||
+        studentRow.matric_number ||
+        "",
+
+      email:
+        original.email ||
+        studentRow.email ||
+        ""
+    };
+
+    return normalized;
   } catch (_) {
     return null;
   }
@@ -411,12 +473,15 @@ function applyFaceModeUi() {
     return;
   }
 
-  const name = safeText(context?.studentName || "Student");
-  const matric = safeText(context?.studentMatric || context?.matricNumber || "");
-  const dept = safeText(context?.studentDepartment || "");
-  const level = safeText(context?.level || "");
-  const semester = safeText(context?.semester || "");
-  const course = safeText(context?.sessionRow?.course_code || COURSE_CODE || "attendance");
+  const sessionRow = context?.sessionRow || context?.session || {};
+  const studentRow = context?.student || {};
+
+  const name = safeText(context?.studentName || studentRow.full_name || "Student");
+  const matric = safeText(context?.studentMatric || context?.matricNumber || studentRow.matric_number || "");
+  const dept = safeText(context?.studentDepartment || studentRow.department || "");
+  const level = safeText(context?.level || studentRow.level || "");
+  const semester = safeText(context?.semester || studentRow.semester || "");
+  const course = safeText(sessionRow.course_code || COURSE_CODE || "attendance");
 
   if (facePageTitle) facePageTitle.textContent = "Assist Join verification";
 
@@ -626,14 +691,29 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
   const isAssist = context.mode === "assist" || isAssistJoinMode();
 
   const sessionRow = context.sessionRow || {};
-  const pinCode = String(context.pinCode || context.pin_code || pageParams.get("pinCode") || pageParams.get("pin") || "").trim();
+  const pinCode = String(
+    context.pinCode ||
+    context.pin_code ||
+    pageParams.get("pinCode") ||
+    pageParams.get("pin") ||
+    ""
+  ).trim();
 
-  const studentName = String(context.studentName || pageParams.get("studentName") || "").trim();
+  const studentName = String(context.studentName || "").trim();
   const studentMatric = String(context.studentMatric || context.matricNumber || "").trim();
   const studentDepartment = String(context.studentDepartment || "").trim();
 
-  const courseCode = String(sessionRow.course_code || COURSE_CODE || "attendance").trim();
-  const lecturerName = String(sessionRow.lecturer_name || LECTURER_NAME || "your lecturer").trim();
+  const courseCode = String(
+    sessionRow.course_code ||
+    COURSE_CODE ||
+    "attendance"
+  ).trim();
+
+  const lecturerName = String(
+    sessionRow.lecturer_name ||
+    LECTURER_NAME ||
+    "your lecturer"
+  ).trim();
 
   if (!pinCode) {
     throw new Error("PIN code is missing. Please go back and try joining again.");
@@ -651,12 +731,15 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
   });
 
   setResultPill("neutral", isAssist ? "Submitting Assist" : "Submitting");
+
   setResultText(
     isAssist
       ? "Face verified. Colspot is now submitting Assist Join attendance..."
       : "Face verified. Colspot is now submitting your attendance..."
   );
+
   setLiveChip(isAssist ? "Submitting Assist Join" : "Submitting attendance");
+
   showSuccess(
     isAssist
       ? "Face verified. Submitting Assist Join now..."
@@ -672,6 +755,7 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
         session_id: context.sessionId,
         pin_code: pinCode,
         matric_number: context.matricNumber || context.studentMatric,
+        email: context.email || "",
         lat: bestLoc.lat,
         lng: bestLoc.lng,
         accuracy: bestLoc.accuracy,
