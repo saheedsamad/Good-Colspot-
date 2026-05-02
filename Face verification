@@ -1,5 +1,5 @@
 const SUPABASE_URL = window.SUPABASE_URL || "https://wtlrfujfimxcmsnqrnig.supabase.co";
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY ||   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhcGJhc2UiLCJyZWYiOiJ3dGxyZnVqZmlteGNtc25xcm5pZyIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY4NTM1MzEyLCJleHAiOjIwODQxMTEzMTJ9.TksqfAitZ5Lbx9pa8fU76Qcl4iMsPGcfom-rC8rTf3Y";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY ||   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
 
 const FACE_VERIFY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/face-verify-attendance`;
@@ -335,32 +335,13 @@ function fullResetToIdle() {
   if (faceVideo) faceVideo.srcObject = null;
 }
 
-function buildReturnUrl(extra = {}) {
-  const url = new URL(RETURN_TO, window.location.href);
-
-  if (SESSION_ID) url.searchParams.set("verifiedSessionId", SESSION_ID);
-  if (COURSE_CODE) url.searchParams.set("verifiedCourseCode", COURSE_CODE);
-
-  Object.entries(extra).forEach(([key, value]) => {
-    if (value === null || value === undefined || value === "") return;
-    url.searchParams.set(key, String(value));
-  });
-
-  return url.toString();
-}
-
 function goBackCancelled() {
   if (directJoinCompleted) {
     window.location.href = RETURN_TO || "main.html";
     return;
   }
 
-  const assist = isAssistJoinMode();
-
-  window.location.href = buildReturnUrl({
-    faceVerified: assist ? "" : 0,
-    assistVerified: assist ? 0 : "",
-  });
+  window.location.href = RETURN_TO || "main.html";
 }
 
 async function ensureSession() {
@@ -458,7 +439,7 @@ function applyFaceModeUi() {
       `<strong>Session:</strong> ${htmlEscape(course)}`;
   }
 
-  if (verifyFaceBtn) verifyFaceBtn.textContent = "Verify friend and continue";
+  if (verifyFaceBtn) verifyFaceBtn.textContent = "Verify friend and submit";
 
   setResultText("Start the camera and verify your friend’s face for Assist Join.");
   setLiveChip("Verify friend’s face");
@@ -484,7 +465,7 @@ function showFaceJoinPopup(mode, data = {}) {
     if (faceJoinSpinner) faceJoinSpinner.classList.remove("hidden");
 
     if (faceJoinTitle) {
-      faceJoinTitle.textContent = assist ? "Submitting Assist Join" : "Joining attendance";
+      faceJoinTitle.textContent = assist ? "Submitting Assist Join" : "Submitting attendance";
     }
 
     if (faceJoinMessage) {
@@ -639,10 +620,7 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
   const context = readPendingNearbyJoinContextFromFace();
 
   if (!context || !context.sessionId) {
-    return {
-      joined: false,
-      reason: "NO_PENDING_NEARBY_JOIN",
-    };
+    throw new Error("Attendance details were not found. Please go back and start Join attendance again.");
   }
 
   const isAssist = context.mode === "assist" || isAssistJoinMode();
@@ -672,17 +650,17 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
     assist: isAssist,
   });
 
-  setResultPill("neutral", isAssist ? "Submitting Assist" : "Joining");
+  setResultPill("neutral", isAssist ? "Submitting Assist" : "Submitting");
   setResultText(
     isAssist
       ? "Face verified. Colspot is now submitting Assist Join attendance..."
       : "Face verified. Colspot is now submitting your attendance..."
   );
-  setLiveChip(isAssist ? "Submitting Assist Join" : "Joining attendance");
+  setLiveChip(isAssist ? "Submitting Assist Join" : "Submitting attendance");
   showSuccess(
     isAssist
       ? "Face verified. Submitting Assist Join now..."
-      : "Face verified. Joining attendance now..."
+      : "Face verified. Submitting attendance now..."
   );
 
   const bestLoc = await getBestLocationForFaceGuard(5, 100);
@@ -705,6 +683,7 @@ async function joinAttendanceInsideFaceVerification(session, verifyData = {}) {
         lat: bestLoc.lat,
         lng: bestLoc.lng,
         accuracy: bestLoc.accuracy,
+        face_similarity: Number(verifyData?.similarity || 1),
       };
 
   const result = await invokeNearbyGuardFromFace(session, action, payload);
@@ -921,10 +900,10 @@ function captureFrame() {
   setResultPill("neutral", "Captured");
 
   if (isAssistJoinMode()) {
-    setResultText("Your friend’s live face capture is ready. Tap Verify friend and continue.");
+    setResultText("Your friend’s live face capture is ready. Tap Verify friend and submit.");
     showSuccess("Liveness challenge completed successfully for Assist Join.");
   } else {
-    setResultText("Your live face capture is ready. Tap Verify and continue.");
+    setResultText("Your live face capture is ready. Tap Verify and submit.");
     showSuccess("Liveness challenge completed successfully.");
   }
 
@@ -1033,89 +1012,67 @@ async function verifyFaceAndContinue() {
       assist,
     });
 
-    if (directJoin.joined) {
-      directJoinCompleted = true;
-      stopTracksOnly();
+    directJoinCompleted = true;
+    stopTracksOnly();
 
-      const joinedResult = directJoin.result || {};
-      const sessionData = joinedResult.session || {};
-      const studentData = joinedResult.student || {};
-      const historyEntry = directJoin.historyEntry || {};
-      const joinContext = directJoin.context || {};
-      const sessionRow = joinContext.sessionRow || {};
-      const joinedAssist = !!directJoin.assist;
+    const joinedResult = directJoin.result || {};
+    const sessionData = joinedResult.session || {};
+    const studentData = joinedResult.student || {};
+    const historyEntry = directJoin.historyEntry || {};
+    const joinContext = directJoin.context || {};
+    const sessionRow = joinContext.sessionRow || {};
+    const joinedAssist = !!directJoin.assist;
 
-      const studentName =
-        studentData.full_name ||
-        historyEntry.student_name ||
-        joinContext.studentName ||
-        "Student";
+    const studentName =
+      studentData.full_name ||
+      historyEntry.student_name ||
+      joinContext.studentName ||
+      "Student";
 
-      const courseCode =
-        sessionData.course_code ||
-        historyEntry.course_code ||
-        sessionRow.course_code ||
-        COURSE_CODE ||
-        "attendance";
+    const courseCode =
+      sessionData.course_code ||
+      historyEntry.course_code ||
+      sessionRow.course_code ||
+      COURSE_CODE ||
+      "attendance";
 
-      const lecturerName =
-        sessionData.lecturer_name ||
-        historyEntry.lecturer_name ||
-        sessionRow.lecturer_name ||
-        LECTURER_NAME ||
-        "your lecturer";
+    const lecturerName =
+      sessionData.lecturer_name ||
+      historyEntry.lecturer_name ||
+      sessionRow.lecturer_name ||
+      LECTURER_NAME ||
+      "your lecturer";
 
-      setResultPill("success", joinedAssist ? "Assist joined" : "Joined");
-
-      setResultText(
-        joinedAssist
-          ? `${studentName}, Assist Join attendance for ${courseCode} has been submitted successfully.`
-          : `${studentName}, your attendance for ${courseCode} has been submitted successfully.`
-      );
-
-      setLiveChip(joinedAssist ? "Assist Join submitted" : "Attendance joined");
-
-      showSuccess(
-        joinedResult.message ||
-          (joinedAssist ? "Assist Join submitted successfully." : "Attendance joined successfully.")
-      );
-
-      showFaceJoinPopup("success", {
-        studentName,
-        courseCode,
-        lecturerName,
-        assist: joinedAssist,
-      });
-
-      if (verifyFaceBtn) {
-        verifyFaceBtn.textContent = joinedAssist ? "Assist Join submitted" : "Attendance joined";
-        verifyFaceBtn.disabled = true;
-      }
-
-      if (retakeFaceBtn) {
-        retakeFaceBtn.disabled = true;
-      }
-
-      return;
-    }
-
-    setResultPill("success", "Verified");
+    setResultPill("success", joinedAssist ? "Assist submitted" : "Submitted");
 
     setResultText(
-      `Verification passed${result?.similarity ? ` • Similarity ${Number(result.similarity).toFixed(2)}` : ""}. Returning to attendance...`
+      joinedAssist
+        ? `${studentName}, Assist Join attendance for ${courseCode} has been submitted successfully.`
+        : `${studentName}, your attendance for ${courseCode} has been submitted successfully.`
     );
 
-    setLiveChip("Verified");
-    showSuccess("Face verified successfully. Returning to attendance...");
+    setLiveChip(joinedAssist ? "Assist Join submitted" : "Attendance submitted");
 
-    setTimeout(() => {
-      window.location.href = buildReturnUrl({
-        faceVerified: assist ? "" : 1,
-        assistVerified: assist ? 1 : "",
-        similarity: result?.similarity ?? "",
-        threshold: result?.threshold ?? VERIFY_THRESHOLD,
-      });
-    }, 900);
+    showSuccess(
+      joinedResult.message ||
+        (joinedAssist ? "Assist Join submitted successfully." : "Attendance submitted successfully.")
+    );
+
+    showFaceJoinPopup("success", {
+      studentName,
+      courseCode,
+      lecturerName,
+      assist: joinedAssist,
+    });
+
+    if (verifyFaceBtn) {
+      verifyFaceBtn.textContent = joinedAssist ? "Assist Join submitted" : "Attendance submitted";
+      verifyFaceBtn.disabled = true;
+    }
+
+    if (retakeFaceBtn) {
+      retakeFaceBtn.disabled = true;
+    }
   } catch (err) {
     console.error(err);
 
@@ -1153,17 +1110,7 @@ function bindEvents() {
   faceBackBtn?.addEventListener("click", goBackCancelled);
 
   faceJoinDoneBtn?.addEventListener("click", () => {
-    if (directJoinCompleted) {
-      window.location.href = RETURN_TO || "main.html";
-      return;
-    }
-
-    const assist = isAssistJoinMode();
-
-    window.location.href = buildReturnUrl({
-      faceVerified: assist ? "" : 0,
-      assistVerified: assist ? 0 : "",
-    });
+    window.location.href = RETURN_TO || "main.html";
   });
 
   window.addEventListener("beforeunload", stopTracksOnly);
