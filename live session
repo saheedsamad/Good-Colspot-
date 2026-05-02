@@ -821,649 +821,1149 @@
     </div>
   </nav>
 
-  <script>
-    (() => {
-      let supabaseReady = false;
-      let currentUser = null;
-      let currentSessionId = null;
-      let currentSession = null;
-      let countdownInterval = null;
-      let attendeesInterval = null;
-      let currentAttendees = [];
+<script>
+  let selectedClass = null;
+  let serverClassesCache = [];
+  let lastAttendanceLocationReason = null;
 
-      function showError(msg) {
-        const box = document.getElementById("errorBox");
-        if (!box) return;
-        if (!msg) {
-          box.textContent = "";
-          box.style.display = "none";
-        } else {
-          box.textContent = msg;
-          box.style.display = "block";
-        }
+  const LOCATION_REASON_MESSAGES = {
+    PERMISSION_DENIED:
+      "Location permission is blocked.\n\nPlease go to your phone Settings, open Colspot, allow Location access, and turn ON Precise Location. Then close and reopen Colspot and try again.",
+
+    LOCATION_OFF:
+      "Your phone Location is turned off.\n\nPlease turn Location ON, allow Colspot to use your location, and try again.",
+
+    POSITION_UNAVAILABLE:
+      "Colspot could not get your location right now.\n\nPlease move closer to a window or go outside, make sure you are not inside a thick building, and try again.",
+
+    TIMEOUT:
+      "Location request took too long.\n\nPlease check your internet connection, turn Location ON, move closer to a window or outside, then try again.",
+
+    NO_READING:
+      "Colspot could not get your location.\n\nPlease turn Location ON, allow Colspot location access, check your internet, move closer to a window or outside, and try again.",
+
+    ACCURACY_TOO_POOR_ANDROID:
+      "Your location accuracy is too poor. We need accuracy under 300 m.\n\nMove closer to a window or outside and try again. Do not stay deep inside a building when starting a location-based attendance.",
+
+    ACCURACY_TOO_POOR_IOS:
+      "Your location accuracy is too poor. We need accuracy under 1 km on iPhone.\n\nMove closer to a window or outside and try again. Also make sure Precise Location is turned ON for Colspot.",
+
+    LOCATION_TOO_WEAK_ANDROID:
+      "Your phone found your location, but it is not accurate enough.\n\nAndroid needs accuracy under 300 m. Move closer to a window or outside, avoid staying deep indoor, and try again.",
+
+    LOCATION_TOO_WEAK_IOS:
+      "Your iPhone found your location, but it is not accurate enough.\n\niPhone needs accuracy under 1 km. Turn ON Precise Location for Colspot, move closer to a window or outside, and try again."
+  };
+
+  function normalizeSchoolName(value) {
+    return String(value || "").trim().replace(/\s+/g, " ").toUpperCase();
+  }
+
+  function openAttendanceErrorPopup(msg, title = "Location issue") {
+    const popup = document.getElementById("attendanceErrorPopup");
+    const text = document.getElementById("attendanceErrorPopupText");
+    const titleEl = document.getElementById("attendanceErrorPopupTitle");
+
+    if (titleEl) titleEl.textContent = String(title || "Location issue");
+    if (text) text.textContent = String(msg || "Please check and try again.");
+    if (popup) popup.classList.add("show");
+  }
+
+  function closeAttendanceErrorPopup() {
+    const popup = document.getElementById("attendanceErrorPopup");
+    if (popup) popup.classList.remove("show");
+  }
+
+  function resetAttendanceFormState() {
+    selectedClass = null;
+
+    const pinInput = document.getElementById("pinInput");
+    const searchClass = document.getElementById("searchClass");
+    const timerRange = document.getElementById("timerRange");
+    const timerLabel = document.getElementById("timerLabel");
+
+    if (pinInput) pinInput.value = "";
+    if (searchClass) searchClass.value = "";
+    if (timerRange) timerRange.value = "10";
+    if (timerLabel) timerLabel.textContent = "Expires in 10 minutes";
+
+    clearMessages();
+    renderRecent("");
+  }
+
+  function showError(msg, title = "Location issue") {
+    const e = document.getElementById("errorBox");
+    const s = document.getElementById("successBox");
+
+    if (s) {
+      s.textContent = "";
+      s.style.display = "none";
+    }
+
+    if (e) {
+      e.textContent = String(msg || "");
+      e.style.display = "block";
+    }
+
+    openAttendanceErrorPopup(msg, title);
+  }
+
+  function showSuccess(msg) {
+    const e = document.getElementById("errorBox");
+    const s = document.getElementById("successBox");
+
+    if (e) {
+      e.textContent = "";
+      e.style.display = "none";
+    }
+
+    if (s) {
+      s.textContent = String(msg || "");
+      s.style.display = "block";
+    }
+  }
+
+  function clearMessages() {
+    const e = document.getElementById("errorBox");
+    const s = document.getElementById("successBox");
+
+    if (e) {
+      e.textContent = "";
+      e.style.display = "none";
+    }
+
+    if (s) {
+      s.textContent = "";
+      s.style.display = "none";
+    }
+  }
+
+  function getDisplayName(user) {
+    const meta = (user && user.user_metadata) || {};
+    const full =
+      meta.full_name ||
+      meta.name ||
+      [meta.first_name, meta.last_name].filter(Boolean).join(" ");
+
+    return (full || user.email || "Unknown").trim();
+  }
+
+  async function getCurrentUserRoleAndSchool(user) {
+    const appRole =
+      String(
+        localStorage.getItem("selected_role") ||
+        localStorage.getItem("user_role") ||
+        localStorage.getItem("colspot_selected_role") ||
+        localStorage.getItem("colspot_auth_role") ||
+        localStorage.getItem("colspot_login_flow") ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (appRole === "lecturer") {
+      const lecturerAccountRes = await supabase
+        .from("lecturer_accounts")
+        .select("school_name")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (!lecturerAccountRes.error && lecturerAccountRes.data?.school_name) {
+        return {
+          role: "lecturer",
+          schoolName: normalizeSchoolName(lecturerAccountRes.data.school_name)
+        };
       }
 
-      function updateEndButtonState(isEnded) {
-        const endBtn = document.getElementById("endSessionBtn");
-        if (!endBtn) return;
-        const labelSpan = endBtn.querySelector(".end-session-label");
+      const lecturerRes = await supabase
+        .from("lecturers")
+        .select("school_name")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
 
-        if (isEnded) {
-          endBtn.disabled = true;
-          endBtn.classList.add("ended");
-          if (labelSpan) labelSpan.textContent = "Session ended";
-        } else {
-          endBtn.disabled = false;
-          endBtn.classList.remove("ended");
-          if (labelSpan) labelSpan.textContent = "End session";
-        }
+      if (!lecturerRes.error && lecturerRes.data?.school_name) {
+        return {
+          role: "lecturer",
+          schoolName: normalizeSchoolName(lecturerRes.data.school_name)
+        };
+      }
+    }
+
+    if (appRole === "student") {
+      const { data, error } = await supabase
+        .from("student_accounts")
+        .select("school_name")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw new Error(error.message);
+
+      return {
+        role: "student",
+        schoolName: normalizeSchoolName(data?.school_name || "")
+      };
+    }
+
+    const { data: lecturerAccountData, error: lecturerAccountError } = await supabase
+      .from("lecturer_accounts")
+      .select("school_name")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!lecturerAccountError && lecturerAccountData?.school_name) {
+      return {
+        role: "lecturer",
+        schoolName: normalizeSchoolName(lecturerAccountData.school_name)
+      };
+    }
+
+    const { data: lecturerData, error: lecturerError } = await supabase
+      .from("lecturers")
+      .select("school_name")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!lecturerError && lecturerData?.school_name) {
+      return {
+        role: "lecturer",
+        schoolName: normalizeSchoolName(lecturerData.school_name)
+      };
+    }
+
+    const { data: studentData, error: studentError } = await supabase
+      .from("student_accounts")
+      .select("school_name")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!studentError && studentData?.school_name) {
+      return {
+        role: "student",
+        schoolName: normalizeSchoolName(studentData.school_name)
+      };
+    }
+
+    return {
+      role: appRole || "",
+      schoolName: ""
+    };
+  }
+
+  function normalizeClassItem(row) {
+    return {
+      code: (row?.course_code || "").trim(),
+      title: (row?.course_title || "").trim(),
+      academicSession: (row?.academic_session || "").trim(),
+      createdAt: row?.created_at || null,
+      id: row?.id || null
+    };
+  }
+
+  function getRecentClasses() {
+    try {
+      const raw = localStorage.getItem("colspot_recent_classes");
+      if (!raw) return [];
+      return JSON.parse(raw) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveRecentClass(code, title, academicSession) {
+    if (!code) return;
+
+    const cleanCode = (code || "").trim();
+    const cleanTitle = (title || "").trim();
+    const cleanSession = (academicSession || "").trim();
+
+    const list = getRecentClasses().filter(
+      (c) =>
+        !(
+          (c.code || "").toLowerCase() === cleanCode.toLowerCase() &&
+          (c.academicSession || "").toLowerCase() === cleanSession.toLowerCase()
+        )
+    );
+
+    list.unshift({
+      code: cleanCode,
+      title: cleanTitle,
+      academicSession: cleanSession
+    });
+
+    localStorage.setItem(
+      "colspot_recent_classes",
+      JSON.stringify(list.slice(0, 50))
+    );
+  }
+
+  function mergeClassSources() {
+    const map = new Map();
+
+    serverClassesCache.forEach((row) => {
+      const item = normalizeClassItem(row);
+      if (!item.code) return;
+
+      const key = `${item.code.toLowerCase()}__${(item.academicSession || "").toLowerCase()}`;
+      map.set(key, item);
+    });
+
+    getRecentClasses().forEach((row) => {
+      const item = {
+        code: (row?.code || "").trim(),
+        title: (row?.title || "").trim(),
+        academicSession: (row?.academicSession || "").trim(),
+        createdAt: null,
+        id: null
+      };
+
+      if (!item.code) return;
+
+      const key = `${item.code.toLowerCase()}__${(item.academicSession || "").toLowerCase()}`;
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      const ad = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bd = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bd - ad;
+    });
+  }
+
+  function renderRecent(filterText = "") {
+    const container = document.getElementById("recentList");
+    if (!container) return;
+
+    const list = mergeClassSources();
+    container.innerHTML = "";
+
+    const f = filterText.trim().toLowerCase();
+
+    let filtered;
+    if (f) {
+      filtered = list.filter(
+        (c) =>
+          (c.code || "").toLowerCase().includes(f) ||
+          (c.title || "").toLowerCase().includes(f) ||
+          (c.academicSession || "").toLowerCase().includes(f)
+      );
+    } else {
+      filtered = list.slice(0, 2);
+    }
+
+    if (!filtered.length) {
+      const empty = document.createElement("div");
+      empty.className = "section-sub";
+      empty.style.margin = "0";
+      empty.textContent = "No recent classes yet.";
+      container.appendChild(empty);
+      return;
+    }
+
+    filtered.forEach((c) => {
+      const item = document.createElement("div");
+
+      const isSelected =
+        selectedClass &&
+        (selectedClass.code || "").toLowerCase() === (c.code || "").toLowerCase() &&
+        ((selectedClass.academicSession || "").toLowerCase() ===
+          (c.academicSession || "").toLowerCase());
+
+      item.className = "recent-item" + (isSelected ? " selected" : "");
+
+      const subParts = [];
+      if (c.academicSession) subParts.push(c.academicSession);
+      if (c.title) subParts.push(c.title);
+
+      item.innerHTML = `
+        <div class="recent-item-title">${c.code || ""}</div>
+        <div class="recent-item-sub">${subParts.join(" • ")}</div>
+      `;
+
+      item.addEventListener("click", () =>
+        selectClass(c.code, c.title, c.academicSession)
+      );
+
+      container.appendChild(item);
+    });
+  }
+
+  function selectClass(code, title, academicSession) {
+    selectedClass = {
+      code: (code || "").trim(),
+      title: (title || "").trim(),
+      academicSession: (academicSession || "").trim()
+    };
+
+    saveRecentClass(code, title, academicSession);
+
+    const searchValue = document.getElementById("searchClass")?.value || "";
+    renderRecent(searchValue);
+    clearMessages();
+    closeAttendanceErrorPopup();
+  }
+
+  async function syncClassesFromSupabase() {
+    try {
+      if (typeof supabase === "undefined") return;
+
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) return;
+
+      const user = userData.user;
+
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, course_code, course_title, academic_session, created_at")
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      if (error) {
+        console.warn("Unable to load classes from courses table", error);
+        return;
       }
 
-      function setSessionHeader(session) {
-        const classEl = document.getElementById("sessionClass");
-        const classSubEl = document.getElementById("sessionClassSub");
-        const pinEl = document.getElementById("pinValue");
-        const sessionCodeEl = document.getElementById("sessionCodeValue");
-        const statusPill = document.getElementById("statusPill");
-
-        const title = session.course_code || "Attendance session";
-        if (classEl) classEl.textContent = title;
-
-        if (classSubEl) {
-          const started = session.starts_at
-            ? new Date(session.starts_at)
-            : session.created_at
-            ? new Date(session.created_at)
-            : null;
-
-          if (started) {
-            const timeStr = started.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            classSubEl.textContent = `Started at ${timeStr}.`;
-          } else {
-            classSubEl.textContent = "Live attendance session.";
-          }
-        }
-
-        if (pinEl) pinEl.textContent = session.pin_code || "------";
-
-        if (sessionCodeEl) {
-          sessionCodeEl.textContent = session.session_code || "Not generated";
-        }
-
-        let isEnded = false;
-        if (statusPill) {
-          const now = new Date();
-          const end = session.expires_at ? new Date(session.expires_at) : null;
-          isEnded = !session.is_active || (end && now > end);
-
-          if (isEnded) {
-            statusPill.classList.add("expired");
-            statusPill.querySelector("span:last-child").textContent = "Ended";
-          } else {
-            statusPill.classList.remove("expired");
-            statusPill.querySelector("span:last-child").textContent = "Active";
-          }
-        }
-
-        updateEndButtonState(isEnded);
-        startOrUpdateTimer(session);
-      }
-
-      function startOrUpdateTimer(session) {
-        const timerEl = document.getElementById("timerValue");
-        const statusPill = document.getElementById("statusPill");
-        if (!timerEl) return;
-
-        if (countdownInterval) {
-          clearInterval(countdownInterval);
-          countdownInterval = null;
-        }
-
-        const endTime = session.expires_at ? new Date(session.expires_at) : null;
-        if (!endTime) {
-          timerEl.textContent = "--:--";
-          return;
-        }
-
-        function update() {
-          const now = new Date();
-          const diffMs = endTime - now;
-
-          if (diffMs <= 0 || session.is_active === false) {
-            timerEl.textContent = "00:00";
-            if (statusPill) {
-              statusPill.classList.add("expired");
-              statusPill.querySelector("span:last-child").textContent = "Ended";
-            }
-            updateEndButtonState(true);
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-            return;
-          }
-
-          const totalSeconds = Math.floor(diffMs / 1000);
-          const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-          const seconds = String(totalSeconds % 60).padStart(2, "0");
-
-          timerEl.textContent = `${minutes}:${seconds}`;
-          if (statusPill) {
-            statusPill.classList.remove("expired");
-            statusPill.querySelector("span:last-child").textContent = "Active";
-          }
-          updateEndButtonState(false);
-        }
-
-        update();
-        countdownInterval = setInterval(update, 1000);
-      }
-
-      function setJoinedCount(count) {
-        const el = document.getElementById("joinedCount");
-        if (!el) return;
-        el.innerHTML = `<strong>${count}</strong> joined`;
-      }
-
-      async function loadSessionAndAttendees() {
-        if (!supabaseReady || !currentSessionId) return;
-
-        showError("");
-
-        const attendeeList = document.getElementById("attendeeList");
-        const emptyState = document.getElementById("emptyState");
-        if (attendeeList) attendeeList.innerHTML = "";
-        if (emptyState) emptyState.style.display = "none";
-
-        const { data: session, error: sessionError } = await supabase
-          .from("attendance_sessions")
-          .select(
-            "id, course_code, course_title, pin_code, session_code, starts_at, expires_at, created_at, is_active"
-          )
-          .eq("id", currentSessionId)
-          .single();
-
-        if (sessionError || !session) {
-          console.error(sessionError || "Session not found");
-          showError("Could not load this session. It may have been removed.");
-          return;
-        }
-
-        currentSession = session;
-        setSessionHeader(session);
-
-        const now = new Date();
-        const end = session.expires_at ? new Date(session.expires_at) : null;
-        const isEnded = !session.is_active || (end && now > end);
-        if (isEnded && attendeesInterval) {
-          clearInterval(attendeesInterval);
-          attendeesInterval = null;
-        }
-
-        const { data: records, error: recError } = await supabase
-          .from("attendance_records")
-          .select(
-            "id, student_name, student_matric, student_department, checked_in_at"
-          )
-          .eq("session_id", currentSessionId)
-          .order("checked_in_at", { ascending: true });
-
-        if (recError) {
-          console.error(recError);
-          showError("Could not load attendees. Please try again.");
-          return;
-        }
-
-        currentAttendees = records || [];
-        setJoinedCount(currentAttendees.length);
-
-        const filterEl = document.getElementById("attendeeFilter");
-        const hasFilter =
-          filterEl && filterEl.value && filterEl.value.trim().length > 0;
-
-        if (hasFilter) {
-          applyAttendeeFilter();
-        } else {
-          renderAttendees(currentAttendees);
-        }
-      }
-
-      function renderAttendees(list) {
-        const attendeeList = document.getElementById("attendeeList");
-        const emptyState = document.getElementById("emptyState");
-        if (!attendeeList || !emptyState) return;
-
-        attendeeList.innerHTML = "";
-
-        if (!list.length) {
-          emptyState.style.display = "block";
-          return;
-        }
-
-        emptyState.style.display = "none";
-
-        list.forEach((rec) => {
-          const card = document.createElement("div");
-          card.className = "attendee-card";
-
-          card.addEventListener("click", () => handleAttendeeClick(rec));
-
-          const nameCell = document.createElement("div");
-          nameCell.className = "attendee-cell";
-          const label =
-            rec.student_name && rec.student_name.trim().length > 0
-              ? rec.student_name.trim()
-              : rec.student_matric && rec.student_matric.trim().length > 0
-              ? rec.student_matric.trim()
-              : "Student";
-          nameCell.textContent = label;
-
-          const matricCell = document.createElement("div");
-          matricCell.className = "attendee-cell";
-          matricCell.textContent =
-            (rec.student_matric && rec.student_matric.trim()) || "—";
-
-          const deptCell = document.createElement("div");
-          deptCell.className = "attendee-cell";
-          deptCell.textContent =
-            (rec.student_department && rec.student_department.trim()) || "—";
-
-          const timeCell = document.createElement("div");
-          timeCell.className = "attendee-cell attendee-cell-small";
-          const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
-          timeCell.textContent = t
-            ? t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "—";
-
-          card.appendChild(nameCell);
-          card.appendChild(matricCell);
-          card.appendChild(deptCell);
-          card.appendChild(timeCell);
-
-          attendeeList.appendChild(card);
-        });
-      }
-
-      function applyAttendeeFilter() {
-        const filterEl = document.getElementById("attendeeFilter");
-        if (!filterEl) return;
-
-        const q = filterEl.value.toLowerCase().trim();
-        if (!q) {
-          renderAttendees(currentAttendees);
-          return;
-        }
-
-        const filtered = currentAttendees.filter((rec) => {
-          const name = (rec.student_name || "").toLowerCase();
-          const matric = (rec.student_matric || "").toLowerCase();
-          const dept = (rec.student_department || "").toLowerCase();
-          return name.includes(q) || matric.includes(q) || dept.includes(q);
-        });
-
-        renderAttendees(filtered);
-      }
-
-      async function handleAttendeeClick(rec) {
-        const label =
-          (rec.student_name && rec.student_name.trim()) ||
-          (rec.student_matric && rec.student_matric.trim()) ||
-          "this student";
-
-        const ok = window.confirm(`Remove ${label} from this session?`);
-        if (!ok) return;
-
-        try {
-          const { error } = await supabase
-            .from("attendance_records")
-            .delete()
-            .eq("id", rec.id);
-
-          if (error) {
-            console.error(error);
-            showError("Could not remove student. Please try again.");
-            return;
-          }
-
-          await loadSessionAndAttendees();
-        } catch (e) {
-          console.error(e);
-          showError("Could not remove student. Please try again.");
-        }
-      }
-
-      function openAddStudentModal() {
-        if (!supabaseReady || !currentSessionId) {
-          showError("Session not ready. Try reloading.");
-          return;
-        }
-        const modal = document.getElementById("addStudentModal");
-        const nameInput = document.getElementById("modalStudentName");
-        const matricInput = document.getElementById("modalStudentMatric");
-        const deptInput = document.getElementById("modalStudentDept");
-        const err = document.getElementById("modalStudentError");
-
-        if (nameInput) nameInput.value = "";
-        if (matricInput) matricInput.value = "";
-        if (deptInput) deptInput.value = "";
-        if (err) {
-          err.textContent = "";
-          err.style.display = "none";
-        }
-
-        if (modal) modal.style.display = "flex";
-
-        setTimeout(() => {
-          if (nameInput) nameInput.focus();
-        }, 50);
-      }
-
-      function closeAddStudentModal() {
-        const modal = document.getElementById("addStudentModal");
-        if (modal) modal.style.display = "none";
-      }
-
-      async function submitAddStudentModal() {
-        const nameInput = document.getElementById("modalStudentName");
-        const matricInput = document.getElementById("modalStudentMatric");
-        const deptInput = document.getElementById("modalStudentDept");
-        const err = document.getElementById("modalStudentError");
-        const btn = document.getElementById("modalAddBtn");
-
-        if (!nameInput || !btn) return;
-
-        const name = (nameInput.value || "").trim();
-        const matric = (matricInput?.value || "").trim();
-        const dept = (deptInput?.value || "").trim();
-
-        if (!name) {
-          if (err) {
-            err.textContent = "Student name is required.";
-            err.style.display = "block";
-          }
-          nameInput.focus();
-          return;
-        }
-
-        if (!supabaseReady || !currentSessionId) {
-          if (err) {
-            err.textContent = "Session not ready. Try reloading.";
-            err.style.display = "block";
-          }
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Adding…";
-        if (err) {
-          err.textContent = "";
-          err.style.display = "none";
-        }
-
-        try {
-          const { error } = await supabase.from("attendance_records").insert([
-            {
-              session_id: currentSessionId,
-              user_id: null,
-              student_name: name,
-              student_matric: matric || null,
-              student_department: dept || null,
-              checked_in_at: new Date().toISOString(),
-            },
-          ]);
-
-          if (error) {
-            console.error(error);
-            if (err) {
-              err.textContent = "Could not add student. Please try again.";
-              err.style.display = "block";
-            }
-            btn.disabled = false;
-            btn.textContent = "Add student";
-            return;
-          }
-
-          closeAddStudentModal();
-          await loadSessionAndAttendees();
-        } catch (e) {
-          console.error(e);
-          if (err) {
-            err.textContent = "Could not add student. Please try again.";
-            err.style.display = "block";
-          }
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Add student";
-        }
-      }
-
-      function downloadAttendeesCsv() {
-        if (!currentAttendees.length) {
-          alert("No attendees to download yet.");
-          return;
-        }
-
-        const header = ["Name", "Matric number", "Department", "Joined at"];
-        const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
-
-        const rows = currentAttendees.map((rec) => {
-          const name =
-            (rec.student_name && rec.student_name.trim()) ||
-            (rec.student_matric && rec.student_matric.trim()) ||
-            "Student";
-          const matric = (rec.student_matric || "").trim();
-          const dept = (rec.student_department || "").trim();
-          const t = rec.checked_in_at ? new Date(rec.checked_in_at) : null;
-          const joined = t ? t.toISOString() : "";
-
-          return [name, matric, dept, joined].map(esc).join(",");
-        });
-
-        const csv = [header.join(","), ...rows].join("\n");
-
-        const sessionTitle = currentSession
-          ? currentSession.session_code || currentSession.course_code || "attendance_session"
-          : "attendance_session";
-
-        const safeTitle = String(sessionTitle)
-          .replace(/[^a-zA-Z0-9_-]/g, "_")
-          .replace(/_+/g, "_");
-
-        const filename = `${safeTitle}_attendees.csv`;
-
-        try {
-          if (navigator.share && window.File) {
-            const file = new File([csv], filename, { type: "text/csv" });
-            navigator
-              .share({
-                files: [file],
-                title: "Attendance export",
-                text: "Colspot attendance CSV",
-              })
-              .catch((err) => {
-                console.warn("Share cancelled or failed:", err);
-              });
-            return;
-          }
-        } catch (e) {
-          console.warn("navigator.share path failed:", e);
-        }
-
-        try {
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename;
-          a.style.display = "none";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          return;
-        } catch (e) {
-          console.warn("Blob download failed, trying data URL:", e);
-        }
-
-        const dataUrl =
-          "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-        window.open(dataUrl, "_blank");
-      }
-
-      function reloadAttendees() {
-        loadSessionAndAttendees();
-      }
-
-      async function endSession() {
-        if (!supabaseReady || !currentSessionId || !currentUser) return;
-
-        const confirmed = window.confirm(
-          "End this attendance session now? Students will no longer be able to join."
-        );
-        if (!confirmed) return;
-
-        try {
-          const nowIso = new Date().toISOString();
-
-          const { error } = await supabase
-            .from("attendance_sessions")
-            .update({
-              is_active: false,
-              expires_at: nowIso,
-            })
-            .eq("id", currentSessionId)
-            .eq("created_by", currentUser.id);
-
-          if (error) {
-            console.error(error);
-            showError("Could not end session. Please try again.");
-            return;
-          }
-
-          if (attendeesInterval) {
-            clearInterval(attendeesInterval);
-            attendeesInterval = null;
-          }
-
-          if (currentSession) {
-            currentSession.is_active = false;
-            currentSession.expires_at = nowIso;
-            setSessionHeader(currentSession);
-          } else {
-            updateEndButtonState(true);
-          }
-
-          alert("Session ended. Students can no longer join.");
-        } catch (e) {
-          console.error(e);
-          showError("Could not end session. Please try again.");
-        }
-      }
-
-      function liveSessionGoBack() {
-        if (typeof showScreen === "function") {
-          showScreen("history");
-          return;
-        }
-      }
-
-      function liveSessionGoHome() {
-        if (typeof showScreen === "function") {
-          showScreen("home");
-          return;
-        }
-      }
-
-      function liveSessionGoAttendance() {
-        if (typeof showScreen === "function") {
-          showScreen("attendance");
-          return;
-        }
-      }
-
-      function liveSessionGoHistory() {
-        if (typeof showScreen === "function") {
-          showScreen("history");
-          return;
-        }
-      }
-
-      function liveSessionGoReports() {
-        if (typeof showScreen === "function") {
-          showScreen("reports");
-          return;
-        }
-      }
-
-      function getSessionIdFromInternalState() {
-        const selected = window.historyScreenState?.selectedAttendanceSession || null;
-        if (selected?.id) return selected.id;
-
-        const params = new URLSearchParams(window.location.search);
-        const fromUrl = params.get("session_id");
-        if (fromUrl) return fromUrl;
-
-        const fromStorage = localStorage.getItem("colspot_last_session_id");
-        return fromStorage || null;
-      }
-
-      async function openLiveSessionScreen() {
-        await new Promise((r) => setTimeout(r, 50));
-
-        if (typeof supabase === "undefined") {
-          console.error("Supabase client missing on live session screen");
-          return;
-        }
-
-        supabaseReady = true;
-
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data || !data.user) {
-          if (typeof showScreen === "function") {
-            showScreen("home");
-          }
-          return;
-        }
-
-        currentUser = data.user;
-        currentSessionId = getSessionIdFromInternalState();
-
-        if (!currentSessionId) {
-          showError("No active session found. Start an attendance session first.");
-          return;
-        }
-
-        if (countdownInterval) clearInterval(countdownInterval);
-        if (attendeesInterval) clearInterval(attendeesInterval);
-
-        loadSessionAndAttendees();
-        attendeesInterval = setInterval(loadSessionAndAttendees, 3000);
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById("addStudentModal");
-        if (modal) {
-          modal.addEventListener("click", (e) => {
-            if (e.target === modal) closeAddStudentModal();
-          });
-        }
+      serverClassesCache = Array.isArray(data) ? data : [];
+
+      serverClassesCache.forEach((row) => {
+        const item = normalizeClassItem(row);
+        if (!item.code) return;
+        saveRecentClass(item.code, item.title, item.academicSession);
       });
 
-      window.openLiveSessionScreen = openLiveSessionScreen;
-      window.liveSessionGoBack = liveSessionGoBack;
-      window.liveSessionGoHome = liveSessionGoHome;
-      window.liveSessionGoAttendance = liveSessionGoAttendance;
-      window.liveSessionGoHistory = liveSessionGoHistory;
-      window.liveSessionGoReports = liveSessionGoReports;
-      window.liveSessionReloadAttendees = reloadAttendees;
-      window.liveSessionDownloadAttendeesCsv = downloadAttendeesCsv;
-      window.liveSessionOpenAddStudentModal = openAddStudentModal;
-      window.liveSessionCloseAddStudentModal = closeAddStudentModal;
-      window.liveSessionSubmitAddStudentModal = submitAddStudentModal;
-      window.liveSessionApplyAttendeeFilter = applyAttendeeFilter;
-      window.liveSessionEndSession = endSession;
-    })();
-  </script>
+      const currentFilter = document.getElementById("searchClass")?.value || "";
+      renderRecent(currentFilter);
+    } catch (err) {
+      console.warn("Unable to sync classes from server", err);
+    }
+  }
+
+  function getDeviceIdForWarmup() {
+    try {
+      if (
+        window.ColspotGuard &&
+        typeof window.ColspotGuard.getOrCreateDeviceId === "function"
+      ) {
+        return window.ColspotGuard.getOrCreateDeviceId();
+      }
+
+      if (
+        window.ColspotNative &&
+        typeof window.ColspotNative.getDeviceId === "function"
+      ) {
+        const nativeId = window.ColspotNative.getDeviceId();
+        if (nativeId && typeof nativeId === "string") return nativeId.trim();
+      }
+
+      let id = localStorage.getItem("colspot_device_id");
+      if (!id) {
+        id = "dev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+        localStorage.setItem("colspot_device_id", id);
+      }
+
+      return id;
+    } catch (e) {
+      console.warn("[attendance] getDeviceIdForWarmup failed:", e);
+      return null;
+    }
+  }
+
+  function getPlatformForLocation() {
+    try {
+      if (window.Capacitor && typeof window.Capacitor.getPlatform === "function") {
+        return window.Capacitor.getPlatform();
+      }
+
+      const ua = navigator.userAgent || navigator.vendor || "";
+      if (/android/i.test(ua)) return "android";
+      if (/iphone|ipad|ipod/i.test(ua)) return "ios";
+
+      return "web";
+    } catch {
+      return "web";
+    }
+  }
+
+  function mapLocationError(err) {
+    try {
+      if (!err) return "NO_READING";
+
+      if (typeof err.code === "number") {
+        if (err.code === 1) return "PERMISSION_DENIED";
+        if (err.code === 2) return "POSITION_UNAVAILABLE";
+        if (err.code === 3) return "TIMEOUT";
+      }
+
+      const msg = String(err.message || "").toLowerCase();
+
+      if (msg.includes("permission") && msg.includes("denied")) return "PERMISSION_DENIED";
+      if (msg.includes("location services") && msg.includes("disabled")) return "LOCATION_OFF";
+      if (msg.includes("disabled")) return "LOCATION_OFF";
+      if (msg.includes("timeout")) return "TIMEOUT";
+      if (msg.includes("unavailable")) return "POSITION_UNAVAILABLE";
+
+      return "NO_READING";
+    } catch (_) {
+      return "NO_READING";
+    }
+  }
+
+  function buildLocationFailureMessage(reason, platform) {
+    const isIos = platform === "ios";
+
+    if (reason === "ACCURACY_TOO_POOR") {
+      return isIos
+        ? LOCATION_REASON_MESSAGES.ACCURACY_TOO_POOR_IOS
+        : LOCATION_REASON_MESSAGES.ACCURACY_TOO_POOR_ANDROID;
+    }
+
+    if (reason === "WARMUP_ONLY_BAD" || reason === "LIVE_ONLY_BAD") {
+      return isIos
+        ? LOCATION_REASON_MESSAGES.LOCATION_TOO_WEAK_IOS
+        : LOCATION_REASON_MESSAGES.LOCATION_TOO_WEAK_ANDROID;
+    }
+
+    return LOCATION_REASON_MESSAGES[reason] ||
+      "Colspot could not get your location right now.\n\nPlease turn Location ON, allow Colspot location access, check your internet, move closer to a window or outside, and try again.";
+  }
+
+  function getLocationPopupTitle(reason) {
+    if (reason === "PERMISSION_DENIED") return "Location is blocked";
+    if (reason === "LOCATION_OFF") return "Location is off";
+    if (reason === "TIMEOUT") return "Location took too long";
+    if (
+      reason === "ACCURACY_TOO_POOR" ||
+      reason === "WARMUP_ONLY_BAD" ||
+      reason === "LIVE_ONLY_BAD"
+    ) {
+      return "Location accuracy is weak";
+    }
+    return "Location issue";
+  }
+
+  function getCurrentPositionOnce() {
+    return new Promise(async (resolve) => {
+      try {
+        const hasCapacitor =
+          typeof window !== "undefined" &&
+          window.Capacitor &&
+          window.Capacitor.Plugins &&
+          window.Capacitor.Plugins.Geolocation;
+
+        if (hasCapacitor) {
+          const Geolocation = window.Capacitor.Plugins.Geolocation;
+
+          try {
+            const perm = await Geolocation.requestPermissions();
+
+            if (
+              perm &&
+              (perm.location === "denied" || perm.coarseLocation === "denied")
+            ) {
+              return resolve({ ok: false, reason: "PERMISSION_DENIED", pos: null });
+            }
+          } catch (permErr) {
+            return resolve({ ok: false, reason: mapLocationError(permErr), pos: null });
+          }
+
+          try {
+            const pos = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 20000,
+              maximumAge: 0
+            });
+
+            return resolve({ ok: true, reason: null, pos });
+          } catch (err) {
+            return resolve({ ok: false, reason: mapLocationError(err), pos: null });
+          }
+        } else if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ ok: true, reason: null, pos }),
+            (err) => resolve({ ok: false, reason: mapLocationError(err), pos: null }),
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+          );
+        } else {
+          resolve({ ok: false, reason: "POSITION_UNAVAILABLE", pos: null });
+        }
+      } catch (err) {
+        resolve({ ok: false, reason: mapLocationError(err), pos: null });
+      }
+    });
+  }
+
+  async function getSmartLocation(maxReads = 7, desiredAccuracy = 100) {
+    const readings = [];
+    let lastReason = "NO_READING";
+
+    for (let i = 0; i < maxReads; i++) {
+      const result = await getCurrentPositionOnce();
+
+      if (result && result.ok && result.pos && result.pos.coords) {
+        const acc =
+          typeof result.pos.coords.accuracy === "number" &&
+          !Number.isNaN(result.pos.coords.accuracy)
+            ? result.pos.coords.accuracy
+            : null;
+
+        readings.push({ pos: result.pos, accuracy: acc });
+
+        if (acc !== null && acc <= desiredAccuracy) {
+          return {
+            ok: true,
+            reason: null,
+            pos: result.pos,
+            accuracyMeters: acc,
+            readings
+          };
+        }
+      } else {
+        lastReason = result?.reason || lastReason;
+      }
+
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+
+    if (!readings.length) {
+      return {
+        ok: false,
+        reason: lastReason || "NO_READING",
+        pos: null,
+        accuracyMeters: null,
+        readings: []
+      };
+    }
+
+    let best = readings[0];
+
+    for (const r of readings) {
+      if (r.accuracy == null) continue;
+      if (best.accuracy == null || r.accuracy < best.accuracy) best = r;
+    }
+
+    return {
+      ok: false,
+      reason: "ACCURACY_TOO_POOR",
+      pos: best.pos || null,
+      accuracyMeters:
+        best.accuracy != null && !Number.isNaN(best.accuracy) ? best.accuracy : null,
+      readings
+    };
+  }
+
+  async function getLocationForSession() {
+    const best = await getSmartLocation(7, 100);
+
+    if (best.ok && best.pos && best.pos.coords) {
+      return {
+        ok: true,
+        reason: null,
+        lat: best.pos.coords.latitude,
+        lng: best.pos.coords.longitude,
+        accuracyMeters:
+          best.accuracyMeters != null ? best.accuracyMeters : best.pos.coords.accuracy
+      };
+    }
+
+    return {
+      ok: false,
+      reason: best.reason || "NO_READING",
+      lat: null,
+      lng: null,
+      accuracyMeters: best.accuracyMeters ?? null
+    };
+  }
+
+  async function runAttendanceWarmupOnce() {
+    try {
+      if (typeof supabase === "undefined") return;
+
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) return;
+
+      const user = userData.user;
+      const deviceId = getDeviceIdForWarmup();
+
+      const warm = await getSmartLocation(10, 120);
+      if (!warm.ok || !warm.pos || !warm.pos.coords) return;
+
+      const { latitude, longitude } = warm.pos.coords;
+      const accuracyMeters =
+        warm.accuracyMeters != null ? warm.accuracyMeters : warm.pos.coords.accuracy;
+
+      if (accuracyMeters == null) return;
+
+      await supabase.from("attendance_warmup_attendance").insert([
+        {
+          lecturer_id: user.id,
+          device_id: deviceId,
+          lat: latitude,
+          lng: longitude,
+          accuracy_m: accuracyMeters
+        }
+      ]);
+    } catch (e) {
+      console.warn("[attendance] warmup insert failed:", e);
+    }
+  }
+
+  async function fetchBestWarmupLocation(userId, deviceId) {
+    if (typeof supabase === "undefined" || !userId) {
+      return { ok: false, reason: "NO_READING", source: "warmup", data: null };
+    }
+
+    const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    const candidates = [];
+
+    try {
+      const queryMain = supabase
+        .from("attendance_warmup_main")
+        .select("lat, lng, accuracy_m, created_at")
+        .eq("lecturer_id", userId)
+        .gte("created_at", threeMinutesAgo)
+        .order("accuracy_m", { ascending: true })
+        .limit(1);
+
+      const queryAtt = supabase
+        .from("attendance_warmup_attendance")
+        .select("lat, lng, accuracy_m, created_at")
+        .eq("lecturer_id", userId)
+        .gte("created_at", threeMinutesAgo)
+        .order("accuracy_m", { ascending: true })
+        .limit(1);
+
+      const [mainRes, attRes] = await Promise.all([queryMain, queryAtt]);
+
+      if (mainRes?.data?.[0]) candidates.push(mainRes.data[0]);
+      if (attRes?.data?.[0]) candidates.push(attRes.data[0]);
+    } catch (e) {
+      console.warn("[attendance] fetchBestWarmupLocation failed:", e);
+    }
+
+    if (!candidates.length) {
+      return { ok: false, reason: "NO_READING", source: "warmup", data: null };
+    }
+
+    let bestRow = null;
+
+    for (const row of candidates) {
+      const acc = typeof row.accuracy_m === "number" ? row.accuracy_m : null;
+      if (acc == null) continue;
+      if (!bestRow || acc < bestRow.accuracy_m) bestRow = row;
+    }
+
+    if (!bestRow) {
+      return { ok: false, reason: "NO_READING", source: "warmup", data: null };
+    }
+
+    return {
+      ok: true,
+      reason: null,
+      source: "warmup",
+      data: {
+        lat: bestRow.lat,
+        lng: bestRow.lng,
+        accuracyMeters: bestRow.accuracy_m
+      }
+    };
+  }
+
+  function pickBestLocationCandidate(candidates, maxAllowedAccMeters) {
+    const maxAcc = typeof maxAllowedAccMeters === "number" ? maxAllowedAccMeters : 300;
+
+    const valid = (candidates || []).filter(
+      (c) =>
+        c &&
+        typeof c.lat === "number" &&
+        typeof c.lng === "number" &&
+        typeof c.accuracyMeters === "number" &&
+        !Number.isNaN(c.accuracyMeters) &&
+        c.accuracyMeters <= maxAcc
+    );
+
+    if (!valid.length) return null;
+
+    let best = valid[0];
+
+    for (const c of valid) {
+      if (c.accuracyMeters < best.accuracyMeters) best = c;
+    }
+
+    return best;
+  }
+
+  function updateAttendanceLocationUI() {
+    const toggle = document.getElementById("useLocationToggle");
+    const text = document.getElementById("locationToggleText");
+    const note = document.getElementById("attendanceLocationNote");
+    const useLocation = !!toggle?.checked;
+
+    if (text) {
+      text.textContent = useLocation
+        ? "ON: only nearby students can see and join this session."
+        : "OFF: everyone can see this session on Nearby attendance and join with PIN.";
+    }
+
+    if (note) {
+      note.innerHTML = useLocation
+        ? "<strong>Colspot uses your location to know who is in class.</strong><br />Before starting, turn Location ON, allow Colspot location access, use good internet, and move closer to a window or outside for better accuracy."
+        : "<strong>Location is off for this session.</strong><br />This session will be shown to everyone on Nearby attendance and students will join with PIN.";
+    }
+  }
+
+  function openLiveSessionInnerScreen(sessionRow) {
+    if (!sessionRow || !sessionRow.id) return false;
+
+    try {
+      localStorage.setItem("colspot_last_session_id", sessionRow.id);
+      localStorage.setItem("colspot_active_session_id", sessionRow.id);
+      sessionStorage.setItem("colspot_live_session_id", sessionRow.id);
+
+      window.historyScreenState = window.historyScreenState || {};
+      window.historyScreenState.selectedAttendanceSession = sessionRow;
+      window.historyScreenState.currentAttendanceSession = sessionRow;
+      window.historyScreenState.liveSessionId = sessionRow.id;
+    } catch (e) {
+      console.warn("[attendance] could not save live session state:", e);
+    }
+
+    if (typeof window.openLiveSessionScreen === "function") {
+      window.openLiveSessionScreen(sessionRow.id, sessionRow);
+      return true;
+    }
+
+    if (typeof openLiveSessionScreen === "function") {
+      openLiveSessionScreen(sessionRow.id, sessionRow);
+      return true;
+    }
+
+    if (typeof window.showScreen === "function") {
+      window.showScreen("live-session");
+
+      setTimeout(() => {
+        if (typeof window.openLiveSessionScreen === "function") {
+          window.openLiveSessionScreen(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionInit === "function") {
+          window.liveSessionInit(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionLoadSession === "function") {
+          window.liveSessionLoadSession(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionReloadAttendees === "function") {
+          window.liveSessionReloadAttendees();
+        }
+      }, 100);
+
+      return true;
+    }
+
+    if (typeof showScreen === "function") {
+      showScreen("live-session");
+
+      setTimeout(() => {
+        if (typeof window.openLiveSessionScreen === "function") {
+          window.openLiveSessionScreen(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionInit === "function") {
+          window.liveSessionInit(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionLoadSession === "function") {
+          window.liveSessionLoadSession(sessionRow.id, sessionRow);
+        } else if (typeof window.liveSessionReloadAttendees === "function") {
+          window.liveSessionReloadAttendees();
+        }
+      }, 100);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  async function startSession() {
+    clearMessages();
+    lastAttendanceLocationReason = null;
+
+    if (!selectedClass) {
+      showError("Please select a class first.", "Class required");
+      return;
+    }
+
+    const pinInput = document.getElementById("pinInput");
+    const timerRange = document.getElementById("timerRange");
+    const btn = document.getElementById("btnStartSession");
+    const useLocation = !!document.getElementById("useLocationToggle")?.checked;
+
+    const pin = (pinInput?.value || "").trim();
+
+    if (!pin) {
+      showError("Please enter a PIN before starting session.", "PIN required");
+      return;
+    }
+
+    if (pin.length < 4) {
+      showError("Please enter a valid PIN with at least 4 digits.", "Invalid PIN");
+      return;
+    }
+
+    if (typeof isBrowserOffline === "function" && isBrowserOffline()) {
+      showError("No internet connection. Please check your network and try again.", "No internet");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Starting…";
+
+    try {
+      if (typeof supabase === "undefined") {
+        showError("We couldn’t connect to the server. Please close and reopen Colspot.", "Server issue");
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !userData?.user) {
+        showError("Your session has expired. Please sign in again.", "Session expired");
+        return;
+      }
+
+      const user = userData.user;
+      const lecturerName = getDisplayName(user);
+      const courseTitle = (selectedClass.title || "").trim() || null;
+      const academicSession = (selectedClass.academicSession || "").trim() || null;
+      const deviceId = getDeviceIdForWarmup();
+
+      const accountInfo = await getCurrentUserRoleAndSchool(user);
+      const schoolName = normalizeSchoolName(accountInfo.schoolName || "");
+
+      if (!schoolName) {
+        showError("We couldn’t load your school information.", "School missing");
+        return;
+      }
+
+      const minutes = parseInt(timerRange?.value || "10", 10);
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + minutes * 60000);
+
+      let lat = null;
+      let lng = null;
+      let creatorAccuracy = null;
+
+      if (useLocation) {
+        const platform = getPlatformForLocation();
+        const maxAccMeters = platform === "ios" ? 1000 : 300;
+
+        const [warmupBest, liveLoc] = await Promise.all([
+          fetchBestWarmupLocation(user.id, deviceId),
+          getLocationForSession()
+        ]);
+
+        const candidates = [];
+
+        if (warmupBest.ok && warmupBest.data) {
+          candidates.push(warmupBest.data);
+        }
+
+        if (liveLoc.ok) {
+          candidates.push({
+            lat: liveLoc.lat,
+            lng: liveLoc.lng,
+            accuracyMeters: liveLoc.accuracyMeters
+          });
+        }
+
+        const finalLoc = pickBestLocationCandidate(candidates, maxAccMeters);
+
+        if (!finalLoc) {
+          let reason = "NO_READING";
+
+          if (!warmupBest.ok && !liveLoc.ok) {
+            reason = liveLoc.reason || warmupBest.reason || "NO_READING";
+          } else if (warmupBest.ok && !liveLoc.ok) {
+            if (
+              warmupBest.data &&
+              typeof warmupBest.data.accuracyMeters === "number" &&
+              warmupBest.data.accuracyMeters > maxAccMeters
+            ) {
+              reason = "WARMUP_ONLY_BAD";
+            } else {
+              reason = liveLoc.reason || "NO_READING";
+            }
+          } else if (!warmupBest.ok && liveLoc.ok) {
+            if (
+              typeof liveLoc.accuracyMeters === "number" &&
+              liveLoc.accuracyMeters > maxAccMeters
+            ) {
+              reason = "LIVE_ONLY_BAD";
+            } else {
+              reason = "NO_READING";
+            }
+          } else {
+            reason = "ACCURACY_TOO_POOR";
+          }
+
+          lastAttendanceLocationReason = reason;
+
+          const friendlyMessage = buildLocationFailureMessage(reason, platform);
+          const friendlyTitle = getLocationPopupTitle(reason);
+
+          showError(friendlyMessage, friendlyTitle);
+          return;
+        }
+
+        lat = finalLoc.lat;
+        lng = finalLoc.lng;
+        creatorAccuracy = finalLoc.accuracyMeters;
+      }
+
+      const insertRow = {
+        created_by: user.id,
+        course_code: selectedClass.code,
+        course_title: courseTitle,
+        academic_session: academicSession,
+        lecturer_name: lecturerName,
+        school_name: schoolName,
+        pin_code: pin,
+        starts_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
+        is_active: true,
+        use_location: useLocation
+      };
+
+      if (useLocation) {
+        insertRow.latitude = lat;
+        insertRow.longitude = lng;
+        insertRow.radius_meters = 400;
+        insertRow.creator_accuracy_meters = creatorAccuracy;
+      } else {
+        insertRow.latitude = null;
+        insertRow.longitude = null;
+        insertRow.radius_meters = null;
+        insertRow.creator_accuracy_meters = null;
+      }
+
+      const { data, error } = await supabase
+        .from("attendance_sessions")
+        .insert([insertRow])
+        .select()
+        .single();
+
+      if (error) {
+        if (
+          error.code === "23505" ||
+          (error.message || "").includes("attendance_sessions_unique_active_per_creator")
+        ) {
+          showError(
+            "You already have a live attendance for this course code. End it first before starting another one.",
+            "Live session already exists"
+          );
+        } else {
+          showError(
+            "We couldn’t start this session. Please check your network and try again.",
+            "Could not start session"
+          );
+        }
+
+        return;
+      }
+
+      if (data && data.id) {
+        localStorage.setItem("colspot_last_session_id", data.id);
+        localStorage.setItem("colspot_active_session_id", data.id);
+        sessionStorage.setItem("colspot_live_session_id", data.id);
+
+        resetAttendanceFormState();
+
+        const openedInnerScreen = openLiveSessionInnerScreen(data);
+
+        if (openedInnerScreen) {
+          return;
+        }
+
+        showSuccess("Attendance session started. Open Live Attendance from your dashboard.");
+        return;
+      }
+
+      showSuccess("Attendance session started.");
+    } catch (e) {
+      console.error(e);
+      showError(
+        "Something went wrong. Please check your internet and try again.",
+        "Something went wrong"
+      );
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Start session";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderRecent();
+    syncClassesFromSupabase();
+    runAttendanceWarmupOnce();
+
+    const btnShowNewClass = document.getElementById("btnShowNewClass");
+
+    if (btnShowNewClass) {
+      btnShowNewClass.addEventListener("click", () => {
+        window.location.href = "create_class.html";
+      });
+    }
+
+    const searchClass = document.getElementById("searchClass");
+
+    if (searchClass) {
+      searchClass.addEventListener("input", (e) => {
+        renderRecent(e.target.value);
+      });
+    }
+
+    const timerRange = document.getElementById("timerRange");
+
+    if (timerRange) {
+      timerRange.addEventListener("input", (e) => {
+        const minutes = e.target.value;
+        const label = document.getElementById("timerLabel");
+
+        if (label) {
+          label.textContent = `Expires in ${minutes} minute${minutes === "1" ? "" : "s"}`;
+        }
+      });
+    }
+
+    const useLocationToggle = document.getElementById("useLocationToggle");
+
+    if (useLocationToggle) {
+      useLocationToggle.addEventListener("change", updateAttendanceLocationUI);
+      updateAttendanceLocationUI();
+    }
+
+    const popupBtn = document.getElementById("attendanceErrorPopupBtn");
+
+    if (popupBtn) {
+      popupBtn.addEventListener("click", closeAttendanceErrorPopup);
+    }
+
+    const popupWrap = document.getElementById("attendanceErrorPopup");
+
+    if (popupWrap) {
+      popupWrap.addEventListener("click", (e) => {
+        if (e.target === popupWrap) closeAttendanceErrorPopup();
+      });
+    }
+
+    const btnStartSession = document.getElementById("btnStartSession");
+
+    if (btnStartSession) {
+      btnStartSession.addEventListener("click", startSession);
+    }
+
+    resetAttendanceFormState();
+  });
+</script>
 </div>
 <!-- 🔹 LIVE SESSION SCREEN END -->
