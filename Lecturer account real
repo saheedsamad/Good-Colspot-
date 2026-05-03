@@ -1,0 +1,922 @@
+<!-- 🔹 LECTURER ACCOUNT SCREEN START -->
+<div id="screen-account" class="screen">
+  <style>
+    #screen-account {
+      padding: 4px 2px 16px;
+    }
+
+    #screen-account .account-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 4px 2px 12px;
+    }
+
+    #screen-account .account-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-account .account-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    #screen-account .account-header-pill {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #screen-account .profile-card {
+      background: #f9fafb;
+      border-radius: 24px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+      padding: 18px 16px;
+      margin-bottom: 14px;
+    }
+
+    #screen-account .profile-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    #screen-account .avatar-circle {
+      width: 92px;
+      height: 92px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #93c5fd 0, #2563eb 92%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 38px;
+      font-weight: 800;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 35px rgba(37, 99, 235, 0.28);
+    }
+
+    #screen-account .avatar-circle img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: none;
+      z-index: 2;
+    }
+
+    #screen-account .avatar-circle span {
+      position: relative;
+      z-index: 1;
+    }
+
+    #screen-account .profile-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-account .role-pill {
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: #e5edff;
+      color: #1e40af;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #screen-account .profile-detail-card {
+      margin-top: 12px;
+      border-radius: 20px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 4px 0;
+      overflow: hidden;
+    }
+
+    #screen-account .detail-row {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #screen-account .detail-row + .detail-row {
+      border-top: 1px solid #e5e7eb;
+    }
+
+    #screen-account .detail-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #eef2ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #screen-account .detail-icon svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 1.8;
+      stroke: #4f46e5;
+      fill: none;
+    }
+
+    #screen-account .detail-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #screen-account .detail-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    #screen-account .detail-value {
+      font-size: 14px;
+      color: var(--text-main);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #screen-account .section-heading {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin: 12px 4px 6px;
+    }
+
+    #screen-account .actions-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #screen-account .action-btn {
+      flex: 1;
+      padding: 11px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+
+    #screen-account .action-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    #screen-account .action-btn.contact {
+      border-color: #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    #screen-account .action-btn.logout,
+    #screen-account .action-btn.danger {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    #screen-account .device-card {
+      margin-top: 6px;
+      margin-bottom: 10px;
+      border-radius: 20px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 12px 14px 10px;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+    }
+
+    #screen-account .device-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #screen-account .device-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    #screen-account .device-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    #screen-account .device-count-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      font-size: 11px;
+      color: #1d4ed8;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #screen-account .device-list {
+      margin-top: 4px;
+    }
+
+    #screen-account .device-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 0;
+    }
+
+    #screen-account .device-row + .device-row {
+      border-top: 1px solid #f3f4f6;
+    }
+
+    #screen-account .device-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    #screen-account .device-icon {
+      width: 31px;
+      height: 31px;
+      border-radius: 999px;
+      background: #eef2ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #screen-account .device-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      stroke: #4f46e5;
+      fill: none;
+    }
+
+    #screen-account .device-text {
+      min-width: 0;
+    }
+
+    #screen-account .device-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    #screen-account .device-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 230px;
+    }
+
+    #screen-account .device-remove-btn {
+      border-radius: 999px;
+      border: 1px solid #fee2e2;
+      background: #fff7ed;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: #b91c1c;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    #screen-account .status-text {
+      font-size: 12px;
+      margin: 4px 2px 0;
+      min-height: 16px;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    #screen-account .status-text.success {
+      color: #16a34a;
+    }
+
+    #screen-account .status-text.error {
+      color: #dc2626;
+    }
+  </style>
+
+  <div class="account-header">
+    <div>
+      <div class="account-title">Account</div>
+      <div class="account-sub">View your lecturer profile.</div>
+    </div>
+
+    <button class="account-header-pill" type="button" onclick="loadLecturerAccountScreen()">
+      Refresh
+    </button>
+  </div>
+
+  <section>
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="avatar-circle">
+          <img id="lecturerAccountAvatarImg" src="" alt="Profile picture" />
+          <span id="lecturerAccountInitial">L</span>
+        </div>
+
+        <div>
+          <div class="profile-name" id="lecturerAccountNameTop">—</div>
+          <div class="role-pill">Lecturer account</div>
+        </div>
+      </div>
+
+      <div class="profile-detail-card">
+        <div class="detail-row">
+          <div class="detail-icon">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.2"></circle>
+              <path d="M5 18c1-3 3-4.5 7-4.5s6 1.5 7 4.5"></path>
+            </svg>
+          </div>
+          <div class="detail-text">
+            <div class="detail-label">Full name</div>
+            <div class="detail-value" id="lecturerAccountFullName">—</div>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 9l9-5 9 5"></path>
+              <path d="M5 10v6"></path>
+              <path d="M9 12v4"></path>
+              <path d="M15 12v4"></path>
+              <path d="M19 10v6"></path>
+              <path d="M4 18h16"></path>
+            </svg>
+          </div>
+          <div class="detail-text">
+            <div class="detail-label">School</div>
+            <div class="detail-value" id="lecturerAccountSchool">—</div>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+              <path d="M8 9h8"></path>
+              <path d="M8 13h5"></path>
+            </svg>
+          </div>
+          <div class="detail-text">
+            <div class="detail-label">Staff ID</div>
+            <div class="detail-value" id="lecturerAccountStaffId">—</div>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 6h16v12H4z"></path>
+              <path d="M4 7l8 6 8-6"></path>
+            </svg>
+          </div>
+          <div class="detail-text">
+            <div class="detail-label">Email address</div>
+            <div class="detail-value" id="lecturerAccountEmail">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-heading">Account actions</div>
+
+    <div class="actions-row">
+      <button class="action-btn contact" type="button" onclick="lecturerAccountContactUs()">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 5h16v10H5.5L4 16.5z"></path>
+          <path d="M8 9h8"></path>
+          <path d="M8 12h4"></path>
+        </svg>
+        Contact us
+      </button>
+    </div>
+
+    <div class="actions-row">
+      <button class="action-btn logout" type="button" onclick="lecturerAccountLogout()">
+        <svg viewBox="0 0 24 24">
+          <path d="M15 3h4v18h-4"></path>
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M4 12h11"></path>
+        </svg>
+        Log out
+      </button>
+    </div>
+
+    <div class="actions-row">
+      <button class="action-btn danger" type="button" onclick="lecturerAccountDeleteAccount()">
+        <svg viewBox="0 0 24 24">
+          <path d="M5 7h14"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 7l1-3h4l1 3"></path>
+          <path d="M6 7l1 13h10l1-13"></path>
+        </svg>
+        Delete account
+      </button>
+    </div>
+
+    <div class="section-heading">Devices</div>
+
+    <div class="device-card">
+      <div class="device-header">
+        <div>
+          <div class="device-title">Linked phones</div>
+          <div class="device-sub">This account can be signed in on up to 2 phones.</div>
+        </div>
+        <span id="lecturerDevicesCountBadge" class="device-count-badge">0 / 2</span>
+      </div>
+
+      <div id="lecturerDevicesList" class="device-list"></div>
+      <p id="lecturerDevicesStatus" class="status-text"></p>
+    </div>
+  </section>
+
+  <script>
+    const LECTURER_DEVICE_STORAGE_KEY = "colspot_device_id";
+
+    let lecturerAccountCurrentUser = null;
+    let lecturerAccountLoadedOnce = false;
+
+    function lecturerAccountGetSb() {
+      if (typeof window.supabase !== "undefined" && window.supabase) return window.supabase;
+      if (typeof supabase !== "undefined" && supabase) return supabase;
+      return null;
+    }
+
+    function lecturerAccountText(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = value && String(value).trim() ? String(value).trim() : "—";
+    }
+
+    function lecturerAccountInitialFromName(name) {
+      const clean = String(name || "").trim();
+      return clean ? clean.charAt(0).toUpperCase() : "L";
+    }
+
+    function lecturerAccountSetAvatar(name, avatarUrl) {
+      const img = document.getElementById("lecturerAccountAvatarImg");
+      const initial = document.getElementById("lecturerAccountInitial");
+      const letter = lecturerAccountInitialFromName(name);
+
+      if (avatarUrl && img && initial) {
+        img.src = avatarUrl;
+        img.style.display = "block";
+        initial.style.display = "none";
+        initial.textContent = "";
+      } else {
+        if (img) {
+          img.removeAttribute("src");
+          img.style.display = "none";
+        }
+        if (initial) {
+          initial.style.display = "block";
+          initial.textContent = letter;
+        }
+      }
+
+      const chipImg = document.getElementById("avatarChipImg");
+      const chipText = document.getElementById("avatarChipText");
+
+      if (chipImg && chipText) {
+        if (avatarUrl) {
+          chipImg.src = avatarUrl;
+          chipImg.style.display = "block";
+          chipText.textContent = "";
+          chipText.style.display = "none";
+        } else {
+          chipImg.removeAttribute("src");
+          chipImg.style.display = "none";
+          chipText.textContent = letter;
+          chipText.style.display = "flex";
+        }
+      }
+    }
+
+    async function lecturerAccountGetUser() {
+      const sb = lecturerAccountGetSb();
+      if (!sb) return null;
+
+      const { data, error } = await sb.auth.getUser();
+
+      if (error || !data || !data.user) {
+        return null;
+      }
+
+      lecturerAccountCurrentUser = data.user;
+      return data.user;
+    }
+
+    async function loadLecturerAccountScreen() {
+      const sb = lecturerAccountGetSb();
+      const status = document.getElementById("lecturerDevicesStatus");
+
+      if (!sb) {
+        if (status) {
+          status.textContent = "Backend not available. Please reload.";
+          status.className = "status-text error";
+        }
+        return;
+      }
+
+      const user = await lecturerAccountGetUser();
+
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      let profile = null;
+
+      try {
+        const { data, error } = await sb
+          .from("lecturer_accounts")
+          .select("*")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data) {
+          profile = data;
+        }
+      } catch (e) {
+        console.warn("lecturer_accounts load failed:", e);
+      }
+
+      if (!profile) {
+        try {
+          const { data, error } = await sb
+            .from("lecturers")
+            .select("*")
+            .eq("id", user.id)
+            .limit(1)
+            .maybeSingle();
+
+          if (!error && data) {
+            profile = data;
+          }
+        } catch (e) {
+          console.warn("lecturers fallback load failed:", e);
+        }
+      }
+
+      const fullName =
+        profile?.full_name ||
+        profile?.name ||
+        user.user_metadata?.full_name ||
+        user.email ||
+        "";
+
+      const school =
+        profile?.school_name ||
+        profile?.school ||
+        profile?.institution ||
+        "";
+
+      const staffId =
+        profile?.staff_id ||
+        profile?.staff_number ||
+        profile?.lecturer_id ||
+        profile?.login_id ||
+        "";
+
+      const email =
+        profile?.email ||
+        user.email ||
+        "";
+
+      const avatarUrl =
+        profile?.avatar_url ||
+        profile?.photo_url ||
+        user.user_metadata?.avatar_url ||
+        "";
+
+      lecturerAccountText("lecturerAccountNameTop", fullName);
+      lecturerAccountText("lecturerAccountFullName", fullName);
+      lecturerAccountText("lecturerAccountSchool", school);
+      lecturerAccountText("lecturerAccountStaffId", staffId);
+      lecturerAccountText("lecturerAccountEmail", email);
+      lecturerAccountSetAvatar(fullName, avatarUrl);
+
+      lecturerAccountLoadedOnce = true;
+
+      await loadLecturerAccountDevices();
+    }
+
+    function lecturerAccountGetDeviceId() {
+      try {
+        let raw = localStorage.getItem(LECTURER_DEVICE_STORAGE_KEY) || "";
+        raw = String(raw || "").trim();
+
+        if (!raw) return "";
+
+        if (/^[ABI]-/i.test(raw)) return raw;
+
+        const ua = navigator.userAgent || "";
+        let prefix = "B";
+
+        if (/android/i.test(ua)) prefix = "A";
+        else if (/iphone|ipad|ipod/i.test(ua)) prefix = "I";
+
+        const finalId = `${prefix}-${raw}`;
+        localStorage.setItem(LECTURER_DEVICE_STORAGE_KEY, finalId);
+
+        return finalId;
+      } catch {
+        return "";
+      }
+    }
+
+    async function loadLecturerAccountDevices() {
+      const sb = lecturerAccountGetSb();
+      const list = document.getElementById("lecturerDevicesList");
+      const status = document.getElementById("lecturerDevicesStatus");
+      const badge = document.getElementById("lecturerDevicesCountBadge");
+
+      if (!sb || !list || !status || !badge || !lecturerAccountCurrentUser) return;
+
+      list.innerHTML = "";
+      status.textContent = "Loading devices...";
+      status.className = "status-text";
+
+      const currentDeviceId = lecturerAccountGetDeviceId();
+
+      try {
+        const { data, error } = await sb
+          .from("user_devices")
+          .select("id, device_id, created_at")
+          .eq("user_id", lecturerAccountCurrentUser.id)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        const devices = data || [];
+        badge.textContent = `${devices.length} / 2`;
+
+        if (!devices.length) {
+          status.textContent = "No devices linked yet.";
+          return;
+        }
+
+        status.textContent = "";
+
+        devices.forEach((row) => {
+          const rowDeviceId = String(row.device_id || "").trim();
+          const isThisPhone = !!currentDeviceId && rowDeviceId === currentDeviceId;
+
+          const deviceRow = document.createElement("div");
+          deviceRow.className = "device-row";
+
+          const main = document.createElement("div");
+          main.className = "device-main";
+
+          const icon = document.createElement("div");
+          icon.className = "device-icon";
+          icon.innerHTML = `
+            <svg viewBox="0 0 24 24">
+              <rect x="7" y="3" width="10" height="18" rx="2"></rect>
+              <circle cx="12" cy="17" r="1"></circle>
+            </svg>
+          `;
+
+          const text = document.createElement("div");
+          text.className = "device-text";
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "device-name";
+          nameEl.textContent = isThisPhone ? "This phone" : "Other phone";
+
+          const metaEl = document.createElement("div");
+          metaEl.className = "device-meta";
+
+          const created = row.created_at
+            ? new Date(row.created_at).toLocaleString()
+            : "";
+
+          metaEl.textContent = created ? `Linked on ${created}` : "Linked device";
+
+          text.appendChild(nameEl);
+          text.appendChild(metaEl);
+
+          main.appendChild(icon);
+          main.appendChild(text);
+
+          deviceRow.appendChild(main);
+
+          if (!isThisPhone) {
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "device-remove-btn";
+            removeBtn.type = "button";
+            removeBtn.textContent = "Remove";
+            removeBtn.onclick = () => removeLecturerAccountDevice(row.id);
+            deviceRow.appendChild(removeBtn);
+          }
+
+          list.appendChild(deviceRow);
+        });
+      } catch (e) {
+        console.error("loadLecturerAccountDevices error:", e);
+        status.textContent = "Could not load devices.";
+        status.className = "status-text error";
+      }
+    }
+
+    async function removeLecturerAccountDevice(id) {
+      if (!id) return;
+
+      const yes = window.confirm("Remove this phone from your account?");
+      if (!yes) return;
+
+      const sb = lecturerAccountGetSb();
+      if (!sb) return;
+
+      try {
+        const { error } = await sb
+          .from("user_devices")
+          .delete()
+          .eq("id", id);
+
+        if (error) throw error;
+
+        await loadLecturerAccountDevices();
+      } catch (e) {
+        console.error("removeLecturerAccountDevice error:", e);
+        alert("Could not remove this phone. Please try again.");
+      }
+    }
+
+    function clearAllColspotCache() {
+      try {
+        const keysToRemove = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+
+          if (
+            key.startsWith("colspot_") ||
+            key === "supabase.auth.token" ||
+            key.includes("supabase")
+          ) {
+            keysToRemove.push(key);
+          }
+        }
+
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn("clearAllColspotCache failed:", e);
+      }
+    }
+
+    async function lecturerAccountLogout() {
+      const yes = window.confirm("Log out of this lecturer account?");
+      if (!yes) return;
+
+      try {
+        const sb = lecturerAccountGetSb();
+
+        if (sb && sb.auth) {
+          await sb.auth.signOut();
+        }
+      } catch (e) {
+        console.warn("lecturerAccountLogout signOut failed:", e);
+      } finally {
+        clearAllColspotCache();
+        window.location.href = "index.html";
+      }
+    }
+
+    function lecturerAccountContactUs() {
+      window.location.href = "contact.html";
+    }
+
+    async function lecturerAccountDeleteAccount() {
+      const user = lecturerAccountCurrentUser || (await lecturerAccountGetUser());
+
+      if (!user) {
+        alert("Please sign in again.");
+        return;
+      }
+
+      const yes = window.confirm(
+        "This will request/delete this lecturer account data. This action cannot be undone. Continue?"
+      );
+
+      if (!yes) return;
+
+      const typed = window.prompt("Type DELETE to confirm.");
+
+      if (!typed || typed.trim().toUpperCase() !== "DELETE") {
+        alert("Account deletion cancelled.");
+        return;
+      }
+
+      const sb = lecturerAccountGetSb();
+
+      try {
+        if (sb) {
+          await Promise.allSettled([
+            sb.from("user_devices").delete().eq("user_id", user.id),
+            sb.from("attendance_warmup_main").delete().eq("lecturer_id", user.id),
+            sb.from("attendance_warmup_attendance").delete().eq("lecturer_id", user.id),
+            sb.from("attendance_records").delete().eq("user_id", user.id),
+            sb.from("scan_sheets").delete().eq("user_id", user.id),
+            sb.from("lecturer_accounts").delete().eq("user_id", user.id),
+            sb.from("lecturers").delete().eq("id", user.id)
+          ]);
+
+          try {
+            if (sb.functions && sb.functions.invoke) {
+              await sb.functions.invoke("delete_my_account", { body: {} });
+            }
+          } catch (e) {
+            console.warn("delete_my_account function failed:", e);
+          }
+
+          try {
+            await sb.auth.signOut();
+          } catch (e) {
+            console.warn("signOut after delete failed:", e);
+          }
+        }
+
+        clearAllColspotCache();
+        alert("Account deleted.");
+        window.location.href = "index.html";
+      } catch (e) {
+        console.error("lecturerAccountDeleteAccount error:", e);
+        alert("Could not delete account. Please try again.");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        loadLecturerAccountScreen();
+      }, 200);
+    });
+
+    window.loadLecturerAccountScreen = loadLecturerAccountScreen;
+    window.lecturerAccountContactUs = lecturerAccountContactUs;
+    window.lecturerAccountLogout = lecturerAccountLogout;
+    window.lecturerAccountDeleteAccount = lecturerAccountDeleteAccount;
+    window.removeLecturerAccountDevice = removeLecturerAccountDevice;
+  </script>
+</div>
+<!-- 🔹 LECTURER ACCOUNT SCREEN END -->
