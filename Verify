@@ -854,7 +854,9 @@
     try {
       localStorage.removeItem("colspot_face_step_ready");
       localStorage.removeItem("colspot_verification_done");
-    } catch (e) {}
+    } catch (e) {
+      console.error("Could not clear verification redirect cache:", e);
+    }
 
     setTimeout(() => {
       window.location.href = INDEX_URL;
@@ -887,6 +889,7 @@
         role: "student",
         last_seen: new Date().toISOString()
       }));
+
       localStorage.setItem("colspot_auth_role", "student");
       localStorage.setItem("colspot_selected_role", "student");
       localStorage.setItem("colspot_login_flow", "student");
@@ -1777,7 +1780,9 @@
       localStorage.setItem("colspot_verification_done", "true");
       localStorage.setItem("colspot_verification_status", "successful");
       saveLocalUser(currentUser);
-    } catch {}
+    } catch (e) {
+      console.error("Could not save existing verification cache:", e);
+    }
 
     const alreadyHasFace = await hasVerifiedFaceAlready();
 
@@ -2040,19 +2045,6 @@
 
   async function initVerificationPage() {
     try {
-      if (window.ColspotGuard && typeof window.ColspotGuard.guardRolePageAccess === "function") {
-        try {
-          await window.ColspotGuard.guardRolePageAccess({
-            requiredRole: "student",
-            redirectTo: INDEX_URL,
-            studentHome: MAIN_URL,
-            lecturerHome: "main_lecturer.html"
-          });
-        } catch (e) {
-          console.warn("Guard warning:", e);
-        }
-      }
-
       resetAll();
       await loadDropdownOptions();
 
