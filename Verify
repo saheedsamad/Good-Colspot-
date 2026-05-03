@@ -41,11 +41,13 @@
         radial-gradient(circle at top, #dfeeff 0%, #f7faff 42%, #ffffff 100%);
       color:var(--text);
       min-height:100%;
+      -webkit-text-size-adjust:100%;
     }
 
     body{
       display:flex;
       justify-content:center;
+      overscroll-behavior:none;
     }
 
     body::-webkit-scrollbar{
@@ -508,7 +510,7 @@
       border-radius:14px;
       background:#fff;
       color:#0f172a;
-      font-size:14px;
+      font-size:16px;
       font-weight:800;
       padding:0 14px;
       outline:none;
@@ -707,7 +709,7 @@
 
       <div class="card-body">
         <div id="academicIntroCard" class="status-card warn">
-          After you continue, Colspot will take you to face capture. Your academic update will only complete after face capture is approved.
+          After you continue, Colspot will take you to face capture. Your academic update will only complete after face capture is approved. After approval, your old course memberships may expire and you may stop receiving attendance notifications from old-session courses.
         </div>
 
         <div id="academicLoading" class="loading">
@@ -779,7 +781,7 @@
         </button>
 
         <div class="footer-note">
-          After an academic update is completed, you can only update again after 60 days.
+          No old course membership will expire on this page. The update only completes after face capture is approved. After completion, you can only update again after 60 days.
         </div>
       </div>
     </section>
@@ -789,8 +791,7 @@
     </div>
   </div>
 
-  <script type="module" src="./client_supabase.js"></script>
-  <script src="./guard_session.js"></script>
+
 
   <script type="module" src="./client_supabase.js"></script>
   <script src="./guard_session.js"></script>
@@ -812,6 +813,9 @@
   const ACADEMIC_UPDATE_PENDING_KEY = "colspot_pending_academic_update";
   const ACADEMIC_UPDATE_BLOCK_DAYS = 60;
 
+  const ACADEMIC_UPDATE_COURSE_WARNING =
+    "Important: after your face capture is approved, your old course memberships from the previous academic details may expire. This means you may stop receiving attendance notifications from old-session courses. You will need to join the correct courses for your new level, session and semester.";
+
   const el = (id) => document.getElementById(id);
 
   const params = new URLSearchParams(window.location.search);
@@ -827,6 +831,7 @@
   let academicUpdateBlocked = false;
   let academicUpdateBlockInfo = null;
   let redirectingToIndex = false;
+  let academicWarningAccepted = false;
 
   let dropdownOptions = {
     level: [],
@@ -879,11 +884,27 @@
         id: user.id,
         user_id: user.id,
         email: user.email || "",
+        role: "student",
         last_seen: new Date().toISOString()
       }));
       localStorage.setItem("colspot_auth_role", "student");
+      localStorage.setItem("colspot_selected_role", "student");
+      localStorage.setItem("colspot_login_flow", "student");
+      localStorage.setItem("colspot_logged_in_user_id", user.id);
+      localStorage.setItem("colspot_logged_in_email", user.email || "");
     } catch (e) {
       console.error("Could not save local user cache:", e);
+    }
+  }
+
+  function saveStudentStageCacheAfterVerification() {
+    try {
+      localStorage.setItem("colspot_student_active", "true");
+      localStorage.setItem("colspot_face_step_ready", "true");
+      localStorage.setItem("colspot_verification_done", "true");
+      localStorage.setItem("colspot_verification_status", "successful");
+    } catch (e) {
+      console.error("Could not save student stage cache:", e);
     }
   }
 
@@ -959,6 +980,13 @@
 
   function showAcademicWarn(msg) {
     clearAcademicMsgs();
+    const node = safeEl("academicWarn");
+    if (!node) return;
+    node.style.display = "block";
+    node.textContent = msg || "";
+  }
+
+  function showAcademicWarningWithoutClearing(msg) {
     const node = safeEl("academicWarn");
     if (!node) return;
     node.style.display = "block";
@@ -1124,7 +1152,8 @@
       introCard.classList.remove("blocked");
       introCard.classList.add("warn");
       introCard.textContent =
-        "After you continue, Colspot will take you to face capture. Your academic update will only complete after face capture is approved.";
+        "After you continue, Colspot will take you to face capture. Your academic update will only complete after face capture is approved. " +
+        ACADEMIC_UPDATE_COURSE_WARNING;
     }
 
     if (continueBtn) {
@@ -1133,6 +1162,21 @@
     }
 
     setAcademicLoading(false);
+  }
+
+  function confirmAcademicUpdateWarning() {
+    if (academicWarningAccepted) return true;
+
+    const ok = window.confirm(
+      "Before you continue:\n\n" +
+      "After your face capture is approved, your old course memberships from your previous level/session/semester may expire.\n\n" +
+      "That means you may stop receiving attendance notifications from old-session courses.\n\n" +
+      "You will need to join the correct courses for your new academic details.\n\n" +
+      "Do you want to continue?"
+    );
+
+    academicWarningAccepted = !!ok;
+    return !!ok;
   }
 
   async function waitForSupabase(maxMs = 8000) {
@@ -1661,6 +1705,8 @@
       semester: normalized.semester || null,
       academic_session: normalized.session || null,
       email: currentUser?.email ? String(currentUser.email).trim().toLowerCase() : null,
+      verification_status: "verified",
+      is_active: true,
       academic_details_last_updated_at: nowIso,
       updated_at: nowIso
     };
@@ -1691,7 +1737,7 @@
 
     const status = normalizeText(data.capture_status).toLowerCase();
 
-    return data.face_verified === true || ["approved", "success", "verified"].includes(status);
+    return data.face_verified === true || ["approved", "success", "successful", "verified"].includes(status);
   }
 
   async function checkExistingSuccessfulVerification() {
@@ -1729,6 +1775,7 @@
     try {
       localStorage.setItem("colspot_face_step_ready", "true");
       localStorage.setItem("colspot_verification_done", "true");
+      localStorage.setItem("colspot_verification_status", "successful");
       saveLocalUser(currentUser);
     } catch {}
 
@@ -1797,6 +1844,8 @@
 
     if (blockInfo.blocked) return;
 
+    showAcademicWarningWithoutClearing(ACADEMIC_UPDATE_COURSE_WARNING);
+
     if (!fullName || !matric || !school) {
       showAcademicWarn("Some locked profile details are missing. Please complete normal verification first if this page does not work.");
     }
@@ -1859,7 +1908,9 @@
       new_level: newLevel,
       new_session: newSession,
       new_semester: newSemester,
-      status: "pending_face"
+      status: "pending_face",
+      warning_accepted: true,
+      warning_text: ACADEMIC_UPDATE_COURSE_WARNING
     };
 
     const { data, error } = await sb
@@ -1877,6 +1928,11 @@
       new_level: newLevel,
       new_session: newSession,
       new_semester: newSemester,
+      old_level: oldLevel || null,
+      old_session: oldSession || null,
+      old_semester: oldSemester || null,
+      warning_accepted: true,
+      warning_text: ACADEMIC_UPDATE_COURSE_WARNING,
       created_at: new Date().toISOString()
     };
 
@@ -1900,12 +1956,19 @@
       return;
     }
 
+    if (!confirmAcademicUpdateWarning()) {
+      showAcademicWarn("Academic update cancelled. No course membership has been expired.");
+      return;
+    }
+
     setAcademicLoading(true);
 
     try {
       const pending = await createPendingAcademicUpdate();
 
-      showAcademicOk("Academic update saved as pending. Continue to face capture to complete it.");
+      showAcademicOk(
+        "Academic update saved as pending. No old course membership has been expired yet. Continue to face capture to complete the update."
+      );
 
       setTimeout(() => {
         window.location.href =
@@ -1937,7 +2000,7 @@
 
     if (safeEl("heroSub")) {
       safeEl("heroSub").textContent =
-        "Your identity details remain locked. Select only your new level, academic session and semester, then retake face capture.";
+        "Your identity details remain locked. Select only your new level, academic session and semester, then retake face capture. Old course memberships will not expire until the update is completed after face approval.";
     }
 
     if (safeEl("modePill")) safeEl("modePill").classList.remove("hidden");
@@ -2196,10 +2259,11 @@
         lockVerificationUi();
 
         try {
-          localStorage.setItem("colspot_face_step_ready", "true");
-          localStorage.setItem("colspot_verification_done", "true");
+          saveStudentStageCacheAfterVerification();
           saveLocalUser(currentUser);
-        } catch {}
+        } catch (e) {
+          console.error("Could not save verification cache:", e);
+        }
 
         showOk("Verification successful. Redirecting to face capture...");
 
