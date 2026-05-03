@@ -26,9 +26,11 @@
       box-sizing: border-box;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
         Roboto, Inter, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+    html,
+    body {
       height: 100%;
     }
 
@@ -54,13 +56,17 @@
       flex-direction: column;
       padding: calc(env(safe-area-inset-top) + 8px) 14px 0;
       position: relative;
+      overflow: hidden;
     }
 
     header {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 4px 4px 10px;
+      background: #ffffff;
+      z-index: 10;
     }
 
     .brand {
@@ -136,6 +142,7 @@
       padding: 0 2px 90px;
       -ms-overflow-style: none;
       scrollbar-width: none;
+      background: #ffffff;
     }
 
     main::-webkit-scrollbar {
@@ -146,6 +153,7 @@
 
     .screen {
       display: none;
+      width: 100%;
     }
 
     .screen.active {
@@ -327,10 +335,6 @@
       box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
     }
 
-    .update-soft-btn:active {
-      transform: scale(0.97);
-    }
-
     .update-hard-overlay {
       position: fixed;
       inset: 0;
@@ -425,10 +429,6 @@
       height: 20px;
     }
 
-    .dashboard-meta {
-      min-width: 0;
-    }
-
     .dashboard-title {
       font-size: 12px;
       color: var(--text-muted);
@@ -441,90 +441,6 @@
       color: var(--text-main);
     }
 
-    .scan-card {
-      margin-top: 14px;
-      background: #ffffff;
-    }
-
-    .scan-card-header,
-    .ai-card-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .scan-card-icon,
-    .ai-card-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .scan-card-icon {
-      background: #eff6ff;
-      color: #2563eb;
-    }
-
-    .ai-card-icon {
-      background: #f5f3ff;
-      color: #4f46e5;
-    }
-
-    .scan-card-icon svg,
-    .ai-card-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .scan-card-title,
-    .ai-card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 4px;
-    }
-
-    .scan-card-subtitle,
-    .ai-card-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.3;
-    }
-
-    .scan-card-button,
-    .ai-card-button {
-      width: 100%;
-      margin-top: 6px;
-      border-radius: 999px;
-      border: none;
-      padding: 10px 14px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #ffffff;
-      box-shadow: var(--shadow-soft);
-      cursor: pointer;
-      transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
-    }
-
-    .scan-card-button {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    }
-
-    .ai-card-button {
-      background: linear-gradient(135deg, #4f46e5, #2563eb);
-    }
-
-    .scan-card-button:active,
-    .ai-card-button:active {
-      transform: scale(0.97);
-    }
-
-    /* 🔹 Report to school authority card on lecturer home */
     .report-card {
       margin-top: 14px;
       background: #ffffff;
@@ -620,24 +536,11 @@
       background: linear-gradient(135deg, #5b3df5, #6d4cff);
       box-shadow: var(--shadow-soft);
       cursor: pointer;
-      transition: transform 0.05s, box-shadow 0.15s, filter 0.1s;
-    }
-
-    .report-card-button:active {
-      transform: scale(0.97);
-      box-shadow: 0 8px 18px rgba(91, 61, 245, 0.35);
-      filter: brightness(0.97);
     }
 
     .history-card {
       margin-top: 6px;
       cursor: pointer;
-      transition: box-shadow 0.15s, transform 0.05s;
-    }
-
-    .history-card:active {
-      transform: scale(0.99);
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
     }
 
     .history-list {
@@ -646,9 +549,12 @@
       gap: 8px;
     }
 
-    .history-empty {
-      font-size: 12px;
+    .history-empty,
+    .placeholder-note {
+      font-size: 13px;
       color: var(--text-muted);
+      line-height: 1.45;
+      margin: 4px 2px 14px;
     }
 
     .history-item {
@@ -700,6 +606,30 @@
       gap: 4px;
     }
 
+    .placeholder-box {
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+      margin: 12px 2px;
+    }
+
+    .placeholder-box strong {
+      display: block;
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .placeholder-box code {
+      display: block;
+      font-size: 12px;
+      color: #475569;
+      white-space: normal;
+      word-break: break-word;
+      margin-top: 8px;
+    }
+
     .bottom-nav {
       position: fixed;
       left: 50%;
@@ -714,8 +644,8 @@
       align-items: center;
       background: #ffffff;
       border-radius: 26px;
-      box-shadow: 0 10px 30px rgba(15,23,42,0.18);
-      z-index: 50;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+      z-index: 500;
       will-change: transform;
     }
 
@@ -726,6 +656,8 @@
       color: #9ca3af;
       cursor: pointer;
       padding-top: 2px;
+      border: 0;
+      background: transparent;
     }
 
     .nav-btn-inner {
@@ -744,13 +676,6 @@
     .nav-btn.active {
       color: var(--blue);
       font-weight: 600;
-    }
-
-    .placeholder-note {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.45;
-      margin: 4px 2px 14px;
     }
 
     body.keyboard-open .bottom-nav {
@@ -786,12 +711,7 @@
 
           <button class="primary-cta" onclick="showScreen('attendance')">
             <svg viewBox="0 0 20 20" fill="none">
-              <path
-                d="M10 4v12M4 10h12"
-                stroke="white"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
+              <path d="M10 4v12M4 10h12" stroke="white" stroke-width="1.8" stroke-linecap="round" />
             </svg>
             <span>Create new attendance</span>
           </button>
@@ -805,25 +725,13 @@
           <article class="announcement-card">
             <div class="announcement-icon">
               <svg viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 2.5a7.5 7.5 0 107.5 7.5A7.51 7.51 0 0010 2.5zm0 4v4.5M10 13.5h.01"
-                  stroke="#1d4ed8"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+                <path d="M10 2.5a7.5 7.5 0 107.5 7.5A7.51 7.51 0 0010 2.5zm0 4v4.5M10 13.5h.01" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
             <div class="announcement-body">
               <div id="updateSoftTitle" class="announcement-title">New version available</div>
               <div id="updateSoftMessage" class="announcement-text"></div>
-              <button
-                type="button"
-                class="update-soft-btn"
-                onclick="openUpdateUrlFromRule()"
-              >
-                Update now
-              </button>
+              <button type="button" class="update-soft-btn" onclick="openUpdateUrlFromRule()">Update now</button>
             </div>
           </article>
         </section>
@@ -832,13 +740,7 @@
           <article class="announcement-card">
             <div class="announcement-icon">
               <svg viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 2.5a7.5 7.5 0 107.5 7.5A7.51 7.51 0 0010 2.5zm0 4v4.5M10 13.5h.01"
-                  stroke="#1d4ed8"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+                <path d="M10 2.5a7.5 7.5 0 107.5 7.5A7.51 7.51 0 0010 2.5zm0 4v4.5M10 13.5h.01" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
             <div class="announcement-body">
@@ -855,13 +757,7 @@
             <div class="section-action" onclick="showScreen('classes')">
               <span>Open</span>
               <svg viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M7 4l6 6-6 6"
-                  stroke="#2563eb"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+                <path d="M7 4l6 6-6 6" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
           </div>
@@ -870,11 +766,11 @@
             <article class="dashboard-card">
               <div class="dashboard-icon blue">
                 <svg viewBox="0 0 20 20" fill="none">
-                  <rect x="4.5" y="3.5" width="11" height="13" rx="1.4" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <rect x="4.5" y="3.5" width="11" height="13" rx="1.4" stroke="currentColor" stroke-width="1.4" />
+                  <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
                 </svg>
               </div>
-              <div class="dashboard-meta">
+              <div>
                 <div class="dashboard-title">Total class</div>
                 <div class="dashboard-value" id="totalClassesValue">0</div>
               </div>
@@ -883,12 +779,12 @@
             <article class="dashboard-card">
               <div class="dashboard-icon green">
                 <svg viewBox="0 0 20 20" fill="none">
-                  <path d="M13.5 16v-1.2a2.8 2.8 0 00-2.8-2.8H6.8A2.8 2.8 0 004 14.8V16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-                  <circle cx="8.8" cy="7" r="2.7" stroke="currentColor" stroke-width="1.3"/>
-                  <path d="M15.2 7.2v4.2M17.3 9.3h-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M13.5 16v-1.2a2.8 2.8 0 00-2.8-2.8H6.8A2.8 2.8 0 004 14.8V16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                  <circle cx="8.8" cy="7" r="2.7" stroke="currentColor" stroke-width="1.3" />
+                  <path d="M15.2 7.2v4.2M17.3 9.3h-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
                 </svg>
               </div>
-              <div class="dashboard-meta">
+              <div>
                 <div class="dashboard-title">Total student</div>
                 <div class="dashboard-value" id="totalStudentsValue">0</div>
               </div>
@@ -902,22 +798,10 @@
               <div class="report-card-left">
                 <div class="report-card-icon">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M9.5 12.3l1.7 1.7 3.6-4"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
+                    <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <path d="M9.5 12.3l1.7 1.7 3.6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                 </div>
-
                 <div>
                   <div class="report-card-title">Report an Issue to School Authority</div>
                   <div class="report-card-subtitle">
@@ -928,19 +812,8 @@
 
               <div class="report-card-visual" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M9.5 12.3l1.7 1.7 3.6-4"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
+                  <path d="M12 3l7 3v5c0 4.7-2.9 8.6-7 10-4.1-1.4-7-5.3-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                  <path d="M9.5 12.3l1.7 1.7 3.6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
             </div>
@@ -957,40 +830,140 @@
             <div class="section-action" onclick="showScreen('history')">
               <span>View all</span>
               <svg viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M7 4l6 6-6 6"
-                  stroke="#2563eb"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+                <path d="M7 4l6 6-6 6" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
           </div>
 
           <article class="card history-card" onclick="showScreen('history')">
             <div class="history-list" id="historyList">
-              <div class="history-empty">
-                Loading your recent sessions...
-              </div>
+              <div class="history-empty">Loading your recent sessions...</div>
             </div>
           </article>
         </section>
+      </div>
+
+      <div id="screen-attendance" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE ATTENDANCE INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste only the inside content for create attendance here. Do not add another body, phone-shell, header, nav, or script import.</p>
+          <code>&lt;!-- attendance page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-classes" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE CLASSES INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste your Manage classes screen content here.</p>
+          <code>&lt;!-- classes page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-history" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE HISTORY INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste your history screen content here.</p>
+          <code>&lt;!-- history page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-reports" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE REPORTS INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste your lecturer reports dashboard/list content here.</p>
+          <code>&lt;!-- reports page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-account" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE ACCOUNT INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste your account/settings screen content here.</p>
+          <code>&lt;!-- account page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-scan" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE SCAN INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste scan sheet content here.</p>
+          <code>&lt;!-- scan page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-ai" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE AI INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste AI screen content here.</p>
+          <code>&lt;!-- ai page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-live-session" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE LIVE SESSION INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste only the inside live attendance content here. Remove any second bottom nav from that content.</p>
+          <code>&lt;!-- live session page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-live-class" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE LIVE CLASS INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste class live content here.</p>
+          <code>&lt;!-- live class page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-view-message" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE VIEW MESSAGE INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste view message content here.</p>
+          <code>&lt;!-- view message page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-fill-form" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE FILL FORM INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste fill form content here.</p>
+          <code>&lt;!-- fill form page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-fill-form-details" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE FILL FORM DETAILS INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste fill form details content here.</p>
+          <code>&lt;!-- fill form details page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-student_report" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE SEND REPORT INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste your full report page inner content here. This is the correct place for the report page.</p>
+          <code>&lt;!-- send report page content goes here --&gt;</code>
+        </div>
+      </div>
+
+      <div id="screen-report-details" class="screen">
+        <div class="placeholder-box">
+          <strong>PASTE REPORT DETAILS INNER PAGE HERE</strong>
+          <p class="placeholder-note">Paste report details content here.</p>
+          <code>&lt;!-- report details page content goes here --&gt;</code>
+        </div>
       </div>
     </main>
   </div>
 
   <div id="updateHardOverlay" class="update-hard-overlay">
     <div class="update-hard-card">
-      <div class="update-hard-title" id="updateHardTitle">
-        Please update Colspot
-      </div>
+      <div class="update-hard-title" id="updateHardTitle">Please update Colspot</div>
       <div class="update-hard-text" id="updateHardMessage">
         A newer version of Colspot is required to continue. Please update to keep using the app.
       </div>
-      <button class="update-hard-btn" onclick="openUpdateUrlFromRule()">
-        Update app
-      </button>
+      <button class="update-hard-btn" onclick="openUpdateUrlFromRule()">Update app</button>
       <div class="update-hard-note">
         This device will not be able to continue until you install the latest version.
       </div>
@@ -998,101 +971,58 @@
   </div>
 
   <nav class="bottom-nav" id="bottomNav">
-    <div class="nav-btn active" data-nav="home" onclick="showScreen('home')">
+    <button class="nav-btn active" data-nav="home" onclick="showScreen('home')" type="button">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path
-            d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linejoin="round"
-          />
+          <path d="M4.5 10.75L12 4l7.5 6.75V19a1.5 1.5 0 01-1.5 1.5h-4.25v-4.25h-3.5V20.5H6A1.5 1.5 0 014.5 19v-8.25z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
         </svg>
         <span>Home</span>
       </div>
-    </div>
+    </button>
 
-    <div class="nav-btn" data-nav="classes" onclick="showScreen('classes')">
+    <button class="nav-btn" data-nav="classes" onclick="showScreen('classes')" type="button">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <rect
-            x="5"
-            y="4.5"
-            width="14"
-            height="15"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.7"
-          />
-          <path
-            d="M8 10h8"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-          />
+          <rect x="5" y="4.5" width="14" height="15" rx="1.5" stroke="currentColor" stroke-width="1.7" />
+          <path d="M8 10h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
         </svg>
         <span>Class</span>
       </div>
-    </div>
+    </button>
 
-    <div class="nav-btn" data-nav="history" onclick="showScreen('history')">
+    <button class="nav-btn" data-nav="history" onclick="showScreen('history')" type="button">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 6v6l3 3"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M5 12a7 7 0 111.75 4.6"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M5 8v4h4"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <path d="M12 6v6l3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5 12a7 7 0 111.75 4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5 8v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
         <span>History</span>
       </div>
-    </div>
+    </button>
 
-    <div class="nav-btn" data-nav="reports" onclick="showScreen('reports')">
+    <button class="nav-btn" data-nav="reports" onclick="showScreen('reports')" type="button">
       <div class="nav-btn-inner">
         <svg viewBox="0 0 24 24" fill="none">
-          <path
-            d="M6 18.5v-5M12 18.5V7.5M18 18.5v-9"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-          />
-          <path
-            d="M5 18.5h14"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-          />
+          <path d="M6 18.5v-5M12 18.5V7.5M18 18.5v-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          <path d="M5 18.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
         </svg>
         <span>Reports</span>
       </div>
-    </div>
+    </button>
   </nav>
 
+  <script type="module" src="./client_supabase.js"></script>
+  <script src="./guard_session.js"></script>
+  <script src="./push.js"></script>
   <script type="module" src="./client_supabase.js"></script>
   <script src="./guard_session.js"></script>
   <script src="./push.js"></script>
 <script>
   const SCAN_LAMBDA_URL =
     "https://nwk4ha732jcxqxjiu2etghrfya0bjoot.lambda-url.eu-west-1.on.aws/";
-  const SCAN_MAX_PER_MONTH = 20;
 
+  const SCAN_MAX_PER_MONTH = 20;
   const UPDATE_RULE_LOCAL_KEY = "colspot_update_rule";
 
   const MAIN_WARMUP_TTL_MS = 10 * 60 * 1000;
@@ -1106,7 +1036,12 @@
   let currentScanQuota = null;
   let currentScanUserId = null;
   let currentUpdateRule = null;
- 
+
+  function getSb() {
+    if (typeof window.supabase !== "undefined" && window.supabase) return window.supabase;
+    if (typeof supabase !== "undefined" && supabase) return supabase;
+    return null;
+  }
 
   function norm(value) {
     return String(value || "").trim();
@@ -1152,7 +1087,7 @@
       return {
         user_id: parsed.id,
         email: parsed.email || "",
-        full_name: parsed.email || ""
+        full_name: parsed.full_name || parsed.email || ""
       };
     } catch (e) {
       console.error("Could not read local cached user:", e);
@@ -1162,15 +1097,36 @@
 
   function saveLocalUserFromSupabaseUser(user) {
     if (!user) return;
+
     try {
+      const existingRaw = localStorage.getItem(LOCAL_USER_KEY);
+      let existing = {};
+
+      try {
+        existing = existingRaw ? JSON.parse(existingRaw) : {};
+      } catch {
+        existing = {};
+      }
+
       localStorage.setItem(
         LOCAL_USER_KEY,
         JSON.stringify({
+          ...existing,
           id: user.id,
-          email: user.email || "",
+          email: user.email || existing.email || "",
+          full_name:
+            (user.user_metadata && user.user_metadata.full_name) ||
+            existing.full_name ||
+            user.email ||
+            "",
+          role: "lecturer",
           last_seen: new Date().toISOString()
         })
       );
+
+      localStorage.setItem("colspot_auth_role", "lecturer");
+      localStorage.setItem("colspot_selected_role", "lecturer");
+      localStorage.setItem("colspot_login_flow", "lecturer");
     } catch (e) {
       console.error("Could not save local user:", e);
     }
@@ -1188,9 +1144,11 @@
     if (greetLine) {
       greetLine.textContent = `Hello, ${firstName}`;
     }
+
     if (avatarInitial) {
       avatarInitial.textContent = firstLetter;
     }
+
     if (avatarChipText) {
       avatarChipText.textContent = firstLetter;
     }
@@ -1201,7 +1159,8 @@
     const text = document.getElementById("avatarChipText");
     if (!img || !text) return;
 
-    const letter = (fallbackLetter || "L").toString().trim().charAt(0).toUpperCase() || "L";
+    const letter =
+      (fallbackLetter || "L").toString().trim().charAt(0).toUpperCase() || "L";
 
     if (photoUrl) {
       img.src = photoUrl;
@@ -1218,6 +1177,7 @@
 
   function scheduleOfflineRetry() {
     if (offlineRetryTimer) return;
+
     offlineRetryTimer = setInterval(() => {
       loadMiniHistory();
       loadLecturerDashboard();
@@ -1229,6 +1189,7 @@
 
   function stopOfflineRetry() {
     if (!offlineRetryTimer) return;
+
     clearInterval(offlineRetryTimer);
     offlineRetryTimer = null;
   }
@@ -1277,6 +1238,7 @@
   function getOrCreateDeviceId() {
     try {
       let id = localStorage.getItem("colspot_device_id");
+
       if (!id) {
         if (window.crypto && window.crypto.randomUUID) {
           id = window.crypto.randomUUID();
@@ -1287,8 +1249,10 @@
             "-" +
             Date.now().toString(36);
         }
+
         localStorage.setItem("colspot_device_id", id);
       }
+
       return id;
     } catch (e) {
       console.warn("[main warmup] cannot read/write device id:", e);
@@ -1300,8 +1264,10 @@
     try {
       const raw = localStorage.getItem(MAIN_WARMUP_KEY);
       if (!raw) return false;
+
       const t = new Date(raw).getTime();
       if (Number.isNaN(t)) return false;
+
       return Date.now() - t < MAIN_WARMUP_TTL_MS;
     } catch {
       return false;
@@ -1337,9 +1303,7 @@
       if (!pos || !pos.coords) continue;
 
       const acc =
-        typeof pos.coords.accuracy === "number"
-          ? pos.coords.accuracy
-          : null;
+        typeof pos.coords.accuracy === "number" ? pos.coords.accuracy : null;
 
       if (acc == null) continue;
 
@@ -1359,7 +1323,8 @@
 
   async function runMainWarmupOnce() {
     try {
-      if (typeof supabase === "undefined") return;
+      const sb = getSb();
+      if (!sb) return;
       if (isMainWarmupFresh()) return;
       if (isBrowserOffline()) return;
 
@@ -1376,15 +1341,13 @@
       const accuracyMeters = warm.accuracyMeters;
       if (accuracyMeters == null) return;
 
-      const { error } = await supabase
-        .from("attendance_warmup_main")
-        .insert({
-          lecturer_id: user.id,
-          device_id: deviceId,
-          lat: latitude,
-          lng: longitude,
-          accuracy_m: accuracyMeters
-        });
+      const { error } = await sb.from("attendance_warmup_main").insert({
+        lecturer_id: user.id,
+        device_id: deviceId,
+        lat: latitude,
+        lng: longitude,
+        accuracy_m: accuracyMeters
+      });
 
       if (error) {
         console.warn("[main warmup] insert error:", error);
@@ -1396,15 +1359,16 @@
       console.warn("[main warmup] failed:", e);
     }
   }
-function tryInitPush() {
-  try {
-    if (typeof window.initColspotPush === "function") {
-      window.initColspotPush();
+
+  function tryInitPush() {
+    try {
+      if (typeof window.initColspotPush === "function") {
+        window.initColspotPush();
+      }
+    } catch (e) {
+      console.warn("[Push] init failed:", e);
     }
-  } catch (e) {
-    console.warn("[Push] init failed:", e);
   }
-}
 
   function getCurrentMonthKey() {
     const d = new Date();
@@ -1415,22 +1379,52 @@ function tryInitPush() {
 
   async function ensureCurrentUser() {
     if (currentUser) return currentUser;
-    if (typeof supabase === "undefined") return null;
+
+    const sb = getSb();
+    if (!sb) return null;
 
     try {
-      const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await sb.auth.getUser();
+
       if (error || !data || !data.user) {
         scheduleOfflineRetry();
         return null;
       }
+
       currentUser = data.user;
       saveLocalUserFromSupabaseUser(currentUser);
+
       return currentUser;
     } catch (e) {
       console.error("ensureCurrentUser failed:", e);
       scheduleOfflineRetry();
       return null;
     }
+  }
+
+  function setActiveNav(name) {
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach((btn) => btn.classList.remove("active"));
+
+    const navName =
+      name === "scan" ||
+      name === "ai" ||
+      name === "attendance" ||
+      name === "live-session" ||
+      name === "live-class" ||
+      name === "view-message" ||
+      name === "fill-form" ||
+      name === "fill-form-details" ||
+      name === "student_report" ||
+      name === "report-details"
+        ? "home"
+        : name;
+
+    const activeBtn = document.querySelector(
+      '.nav-btn[data-nav="' + navName + '"]'
+    );
+
+    if (activeBtn) activeBtn.classList.add("active");
   }
 
   function showScreen(name) {
@@ -1453,36 +1447,22 @@ function tryInitPush() {
     ];
 
     ids.forEach((id) => {
-      const el = document.getElementById("screen-" + id);
-      if (!el) return;
+      const screen = document.getElementById("screen-" + id);
+      if (!screen) return;
+
       if (id === name) {
-        el.classList.add("active");
+        screen.classList.add("active");
       } else {
-        el.classList.remove("active");
+        screen.classList.remove("active");
       }
     });
 
-    const navButtons = document.querySelectorAll(".nav-btn");
-    navButtons.forEach((btn) => btn.classList.remove("active"));
+    setActiveNav(name);
 
-    const navName =
-      (name === "scan" ||
-        name === "ai" ||
-        name === "attendance" ||
-        name === "live-session" ||
-        name === "live-class" ||
-        name === "view-message" ||
-        name === "fill-form" ||
-        name === "fill-form-details" ||
-        name === "student_report" ||
-        name === "report-details")
-        ? "home"
-        : name;
-
-    const activeBtn = document.querySelector(
-      '.nav-btn[data-nav="' + navName + '"]'
-    );
-    if (activeBtn) activeBtn.classList.add("active");
+    const mainEl = document.querySelector("main");
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: "auto" });
+    }
 
     if (name === "scan" && typeof initScanQuotaUI === "function") {
       initScanQuotaUI();
@@ -1508,7 +1488,10 @@ function tryInitPush() {
       openFillFormScreen();
     }
 
-    if (name === "fill-form-details" && typeof openFillFormDetailsScreen === "function") {
+    if (
+      name === "fill-form-details" &&
+      typeof openFillFormDetailsScreen === "function"
+    ) {
       openFillFormDetailsScreen();
     }
 
@@ -1524,7 +1507,9 @@ function tryInitPush() {
   function mirrorHistoryToAlt() {
     const src = document.getElementById("historyList");
     const dest = document.getElementById("historyListAlt");
+
     if (!src || !dest) return;
+
     dest.innerHTML = src.innerHTML;
   }
 
@@ -1537,19 +1522,22 @@ function tryInitPush() {
     const totalStudentsEl = document.getElementById("totalStudentsValue");
 
     try {
-      if (typeof supabase === "undefined") {
+      const sb = getSb();
+
+      if (!sb) {
         if (totalClassesEl) totalClassesEl.textContent = "—";
         if (totalStudentsEl) totalStudentsEl.textContent = "—";
         return;
       }
 
       const user = await ensureCurrentUser();
+
       if (!user) {
         scheduleOfflineRetry();
         return;
       }
 
-      const { data: courses, error: coursesError } = await supabase
+      const { data: courses, error: coursesError } = await sb
         .from("courses")
         .select("id, created_by")
         .eq("created_by", user.id);
@@ -1564,13 +1552,27 @@ function tryInitPush() {
       if (classRows.length) {
         const courseIds = classRows.map((row) => row.id);
 
-        const { data: memberships, error: membershipError } = await supabase
+        let membershipQuery = sb
           .from("course_memberships")
           .select("course_id")
           .in("course_id", courseIds);
 
-        if (membershipError) throw membershipError;
-        totalStudents = (memberships || []).length;
+        const activeMemberships = await membershipQuery
+          .eq("is_active", true)
+          .is("expired_at", null);
+
+        if (activeMemberships.error) {
+          const fallback = await sb
+            .from("course_memberships")
+            .select("course_id")
+            .in("course_id", courseIds);
+
+          if (fallback.error) throw fallback.error;
+
+          totalStudents = (fallback.data || []).length;
+        } else {
+          totalStudents = (activeMemberships.data || []).length;
+        }
       }
 
       if (totalClassesEl) totalClassesEl.textContent = String(totalClasses);
@@ -1579,8 +1581,10 @@ function tryInitPush() {
       stopOfflineRetry();
     } catch (e) {
       console.error("loadLecturerDashboard failed:", e);
+
       if (totalClassesEl) totalClassesEl.textContent = "—";
       if (totalStudentsEl) totalStudentsEl.textContent = "—";
+
       scheduleOfflineRetry();
     }
   }
@@ -1593,20 +1597,26 @@ function tryInitPush() {
       listEl.innerHTML =
         '<div class="history-empty">Loading your recent sessions...</div>';
     }
+
     if (altEl) {
       altEl.innerHTML =
         '<div class="history-empty">Loading your recent sessions...</div>';
     }
 
-    if (typeof supabase === "undefined") {
+    const sb = getSb();
+
+    if (!sb) {
       const msg =
         '<div class="history-empty">We’re having trouble talking to the server. Please check your internet connection or close and reopen Colspot.</div>';
+
       if (listEl) listEl.innerHTML = msg;
       if (altEl) altEl.innerHTML = msg;
+
       return;
     }
 
     const user = await ensureCurrentUser();
+
     if (!user) {
       const msg = isBrowserOffline()
         ? '<div class="history-empty">No internet connection. We’ll try again automatically…</div>'
@@ -1614,12 +1624,13 @@ function tryInitPush() {
 
       if (listEl) listEl.innerHTML = msg;
       if (altEl) altEl.innerHTML = msg;
+
       scheduleOfflineRetry();
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("attendance_sessions")
         .select("id, course_code, starts_at, created_at")
         .eq("created_by", user.id)
@@ -1629,11 +1640,14 @@ function tryInitPush() {
       if (error) throw error;
 
       const sessions = data || [];
+
       if (!sessions.length) {
         const msg =
           '<div class="history-empty">No previous sessions yet. Create one to get started.</div>';
+
         if (listEl) listEl.innerHTML = msg;
         if (altEl) altEl.innerHTML = msg;
+
         stopOfflineRetry();
         return;
       }
@@ -1642,8 +1656,12 @@ function tryInitPush() {
         .map((s) => {
           const baseDateStr = s.starts_at || s.created_at;
           const d = baseDateStr ? new Date(baseDateStr) : null;
+
           const timeStr = d
-            ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? d.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+              })
             : "--:--";
 
           const code = s.course_code || "Attendance session";
@@ -1669,16 +1687,21 @@ function tryInitPush() {
       stopOfflineRetry();
     } catch (e) {
       console.error("loadMiniHistory failed:", e);
+
       const msg =
         '<div class="history-empty">Could not load history yet. We’ll keep trying in the background.</div>';
+
       if (listEl) listEl.innerHTML = msg;
       if (altEl) altEl.innerHTML = msg;
+
       scheduleOfflineRetry();
     }
   }
 
   async function loadScanQuota() {
-    if (typeof supabase === "undefined") return null;
+    const sb = getSb();
+    if (!sb) return null;
+
     const user = await ensureCurrentUser();
     if (!user) return null;
 
@@ -1686,7 +1709,7 @@ function tryInitPush() {
     const monthKey = getCurrentMonthKey();
 
     try {
-      let query = supabase
+      let query = sb
         .from("scan_sheets")
         .select("id", { count: "exact", head: false })
         .eq("user_id", user.id)
@@ -1694,8 +1717,11 @@ function tryInitPush() {
 
       let { data, error } = await query;
 
-      if (error && String(error.message || "").toLowerCase().includes("month_key")) {
-        const fallback = await supabase
+      if (
+        error &&
+        String(error.message || "").toLowerCase().includes("month_key")
+      ) {
+        const fallback = await sb
           .from("scan_sheets")
           .select("id", { count: "exact", head: false })
           .eq("user_id", user.id);
@@ -1704,18 +1730,22 @@ function tryInitPush() {
         error = fallback.error;
 
         if (!error) {
-          console.warn("scan_sheets.month_key missing, using fallback count without monthly filter");
+          console.warn(
+            "scan_sheets.month_key missing, using fallback count without monthly filter"
+          );
         }
       }
 
       if (error) throw error;
 
       const used = Array.isArray(data) ? data.length : 0;
+
       currentScanQuota = {
         used,
         remaining: Math.max(0, SCAN_MAX_PER_MONTH - used),
         monthKey
       };
+
       return currentScanQuota;
     } catch (e) {
       console.error("loadScanQuota failed:", e);
@@ -1755,10 +1785,12 @@ function tryInitPush() {
     let binary = "";
     const bytes = new Uint8Array(buffer);
     const chunk = 0x8000;
+
     for (let i = 0; i < bytes.length; i += chunk) {
       const sub = bytes.subarray(i, i + chunk);
       binary += String.fromCharCode.apply(null, sub);
     }
+
     return btoa(binary);
   }
 
@@ -1792,6 +1824,7 @@ function tryInitPush() {
     }
 
     const user = await ensureCurrentUser();
+
     if (!user) {
       if (statusEl) {
         statusEl.textContent = "Please sign in again.";
@@ -1802,6 +1835,7 @@ function tryInitPush() {
 
     try {
       if (btn) btn.disabled = true;
+
       if (statusEl) {
         statusEl.textContent = "Uploading and processing your scan...";
         statusEl.className = "scan-status";
@@ -1836,7 +1870,9 @@ function tryInitPush() {
       }
 
       try {
-        if (typeof supabase !== "undefined") {
+        const sb = getSb();
+
+        if (sb) {
           const insertPayload = {
             user_id: user.id,
             title,
@@ -1844,18 +1880,18 @@ function tryInitPush() {
             source_name: file.name
           };
 
-          const tryInsert = await supabase
-            .from("scan_sheets")
-            .insert({
-              ...insertPayload,
-              month_key: getCurrentMonthKey()
-            });
+          const tryInsert = await sb.from("scan_sheets").insert({
+            ...insertPayload,
+            month_key: getCurrentMonthKey()
+          });
 
           if (
             tryInsert.error &&
-            String(tryInsert.error.message || "").toLowerCase().includes("month_key")
+            String(tryInsert.error.message || "")
+              .toLowerCase()
+              .includes("month_key")
           ) {
-            await supabase.from("scan_sheets").insert(insertPayload);
+            await sb.from("scan_sheets").insert(insertPayload);
           }
         }
       } catch (logErr) {
@@ -1875,6 +1911,7 @@ function tryInitPush() {
       }
     } catch (e) {
       console.error("submitScanSheet failed:", e);
+
       if (statusEl) {
         statusEl.textContent = e.message || "Could not process scan.";
         statusEl.className = "scan-status error";
@@ -1888,15 +1925,18 @@ function tryInitPush() {
     const section = document.getElementById("announcementSection");
     const titleEl = document.getElementById("announcementTitle");
     const msgEl = document.getElementById("announcementMessage");
+
     if (!section || !titleEl || !msgEl) return;
 
-    if (typeof supabase === "undefined") {
+    const sb = getSb();
+
+    if (!sb) {
       section.style.display = "none";
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("app_announcements")
         .select("id,title,message,show_until,is_active,created_at")
         .eq("is_active", true)
@@ -1904,6 +1944,7 @@ function tryInitPush() {
         .limit(1);
 
       if (error) throw error;
+
       const ann = data && data[0];
 
       if (!ann) {
@@ -1919,6 +1960,7 @@ function tryInitPush() {
       }
 
       const dismissKey = "colspot_announcement_dismissed_" + ann.id;
+
       if (localStorage.getItem(dismissKey) === "1") {
         section.style.display = "none";
         stopOfflineRetry();
@@ -1942,6 +1984,7 @@ function tryInitPush() {
     if (!section) return;
 
     const id = section.dataset.announcementId;
+
     if (id) {
       try {
         localStorage.setItem("colspot_announcement_dismissed_" + id, "1");
@@ -1970,8 +2013,7 @@ function tryInitPush() {
 
     if (!softSection || !softTitle || !softMessage) return;
 
-    softTitle.textContent =
-      rule.message_title || "New version available";
+    softTitle.textContent = rule.message_title || "New version available";
     softMessage.textContent =
       rule.message_body ||
       "A newer version of Colspot is available. Please update when you can.";
@@ -1986,8 +2028,7 @@ function tryInitPush() {
 
     if (!hardOverlay || !hardTitle || !hardMessage) return;
 
-    hardTitle.textContent =
-      rule.message_title || "Update required";
+    hardTitle.textContent = rule.message_title || "Update required";
     hardMessage.textContent =
       rule.message_body ||
       "A newer version of Colspot is required to continue. Please update to keep using the app.";
@@ -1996,7 +2037,8 @@ function tryInitPush() {
   }
 
   function applyUpdateRuleFromLocal() {
-    let raw;
+    let raw = null;
+
     try {
       raw = localStorage.getItem(UPDATE_RULE_LOCAL_KEY);
     } catch {
@@ -2010,7 +2052,8 @@ function tryInitPush() {
       return;
     }
 
-    let rule;
+    let rule = null;
+
     try {
       rule = JSON.parse(raw);
     } catch {
@@ -2067,39 +2110,76 @@ function tryInitPush() {
     }
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  function openStudentReportScreen() {
+    const screen = document.getElementById("screen-student_report");
+    if (!screen) return;
+
+    const input = screen.querySelector("input, textarea, select, button");
+    if (input && typeof input.focus === "function") {
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+
+  function openReportDetailsScreen() {
+    return true;
+  }
+
+  function openLiveSessionScreen() {
+    return true;
+  }
+
+  function openLiveClassScreen() {
+    return true;
+  }
+
+  function openViewMessageScreen() {
+    return true;
+  }
+
+  function openFillFormScreen() {
+    return true;
+  }
+
+  function openFillFormDetailsScreen() {
+    return true;
+  }
+
+  async function bootLecturerMain() {
     await new Promise((r) => setTimeout(r, 50));
 
     lockBottomNavToScreen();
 
     let localAuth = null;
+
     try {
       if (
         window.ColspotGuard &&
-        typeof ColspotGuard.guardPageAccess === "function"
+        typeof window.ColspotGuard.guardRolePageAccess === "function"
       ) {
-        const localUser = await ColspotGuard.guardRolePageAccess({
+        const localUser = await window.ColspotGuard.guardRolePageAccess({
           requiredRole: "lecturer",
           redirectTo: "index.html",
           studentHome: "main.html",
           lecturerHome: "main_lecturer.html"
         });
+
         if (!localUser) return;
 
         localAuth = {
           user_id: localUser.id,
           email: localUser.email || "",
-          full_name: localUser.email || ""
+          full_name: localUser.full_name || localUser.email || ""
         };
       } else {
         localAuth = getCachedAuthFromLocalUser();
+
         if (!localAuth) {
           window.location.href = "index.html";
           return;
         }
       }
     } catch (e) {
-      console.error("guardPageAccess failed on main:", e);
+      console.error("guardRolePageAccess failed on main_lecturer:", e);
       window.location.href = "index.html";
       return;
     }
@@ -2109,6 +2189,7 @@ function tryInitPush() {
         (localAuth.full_name && localAuth.full_name.trim()) ||
         (localAuth.email && localAuth.email.trim()) ||
         "";
+
       if (localName) {
         setGreetingFromProfile(localName);
       }
@@ -2116,6 +2197,7 @@ function tryInitPush() {
 
     const fileInput = document.getElementById("scanFileInput");
     const chosenText = document.getElementById("scanFileChosenText");
+
     if (fileInput && chosenText) {
       fileInput.addEventListener("change", () => {
         if (fileInput.files && fileInput.files[0]) {
@@ -2138,33 +2220,48 @@ function tryInitPush() {
 
     if (
       window.ColspotGuard &&
-      typeof ColspotGuard.verifySupabaseSessionInBackground === "function"
+      typeof window.ColspotGuard.verifySupabaseSessionInBackground === "function"
     ) {
-      ColspotGuard.verifySupabaseSessionInBackground();
-    } else if (typeof supabase !== "undefined") {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (!error && data && data.user) {
-          currentUser = data.user;
-          const profileName =
-            (currentUser.user_metadata && currentUser.user_metadata.full_name) ||
-            currentUser.email ||
-            currentUser.phone ||
-            "";
-          saveLocalUserFromSupabaseUser(currentUser);
-          if (profileName) {
-            setGreetingFromProfile(profileName);
-          }
+      window.ColspotGuard.verifySupabaseSessionInBackground({
+        redirectTo: "index.html"
+      });
+    } else {
+      const sb = getSb();
 
-          syncTopRightAvatar(
-            (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || "",
-            profileName ? profileName.trim().charAt(0).toUpperCase() : "L"
-          );
+      if (sb) {
+        try {
+          const { data, error } = await sb.auth.getUser();
+
+          if (!error && data && data.user) {
+            currentUser = data.user;
+
+            const profileName =
+              (currentUser.user_metadata &&
+                currentUser.user_metadata.full_name) ||
+              currentUser.email ||
+              currentUser.phone ||
+              "";
+
+            saveLocalUserFromSupabaseUser(currentUser);
+
+            if (profileName) {
+              setGreetingFromProfile(profileName);
+            }
+
+            syncTopRightAvatar(
+              (currentUser.user_metadata &&
+                currentUser.user_metadata.avatar_url) ||
+                "",
+              profileName ? profileName.trim().charAt(0).toUpperCase() : "L"
+            );
+          }
+        } catch (e) {
+          console.error("Fallback getUser on main_lecturer failed:", e);
         }
-      } catch (e) {
-        console.error("Fallback getUser on main failed:", e);
       }
     }
+
+    showScreen("home");
 
     loadLecturerDashboard();
     loadMiniHistory();
@@ -2172,14 +2269,22 @@ function tryInitPush() {
     loadAnnouncements();
     applyUpdateRuleFromLocal();
     tryInitPush();
-   
     runMainWarmupOnce();
-  });
+  }
+
+  document.addEventListener("DOMContentLoaded", bootLecturerMain);
 
   window.showScreen = showScreen;
   window.dismissAnnouncement = dismissAnnouncement;
   window.openUpdateUrlFromRule = openUpdateUrlFromRule;
   window.submitScanSheet = submitScanSheet;
+  window.openStudentReportScreen = openStudentReportScreen;
+  window.openReportDetailsScreen = openReportDetailsScreen;
+  window.openLiveSessionScreen = openLiveSessionScreen;
+  window.openLiveClassScreen = openLiveClassScreen;
+  window.openViewMessageScreen = openViewMessageScreen;
+  window.openFillFormScreen = openFillFormScreen;
+  window.openFillFormDetailsScreen = openFillFormDetailsScreen;
 </script>
 </body>
 </html>
